@@ -17,11 +17,11 @@ class DropdownButtonField extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Container(
-      height: 30,
+      height: 50,
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.green,
           border: Border.all(width: 1, color: gray),
-          borderRadius: BorderRadius.all(Radius.circular(3.0))),
+          borderRadius: BorderRadius.all(Radius.circular(25.0))),
       child: DropdownButton<String>(
         isExpanded: true,
         value: dropdownValue.isNotEmpty?dropdownValue:null,
@@ -31,7 +31,7 @@ class DropdownButtonField extends StatelessWidget {
         underline: Container(
           color: Colors.transparent,
         ),
-        style: TextStyle(color: Colors.grey, fontSize: 16),
+        style: TextStyle(color: Colors.black, fontSize: 16),
        onChanged: onChanged,
         items: spinnerItems.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
