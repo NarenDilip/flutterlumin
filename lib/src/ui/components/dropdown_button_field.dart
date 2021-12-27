@@ -19,8 +19,7 @@ class DropdownButtonField extends StatelessWidget {
     return Container(
       height: 50,
       decoration: BoxDecoration(
-          color: Colors.green,
-          border: Border.all(width: 1, color: gray),
+          color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(25.0))),
       child: DropdownButton<String>(
         isExpanded: true,

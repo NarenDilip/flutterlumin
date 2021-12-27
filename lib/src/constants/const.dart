@@ -12,6 +12,9 @@ const borderColor = Color(0xffd5d5d5);
 const dashboardThemeColor = Color(0xffc2cbf7);
 const successGreenColor = Color(0xff16e38a);
 const btnLightGreenColor = Color(0xff35ba80);
+
+const btnLightbluColor = Color(0xff0bd9ee);
+const btngreytbluColor = Color(0xfff1f7f8 );
 //
 
 const splashscreen_text = "Luminator";

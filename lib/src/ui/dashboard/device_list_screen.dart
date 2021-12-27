@@ -20,12 +20,7 @@ class device_list_screen_state extends State<device_list_screen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(body: Scaffold(
-        appBar:AppBar(title: const Text("Luminator", style: TextStyle(
-          color: Colors.black,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          fontFamily: "Montserrat",
-        )),),body: Container(
+        body: Container(
         height: size.height,
         width: double.infinity,
         decoration: const BoxDecoration(

@@ -33,14 +33,6 @@ class map_view_screen_state extends State<map_view_screen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         body: Scaffold(
-            appBar: AppBar(
-              title: Text("Luminator",  style: TextStyle(
-                color: Colors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                fontFamily: "Montserrat",
-              )),
-            ),
             body: Container(
                 height: size.height,
                 width: double.infinity,

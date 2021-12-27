@@ -266,12 +266,12 @@ Future<Device?> fetchSmartDeviceDetails(
         var relationDetails = await tbClient
             .getEntityRelationService()
             .findInfoByTo(response.id!);
-        if (relationDetails.length.toString().isEmpty) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
+        if (relationDetails.length.toString() == "0") {
+          Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) => ilm_installation_screen()));
         } else {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => ilm_maintenance_screen()));
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext context) => MaintenanceScreen()));
         }
       } catch (e) {
         var message = toThingsboardError(e).message;
