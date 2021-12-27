@@ -16,7 +16,7 @@ const btnLightGreenColor = Color(0xff35ba80);
 
 const splashscreen_text = "Luminator";
 
-const serverUrl = "http://iotpro.io:8077";
+const serverUrl = "https://schnelliot.in";
 
 const app_username = "smartLumi@gmail.com";
 const app_password = "smartLumi";
@@ -28,5 +28,17 @@ const validate_email = "Please enter the validate email";
 const sign_in = "SIGN IN";
 const qr_text = "SCAN QR CODE";
 
-const smart_Username = "developer@schnellenergy.com";
-const smart_Password = "schnell";
+const ilm_deviceType = "lumiNode";
+const ccms_deviceType = "ccms";
+const Gw_deviceType = "Gateway";
+
+const session_expired = "Session expired!";
+
+const smart_Username = "smartCity@schnellenergy.com";
+const smart_Password = "smart@City135";
+
+const prod_Username = "production@schnellenergy.com";
+const prod_Password = "LumiNode";
+
+const device_toast_msg = "Given Device ";
+const device_toast_notfound = " Not Found";

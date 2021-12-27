@@ -37,7 +37,7 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                  return dashboard_screen();
+                  return login_screen();
                 } else {
                   return dashboard_screen();
                 }
