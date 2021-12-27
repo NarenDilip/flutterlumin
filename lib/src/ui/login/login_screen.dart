@@ -136,6 +136,16 @@ class LoginForm extends StatelessWidget {
           if (status == true) {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen()));
+          }else{
+            Navigator.pop(context);
+            Fluttertoast.showToast(
+                msg: "Please check Username and Password, Invalid Credentials",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
         } else {
           Navigator.pop(context);
