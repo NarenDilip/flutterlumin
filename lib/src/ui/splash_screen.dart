@@ -37,9 +37,9 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                  return Home();
+                  return dashboard_screen();
                 } else {
-                  return Home();
+                  return dashboard_screen();
                 }
               })));
     } catch (e) {}
@@ -55,10 +55,10 @@ class splash_screenState extends State<splash_screen> {
         // color: Colors.white,
         margin: const EdgeInsets.all(15.0),
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/icons/background_img.jpeg"),
-            fit: BoxFit.cover,
-          ),
+          // image: DecorationImage(
+          //   image: AssetImage("assets/icons/background_img.jpeg"),
+          //   fit: BoxFit.cover,
+          // ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

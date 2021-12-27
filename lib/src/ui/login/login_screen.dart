@@ -49,10 +49,10 @@ class LoginForm extends StatelessWidget {
           height: size.height,
           width: double.infinity,
           decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/icons/background_img.jpeg"),
-              fit: BoxFit.cover,
-            ),
+            // image: DecorationImage(
+            //   image: AssetImage("assets/icons/background_img.jpeg"),
+            //   fit: BoxFit.cover,
+            // ),
           ),
           child: Form(
               key: _formKey,

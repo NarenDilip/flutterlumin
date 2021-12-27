@@ -37,20 +37,20 @@ class HomeState extends State<Home> {
             ),
           ),
           //this is the code for the widget container that comes from behind the floating action button (FAB)
-          // Align(
-          //   alignment: FractionalOffset.bottomRight,
-          //   child: AnimatedContainer(
-          //     duration: Duration(milliseconds: 250),
-          //     //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
-          //     height:
-          //     clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
-          //     width: clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
-          //     decoration: BoxDecoration(
-          //         borderRadius:
-          //         BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
-          //         color: Colors.blue),
-          //   ),
-          // )
+          Align(
+            alignment: FractionalOffset.bottomRight,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 250),
+              //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
+              height:
+              clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
+              width: clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
+              decoration: BoxDecoration(
+                  borderRadius:
+                  BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                  color: Colors.white),
+            ),
+          )
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked, //specify the location of the FAB
@@ -67,17 +67,18 @@ class HomeState extends State<Home> {
         ),
         elevation: 3.0,
       ),
+
       bottomNavigationBar: BottomAppBar(
         child: Container(
           margin: EdgeInsets.only(left: 12.0, right: 12.0),
           child: Row(
             mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               IconButton(
                 //update the bottom app bar view each time an item is clicked
                 onPressed: () {
-
+                  updateTabSelection(0, "dash");
                 },
                 iconSize: 40.0,
                 icon: Icon(
@@ -90,7 +91,7 @@ class HomeState extends State<Home> {
               ),
               IconButton(
                 onPressed: () {
-                  updateTabSelection(2, "test");
+                  updateTabSelection(1, "map");
                 },
                 iconSize: 40.0,
                 icon: Icon(
@@ -101,11 +102,7 @@ class HomeState extends State<Home> {
                 ),
               ),
               //to leave space in between the bottom app bar items and below the FAB
-              SizedBox(
-                width: 50.0,
-              ),
               IconButton(
-
                 onPressed: () {
                   updateTabSelection(2, "Incoming");
                 },
