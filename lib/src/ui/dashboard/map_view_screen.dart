@@ -94,14 +94,15 @@ class map_view_screen_state extends State<map_view_screen> {
                         ],
                       ),
                     ),
-                    Expanded(
-                        child: GoogleMap(
-                      mapType: MapType.hybrid,
-                      initialCameraPosition: _kGooglePlex,
-                      onMapCreated: (GoogleMapController controller) {
-                        _controller.complete(controller);
-                      },
-                    )),
+                    // Expanded(
+                    //     child: GoogleMap(
+                    //   mapType: MapType.hybrid,
+                    //   initialCameraPosition: _kGooglePlex,
+                    //   onMapCreated: (GoogleMapController controller) {
+                    //     _controller.complete(controller);
+                    //   },
+                    // )
+                    // ),
                   ],
                 )))));
   }
