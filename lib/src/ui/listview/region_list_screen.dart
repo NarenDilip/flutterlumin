@@ -88,7 +88,7 @@ class _region_list_State extends State<region_list_Page> {
             TextButton(
               child: Text('YES', style: TextStyle(color: Colors.red)),
               onPressed: () {
-                SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
               },
             ),
           ],

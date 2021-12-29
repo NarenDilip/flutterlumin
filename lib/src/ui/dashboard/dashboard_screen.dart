@@ -18,6 +18,8 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home_screen.dart';
 
@@ -31,6 +33,9 @@ class dashboard_screen extends StatefulWidget {
 class dashboard_screenState extends State<dashboard_screen> {
   int _selectedIndex = 0;
   bool clickedCentreFAB = false;
+  @override
+  // TODO: implement context
+  BuildContext get context => super.context;
 
   final List<Widget> _widgetOptions = <Widget>[
     device_count_screen(),
@@ -89,17 +94,6 @@ class dashboard_screenState extends State<dashboard_screen> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         items: const [
-          // BottomNavigationBarItem(
-          //   icon: Icon(
-          //     Icons.qr_code,
-          //     color: Colors.grey,
-          //   ),
-          //   title: Text('QR Scan'),
-          //   activeIcon: Icon(
-          //     Icons.qr_code,
-          //     color: Colors.purple,
-          //   ),
-          // ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.analytics,
@@ -217,7 +211,7 @@ Future<Device?> fetchDeviceDetails(
           Navigator.pop(context);
         }
       } catch (e) {
-        var message = toThingsboardError(e).message;
+        var message = toThingsboardError(e,context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
@@ -266,6 +260,24 @@ Future<Device?> fetchSmartDeviceDetails(
         var relationDetails = await tbClient
             .getEntityRelationService()
             .findInfoByTo(response.id!);
+
+        List<String> myList = [];
+        myList.add("lampWatts");
+        myList.add("active");
+
+        List<BaseAttributeKvEntry> responser;
+
+        responser = (await tbClient.getAttributeService().getAttributeKvEntries(
+            response.id!, myList)) as List<BaseAttributeKvEntry>;
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        prefs.setString('deviceStatus', responser.first.kv.getValue().toString());
+        prefs.setString('deviceWatts', responser.last.kv.getValue().toString());
+
+        prefs.setString('deviceId', deviceid);
+        prefs.setString('deviceName', deviceName);
+
         if (relationDetails.length.toString() == "0") {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) => ilm_installation_screen()));
@@ -274,7 +286,7 @@ Future<Device?> fetchSmartDeviceDetails(
               builder: (BuildContext context) => MaintenanceScreen()));
         }
       } catch (e) {
-        var message = toThingsboardError(e).message;
+        var message = toThingsboardError(e,context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
@@ -305,52 +317,60 @@ Future<Device?> fetchSmartDeviceDetails(
   });
 }
 
-ThingsboardError toThingsboardError(error, [StackTrace? stackTrace]) {
+Future<ThingsboardError> toThingsboardError(error, context,[StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
-  if (error is DioError) {
-    if (error.response != null && error.response!.data != null) {
-      var data = error.response!.data;
-      if (data is ThingsboardError) {
-        tbError = data;
-      } else if (data is Map<String, dynamic>) {
-        tbError = ThingsboardError.fromJson(data);
-      } else if (data is String) {
-        try {
-          tbError = ThingsboardError.fromJson(jsonDecode(data));
-        } catch (_) {}
+  if(error.message == "Session expired!"){
+    var status = loginThingsboard.callThingsboardLogin(context);
+    if (status == true) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => dashboard_screen()));
+    }
+  }else {
+    if (error is DioError) {
+      if (error.response != null && error.response!.data != null) {
+        var data = error.response!.data;
+        if (data is ThingsboardError) {
+          tbError = data;
+        } else if (data is Map<String, dynamic>) {
+          tbError = ThingsboardError.fromJson(data);
+        } else if (data is String) {
+          try {
+            tbError = ThingsboardError.fromJson(jsonDecode(data));
+          } catch (_) {}
+        }
+      } else if (error.error != null) {
+        if (error.error is ThingsboardError) {
+          tbError = error.error;
+        } else if (error.error is SocketException) {
+          tbError = ThingsboardError(
+              error: error,
+              message: 'Unable to connect',
+              errorCode: ThingsBoardErrorCode.general);
+        } else {
+          tbError = ThingsboardError(
+              error: error,
+              message: error.error.toString(),
+              errorCode: ThingsBoardErrorCode.general);
+        }
       }
-    } else if (error.error != null) {
-      if (error.error is ThingsboardError) {
-        tbError = error.error;
-      } else if (error.error is SocketException) {
+      if (tbError == null &&
+          error.response != null &&
+          error.response!.statusCode != null) {
+        var httpStatus = error.response!.statusCode!;
+        var message = (httpStatus.toString() +
+            ': ' +
+            (error.response!.statusMessage != null
+                ? error.response!.statusMessage!
+                : 'Unknown'));
         tbError = ThingsboardError(
             error: error,
-            message: 'Unable to connect',
-            errorCode: ThingsBoardErrorCode.general);
-      } else {
-        tbError = ThingsboardError(
-            error: error,
-            message: error.error.toString(),
-            errorCode: ThingsBoardErrorCode.general);
+            message: message,
+            errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+            status: httpStatus);
       }
+    } else if (error is ThingsboardError) {
+      tbError = error;
     }
-    if (tbError == null &&
-        error.response != null &&
-        error.response!.statusCode != null) {
-      var httpStatus = error.response!.statusCode!;
-      var message = (httpStatus.toString() +
-          ': ' +
-          (error.response!.statusMessage != null
-              ? error.response!.statusMessage!
-              : 'Unknown'));
-      tbError = ThingsboardError(
-          error: error,
-          message: message,
-          errorCode: httpStatusToThingsboardErrorCode(httpStatus),
-          status: httpStatus);
-    }
-  } else if (error is ThingsboardError) {
-    tbError = error;
   }
   tbError ??= ThingsboardError(
       error: error,
@@ -369,3 +389,4 @@ ThingsboardError toThingsboardError(error, [StackTrace? stackTrace]) {
 
   return tbError;
 }
+

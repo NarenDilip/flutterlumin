@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/localdb/db_helper.dart';
+import 'package:flutterlumin/src/localdb/model/region_model.dart';
 import 'package:flutterlumin/src/models/loginrequester.dart';
+import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
+import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
@@ -20,6 +26,14 @@ class login_screen extends StatefulWidget {
 }
 
 class login_screenState extends State<login_screen> {
+  late DBHelper dbHelper;
+
+  @override
+  void initState() {
+    super.initState();
+    dbHelper = DBHelper();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: LoginForm());
@@ -49,11 +63,11 @@ class LoginForm extends StatelessWidget {
           height: size.height,
           width: double.infinity,
           decoration: const BoxDecoration(
-            // image: DecorationImage(
-            //   image: AssetImage("assets/icons/background_img.jpeg"),
-            //   fit: BoxFit.cover,
-            // ),
-          ),
+              // image: DecorationImage(
+              //   image: AssetImage("assets/icons/background_img.jpeg"),
+              //   fit: BoxFit.cover,
+              // ),
+              ),
           child: Form(
               key: _formKey,
               child: Column(
@@ -134,9 +148,10 @@ class LoginForm extends StatelessWidget {
           var status = await login_thingsboard.callThingsboardLogin(
               context, user.username, user.password);
           if (status == true) {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
-          }else{
+            callRegionDetails(context);
+            // Navigator.of(context).pushReplacement(MaterialPageRoute(
+            //     builder: (BuildContext context) => dashboard_screen()));
+          } else {
             Navigator.pop(context);
             Fluttertoast.showToast(
                 msg: "Please check Username and Password, Invalid Credentials",
@@ -158,6 +173,42 @@ class LoginForm extends StatelessWidget {
               textColor: Colors.black,
               fontSize: 16.0);
         }
+      }
+    });
+  }
+
+  void callRegionDetails(BuildContext context) {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+
+        // final jsonData = '{"region"}';
+        // final parsedJson = jsonDecode(jsonData);
+
+        Map<String, dynamic> _portaInfoMap = {
+          "type": ["region"],
+        };
+
+        PageLink pageLink = new PageLink(100);
+        pageLink.page = 0;
+        pageLink.pageSize = 100;
+
+        PageData<Asset> response;
+        response = (await tbClient
+            .getAssetService()
+            .getRegionTenantAssets(pageLink));
+        DBHelper dbHelper = new DBHelper();
+        if (response.totalElements != 0) {
+          for (int i = 0; i < response.data.length; i++) {
+            String id = response.data.elementAt(i).id!.id.toString();
+            String name = response.data.elementAt(i).name.toString();
+            Region region = new Region(1, id, name);
+            dbHelper.add(region);
+          }
+        }
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
       }
     });
   }
