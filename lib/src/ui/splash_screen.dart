@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
-import 'package:flutterlumin/src/ui/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login/login_screen.dart';

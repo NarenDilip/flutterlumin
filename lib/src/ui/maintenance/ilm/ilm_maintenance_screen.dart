@@ -9,6 +9,9 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
+import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
+import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/login_screen.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
@@ -32,20 +35,36 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String Lampwatts = "0";
   String DeviceName = "0";
   String DeviceStatus = "0";
+  String SelectedRegion = "0";
+  String SelectedZone = "0";
+  String SelectedWard = "0";
 
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    loadDetails();
+
+  Future<Null> getSharedPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Lampwatts = prefs.getString('deviceWatts').toString();
+    DeviceName = prefs.getString('deviceName').toString();
+    DeviceStatus = prefs.getString('deviceStatus').toString();
+    SelectedRegion = prefs.getString("SelectedRegion").toString();
+    SelectedZone = prefs.getString("SelectedZone").toString();
+    SelectedWard = prefs.getString("SelectedWard").toString();
+    setState(() {
+      Lampwatts = Lampwatts;
+      DeviceName = DeviceName;
+      DeviceStatus = DeviceStatus;
+      SelectedRegion = SelectedRegion;
+      SelectedZone = SelectedZone;
+      SelectedWard = SelectedWard;
+    });
   }
 
-  void loadDetails() async {
-    setState(() async {
-      var sharedPreferences = await SharedPreferences.getInstance();
-      Lampwatts = sharedPreferences.getString('deviceWatts').toString();
-      DeviceName = sharedPreferences.getString('deviceName').toString();
-      DeviceStatus = sharedPreferences.getString('deviceStatus').toString();
-    });
+  @override
+  void initState() {
+    super.initState();
+    Lampwatts = "";
+    DeviceName = "";
+    DeviceStatus = "";
+    getSharedPrefs();
   }
 
   void toggle() {
@@ -71,52 +90,91 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     double width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Container(
-          color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(15, 80, 15, 0),
+          padding: EdgeInsets.fromLTRB(15, 60, 15, 0),
+          decoration: const BoxDecoration(
+              color: btnLightbluColor,
+              borderRadius: BorderRadius.all(Radius.circular(35.0))),
+          alignment: Alignment.center,
           child: Column(
             children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(15, 50, 15, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 10),
-                    Expanded(
-                        child: DropdownButtonField(
-                            dropdownValue: dropDownValue,
-                            onChanged: (value) {
-                              setState(() {
-                                dropDownValue = value;
-                              });
-                            },
-                            spinnerItems: spinnerList)),
-                    SizedBox(
-                      width: 4,
-                    ),
-                    Expanded(
-                        child: DropdownButtonField(
-                            dropdownValue: dropDownValue,
-                            onChanged: (value) {
-                              setState(() {
-                                dropDownValue = value;
-                              });
-                            },
-                            spinnerItems: spinnerList)),
-                    SizedBox(
-                      width: 4,
-                    ),
-                    Expanded(
-                        child: DropdownButtonField(
-                            dropdownValue: dropDownValue,
-                            onChanged: (value) {
-                              setState(() {
-                                dropDownValue = value;
-                              });
-                            },
-                            spinnerItems: spinnerList)),
-                  ],
-                ),
-              ),
+              Container(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          TextButton(
+                              child: Text('$SelectedRegion',
+                                  style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black)),
+                              style: ButtonStyle(
+                                  padding: MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
+                                  backgroundColor:
+                                  MaterialStateProperty.all(Colors.white),
+                                  foregroundColor: MaterialStateProperty.all<Color>(
+                                      Colors.black),
+                                  shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18.0),
+                                      ))),
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        region_list_screen()));
+                              }),
+                          SizedBox(width: 5),
+                          TextButton(
+                              child: Text('$SelectedZone',
+                                  style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black)),
+                              style: ButtonStyle(
+                                  padding: MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
+                                  backgroundColor:
+                                  MaterialStateProperty.all(Colors.white),
+                                  shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18.0),
+                                      ))),
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        zone_li_screen()));
+                              }),
+                          SizedBox(width: 5),
+                          TextButton(
+                              child: Text('$SelectedWard',
+                                  style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black)),
+                              style: ButtonStyle(
+                                  padding: MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
+                                  backgroundColor:
+                                  MaterialStateProperty.all(Colors.white),
+                                  shape: MaterialStateProperty.all<
+                                      RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18.0),
+                                      ))),
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        ward_li_screen()));
+                              })
+                        ]),
+                  )),
               const SizedBox(
                 height: 25,
               ),
@@ -229,7 +287,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                         child: Container(
                           height: 100,
                           decoration: const BoxDecoration(
-                              color: Color.fromARGB(34, 255, 59, 59),
+                              color: Colors.orange,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0))),
                           child: const Center(
@@ -273,7 +331,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                           alignment: Alignment.center,
                           height: 100,
                           decoration: const BoxDecoration(
-                              color: Color.fromARGB(34, 255, 59, 59),
+                              color: Colors.deepOrange,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50.0))),
                           child: Text('Shorting CAP',

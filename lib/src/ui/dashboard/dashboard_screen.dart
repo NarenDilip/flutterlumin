@@ -21,7 +21,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../home_screen.dart';
 
 class dashboard_screen extends StatefulWidget {
 
@@ -89,8 +88,9 @@ class dashboard_screenState extends State<dashboard_screen> {
         ),
         elevation: 3.0,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black12,
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: pistagreen,
         currentIndex: _selectedIndex,
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -98,12 +98,12 @@ class dashboard_screenState extends State<dashboard_screen> {
           BottomNavigationBarItem(
             icon: Icon(
               Icons.analytics,
-              color: Colors.grey,
+              color: Colors.black,
             ),
             title: Text('Dashboard'),
             activeIcon: Icon(
               Icons.analytics,
-              color: Colors.purple,
+              color: Colors.white,
             ),
           ),
           BottomNavigationBarItem(

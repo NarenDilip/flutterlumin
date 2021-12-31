@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/ui/components/dropdown_button_field.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 
 class map_view_screen extends StatefulWidget {
   @override
@@ -24,79 +24,39 @@ class map_view_screen_state extends State<map_view_screen> {
   final Completer<GoogleMapController> _controller = Completer();
 
   static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.00
-  );
+      target: LatLng(37.42796133580664, -122.085749655962), zoom: 14.00);
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        body: Scaffold(
-            body: Container(
-                height: size.height,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage("assets/icons/background_img.jpeg"),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Container(
-                    child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                              child: DropdownButtonField(
-                                  dropdownValue: dropDownValue,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      dropDownValue = value;
-                                    });
-                                  },
-                                  spinnerItems: spinnerList)),
-                          SizedBox(
-                            width: 4,
-                          ),
-                          Expanded(
-                              child: DropdownButtonField(
-                                  dropdownValue: dropDownValue,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      dropDownValue = value;
-                                    });
-                                  },
-                                  spinnerItems: spinnerList)),
-                          SizedBox(
-                            width: 4,
-                          ),
-                          Expanded(
-                              child: DropdownButtonField(
-                                  dropdownValue: dropDownValue,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      dropDownValue = value;
-                                    });
-                                  },
-                                  spinnerItems: spinnerList)),
-                        ],
-                      ),
-                    ),
-                    // Expanded(
-                    //     child: GoogleMap(
-                    //   mapType: MapType.hybrid,
-                    //   initialCameraPosition: _kGooglePlex,
-                    //   onMapCreated: (GoogleMapController controller) {
-                    //     _controller.complete(controller);
-                    //   },
-                    // )
-                    // ),
-                  ],
-                )))));
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
+        body: Container(
+            color: lightorange,
+            child: Column(children: [
+          Container(
+            height: 100,
+            decoration: const BoxDecoration(
+                color: lightorange,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(0.0),
+                    topRight: Radius.circular(0.0),
+                    bottomLeft: Radius.circular(0.0),
+                    bottomRight: Radius.circular(0.0))),
+          ),
+          Expanded(
+              child: Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(35.0),
+                          topRight: Radius.circular(35.0),
+                          bottomLeft: Radius.circular(0.0),
+                          bottomRight: Radius.circular(0.0))),
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[SizedBox(height: 25), Container()])))
+        ])));
   }
-
 }
