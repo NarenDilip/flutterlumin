@@ -65,6 +65,28 @@ class AssetService {
     return _tbClient.compute(parseAssetPageData, response.data!);
   }
 
+  Future<PageData<Asset>> getZoneTenantAssets(PageLink pageLink,
+      {String type = 'zone', RequestConfig? requestConfig}) async {
+    var queryParams = pageLink.toQueryParameters();
+    queryParams['type'] = type;
+    var response = await _tbClient.get<Map<String, dynamic>>(
+        '/api/tenant/assets',
+        queryParameters: queryParams,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return _tbClient.compute(parseAssetPageData, response.data!);
+  }
+
+  Future<PageData<Asset>> getWardTenantAssets(PageLink pageLink,
+      {String type = 'ward', RequestConfig? requestConfig}) async {
+    var queryParams = pageLink.toQueryParameters();
+    queryParams['type'] = type;
+    var response = await _tbClient.get<Map<String, dynamic>>(
+        '/api/tenant/assets',
+        queryParameters: queryParams,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return _tbClient.compute(parseAssetPageData, response.data!);
+  }
+
   Future<Asset?> getTenantAsset(String assetName,
       {RequestConfig? requestConfig}) async {
     return nullIfNotFound(

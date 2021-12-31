@@ -11,7 +11,7 @@ import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
-import 'package:flutterlumin/src/ui/device_count_screen.dart';
+import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/installation/ilm/ilm_installation_screen.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
@@ -24,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../home_screen.dart';
 
 class dashboard_screen extends StatefulWidget {
+
   @override
   State<StatefulWidget> createState() {
     return dashboard_screenState();

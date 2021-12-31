@@ -8,7 +8,7 @@ import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
-import 'package:flutterlumin/src/ui/device_count_screen.dart';
+import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/login/login_screen.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
@@ -40,10 +40,12 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   void loadDetails() async {
-    var sharedPreferences = await SharedPreferences.getInstance();
-    Lampwatts = sharedPreferences.getString('deviceWatts').toString();
-    DeviceName = sharedPreferences.getString('deviceName').toString();
-    DeviceStatus = sharedPreferences.getString('deviceStatus').toString();
+    setState(() async {
+      var sharedPreferences = await SharedPreferences.getInstance();
+      Lampwatts = sharedPreferences.getString('deviceWatts').toString();
+      DeviceName = sharedPreferences.getString('deviceName').toString();
+      DeviceStatus = sharedPreferences.getString('deviceStatus').toString();
+    });
   }
 
   void toggle() {
@@ -508,9 +510,7 @@ Future<void> replaceILM(context) async {
           context,
           MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
           (route) => true).then((value) async {
-        if (value != null) {
-
-        }
+        if (value != null) {}
       });
     } else {
       Fluttertoast.showToast(

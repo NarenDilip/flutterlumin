@@ -1,7 +1,7 @@
 class Region {
-  late int id;
-  late String regionid;
-  late String regionname;
+  int? id;
+  String? regionid;
+  String? regionname;
 
   Region(
   this.id,

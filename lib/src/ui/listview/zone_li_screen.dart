@@ -2,49 +2,61 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
-import 'package:flutterlumin/src/localdb/model/region_model.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/localdb/model/zone_model.dart';
+import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class region_list_screen extends StatefulWidget {
+class zone_li_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return region_list_screen_state();
+    return zone_li_screen_state();
   }
 }
 
-class region_list_screen_state extends State<region_list_screen> {
+class zone_li_screen_state extends State<zone_li_screen> {
 
   // return Scaffold(body: regionListview());
   List<String>? _allUsers = [];
   List<String>? _foundUsers = [];
+  String selectedRegion = "0";
   String selectedZone = "0";
 
   @override
   initState() {
     // at the beginning, all users are shown
-    DBHelper dbHelper = DBHelper();
-    Future<List<Region>> regions;
-    regions = dbHelper.getDetails();
-
-    regions.then((data) {
-      for (int i = 0; i < data.length; i++) {
-        String regionname = data[i].regionname.toString();
-        _allUsers?.add(regionname);
-      }
-      setState(() {
-        _foundUsers = _allUsers! ;
-      });
-    }, onError: (e) {
-      print(e);
-    });
-
     loadDetails();
   }
 
   void loadDetails() async {
+    DBHelper dbHelper = DBHelper();
+    Future<List<Zone>> zones;
+
+    var sharedPreferences = await SharedPreferences.getInstance();
+    selectedRegion = sharedPreferences.getString("SelectedRegion").toString();
+
+    if(selectedRegion  != "0") {
+      zones = dbHelper.zone_regionbasedDetails(selectedRegion);
+      zones.then((data) {
+        for (int i = 0; i < data.length; i++) {
+          String regionname = data[i].zonename.toString();
+          _allUsers?.add(regionname);
+        }
+        setState(() {
+          _foundUsers = _allUsers! ;
+        });
+      }, onError: (e) {
+        print(e);
+      });
+    }
+
+    // setState(() {
+    //   _foundUsers = _allUsers! ;
+    // });
+  }
+
+  loadLocalData() async {
     var sharedPreferences = await SharedPreferences.getInstance() as SharedPreferences;
-    sharedPreferences.setString("SelectedRegion",selectedZone);
+    sharedPreferences.setString("SelectedZone",selectedZone);
   }
 
   void _runFilter(String enteredKeyword) {
@@ -70,31 +82,31 @@ class region_list_screen_state extends State<region_list_screen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        // onWillPop: () async {
-        //   final result = await showDialog(
-        //     context: context,
-        //     builder: (ctx) =>
-        //         AlertDialog(
-        //           title: Text("Luminator"),
-        //           content: Text("Are you sure you want to exit?"),
-        //           actions: <Widget>[
-        //             TextButton(
-        //               onPressed: () {
-        //                 Navigator.of(ctx).pop();
-        //               },
-        //               child: Text("NO"),
-        //             ),
-        //             TextButton(
-        //               child: Text('YES', style: TextStyle(color: Colors.red)),
-        //               onPressed: () {
-        //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        //               },
-        //             ),
-        //           ],
-        //         ),
-        //   );
-        //   return result;
-        // },
+      // onWillPop: () async {
+      //   final result = await showDialog(
+      //     context: context,
+      //     builder: (ctx) =>
+      //         AlertDialog(
+      //           title: Text("Luminator"),
+      //           content: Text("Are you sure you want to exit?"),
+      //           actions: <Widget>[
+      //             TextButton(
+      //               onPressed: () {
+      //                 Navigator.of(ctx).pop();
+      //               },
+      //               child: Text("NO"),
+      //             ),
+      //             TextButton(
+      //               child: Text('YES', style: TextStyle(color: Colors.red)),
+      //               onPressed: () {
+      //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+      //               },
+      //             ),
+      //           ],
+      //         ),
+      //   );
+      //   return result;
+      // },
         child: Scaffold(
           body: Padding(
             padding: const EdgeInsets.all(30),
@@ -104,7 +116,7 @@ class region_list_screen_state extends State<region_list_screen> {
                   height: 20,
                 ),
                 const Text(
-                  "Select Regions",
+                  "Select Zone",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 25.0,
@@ -145,15 +157,16 @@ class region_list_screen_state extends State<region_list_screen> {
                             //       color: Colors.black),
                             // ),
                             onTap: () {
+
                               setState(() {
                                 selectedZone = _foundUsers!.elementAt(index).toString();
-                                loadDetails();
+                                loadLocalData();
                               });
 
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          zone_li_screen()));
+                                          ward_li_screen()));
                             },
                             title: Text(_foundUsers!.elementAt(index),
                                 style: const TextStyle(

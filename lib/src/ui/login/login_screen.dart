@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
+import 'package:flutterlumin/src/localdb/model/ward_model.dart';
+import 'package:flutterlumin/src/localdb/model/zone_model.dart';
 import 'package:flutterlumin/src/models/loginrequester.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
@@ -194,19 +196,52 @@ class LoginForm extends StatelessWidget {
         pageLink.page = 0;
         pageLink.pageSize = 100;
 
-        PageData<Asset> response;
-        response = (await tbClient
+        DBHelper dbHelper = new DBHelper();
+
+        PageData<Asset> region_response;
+        region_response = (await tbClient
             .getAssetService()
             .getRegionTenantAssets(pageLink));
-        DBHelper dbHelper = new DBHelper();
-        if (response.totalElements != 0) {
-          for (int i = 0; i < response.data.length; i++) {
-            String id = response.data.elementAt(i).id!.id.toString();
-            String name = response.data.elementAt(i).name.toString();
-            Region region = new Region(1, id, name);
+
+        if (region_response.totalElements != 0) {
+          for (int i = 0; i < region_response.data.length; i++) {
+            String id = region_response.data.elementAt(i).id!.id.toString();
+            String name = region_response.data.elementAt(i).name.toString();
+            Region region = new Region(i, id, name);
             dbHelper.add(region);
           }
         }
+
+        PageData<Asset> zone_response;
+        zone_response = (await tbClient
+            .getAssetService()
+            .getZoneTenantAssets(pageLink));
+
+        if (zone_response.totalElements != 0) {
+          for (int i = 0; i < zone_response.data.length; i++) {
+            String id = zone_response.data.elementAt(i).id!.id.toString();
+            String name = zone_response.data.elementAt(i).name.toString();
+            var regionname = name.split("-");
+            Zone zone = new Zone(i, id, name,regionname[0].toString());
+            dbHelper.zone_add(zone);
+          }
+        }
+
+        PageData<Asset> ward_response;
+        ward_response = (await tbClient
+            .getAssetService()
+            .getWardTenantAssets(pageLink));
+
+        if (ward_response.totalElements != 0) {
+          for (int i = 0; i < ward_response.data.length; i++) {
+            String id = ward_response.data.elementAt(i).id!.id.toString();
+            String name = ward_response.data.elementAt(i).name.toString();
+            var regionname = name.split("-");
+            Ward ward = new Ward(i, id, name,regionname[0].toString(),regionname[0].toString()+"-"+regionname[1].toString());
+            dbHelper.ward_add(ward);
+          }
+        }
+
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen()));
       }
