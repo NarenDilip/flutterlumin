@@ -241,7 +241,7 @@ class LoginForm extends StatelessWidget {
             dbHelper.ward_add(ward);
           }
         }
-
+        Navigator.pop(context);
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen()));
       }

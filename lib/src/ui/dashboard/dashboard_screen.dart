@@ -99,37 +99,39 @@ class dashboard_screenState extends State<dashboard_screen> {
             icon: Icon(
               Icons.analytics,
               color: Colors.black,
+              size: 45,
             ),
             title: Text('Dashboard'),
             activeIcon: Icon(
               Icons.analytics,
-              color: Colors.white,
+              color: Colors.green,
+              size: 45,
             ),
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.map,
               color: Colors.grey,
-              size: 36,
+              size: 45,
             ),
             title: Text('Map View'),
             activeIcon: Icon(
               Icons.map,
-              color: Colors.purple,
-              size: 36,
+              color: Colors.green,
+              size: 45,
             ),
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.list,
               color: Colors.grey,
-              size: 36,
+              size: 45,
             ),
             title: Text('Device List'),
             activeIcon: Icon(
               Icons.list,
-              color: Colors.purple,
-              size: 36,
+              color: Colors.green,
+              size: 45,
             ),
           ),
         ],
@@ -275,6 +277,7 @@ Future<Device?> fetchSmartDeviceDetails(
 
         prefs.setString('deviceStatus', responser.first.kv.getValue().toString());
         prefs.setString('deviceWatts', responser.last.kv.getValue().toString());
+        prefs.setString('devicetimeStamp', responser.first.lastUpdateTs.toString());
 
         prefs.setString('deviceId', deviceid);
         prefs.setString('deviceName', deviceName);

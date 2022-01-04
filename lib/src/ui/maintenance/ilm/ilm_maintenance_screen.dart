@@ -1,22 +1,25 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
-import 'package:flutterlumin/src/ui/login/login_screen.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 import '../../../utils/colors.dart';
 import '../../components/dropdown_button_field.dart';
@@ -38,7 +41,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
-
+  String timevalue = "0";
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -48,6 +51,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     SelectedRegion = prefs.getString("SelectedRegion").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
+    timevalue = prefs.getString("devicetimeStamp").toString();
+
     setState(() {
       Lampwatts = Lampwatts;
       DeviceName = DeviceName;
@@ -55,6 +60,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       SelectedRegion = SelectedRegion;
       SelectedZone = SelectedZone;
       SelectedWard = SelectedWard;
+      timevalue = timevalue;
     });
   }
 
@@ -92,96 +98,96 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       body: Container(
           padding: EdgeInsets.fromLTRB(15, 60, 15, 0),
           decoration: const BoxDecoration(
-              color: btnLightbluColor,
+              color: liblue,
               borderRadius: BorderRadius.all(Radius.circular(35.0))),
           alignment: Alignment.center,
           child: Column(
             children: [
               Container(
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          TextButton(
-                              child: Text('$SelectedRegion',
-                                  style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black)),
-                              style: ButtonStyle(
-                                  padding: MaterialStateProperty.all<EdgeInsets>(
-                                      EdgeInsets.all(20)),
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Colors.white),
-                                  foregroundColor: MaterialStateProperty.all<Color>(
-                                      Colors.black),
-                                  shape: MaterialStateProperty.all<
+                padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                          child: Text('$SelectedRegion',
+                              style: const TextStyle(
+                                  fontSize: 18.0,
+                                  fontFamily: "Montserrat",
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+                          style: ButtonStyle(
+                              padding: MaterialStateProperty.all<EdgeInsets>(
+                                  EdgeInsets.all(20)),
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.lightBlue),
+                              foregroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.black),
+                              shape: MaterialStateProperty.all<
                                       RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18.0),
-                                      ))),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        region_list_screen()));
-                              }),
-                          SizedBox(width: 5),
-                          TextButton(
-                              child: Text('$SelectedZone',
-                                  style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black)),
-                              style: ButtonStyle(
-                                  padding: MaterialStateProperty.all<EdgeInsets>(
-                                      EdgeInsets.all(20)),
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Colors.white),
-                                  shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ))),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    region_list_screen()));
+                          }),
+                      SizedBox(width: 5),
+                      TextButton(
+                          child: Text('$SelectedZone',
+                              style: const TextStyle(
+                                  fontSize: 18.0,
+                                  fontFamily: "Montserrat",
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+                          style: ButtonStyle(
+                              padding: MaterialStateProperty.all<EdgeInsets>(
+                                  EdgeInsets.all(20)),
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.lightBlue),
+                              shape: MaterialStateProperty.all<
                                       RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18.0),
-                                      ))),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        zone_li_screen()));
-                              }),
-                          SizedBox(width: 5),
-                          TextButton(
-                              child: Text('$SelectedWard',
-                                  style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black)),
-                              style: ButtonStyle(
-                                  padding: MaterialStateProperty.all<EdgeInsets>(
-                                      EdgeInsets.all(20)),
-                                  backgroundColor:
-                                  MaterialStateProperty.all(Colors.white),
-                                  shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ))),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    zone_li_screen()));
+                          }),
+                      SizedBox(width: 5),
+                      TextButton(
+                          child: Text('$SelectedWard',
+                              style: const TextStyle(
+                                  fontSize: 18.0,
+                                  fontFamily: "Montserrat",
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
+                          style: ButtonStyle(
+                              padding: MaterialStateProperty.all<EdgeInsets>(
+                                  EdgeInsets.all(20)),
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.lightBlue),
+                              shape: MaterialStateProperty.all<
                                       RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18.0),
-                                      ))),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        ward_li_screen()));
-                              })
-                        ]),
-                  )),
+                                  RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ))),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    ward_li_screen()));
+                          })
+                    ]),
+              )),
               const SizedBox(
                 height: 25,
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(15, 00, 15, 0),
                 decoration: const BoxDecoration(
-                    color: Colors.black12,
+                    color: Colors.white,
                     borderRadius: BorderRadius.all(Radius.circular(35.0))),
                 child: Column(
                   children: [
@@ -195,7 +201,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               alignment: Alignment.center,
                               height: 50,
                               decoration: const BoxDecoration(
-                                  color: Colors.white,
+                                  color: liblue,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(25.0))),
                               child: Text(
@@ -261,7 +267,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               color: Colors.black,
                               splashColor: Colors.purple,
                               onPressed: () {
-                                showDialog(context);
+                                showDialog(context,timevalue);
                               },
                             ),
                           ),
@@ -293,7 +299,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                           child: const Center(
                             child: Text('GET LIVE',
                                 style: TextStyle(
-                                    fontSize: 18, fontFamily: "Montserrat")),
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontFamily: "Montserrat")),
                           ),
                         ),
                         onTap: () {
@@ -336,7 +344,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                   BorderRadius.all(Radius.circular(50.0))),
                           child: Text('Shorting CAP',
                               style: TextStyle(
-                                  fontSize: 18, fontFamily: "Montserrat")),
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontFamily: "Montserrat")),
                         ),
                         onTap: () {
                           replaceShortingCap(context);
@@ -358,7 +368,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                             child: const Text('ILM',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    fontSize: 18, fontFamily: "Montserrat")),
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontFamily: "Montserrat")),
                           ),
                           onTap: () {
                             replaceILM(context);
@@ -568,8 +580,97 @@ Future<void> replaceILM(context) async {
           context,
           MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
           (route) => true).then((value) async {
-        if (value != null) {}
+        if (value != null) {
+          if (OlddeviceName.toString() != value.toString()) {
+            late Future<Device?> entityFuture;
+            Utility.progressDialog(context);
+            entityFuture =
+                ilm_main_fetchDeviceDetails(OlddeviceName, value, context);
+          } else {}
+        } else {
+          Fluttertoast.showToast(
+              msg: "Invalid QR Code",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+        }
       });
+    } else {
+      Fluttertoast.showToast(
+          msg: no_network,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    }
+  });
+}
+
+@override
+Future<Device?> ilm_main_fetchDeviceDetails(
+    String OlddeviceName, String deviceName, BuildContext context) async {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      try {
+        Device response;
+        Future<List<EntityGroupInfo>> deviceResponse;
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+        response = await tbClient.getDeviceService().getTenantDevice(deviceName)
+            as Device;
+        if (response.name.isNotEmpty) {
+          if (response.type == ilm_deviceType) {
+            ilm_main_fetchSmartDeviceDetails(
+                OlddeviceName, deviceName, response.id!.id.toString(), context);
+          } else if (response.type == ccms_deviceType) {
+          } else if (response.type == Gw_deviceType) {
+          } else {
+            Fluttertoast.showToast(
+                msg: "Device Details Not Found",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+            Navigator.pop(context);
+          }
+        } else {
+          Fluttertoast.showToast(
+              msg: device_toast_msg + deviceName + device_toast_notfound,
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        Navigator.pop(context);
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+          if (status == true) {
+            ilm_main_fetchDeviceDetails(OlddeviceName, deviceName, context);
+          }
+        } else {
+          Fluttertoast.showToast(
+              msg: device_toast_msg + deviceName + device_toast_notfound,
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+          Navigator.pop(context);
+        }
+      }
     } else {
       Fluttertoast.showToast(
           msg: no_network,
@@ -587,7 +688,217 @@ Future<void> replaceShortingCap(context) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String deviceID = prefs.getString('deviceId').toString();
   String deviceName = prefs.getString('deviceName').toString();
+
+  Utility.isConnected().then((value) async {
+    if (value) {
+      try {
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+
+        Device response;
+        response = (await tbClient
+            .getDeviceService()
+            .getTenantDevice(deviceName)) as Device;
+
+        var relation_response = await tbClient.getEntityRelationService().deleteRelations(response.id!);
+
+        Fluttertoast.showToast(
+            msg: "Succesfully ILM Replaced with shorting CAP",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+
+        Navigator.pop(context);
+        callDashboard(context);
+
+      } catch (e) {}
+    }
+  });
 }
+
+
+@override
+Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
+    String deviceName, String deviceid, BuildContext context) async {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      try {
+        Device response;
+        Future<List<EntityGroupInfo>> deviceResponse;
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+
+        response = (await tbClient
+            .getDeviceService()
+            .getTenantDevice(deviceName)) as Device;
+
+        var new_Device_Name = response.name;
+
+        var relationDetails = await tbClient
+            .getEntityRelationService()
+            .findInfoByTo(response.id!);
+
+        List<String> myList = [];
+        myList.add("lampWatts");
+        myList.add("active");
+
+        List<BaseAttributeKvEntry> responser;
+
+        responser = (await tbClient.getAttributeService().getAttributeKvEntries(
+            response.id!, myList)) as List<BaseAttributeKvEntry>;
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        prefs.setString(
+            'deviceStatus', responser.first.kv.getValue().toString());
+        prefs.setString('deviceWatts', responser.last.kv.getValue().toString());
+
+        prefs.setString('deviceId', deviceid);
+        prefs.setString('deviceName', deviceName);
+
+        DeviceCredentials? newdeviceCredentials;
+        DeviceCredentials? olddeviceCredentials;
+
+        if (relationDetails.length.toString() == "0") {
+          newdeviceCredentials = await tbClient
+                  .getDeviceService()
+                  .getDeviceCredentialsByDeviceId(response.id!.id.toString())
+              as DeviceCredentials;
+        } else {
+          // New Device Updations
+          newdeviceCredentials = await tbClient
+                  .getDeviceService()
+                  .getDeviceCredentialsByDeviceId(response.id!.id.toString())
+              as DeviceCredentials;
+          var newQRID = newdeviceCredentials.credentialsId.toString();
+
+          newdeviceCredentials.credentialsId = newQRID + "L";
+          var credresponse = await tbClient
+              .getDeviceService()
+              .saveDeviceCredentials(newdeviceCredentials);
+
+          response.name = deviceName + "99";
+          var devresponse =
+              await tbClient.getDeviceService().saveDevice(response);
+
+          // Old Device Updations
+
+          Device Olddevicedetails = null as Device;
+          Olddevicedetails = await tbClient
+              .getDeviceService()
+              .getTenantDevice(Olddevicename) as Device;
+
+          var Old_Device_Name = Olddevicedetails.name;
+
+          olddeviceCredentials = await tbClient
+              .getDeviceService()
+              .getDeviceCredentialsByDeviceId(
+                  Olddevicedetails.id!.id.toString()) as DeviceCredentials;
+          var oldQRID = olddeviceCredentials.credentialsId.toString();
+
+          olddeviceCredentials.credentialsId = oldQRID + "L";
+          var old_cred_response = await tbClient
+              .getDeviceService()
+              .saveDeviceCredentials(olddeviceCredentials);
+
+          Olddevicedetails.name = Olddevicename + "99";
+          var old_dev_response =
+              await tbClient.getDeviceService().saveDevice(Olddevicedetails);
+
+          olddeviceCredentials.credentialsId = newQRID;
+          var oldcredresponse = await tbClient
+              .getDeviceService()
+              .saveDeviceCredentials(olddeviceCredentials);
+
+          response.name = Old_Device_Name;
+          response.label = Old_Device_Name;
+          var olddevresponse =
+              await tbClient.getDeviceService().saveDevice(response);
+
+          final old_body_req = {
+            'boardNumber': Old_Device_Name,
+            'ieeeAddress': oldQRID,
+          };
+
+          var up_attribute = (await tbClient
+              .getAttributeService()
+              .saveDeviceAttributes(
+                  response.id!.id!, "SERVER_SCOPE", old_body_req));
+
+          // New Device Updations
+
+          Olddevicedetails.name = new_Device_Name;
+          Olddevicedetails.label = new_Device_Name;
+          var up_devresponse =
+              await tbClient.getDeviceService().saveDevice(Olddevicedetails);
+
+          newdeviceCredentials.credentialsId = oldQRID;
+          var up_credresponse = await tbClient
+              .getDeviceService()
+              .saveDeviceCredentials(newdeviceCredentials);
+
+          final new_body_req = {
+            'boardNumber': new_Device_Name,
+            'ieeeAddress': newQRID,
+          };
+
+          var up_newdevice_attribute = (await tbClient
+              .getAttributeService()
+              .saveDeviceAttributes(
+                  Olddevicedetails.id!.id!, "SERVER_SCOPE", new_body_req));
+
+          Fluttertoast.showToast(
+              msg: "ILM Replacement Completed",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+
+          Navigator.pop(context);
+          callDashboard(context);
+        }
+      } catch (e) {
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+          if (status == true) {
+            ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context);
+          }
+        } else {
+          Fluttertoast.showToast(
+              msg: device_toast_msg + deviceName + device_toast_notfound,
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+          Navigator.pop(context);
+        }
+      }
+    } else {
+      Fluttertoast.showToast(
+          msg: no_network,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    }
+  });
+}
+
+void callDashboard(context) {
+  Navigator.of(context).push(
+      MaterialPageRoute(builder: (BuildContext context) => dashboard_screen()));
+}
+
 
 Future<void> callDeviceCurrentStatus(context) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -595,7 +906,9 @@ Future<void> callDeviceCurrentStatus(context) async {
   String deviceName = prefs.getString('deviceName').toString();
 }
 
-void showDialog(context) {
+
+
+void showDialog(context,timevalue) {
   showGeneralDialog(
     barrierLabel: "Barrier",
     barrierDismissible: true,
@@ -613,9 +926,21 @@ void showDialog(context) {
             ),
             height: 300,
             padding: EdgeInsets.fromLTRB(20, 25, 20, 0),
-            child: Column(children: const <Widget>[
+            child: Column(children: [
               Text(
                 "Last Communication Date and Time",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 20.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Text(
+                '$timevalue',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 20.0,
@@ -633,4 +958,79 @@ void showDialog(context) {
       );
     },
   );
+}
+
+Future<ThingsboardError> toThingsboardError(error, context,
+    [StackTrace? stackTrace]) async {
+  ThingsboardError? tbError;
+  if (error.message == "Session expired!") {
+    Navigator.pop(context);
+    var status = loginThingsboard.callThingsboardLogin(context);
+    if (status == true) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => dashboard_screen()));
+    }
+  } else {
+    if (error is DioError) {
+      if (error.response != null && error.response!.data != null) {
+        var data = error.response!.data;
+        if (data is ThingsboardError) {
+          tbError = data;
+        } else if (data is Map<String, dynamic>) {
+          tbError = ThingsboardError.fromJson(data);
+        } else if (data is String) {
+          try {
+            tbError = ThingsboardError.fromJson(jsonDecode(data));
+          } catch (_) {}
+        }
+      } else if (error.error != null) {
+        if (error.error is ThingsboardError) {
+          tbError = error.error;
+        } else if (error.error is SocketException) {
+          tbError = ThingsboardError(
+              error: error,
+              message: 'Unable to connect',
+              errorCode: ThingsBoardErrorCode.general);
+        } else {
+          tbError = ThingsboardError(
+              error: error,
+              message: error.error.toString(),
+              errorCode: ThingsBoardErrorCode.general);
+        }
+      }
+      if (tbError == null &&
+          error.response != null &&
+          error.response!.statusCode != null) {
+        var httpStatus = error.response!.statusCode!;
+        var message = (httpStatus.toString() +
+            ': ' +
+            (error.response!.statusMessage != null
+                ? error.response!.statusMessage!
+                : 'Unknown'));
+        tbError = ThingsboardError(
+            error: error,
+            message: message,
+            errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+            status: httpStatus);
+      }
+    } else if (error is ThingsboardError) {
+      tbError = error;
+    }
+  }
+  tbError ??= ThingsboardError(
+      error: error,
+      message: error.toString(),
+      errorCode: ThingsBoardErrorCode.general);
+
+  var errorStackTrace;
+  if (tbError.error is Error) {
+    errorStackTrace = tbError.error.stackTrace;
+  }
+
+  tbError.stackTrace = stackTrace ??
+      tbError.getStackTrace() ??
+      errorStackTrace ??
+      StackTrace.current;
+
+  return tbError;
 }

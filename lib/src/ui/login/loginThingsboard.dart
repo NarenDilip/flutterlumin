@@ -19,14 +19,14 @@ class loginThingsboard {
         prefs.setString('smart_token', smartToken.token);
         prefs.setString('smart_refreshtoken', smartToken.refreshToken);
 
-        final prodToken =
-            await tbClient.login(LoginRequest(prod_Username, prod_Password));
-        if (prodToken.token != null) {
-          prefs.setString('prod_token', prodToken.token);
-          prefs.setString('prod_refreshtoken', prodToken.refreshToken);
-          Navigator.pop(context);
-          return true;
-        }
+        // final prodToken =
+        //     await tbClient.login(LoginRequest(prod_Username, prod_Password));
+        // if (prodToken.token != null) {
+        //   prefs.setString('prod_token', prodToken.token);
+        //   prefs.setString('prod_refreshtoken', prodToken.refreshToken);
+        //   Navigator.pop(context);
+        //   return true;
+        // }
       }
     } catch (e) {
       return false;

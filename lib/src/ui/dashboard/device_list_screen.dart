@@ -11,6 +11,7 @@ import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/components/dropdown_button_field.dart';
+import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
@@ -89,7 +90,38 @@ class device_list_screen_state extends State<device_list_screen> {
                         topRight: Radius.circular(0.0),
                         bottomLeft: Radius.circular(0.0),
                         bottomRight: Radius.circular(0.0))),
-              ),
+                child: Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                      child: Text(
+                          'Device List view',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 25.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue)
+                      ),
+                    ),
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      bottom: 0,
+                      child: IconButton(
+                        color: Colors.red,
+                        icon: Icon(
+                          Icons.close_rounded,
+                          size: 35,
+                        ),
+                        onPressed: () {
+                          callLogoutoption(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),),
               Expanded(
                   child: Container(
                       decoration: const BoxDecoration(
@@ -193,13 +225,12 @@ class device_list_screen_state extends State<device_list_screen> {
                               },
                               child: Container(
                                   decoration: BoxDecoration(
-                                      color: Colors.grey,
+                                      color: liorange,
                                       borderRadius: BorderRadius.circular(30)),
                                   child: Column(
                                     children: [
                                       Row(
                                         children: [
-
                                           Expanded(
                                               child: Padding(
                                                   padding: EdgeInsets.only(left: 12),
@@ -207,7 +238,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       style: TextStyle(
                                                           fontSize: 18.0,
                                                           fontFamily: "Montserrat",
-                                                          color: Colors.white)))),
+                                                          color: Colors.black)))),
                                           Expanded(
                                             child: Align(
                                               alignment: Alignment.centerRight,
@@ -231,12 +262,12 @@ class device_list_screen_state extends State<device_list_screen> {
                               child: Container(
                                 padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
                                 decoration: BoxDecoration(
-                                    color: Colors.grey,
+                                    color: liorange,
                                     borderRadius: BorderRadius.circular(30)),
                                 child: Column(
                                   children: [
                                     const SizedBox(
-                                      height: 10,
+                                      height: 15,
                                     ),
                                     rounded_input_field(
                                       hintText: "ILM Number",
@@ -252,22 +283,31 @@ class device_list_screen_state extends State<device_list_screen> {
                                       onSaved: (value) => user.ilmnumber = value!,
                                       onChanged: (String value) {
                                         user.ilmnumber = value;
+                                        setState(() {
+                                          _foundUsers!.clear();
+                                        });
                                       },
                                     ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        callILMDeviceListFinder(user.ilmnumber, context);
+                                    const SizedBox(height: 5),
+                                    rounded_button(
+                                      text: "Search",
+                                      color: Colors.green,
+                                      press: () {
+                                        if(user.ilmnumber.isNotEmpty) {
+                                          FocusScope.of(context).requestFocus(FocusNode());
+                                          callILMDeviceListFinder(
+                                              user.ilmnumber, context);
+                                        }else{
+                                          Fluttertoast.showToast(
+                                              msg: "Please Select Device",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              gravity: ToastGravity.BOTTOM,
+                                              timeInSecForIosWeb: 1);
+                                        }
                                       },
-                                      child: const Text('Search',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontSize: 20.0,
-                                              fontFamily: "Montserrat",
-                                              color: Colors.black)),
+                                      key: null,
                                     ),
+
                                     const SizedBox(
                                       height: 10,
                                     ),
@@ -281,7 +321,7 @@ class device_list_screen_state extends State<device_list_screen> {
                             ),
                             Container(
                                 decoration: BoxDecoration(
-                                    color: Colors.grey,
+                                    color: liorange,
                                     borderRadius: BorderRadius.circular(30)),
                                 child: Column(
                                   children: [
@@ -329,7 +369,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                     //       color: Colors.black),
                                     // ),
                                     onTap: () {
+
                                       fetchDeviceDetails(_foundUsers!.elementAt(index).toString(),context);
+                                      _foundUsers = null;
                                     },
                                     title: Text(_foundUsers!.elementAt(index),
                                         style: const TextStyle(
@@ -360,6 +402,7 @@ class device_list_screen_state extends State<device_list_screen> {
       String searchNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
+        Utility.progressDialog(context);
         try {
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -385,7 +428,11 @@ class device_list_screen_state extends State<device_list_screen> {
           setState(() {
             _foundUsers = _foundUsers;
           });
-        } catch (e) {}
+          Navigator.pop(context);
+        } catch (e) {
+          var message = toThingsboardError(e, context);
+          Navigator.pop(context);
+        }
       }
     });
   }
@@ -432,6 +479,7 @@ Future<Device?> fetchDeviceDetails(
           Navigator.pop(context);
         }
       } catch (e) {
+        Navigator.pop(context);
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -467,6 +515,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     [StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
   if (error.message == "Session expired!") {
+    Navigator.pop(context);
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -536,3 +585,9 @@ Future<ThingsboardError> toThingsboardError(error, context,
 
   return tbError;
 }
+
+
+void callLogoutoption(BuildContext context) {
+
+}
+

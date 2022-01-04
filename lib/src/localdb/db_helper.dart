@@ -127,6 +127,7 @@ class DBHelper {
     );
   }
 
+
   Future<int> update(Region region) async {
     var dbClient = await db;
     return await dbClient.update(
