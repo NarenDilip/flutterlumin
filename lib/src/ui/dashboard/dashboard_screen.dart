@@ -13,7 +13,6 @@ import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/installation/ilm/ilm_installation_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
@@ -21,9 +20,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
 class dashboard_screen extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() {
     return dashboard_screenState();
@@ -45,101 +44,135 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          _widgetOptions.elementAt(_selectedIndex),
-          // Align(
-          //   alignment: FractionalOffset.center,
-          //   //in this demo, only the button text is updated based on the bottom app bar clicks
-          //   child: RaisedButton(
-          //     // child: Text(""),
-          //     onPressed: () {},
-          //   ),
-          // ),
-          //this is the code for the widget container that comes from behind the floating action button (FAB)
-          Align(
-            alignment: FractionalOffset.bottomRight,
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 250),
-              //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
-              height:
-                  clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
-              width:
-                  clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
-              decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
-                  color: Colors.white),
-            ),
-          )
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      //specify the location of the FAB
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          deviceFetcher(context);
-        },
-        tooltip: "Centre FAB",
-        child: Container(
-          margin: EdgeInsets.all(15.0),
-          child: Icon(Icons.qr_code),
+    return WillPopScope(
+      onWillPop: () async {
+        final value = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                content: Text('Are you sure you want to exit?'),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('No'),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  FlatButton(
+                    child: Text('Yes, exit'),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                  ),
+                ],
+              );
+            }
+        );
+
+        return value == true;
+      },
+      child: Scaffold(
+        body: Stack(
+          children: <Widget>[
+            _widgetOptions.elementAt(_selectedIndex),
+            // Align(
+            //   alignment: FractionalOffset.center,
+            //   //in this demo, only the button text is updated based on the bottom app bar clicks
+            //   child: RaisedButton(
+            //     // child: Text(""),
+            //     onPressed: () {},
+            //   ),
+            // ),
+            //this is the code for the widget container that comes from behind the floating action button (FAB)
+            Align(
+              alignment: FractionalOffset.bottomRight,
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 250),
+                //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
+                height:
+                clickedCentreFAB ? MediaQuery
+                    .of(context)
+                    .size
+                    .height : 10.0,
+                width:
+                clickedCentreFAB ? MediaQuery
+                    .of(context)
+                    .size
+                    .height : 10.0,
+                decoration: BoxDecoration(
+                    borderRadius:
+                    BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                    color: Colors.white),
+              ),
+            )
+          ],
         ),
-        elevation: 3.0,
-      ),
-      backgroundColor: Colors.black12,
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: pistagreen,
-        currentIndex: _selectedIndex,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.analytics,
-              color: Colors.black,
-              size: 45,
-            ),
-            title: Text('Dashboard'),
-            activeIcon: Icon(
-              Icons.analytics,
-              color: Colors.green,
-              size: 45,
-            ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+        //specify the location of the FAB
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            deviceFetcher(context);
+          },
+          tooltip: "Centre FAB",
+          child: Container(
+            margin: EdgeInsets.all(15.0),
+            child: Icon(Icons.qr_code),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.map,
-              color: Colors.grey,
-              size: 45,
+          elevation: 3.0,
+        ),
+        backgroundColor: Colors.black12,
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: pistagreen,
+          currentIndex: _selectedIndex,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.analytics,
+                color: Colors.black,
+                size: 45,
+              ),
+              label: ('Dashboard'),
+              activeIcon: Icon(
+                Icons.analytics,
+                color: Colors.green,
+                size: 45,
+              ),
             ),
-            title: Text('Map View'),
-            activeIcon: Icon(
-              Icons.map,
-              color: Colors.green,
-              size: 45,
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.map,
+                color: Colors.grey,
+                size: 45,
+              ),
+              label: ('Map View'),
+              activeIcon: Icon(
+                Icons.map,
+                color: Colors.green,
+                size: 45,
+              ),
             ),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.list,
-              color: Colors.grey,
-              size: 45,
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.list,
+                color: Colors.grey,
+                size: 45,
+              ),
+              label: ('Device List'),
+              activeIcon: Icon(
+                Icons.list,
+                color: Colors.green,
+                size: 45,
+              ),
             ),
-            title: Text('Device List'),
-            activeIcon: Icon(
-              Icons.list,
-              color: Colors.green,
-              size: 45,
-            ),
-          ),
-        ],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+          ],
+          onTap: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+        ),
       ),
     );
   }
@@ -151,7 +184,7 @@ Future<void> deviceFetcher(BuildContext context) async {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-          (route) => true).then((value) async {
+              (route) => true).then((value) async {
         if (value != null) {
           // if (value.toString().length == 6) {
           late Future<Device?> entityFuture;
@@ -168,14 +201,15 @@ Future<void> deviceFetcher(BuildContext context) async {
           backgroundColor: Colors.white,
           textColor: Colors.black,
           fontSize: 16.0);
+      Navigator.pop(context);
     }
   });
 }
 
 // Fetching the device details from smart server
 @override
-Future<Device?> fetchDeviceDetails(
-    String deviceName, BuildContext context) async {
+Future<Device?> fetchDeviceDetails(String deviceName,
+    BuildContext context) async {
   Utility.isConnected().then((value) async {
     if (value) {
       try {
@@ -184,14 +218,13 @@ Future<Device?> fetchDeviceDetails(
         var tbClient = ThingsboardClient(serverUrl);
         tbClient.smart_init();
         response = await tbClient.getDeviceService().getTenantDevice(deviceName)
-            as Device;
+        as Device;
         if (response.name.isNotEmpty) {
           if (response.type == ilm_deviceType) {
             fetchSmartDeviceDetails(
                 deviceName, response.id!.id.toString(), context);
-          } else if (response.type == ccms_deviceType) {
-          } else if (response.type == Gw_deviceType) {
-          } else {
+          } else if (response.type == ccms_deviceType) {} else
+          if (response.type == Gw_deviceType) {} else {
             Fluttertoast.showToast(
                 msg: "Device Details Not Found",
                 toastLength: Toast.LENGTH_SHORT,
@@ -214,7 +247,7 @@ Future<Device?> fetchDeviceDetails(
           Navigator.pop(context);
         }
       } catch (e) {
-        var message = toThingsboardError(e,context);
+        var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
@@ -246,8 +279,8 @@ Future<Device?> fetchDeviceDetails(
 }
 
 @override
-Future<Device?> fetchSmartDeviceDetails(
-    String deviceName, String deviceid, BuildContext context) async {
+Future<Device?> fetchSmartDeviceDetails(String deviceName, String deviceid,
+    BuildContext context) async {
   Utility.isConnected().then((value) async {
     if (value) {
       try {
@@ -275,9 +308,11 @@ Future<Device?> fetchSmartDeviceDetails(
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
 
-        prefs.setString('deviceStatus', responser.first.kv.getValue().toString());
+        prefs.setString(
+            'deviceStatus', responser.first.kv.getValue().toString());
         prefs.setString('deviceWatts', responser.last.kv.getValue().toString());
-        prefs.setString('devicetimeStamp', responser.first.lastUpdateTs.toString());
+        prefs.setString(
+            'devicetimeStamp', responser.first.lastUpdateTs.toString());
 
         prefs.setString('deviceId', deviceid);
         prefs.setString('deviceName', deviceName);
@@ -287,10 +322,10 @@ Future<Device?> fetchSmartDeviceDetails(
               builder: (BuildContext context) => ilm_installation_screen()));
         } else {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => MaintenanceScreen()));
+              builder: (BuildContext context) => const MaintenanceScreen()));
         }
       } catch (e) {
-        var message = toThingsboardError(e,context);
+        var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
@@ -321,15 +356,16 @@ Future<Device?> fetchSmartDeviceDetails(
   });
 }
 
-Future<ThingsboardError> toThingsboardError(error, context,[StackTrace? stackTrace]) async {
+Future<ThingsboardError> toThingsboardError(error, context,
+    [StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
-  if(error.message == "Session expired!"){
+  if (error.message == "Session expired!") {
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (BuildContext context) => dashboard_screen()));
     }
-  }else {
+  } else {
     if (error is DioError) {
       if (error.response != null && error.response!.data != null) {
         var data = error.response!.data;
