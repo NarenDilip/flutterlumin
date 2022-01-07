@@ -51,14 +51,13 @@ class splash_screenState extends State<splash_screen> {
     return Container(
         height: size.height,
         width: double.infinity,
-        // color: Colors.white,
-        margin: const EdgeInsets.all(15.0),
-        decoration: const BoxDecoration(
+        color: liorange,
+        // decoration: const BoxDecoration(
           // image: DecorationImage(
           //   image: AssetImage("assets/icons/background_img.jpeg"),
           //   fit: BoxFit.cover,
           // ),
-        ),
+        // ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const <Widget>[
@@ -71,7 +70,7 @@ class splash_screenState extends State<splash_screen> {
             ),
             Text(splashscreen_text,
                 style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 35,
                     fontFamily: "Montserrat")),
           ],

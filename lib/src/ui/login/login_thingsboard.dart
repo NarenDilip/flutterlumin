@@ -14,12 +14,13 @@ class login_thingsboard {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       final smartToken =
-      await tbClient.login(LoginRequest(smart_Username, smart_Password));
+      await tbClient.login(LoginRequest(username, password));
       if (smartToken.token != null) {
         prefs.setString('smart_token', smartToken.token);
         prefs.setString('smart_refreshtoken', smartToken.refreshToken);
       }
     } catch (e) {
+      Navigator.pop(context);
       return false;
     }
     return true;

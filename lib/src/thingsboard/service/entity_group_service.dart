@@ -61,6 +61,14 @@ class EntityGroupService {
     return response.data!.map((e) => EntityGroupInfo.fromJson(e)).toList();
   }
 
+  Future<List<EntityGroupInfo>> getEntityGroupsByFolderType(
+      {RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<List<dynamic>>(
+        '/api/entityGroups/DEVICE',
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return response.data!.map((e) => EntityGroupInfo.fromJson(e)).toList();
+  }
+
   Future<List<EntityGroupInfo>> getEntityGroupsByOwnerAndType(
       EntityId ownerId, EntityType groupType,
       {RequestConfig? requestConfig}) async {
@@ -149,6 +157,14 @@ class EntityGroupService {
       {RequestConfig? requestConfig}) async {
     var response = await _tbClient.get<List<dynamic>>(
         '/api/entityGroups/${entityId.entityType.toShortString()}/${entityId.id}',
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return response.data!.map((e) => EntityGroupId.fromJson(e)).toList();
+  }
+
+  Future<List<EntityGroupId>> getEntityGroupsForFolderEntity(String entityId,
+      {RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<List<dynamic>>(
+        '/api/entityGroups/DEVICE/${entityId}',
         options: defaultHttpOptionsFromConfig(requestConfig));
     return response.data!.map((e) => EntityGroupId.fromJson(e)).toList();
   }

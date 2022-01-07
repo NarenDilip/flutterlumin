@@ -15,6 +15,7 @@ import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,14 +63,10 @@ class LoginForm extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return SingleChildScrollView(
       child: Container(
+        color: liorange,
           height: size.height,
           width: double.infinity,
-          decoration: const BoxDecoration(
-              // image: DecorationImage(
-              //   image: AssetImage("assets/icons/background_img.jpeg"),
-              //   fit: BoxFit.cover,
-              // ),
-              ),
+
           child: Form(
               key: _formKey,
               child: Column(
@@ -89,7 +86,7 @@ class LoginForm extends StatelessWidget {
                           fontSize: 30.0,
                           fontFamily: "Montserrat",
                           fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                          color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -123,7 +120,7 @@ class LoginForm extends StatelessWidget {
                   const SizedBox(height: 20),
                   rounded_button(
                     text: sign_in,
-                    color: purpleColor,
+                    color: Colors.blue,
                     press: () {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
@@ -142,7 +139,7 @@ class LoginForm extends StatelessWidget {
     // storage = TbSecureStorage();
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
 
         if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -182,6 +179,8 @@ class LoginForm extends StatelessWidget {
   void callRegionDetails(BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
+        Utility.progressDialog(context);
+
         var tbClient = ThingsboardClient(serverUrl);
         tbClient.smart_init();
 
@@ -203,47 +202,85 @@ class LoginForm extends StatelessWidget {
             .getAssetService()
             .getRegionTenantAssets(pageLink));
 
-        if (region_response.totalElements != 0) {
-          for (int i = 0; i < region_response.data.length; i++) {
-            String id = region_response.data.elementAt(i).id!.id.toString();
-            String name = region_response.data.elementAt(i).name.toString();
-            Region region = new Region(i, id, name);
-            dbHelper.add(region);
+        if (region_response != null) {
+          if (region_response.totalElements != 0) {
+            for (int i = 0; i < region_response.data.length; i++) {
+              String id = region_response.data
+                  .elementAt(i)
+                  .id!
+                  .id
+                  .toString();
+              String name = region_response.data
+                  .elementAt(i)
+                  .name
+                  .toString();
+              Region region = new Region(i, id, name);
+              dbHelper.add(region);
+            }
           }
-        }
 
-        PageData<Asset> zone_response;
-        zone_response = (await tbClient
-            .getAssetService()
-            .getZoneTenantAssets(pageLink));
+          PageData<Asset> zone_response;
+          zone_response = (await tbClient
+              .getAssetService()
+              .getZoneTenantAssets(pageLink));
 
-        if (zone_response.totalElements != 0) {
-          for (int i = 0; i < zone_response.data.length; i++) {
-            String id = zone_response.data.elementAt(i).id!.id.toString();
-            String name = zone_response.data.elementAt(i).name.toString();
-            var regionname = name.split("-");
-            Zone zone = new Zone(i, id, name,regionname[0].toString());
-            dbHelper.zone_add(zone);
+          if (zone_response != null) {
+            if (zone_response.totalElements != 0) {
+              for (int i = 0; i < zone_response.data.length; i++) {
+                String id = zone_response.data
+                    .elementAt(i)
+                    .id!
+                    .id
+                    .toString();
+                String name = zone_response.data
+                    .elementAt(i)
+                    .name
+                    .toString();
+                var regionname = name.split("-");
+                Zone zone = new Zone(i, id, name, regionname[0].toString());
+                dbHelper.zone_add(zone);
+              }
+            }
+
+            PageData<Asset> ward_response;
+            ward_response = (await tbClient
+                .getAssetService()
+                .getWardTenantAssets(pageLink));
+
+            if (ward_response != null) {
+              if (ward_response.totalElements != 0) {
+                for (int i = 0; i < ward_response.data.length; i++) {
+                  String id = ward_response.data
+                      .elementAt(i)
+                      .id!
+                      .id
+                      .toString();
+                  String name = ward_response.data
+                      .elementAt(i)
+                      .name
+                      .toString();
+                  var regionname = name.split("-");
+                  Ward ward = new Ward(i, id, name, regionname[0].toString(),
+                      regionname[0].toString() + "-" +
+                          regionname[1].toString());
+                  dbHelper.ward_add(ward);
+                }
+              }
+              Navigator.pop(context);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => dashboard_screen()));
+            } else {
+              calltoast("Ward Details found");
+              Navigator.pop(context);
+            }
+          } else {
+            calltoast("Zone Details found");
+            Navigator.pop(context);
           }
+        } else {
+          calltoast("Region Details found");
+          Navigator.pop(context);
         }
-
-        PageData<Asset> ward_response;
-        ward_response = (await tbClient
-            .getAssetService()
-            .getWardTenantAssets(pageLink));
-
-        if (ward_response.totalElements != 0) {
-          for (int i = 0; i < ward_response.data.length; i++) {
-            String id = ward_response.data.elementAt(i).id!.id.toString();
-            String name = ward_response.data.elementAt(i).name.toString();
-            var regionname = name.split("-");
-            Ward ward = new Ward(i, id, name,regionname[0].toString(),regionname[0].toString()+"-"+regionname[1].toString());
-            dbHelper.ward_add(ward);
-          }
-        }
-        Navigator.pop(context);
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
       }
     });
   }

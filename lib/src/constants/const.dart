@@ -16,8 +16,9 @@ const btnLightGreenColor = Color(0xff35ba80);
 const btnLightbluColor = Color(0xff0bd9ee);
 const btngreytbluColor = Color(0xfff1f7f8 );
 const pistagreen = Color(0xffbef5cc);
-const lightorange = Color(0xfff5dcbe);
-const liorange = Color(0xfff7c283);
+const pistagreY = Color(0xff8A97A2);
+const lightorange = Color(0xfff57D0ff);
+const liorange = Color(0xfff57D0ff);
 const liblue = Color(0xff65f2f9 );
 
 const splashscreen_text = "Luminator";

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/zone_model.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
@@ -108,6 +109,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
       //   return result;
       // },
         child: Scaffold(
+          backgroundColor: liorange,
           body: Padding(
             padding: const EdgeInsets.all(30),
             child: Column(

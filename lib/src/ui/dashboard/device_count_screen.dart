@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/ui/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class device_count_screen extends StatefulWidget {
@@ -25,10 +26,17 @@ class device_count_screen_state extends State<device_count_screen> {
     SelectedRegion = prefs.getString("SelectedRegion").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
+
     setState(() {
       SelectedRegion = SelectedRegion;
       SelectedZone = SelectedZone;
       SelectedWard = SelectedWard;
+
+      if(SelectedRegion == "null"){
+        SelectedRegion = "Region";
+        SelectedZone = "Zone";
+        SelectedWard = "Ward";
+      }
     });
   }
 
@@ -39,24 +47,52 @@ class device_count_screen_state extends State<device_count_screen> {
     getSharedPrefs();
   }
 
-  // void initState() {
-  //   // TODO: implement initState
-  //   super.initState();
-  //   setState(() {
-  //     loaddevice();
-  //   });
-  // }
-
-  // loaddevice() async {
-  //   var sharedPreferences = await SharedPreferences.getInstance();
-  //   SelectedRegion = sharedPreferences.getString('SelectedRegion').toString();
-  //   SelectedZone = sharedPreferences.getString('SelectedZone').toString();
-  //   SelectedWard = sharedPreferences.getString('selectedWard').toString();
-  // }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+      final result = await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: 0),
+          backgroundColor: Colors.white,
+          title: Text("Luminator", style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: liorange)),
+          content: Text("Are you sure you want to exit?", style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.black)),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text("NO", style: const TextStyle(
+                  fontSize: 25.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green)),
+            ),
+            TextButton(
+              child: Text('YES',  style: const TextStyle(
+          fontSize: 25.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: Colors.red)),
+              onPressed: () {
+                SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+              },
+            ),
+          ],
+        ),
+      );
+      return result;
+    },
+    child: Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: true,
         body: Container(
@@ -78,23 +114,23 @@ class device_count_screen_state extends State<device_count_screen> {
                       alignment: Alignment.center,
                       padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
                       child: Text(
-                        'Analytics view',
+                        'Dashboard',
                         textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 25.0,
                               fontFamily: "Montserrat",
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue)
+                              color: Colors.white)
                       ),
                     ),
                     Positioned(
                       right: 10,
-                      top: 10,
+                      top: 15,
                       bottom: 0,
                       child: IconButton(
                         color: Colors.red,
                         icon: Icon(
-                          Icons.close_rounded,
+                          IconData(0xe3b3, fontFamily: 'MaterialIcons'),
                           size: 35,
                         ),
                         onPressed: () {
@@ -115,10 +151,10 @@ class device_count_screen_state extends State<device_count_screen> {
                               bottomRight: Radius.circular(0.0))),
                       child: Column(mainAxisSize: MainAxisSize.min, children: <
                           Widget>[
-                        SizedBox(height: 25),
+                        SizedBox(height: 5),
                         Container(
                             child: Padding(
-                                padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
+                                padding: EdgeInsets.fromLTRB(15, 5, 15, 0),
                                 child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -136,7 +172,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       EdgeInsets.all(20)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      Colors.lightBlue),
+                                                      lightorange),
                                               foregroundColor:
                                                   MaterialStateProperty.all<Color>(
                                                       Colors.black),
@@ -167,7 +203,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       EdgeInsets.all(20)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      Colors.lightBlue),
+                                                      lightorange),
                                               shape: MaterialStateProperty.all<
                                                       RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
@@ -195,7 +231,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       EdgeInsets.all(20)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      Colors.lightBlue),
+                                                      lightorange),
                                               shape: MaterialStateProperty.all<
                                                       RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
@@ -450,9 +486,51 @@ class device_count_screen_state extends State<device_count_screen> {
                       ])))
             ],
           ),
-        ));
+        )));
   }
 }
 
-void callLogoutoption(BuildContext context) {
+Future<void> callLogoutoption(BuildContext context) async {
+  final result = await showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 10),
+      backgroundColor: Colors.white,
+      title: Text("Luminator",style: const TextStyle(
+          fontSize: 25.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: liorange)),
+      content: Text("Are you sure you want to Logout?",style: const TextStyle(
+          fontSize: 18.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: Colors.black)),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+          },
+          child: Text("NO",style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.green)),
+        ),
+        TextButton(
+          child: Text('YES',style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.red)),
+          onPressed: () async {
+            SharedPreferences preferences = await SharedPreferences.getInstance();
+            await preferences.clear();
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => splash_screen()));
+          },
+        ),
+      ],
+    ),
+  );
 }

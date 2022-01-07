@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
@@ -106,6 +107,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
       //   return result;
       // },
         child: Scaffold(
+          backgroundColor: liorange,
           body: Padding(
             padding: const EdgeInsets.all(30),
             child: Column(

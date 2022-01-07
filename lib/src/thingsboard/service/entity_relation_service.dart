@@ -36,6 +36,20 @@ class EntityRelationService {
         options: defaultHttpOptionsFromConfig(requestConfig));
   }
 
+  Future<void> deleteDeviceRelation(String fromId, String toId,
+      {RequestConfig? requestConfig}) async {
+    await _tbClient.delete('/api/relation',
+        queryParameters: {
+          'fromId': fromId,
+          'fromType': "ASSET",
+          'relationType': "Contains",
+          'relationTypeGroup': "Contains",
+          'toId': toId,
+          'toType': "DEVICE"
+        },
+        options: defaultHttpOptionsFromConfig(requestConfig));
+  }
+
   Future<void> deleteRelations(EntityId entityId,
       {RequestConfig? requestConfig}) async {
     await _tbClient.delete('/api/relations',

@@ -21,9 +21,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class dashboard_screen extends StatefulWidget {
-
   @override
   State<StatefulWidget> createState() {
     return dashboard_screenState();
@@ -39,7 +37,7 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   final List<Widget> _widgetOptions = <Widget>[
     device_count_screen(),
-    map_view_screen(),
+    // map_view_screen(),
     device_list_screen()
   ];
 
@@ -90,7 +88,7 @@ class dashboard_screenState extends State<dashboard_screen> {
       ),
       backgroundColor: Colors.black12,
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: pistagreen,
+        backgroundColor: liorange,
         currentIndex: _selectedIndex,
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -104,33 +102,33 @@ class dashboard_screenState extends State<dashboard_screen> {
             title: Text('Dashboard'),
             activeIcon: Icon(
               Icons.analytics,
-              color: Colors.green,
+              color: Colors.white,
               size: 45,
             ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.map,
-              color: Colors.grey,
-              size: 45,
-            ),
-            title: Text('Map View'),
-            activeIcon: Icon(
-              Icons.map,
-              color: Colors.green,
-              size: 45,
-            ),
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(
+          //     Icons.map,
+          //     color: Colors.black,
+          //     size: 45,
+          //   ),
+          //   title: Text('Map View'),
+          //   activeIcon: Icon(
+          //     Icons.map,
+          //     color: Colors.white,
+          //     size: 45,
+          //   ),
+          // ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.list,
-              color: Colors.grey,
+              color: Colors.black,
               size: 45,
             ),
             title: Text('Device List'),
             activeIcon: Icon(
               Icons.list,
-              color: Colors.green,
+              color: Colors.white,
               size: 45,
             ),
           ),
@@ -212,6 +210,9 @@ Future<Device?> fetchDeviceDetails(
               textColor: Colors.black,
               fontSize: 16.0);
           Navigator.pop(context);
+
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => dashboard_screen()));
         }
       } catch (e) {
         var message = toThingsboardError(e,context);
@@ -283,9 +284,11 @@ Future<Device?> fetchSmartDeviceDetails(
         prefs.setString('deviceName', deviceName);
 
         if (relationDetails.length.toString() == "0") {
+          Navigator.pop(context);
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) => ilm_installation_screen()));
         } else {
+          Navigator.pop(context);
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) => MaintenanceScreen()));
         }
