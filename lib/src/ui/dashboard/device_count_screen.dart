@@ -130,7 +130,7 @@ class device_count_screen_state extends State<device_count_screen> {
                       child: IconButton(
                         color: Colors.red,
                         icon: Icon(
-                          IconData(0xe3b3, fontFamily: 'MaterialIcons'),
+                          Icons.cancel_outlined,
                           size: 35,
                         ),
                         onPressed: () {

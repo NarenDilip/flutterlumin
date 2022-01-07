@@ -38,6 +38,7 @@ dependencies:
   connectivity: ^3.0.3
   email_validator: ^2.0.1
   fluttertoast: ^8.0.6
+
   sqflite: ^1.1.6+4
   path_provider: '>=0.3.0'
   http: ^0.13.1

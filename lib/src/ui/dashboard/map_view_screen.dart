@@ -126,7 +126,7 @@ class map_view_screen_state extends State<map_view_screen> {
                       child: IconButton(
                         color: Colors.red,
                         icon: Icon(
-                          IconData(0xe3b3, fontFamily: 'MaterialIcons'),
+                          Icons.cancel_outlined,
                           size: 35,
                         ),
                         onPressed: () {
