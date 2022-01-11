@@ -31,8 +31,8 @@ class device_list_screen extends StatefulWidget {
 }
 
 class device_list_screen_state extends State<device_list_screen> {
-  List<String>? live_foundUsers = [];
-  List<String>? livelive_relationdevices = [];
+  List<String>? _foundUsers = [];
+  List<String>? _relationdevices = [];
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
@@ -60,7 +60,7 @@ class device_list_screen_state extends State<device_list_screen> {
       SelectedZone = SelectedZone;
       SelectedWard = SelectedWard;
 
-      if (SelectedRegion == "null") {
+      if (SelectedRegion == "0" || SelectedRegion == "null") {
         SelectedRegion = "Region";
         SelectedZone = "Zone";
         SelectedWard = "Ward";
@@ -172,7 +172,7 @@ class device_list_screen_state extends State<device_list_screen> {
                           child: IconButton(
                             color: Colors.red,
                             icon: Icon(
-                              Icons.cancel_outlined,
+                              IconData(0xe3b3, fontFamily: 'MaterialIcons'),
                               size: 35,
                             ),
                             onPressed: () {
@@ -411,7 +411,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   user.ilmnumber =
                                                       value.toUpperCase();
                                                   setState(() {
-                                                    live_foundUsers!.clear();
+                                                    _foundUsers!.clear();
                                                   });
                                                 }))
                                       ]),
@@ -444,8 +444,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                                             FocusNode());
                                                         callccmsbasedILMDeviceListFinder(
                                                             user.ccmsnumber,
-                                                            livelive_relationdevices,
-                                                            live_foundUsers,
+                                                            _relationdevices,
+                                                            _foundUsers,
                                                             context);
                                                       } else {
                                                         Fluttertoast.showToast(
@@ -478,7 +478,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   user.ccmsnumber =
                                                       value.toUpperCase();
                                                   setState(() {
-                                                    live_foundUsers!.clear();
+                                                    _foundUsers!.clear();
                                                   });
                                                 }))
                                       ]),
@@ -511,8 +511,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                                             FocusNode());
                                                         callpolebasedILMDeviceListFinder(
                                                             user.polenumber,
-                                                            livelive_relationdevices,
-                                                            live_foundUsers,
+                                                            _relationdevices,
+                                                            _foundUsers,
                                                             context);
                                                       } else {
                                                         Fluttertoast.showToast(
@@ -545,7 +545,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   user.polenumber =
                                                       value.toUpperCase();
                                                   setState(() {
-                                                    live_foundUsers!.clear();
+                                                    _foundUsers!.clear();
                                                   });
                                                 }))
                                       ]),
@@ -615,59 +615,67 @@ class device_list_screen_state extends State<device_list_screen> {
                                     ],
                                   )),
                               Visibility(
-                                child: Container(
-                                    color: liorange,
-                                    child: Expanded(
-                                      child: live_foundUsers!.isNotEmpty
-                                          ? ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount: live_foundUsers!.length,
-                                        itemBuilder: (context, index) =>
-                                            Card(
-                                              key: ValueKey(live_foundUsers),
-                                              color: Colors.white,
-                                              margin:
-                                              const EdgeInsets.fromLTRB(
-                                                  15, 1, 10, 0),
-                                              child: ListTile(
-                                                onTap: () {
-                                                  fetchDeviceDetails(
-                                                      live_foundUsers!
-                                                          .elementAt(index)
-                                                          .toString(),
-                                                      context);
-                                                },
-                                                title: Text(
-                                                    live_foundUsers!
-                                                        .elementAt(index),
-                                                    style: const TextStyle(
-                                                        fontSize: 22.0,
-                                                        fontFamily:
-                                                        "Montserrat",
-                                                        fontWeight:
-                                                        FontWeight.bold,
-                                                        color: Colors.black)),
-                                              ),
-                                            ),
-                                      )
-                                          : Container(
-                                          color: Colors.white,
-                                          child: Column(children: [
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(
-                                              'No results found',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                  fontSize: 18.0,
-                                                  fontFamily: "Montserrat",
-                                                  fontWeight:
-                                                  FontWeight.normal,
-                                                  color: Colors.black),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                          color: liorange,
+                                          child: Expanded(
+                                            child: _foundUsers!.isNotEmpty
+                                                ? ListView.builder(
+                                              primary: false,
+                                              scrollDirection: Axis.vertical,
+                                              shrinkWrap: true,
+                                              itemCount: _foundUsers!.length,
+                                              itemBuilder: (context, index) =>
+                                                  Card(
+                                                    key: ValueKey(_foundUsers),
+                                                    color: Colors.white,
+                                                    margin:
+                                                    const EdgeInsets.fromLTRB(
+                                                        15, 1, 10, 0),
+                                                    child: ListTile(
+                                                      onTap: () {
+                                                        fetchDeviceDetails(
+                                                            _foundUsers!
+                                                                .elementAt(index)
+                                                                .toString(),
+                                                            context);
+                                                      },
+                                                      title: Text(
+                                                          _foundUsers!
+                                                              .elementAt(index),
+                                                          style: const TextStyle(
+                                                              fontSize: 22.0,
+                                                              fontFamily:
+                                                              "Montserrat",
+                                                              fontWeight:
+                                                              FontWeight.bold,
+                                                              color: Colors.black)),
+                                                    ),
+                                                  ),
                                             )
-                                          ])),
-                                    )),
+                                                : Container(
+                                                color: Colors.white,
+                                                child: Column(children: [
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Text(
+                                                    'No results found',
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(
+                                                        fontSize: 18.0,
+                                                        fontFamily: "Montserrat",
+                                                        fontWeight:
+                                                        FontWeight.normal,
+                                                        color: Colors.black),
+                                                  )
+                                                ])),
+                                          )),
+                                    ],
+                                  ),
+                                ),
                                 visible: _ilmvisible,
                               ),
                             ],
@@ -702,12 +710,12 @@ class device_list_screen_state extends State<device_list_screen> {
                     .elementAt(i)
                     .name
                     .toString();
-                live_foundUsers!.add(name);
+                _foundUsers!.add(name);
               }
             }
 
             setState(() {
-              live_foundUsers = live_foundUsers;
+              _foundUsers = _foundUsers;
             });
             Navigator.pop(context);
           }else{
@@ -721,8 +729,8 @@ class device_list_screen_state extends State<device_list_screen> {
             if (status == true) {
               callpolebasedILMDeviceListFinder(
                   user.ilmnumber,
-                  livelive_relationdevices,
-                  live_foundUsers,
+                  _relationdevices,
+                  _foundUsers,
                   context);
             }
           } else {
@@ -737,14 +745,14 @@ class device_list_screen_state extends State<device_list_screen> {
   }
 
   void callpolebasedILMDeviceListFinder(String polenumber,
-      List<String>? livelive_relationdevices, List<String>? live_foundUsers,
+      List<String>? _relationdevices, List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
         Utility.progressDialog(context);
         try {
-          livelive_relationdevices!.clear();
-          live_foundUsers!.clear();
+          _relationdevices!.clear();
+          _foundUsers!.clear();
           Asset response;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -759,20 +767,20 @@ class device_list_screen_state extends State<device_list_screen> {
                 response.id!);
             if (relationresponse != null) {
               for (int i = 0; i < relationresponse.length; i++) {
-                livelive_relationdevices!.add(relationresponse
+                _relationdevices.add(relationresponse
                     .elementAt(i)
                     .to
                     .id
                     .toString());
               }
               Device devrelationresponse;
-              for (int i = 0; i < livelive_relationdevices!.length; i++) {
+              for (int i = 0; i < _relationdevices.length; i++) {
                 devrelationresponse =
                 await tbClient.getDeviceService().getDevice(
-                    livelive_relationdevices.elementAt(i).toString()) as Device;
+                    _relationdevices.elementAt(i).toString()) as Device;
                 if (devrelationresponse != null) {
                   if (devrelationresponse.type == "lumiNode") {
-                    live_foundUsers!.add(devrelationresponse.name);
+                    _foundUsers!.add(devrelationresponse.name);
                   } else {}
                 } else {
                   calltoast(polenumber);
@@ -780,7 +788,7 @@ class device_list_screen_state extends State<device_list_screen> {
                 }
               }
               setState(() {
-                live_foundUsers = live_foundUsers;
+                _foundUsers = _foundUsers;
               });
               Navigator.pop(context);
             } else {
@@ -799,8 +807,8 @@ class device_list_screen_state extends State<device_list_screen> {
             if (status == true) {
               callpolebasedILMDeviceListFinder(
                   user.polenumber,
-                  livelive_relationdevices,
-                  live_foundUsers,
+                  _relationdevices,
+                  _foundUsers,
                   context);
             }
           } else {
@@ -815,13 +823,13 @@ class device_list_screen_state extends State<device_list_screen> {
   }
 
   void callccmsbasedILMDeviceListFinder(String ccmsnumber,
-      List<String>? live_relationdevices, List<String>? _foundUsers,
+      List<String>? _relationdevices, List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
         Utility.progressDialog(context);
         try {
-          live_relationdevices!.clear();
+          _relationdevices!.clear();
           _foundUsers!.clear();
           Device response;
           var tbClient = ThingsboardClient(serverUrl);
@@ -837,17 +845,17 @@ class device_list_screen_state extends State<device_list_screen> {
                 response.id!);
             if (relationresponse != null) {
               for (int i = 0; i < relationresponse.length; i++) {
-                live_relationdevices!.add(relationresponse
+                _relationdevices.add(relationresponse
                     .elementAt(i)
                     .to
                     .id
                     .toString());
               }
               Device Devrelationresponse;
-              for (int i = 0; i < live_relationdevices!.length; i++) {
+              for (int i = 0; i < _relationdevices.length; i++) {
                 Devrelationresponse =
                 await tbClient.getDeviceService().getDevice(
-                    live_relationdevices.elementAt(i).toString()) as Device;
+                    _relationdevices.elementAt(i).toString()) as Device;
                 if (Devrelationresponse != null) {
                   if (Devrelationresponse.type == "lumiNode") {
                     _foundUsers!.add(Devrelationresponse.name);
@@ -877,7 +885,7 @@ class device_list_screen_state extends State<device_list_screen> {
             if (status == true) {
               callccmsbasedILMDeviceListFinder(
                   user.ccmsnumber,
-                  live_relationdevices,
+                  _relationdevices,
                   _foundUsers,
                   context);
             }

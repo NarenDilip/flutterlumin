@@ -32,7 +32,7 @@ class device_count_screen_state extends State<device_count_screen> {
       SelectedZone = SelectedZone;
       SelectedWard = SelectedWard;
 
-      if(SelectedRegion == "null"){
+      if(SelectedRegion == "0" || SelectedRegion == "null"){
         SelectedRegion = "Region";
         SelectedZone = "Zone";
         SelectedWard = "Ward";
@@ -130,7 +130,7 @@ class device_count_screen_state extends State<device_count_screen> {
                       child: IconButton(
                         color: Colors.red,
                         icon: Icon(
-                          Icons.cancel_outlined,
+                          IconData(0xe3b3, fontFamily: 'MaterialIcons'),
                           size: 35,
                         ),
                         onPressed: () {
@@ -154,7 +154,7 @@ class device_count_screen_state extends State<device_count_screen> {
                         SizedBox(height: 5),
                         Container(
                             child: Padding(
-                                padding: EdgeInsets.fromLTRB(15, 5, 15, 0),
+                                padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
                                 child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,

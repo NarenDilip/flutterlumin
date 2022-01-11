@@ -9,22 +9,17 @@ import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
-import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
-import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
+import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/replacement_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
-
-import '../../../utils/colors.dart';
-import '../../components/dropdown_button_field.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen({Key? key}) : super(key: key);
@@ -38,6 +33,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   bool _isOn = true;
   DateTime? date;
   int _selectedIndex = 0;
+  bool clickedCentreFAB = false;
   var LampactiveStatus;
   String Lampwatts = "0";
   String DeviceName = "0";
@@ -92,9 +88,10 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     setState(() => _isOn = !_isOn);
   }
 
+  BuildContext get context => super.context;
+
   final List<Widget> _widgetOptions = <Widget>[
     device_count_screen(),
-    map_view_screen(),
     device_list_screen()
   ];
 
@@ -104,366 +101,510 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     double width = MediaQuery.of(context).size.width;
 
     return WillPopScope(
-        onWillPop: () async {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
-          return true;
-        },
-        child: Scaffold(
-          body: Container(
-              padding: EdgeInsets.fromLTRB(15, 60, 15, 0),
-              decoration: const BoxDecoration(
-                  color: liorange,
-                  borderRadius: BorderRadius.all(Radius.circular(35.0))),
-              alignment: Alignment.center,
+      onWillPop: () async {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+        return true;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
+        body: Stack(
+          children: [
+            _widgetOptions.elementAt(_selectedIndex),
+            Align(
+              alignment: FractionalOffset.bottomRight,
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 250),
+                //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
+                height: clickedCentreFAB
+                    ? MediaQuery.of(context).size.height
+                    : 10.0,
+                width: clickedCentreFAB
+                    ? MediaQuery.of(context).size.height
+                    : 10.0,
+                decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                    color: Colors.white),
+              ),
+            ),
+            Container(
+              color: lightorange,
               child: Column(
                 children: [
                   Container(
-                      child: Padding(
-                    padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          TextButton(
-                              child: Text('$SelectedRegion',
-                                  style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              style: ButtonStyle(
-                                  padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Colors.lightBlue),
-                                  foregroundColor:
-                                      MaterialStateProperty.all<Color>(
-                                          Colors.black),
-                                  shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                  ))),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        region_list_screen()));
-                              }),
-                          SizedBox(width: 5),
-                          TextButton(
-                              child: Text('$SelectedZone',
-                                  style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              style: ButtonStyle(
-                                  padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Colors.lightBlue),
-                                  shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                  ))),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        zone_li_screen()));
-                              }),
-                          SizedBox(width: 5),
-                          TextButton(
-                              child: Text('$SelectedWard',
-                                  style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              style: ButtonStyle(
-                                  padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Colors.lightBlue),
-                                  shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                      RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                  ))),
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        ward_li_screen()));
-                              })
-                        ]),
-                  )),
-                  const SizedBox(
-                    height: 25,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
+                    height: 100,
                     decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(35.0))),
-                    child: Column(
+                        color: lightorange,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(0.0),
+                            topRight: Radius.circular(0.0),
+                            bottomLeft: Radius.circular(0.0),
+                            bottomRight: Radius.circular(0.0))),
+                    child: Stack(
                       children: [
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                              width: width/3,
-                              height: 45,
-                              alignment: Alignment.centerLeft,
-                               decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(15.0))),
-                              child: Text(
-                                '$DeviceName',
-                                style: TextStyle(
-                                  color: Colors.deepOrange,
-                                    fontSize: 26, fontFamily: "Montserrat", fontWeight: FontWeight.bold),
-                              ),
-                            ), //Container
-                            SizedBox(
-                              width: 15,
-                            ), //SizedBox
-                            Container(
-                                width: width/2.05,
-                                height: 25,
-                                child: Text(
-                                  "2nd Street, CJB",
-                                  style: const TextStyle(
-                                      fontSize: 18, fontFamily: "Montserrat",fontWeight: FontWeight.bold),
-                                ) //BoxDecoration
-                            ) //Container
-                          ], //<Widget>[]
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                          child: Text('ILM Maintanance',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 25.0,
+                                  fontFamily: "Montserrat",
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
                         ),
-                        const SizedBox(
-                          height: 10,
+                        Positioned(
+                          right: 10,
+                          top: 15,
+                          bottom: 0,
+                          child: IconButton(
+                            color: Colors.red,
+                            icon: Icon(
+                              IconData(0xe3b3, fontFamily: 'MaterialIcons'),
+                              size: 35,
+                            ),
+                            onPressed: () {},
+                          ),
                         ),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                                width: width/3,
-                                height: 25,
-                                child: Text(
-                                  "Lamp watts",
-                                  style: const TextStyle(
-                                      fontSize: 16, fontFamily: "Montserrat"),
-                                )
-                            ), //Container
-                            SizedBox(
-                              width: 5,
-                            ), //SizedBox
-                            Container(
-                                width: width/2.05,
-                                height: 25,
-                                child: Text(
-                                  "$Lampwatts",
-                                  style: const TextStyle(
-                                      fontSize: 18, fontFamily: "Montserrat",fontWeight: FontWeight.bold),
-                                ) //BoxDecoration
-                            ) //Container
-                          ], //<Widget>[]
-                          mainAxisAlignment: MainAxisAlignment.center,
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              width: width/3,
-                              height: 25,
-                                child: Text(
-                                  "Last Comm @ ",
-                                  style: const TextStyle(
-                                      fontSize: 16, fontFamily: "Montserrat"),
-                                )
-                            ), //Container
-                            SizedBox(
-                              width: 5,
-                            ), //SizedBox
-                            Container(
-                                width: width/2.05,
-                                height: 25,
-                                child: Text(
-                                  "$date",
-                                  style: const TextStyle(
-                                      fontSize: 18, fontFamily: "Montserrat",fontWeight: FontWeight.bold),
-                                ) //BoxDecoration
-                            ) //Container
-                          ], //<Widget>[]
-                          mainAxisAlignment: MainAxisAlignment.center,
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        // Column(
-                        //   children: [
-                        //     Container(
-                        //       alignment: Alignment.topLeft,
-                        //       padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
-                        //       height: 40,
-                        //       child: Text(
-                        //         'Last Comm @',
-                        //         style: TextStyle(
-                        //             fontSize: 18, fontFamily: "Montserrat"),
-                        //       ),
-                        //     ),
-                        //     Container(
-                        //       padding: const EdgeInsets.all(8),
-                        //       height: 40,
-                        //       child: Text(
-                        //         '$date',
-                        //         style: TextStyle(
-                        //             fontSize: 16,
-                        //             fontWeight: FontWeight.bold,
-                        //             fontFamily: "Montserrat"),
-                        //       ),
-                        //     ),
-                        //     // Expanded(
-                        //     //   child: Container(
-                        //     //     alignment: Alignment.centerRight,
-                        //     //     padding: EdgeInsets.all(6),
-                        //     //     child: IconButton(
-                        //     //       icon: const Icon(
-                        //     //         Icons.arrow_drop_down,
-                        //     //       ),
-                        //     //       iconSize: 50,
-                        //     //       color: Colors.black,
-                        //     //       splashColor: Colors.purple,
-                        //     //       onPressed: () {
-                        //     //         // showDialog(context, date);
-                        //     //       },
-                        //     //     ),
-                        //     //   ),
-                        //     // ),
-                        //   ],
-                        // ),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 25,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Expanded(flex: 2, child: ToggleButton()),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            child: Container(
-                              height: 100,
-                              decoration: const BoxDecoration(
-                                  color: Colors.orange,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50.0))),
-                              child: const Center(
-                                child: Text('GET LIVE',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white,
-                                        fontFamily: "Montserrat")),
-                              ),
-                            ),
-                            onTap: () {
-                              if ('$DeviceStatus' != "false") {
-                                getLiveRPCCall(context);
-                              } else {
-                                Fluttertoast.showToast(
-                                    msg: "Device in Offline Mode",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.BOTTOM,
-                                    timeInSecForIosWeb: 1);
-                              }
-                            },
-                          )),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 25,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(5, 15, 5, 15),
-                    decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(
-                            Radius.circular(18.0))),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Replace With",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18, fontFamily: "Montserrat"),
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Expanded(
-                                flex: 2,
-                                child: InkWell(
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    height: 100,
-                                    decoration: const BoxDecoration(
-                                        color: Colors.deepOrange,
-                                        borderRadius:
-                                        BorderRadius.all(Radius.circular(50.0))),
-                                    child: const Text('Shorting CAP',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.white,
-                                            fontFamily: "Montserrat")),
-                                  ),
-                                  onTap: () {
-                                    replaceShortingCap(context);
-                                  },
-                                )),
+                  Expanded(
+                    child: Container(
+                        decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(35.0),
+                                topRight: Radius.circular(35.0),
+                                bottomLeft: Radius.circular(0.0),
+                                bottomRight: Radius.circular(0.0))),
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child:
+                              Column(mainAxisSize: MainAxisSize.min, children: <
+                                  Widget>[
+                            Container(
+                                child: Padding(
+                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    TextButton(
+                                        child: Text('$SelectedRegion',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
+                                                MaterialStateProperty.all(
+                                                    lightorange),
+                                            foregroundColor:
+                                                MaterialStateProperty.all<
+                                                    Color>(Colors.black),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      region_list_screen()));
+                                        }),
+                                    SizedBox(width: 5),
+                                    TextButton(
+                                        child: Text('$SelectedZone',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
+                                                MaterialStateProperty.all(
+                                                    lightorange),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          zone_li_screen()));
+                                        }),
+                                    SizedBox(width: 5),
+                                    TextButton(
+                                        child: Text('$SelectedWard',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
+                                                MaterialStateProperty.all(
+                                                    lightorange),
+                                            shape: MaterialStateProperty.all<
+                                                    RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          ward_li_screen()));
+                                        })
+                                  ]),
+                            )),
                             const SizedBox(
-                              width: 15,
+                              height: 15,
                             ),
-                            Expanded(
-                                flex: 2,
-                                child: InkWell(
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      height: 100,
-                                      decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(50.0))),
-                                      child: const Text('ILM',
-                                          textAlign: TextAlign.center,
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
+                              decoration: const BoxDecoration(
+                                  color: lightorange,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(35.0))),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: <Widget>[
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            5, 0, 0, 0),
+                                        width: width / 3,
+                                        height: 45,
+                                        alignment: Alignment.centerLeft,
+                                        decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(15.0))),
+                                        child: Text(
+                                          '$DeviceName',
                                           style: TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.white,
-                                              fontFamily: "Montserrat")),
-                                    ),
-                                    onTap: () {
-                                      replaceILM(context);
-                                    })),
-                          ],
-                        ),
-
-                      ],
-                    ),
-                  ),
+                                              color: Colors.deepOrange,
+                                              fontSize: 26,
+                                              fontFamily: "Montserrat",
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ), //Container
+                                      SizedBox(
+                                        width: 15,
+                                      ), //SizedBox
+                                      Container(
+                                          width: width / 2.05,
+                                          height: 25,
+                                          child: Text(
+                                            "2nd Street, CJB",
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold),
+                                          ) //BoxDecoration
+                                          ) //Container
+                                    ], //<Widget>[]
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Container(
+                                          width: width / 3,
+                                          height: 25,
+                                          child: Text(
+                                            "Lamp watts",
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontFamily: "Montserrat"),
+                                          )), //Container
+                                      SizedBox(
+                                        width: 5,
+                                      ), //SizedBox
+                                      Container(
+                                          width: width / 2.05,
+                                          height: 25,
+                                          child: Text(
+                                            "$Lampwatts",
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold),
+                                          ) //BoxDecoration
+                                          ) //Container
+                                    ], //<Widget>[]
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Row(
+                                    children: <Widget>[
+                                      Container(
+                                          width: width / 3,
+                                          height: 25,
+                                          child: Text(
+                                            "Last Comm @ ",
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontFamily: "Montserrat"),
+                                          )), //Container
+                                      SizedBox(
+                                        width: 5,
+                                      ), //SizedBox
+                                      Container(
+                                          width: width / 2.05,
+                                          height: 25,
+                                          child: Text(
+                                            "$date",
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold),
+                                          ) //BoxDecoration
+                                          ) //Container
+                                    ], //<Widget>[]
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  // Column(
+                                  //   children: [
+                                  //     Container(
+                                  //       alignment: Alignment.topLeft,
+                                  //       padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
+                                  //       height: 40,
+                                  //       child: Text(
+                                  //         'Last Comm @',
+                                  //         style: TextStyle(
+                                  //             fontSize: 18, fontFamily: "Montserrat"),
+                                  //       ),
+                                  //     ),
+                                  //     Container(
+                                  //       padding: const EdgeInsets.all(8),
+                                  //       height: 40,
+                                  //       child: Text(
+                                  //         '$date',
+                                  //         style: TextStyle(
+                                  //             fontSize: 16,
+                                  //             fontWeight: FontWeight.bold,
+                                  //             fontFamily: "Montserrat"),
+                                  //       ),
+                                  //     ),
+                                  //     // Expanded(
+                                  //     //   child: Container(
+                                  //     //     alignment: Alignment.centerRight,
+                                  //     //     padding: EdgeInsets.all(6),
+                                  //     //     child: IconButton(
+                                  //     //       icon: const Icon(
+                                  //     //         Icons.arrow_drop_down,
+                                  //     //       ),
+                                  //     //       iconSize: 50,
+                                  //     //       color: Colors.black,
+                                  //     //       splashColor: Colors.purple,
+                                  //     //       onPressed: () {
+                                  //     //         // showDialog(context, date);
+                                  //     //       },
+                                  //     //     ),
+                                  //     //   ),
+                                  //     // ),
+                                  //   ],
+                                  // ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                const Expanded(flex: 2, child: ToggleButton()),
+                                const SizedBox(
+                                  width: 15,
+                                ),
+                                Expanded(
+                                    flex: 2,
+                                    child: InkWell(
+                                      child: Container(
+                                        height: 90,
+                                        decoration: const BoxDecoration(
+                                            color: Colors.orange,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(50.0))),
+                                        child: const Center(
+                                          child: Text('GET LIVE',
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  color: Colors.white,
+                                                  fontFamily: "Montserrat")),
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        if ('$DeviceStatus' != "false") {
+                                          getLiveRPCCall(context);
+                                        } else {
+                                          Fluttertoast.showToast(
+                                              msg: "Device in Offline Mode",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              gravity: ToastGravity.BOTTOM,
+                                              timeInSecForIosWeb: 1);
+                                        }
+                                      },
+                                    )),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                              decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(18.0))),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    "Replace With",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 18, fontFamily: "Montserrat"),
+                                  ),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Expanded(
+                                          flex: 2,
+                                          child: InkWell(
+                                            child: Container(
+                                              alignment: Alignment.center,
+                                              height: 90,
+                                              decoration: const BoxDecoration(
+                                                  color: Colors.deepOrange,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              50.0))),
+                                              child: const Text('Shorting CAP',
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      color: Colors.white,
+                                                      fontFamily:
+                                                          "Montserrat")),
+                                            ),
+                                            onTap: () {
+                                              replaceShortingCap(context);
+                                            },
+                                          )),
+                                      const SizedBox(
+                                        width: 15,
+                                      ),
+                                      Expanded(
+                                          flex: 2,
+                                          child: InkWell(
+                                              child: Container(
+                                                alignment: Alignment.center,
+                                                height: 90,
+                                                decoration: const BoxDecoration(
+                                                    color: Colors.green,
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                50.0))),
+                                                child: const Text('ILM',
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: Colors.white,
+                                                        fontFamily:
+                                                            "Montserrat")),
+                                              ),
+                                              onTap: () {
+                                                replaceILM(context);
+                                              })),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ]),
+                        )),
+                  )
                 ],
-              )),
-        ));
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: liorange,
+          currentIndex: _selectedIndex,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.analytics,
+                color: Colors.black,
+                size: 45,
+              ),
+              title: Text('Dashboard'),
+              activeIcon: Icon(
+                Icons.analytics,
+                color: Colors.white,
+                size: 45,
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.list,
+                color: Colors.black,
+                size: 45,
+              ),
+              title: Text('Device List'),
+              activeIcon: Icon(
+                Icons.list,
+                color: Colors.white,
+                size: 45,
+              ),
+            ),
+          ],
+          onTap: (index) {
+            setState(() {
+              //_toggle1();
+              _selectedIndex = index;
+            });
+          },
+        ),
+      ),
+    );
   }
 }
 
@@ -475,7 +616,7 @@ class ToggleButton extends StatefulWidget {
 }
 
 const double width = 300.0;
-const double height = 100.0;
+const double height = 90.0;
 const double loginAlign = -1;
 const double signInAlign = 1;
 const Color selectedColor = Colors.black54;
@@ -512,7 +653,7 @@ class _ToggleButtonState extends State<ToggleButton> {
             alignment: Alignment(xAlign, 0),
             duration: const Duration(milliseconds: 300),
             child: Container(
-              width: width * 0.35,
+              width: width * 0.28,
               height: height,
               decoration: const BoxDecoration(
                 color: Colors.white,

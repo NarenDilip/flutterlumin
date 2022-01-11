@@ -40,7 +40,7 @@ class region_list_screen_state extends State<region_list_screen> {
       print(e);
     });
 
-    loadDetails();
+    //loadDetails();
   }
 
   void loadDetails() async {
