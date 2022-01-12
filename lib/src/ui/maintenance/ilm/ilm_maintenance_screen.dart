@@ -165,7 +165,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                           child: IconButton(
                             color: Colors.red,
                             icon: Icon(
-                              IconData(0xe3b3, fontFamily: 'MaterialIcons'),
+                              Icons.logout_outlined,
                               size: 35,
                             ),
                             onPressed: () {},
@@ -565,46 +565,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               ),
             ),
           ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: liorange,
-          currentIndex: _selectedIndex,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.analytics,
-                color: Colors.black,
-                size: 45,
-              ),
-              title: Text('Dashboard'),
-              activeIcon: Icon(
-                Icons.analytics,
-                color: Colors.white,
-                size: 45,
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.list,
-                color: Colors.black,
-                size: 45,
-              ),
-              title: Text('Device List'),
-              activeIcon: Icon(
-                Icons.list,
-                color: Colors.white,
-                size: 45,
-              ),
-            ),
-          ],
-          onTap: (index) {
-            setState(() {
-              //_toggle1();
-              _selectedIndex = index;
-            });
-          },
         ),
       ),
     );
