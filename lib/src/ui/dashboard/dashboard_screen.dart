@@ -283,39 +283,45 @@ Future<Device?> fetchSmartDeviceDetails(
         List<String> myLister = [];
         myLister.add("location");
 
-        List<BaseAttributeKvEntry> responserse;
+        List<AttributeKvEntry> responserse;
 
         responserse = (await tbClient.getAttributeService().getAttributeKvEntries(
-            response.id!, myLister)) as List<BaseAttributeKvEntry>;
+            response.id!, myLister)) as List<AttributeKvEntry>;
 
-        prefs.setString('location', responserse.first.kv.getValue().toString());
-        prefs.setString('deviceId', deviceid);
-        prefs.setString('deviceName', deviceName);
+        if(responserse.length != "0") {
+          prefs.setString('location', responserse.first.getValue().toString());
+          prefs.setString('deviceId', deviceid);
+          prefs.setString('deviceName', deviceName);
 
-        List<String> versionlist = [];
-        versionlist.add("ver");
+          List<String> versionlist = [];
+          versionlist.add("ver");
 
-        List<AttributeKvEntry> version_responserse;
+          List<AttributeKvEntry> version_responserse;
 
-        version_responserse = (await tbClient.getAttributeService().getAttributeKvEntries(
-            response.id!, versionlist)) as List<AttributeKvEntry>;
+          version_responserse =
+          (await tbClient.getAttributeService().getAttributeKvEntries(
+              response.id!, versionlist)) as List<AttributeKvEntry>;
 
-        if(version_responserse.length == 0){
-          prefs.setString('version', "0");
+          if (version_responserse.length == 0) {
+            prefs.setString('version', "0");
+          } else {
+            prefs.setString('version', version_responserse.first.getValue());
+          }
+
+          if (relationDetails.length.toString() == "0") {
+            Navigator.pop(context);
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => ilm_installation_screen()));
+
+
+          } else {
+            Navigator.pop(context);
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => MaintenanceScreen()));
+          }
         }else{
-          prefs.setString('version', version_responserse.first.getValue());
-        }
-
-
-
-        if (relationDetails.length.toString() == "0") {
+          calltoast("Device Details Not Found");
           Navigator.pop(context);
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => ilm_installation_screen()));
-        } else {
-          Navigator.pop(context);
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => MaintenanceScreen()));
         }
       } catch (e) {
         var message = toThingsboardError(e,context);

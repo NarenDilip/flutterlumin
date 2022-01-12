@@ -76,6 +76,19 @@ class ward_li_screen_state extends State<ward_li_screen> {
   loadLocalData() async {
     var sharedPreferences = await SharedPreferences.getInstance() as SharedPreferences;
     sharedPreferences.setString("SelectedWard",selectedWard);
+
+    // DBHelper dbHelper = new DBHelper();
+    // var user_selectededWard = dbHelper.ward_basedDetails(selectedWard);
+    //
+    // var wardid = user_selectededWard.
+
+
+
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+            builder: (BuildContext context) =>
+                dashboard_screen()));
+
   }
 
   @override
@@ -161,10 +174,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                                 selectedWard = _foundUsers!.elementAt(index).toString();
                                 loadLocalData();
                               });
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen()));
+
                             },
                             title: Text(_foundUsers!.elementAt(index),
                                 style: const TextStyle(

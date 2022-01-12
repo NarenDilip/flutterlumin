@@ -62,6 +62,21 @@ class DBHelper {
     return ward;
   }
 
+  Future<List<Ward>> ward_basedDetails(String? selectedWard) async {
+    var dbClient = await db;
+    List<Map> maps = await dbClient
+        .query('ward',
+      where: 'wardname = ?',
+      whereArgs: [selectedWard],);
+    List<Ward> ward = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        ward.add(Ward.fromMap(maps[i] as dynamic));
+      }
+    }
+    return ward;
+  }
+
   Future<List<Zone>> zone_getDetails() async {
     var dbClient = await db;
     List<Map> maps = await dbClient

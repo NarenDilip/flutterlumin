@@ -988,7 +988,7 @@ Future<void> replaceShortingCap(context) async {
                         .id!, response.id!.id!);
 
                 DevicecurrentFolderName =
-                    currentdeviceresponse.first.id.toString();
+                    currentdeviceresponse.last.id.toString();
 
                 List<String> myList = [];
                 myList.add(response.id!.id!);
@@ -1111,11 +1111,6 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                   DeviceCredentials? newdeviceCredentials;
                   DeviceCredentials? olddeviceCredentials;
 
-                  var relation_response = await tbClient
-                      .getEntityRelationService()
-                      .deleteDeviceRelation(
-                      relationDetails.elementAt(0).from.id!, response.id!.id!);
-
                   if (relationDetails.length.toString() == "0") {
                     newdeviceCredentials = await tbClient
                         .getDeviceService()
@@ -1236,6 +1231,11 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                         .getDeviceService()
                         .getDeviceCredentialsByDeviceId(
                             response.id!.id.toString()) as DeviceCredentials;
+
+                    var relation_response = await tbClient
+                        .getEntityRelationService()
+                        .deleteDeviceRelation(
+                        relationDetails.elementAt(0).from.id!, response.id!.id!);
 
                     if (newdeviceCredentials != null) {
                       var newQRID =
