@@ -74,7 +74,7 @@ class replacementilmState extends State<replacementilm> {
                           color: Colors.grey[800],
                         )),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               rounded_button(
                 text: "Complete Replacement",
                 color: purpleColor,
