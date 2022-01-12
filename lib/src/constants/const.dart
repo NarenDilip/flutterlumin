@@ -24,6 +24,7 @@ const liblue = Color(0xff65f2f9 );
 const splashscreen_text = "Luminator";
 
 const serverUrl = "http://iotpro.io:8077";
+const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
 const app_username = "smartLumi@gmail.com";
 const app_password = "smartLumi";

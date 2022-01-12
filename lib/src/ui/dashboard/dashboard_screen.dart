@@ -280,8 +280,33 @@ Future<Device?> fetchSmartDeviceDetails(
         prefs.setString('deviceWatts', responser.last.kv.getValue().toString());
         prefs.setString('devicetimeStamp', responser.first.lastUpdateTs.toString());
 
+        List<String> myLister = [];
+        myLister.add("location");
+
+        List<BaseAttributeKvEntry> responserse;
+
+        responserse = (await tbClient.getAttributeService().getAttributeKvEntries(
+            response.id!, myLister)) as List<BaseAttributeKvEntry>;
+
+        prefs.setString('location', responserse.first.kv.getValue().toString());
         prefs.setString('deviceId', deviceid);
         prefs.setString('deviceName', deviceName);
+
+        List<String> versionlist = [];
+        versionlist.add("ver");
+
+        List<AttributeKvEntry> version_responserse;
+
+        version_responserse = (await tbClient.getAttributeService().getAttributeKvEntries(
+            response.id!, versionlist)) as List<AttributeKvEntry>;
+
+        if(version_responserse.length == 0){
+          prefs.setString('version', "0");
+        }else{
+          prefs.setString('version', version_responserse.first.getValue());
+        }
+
+
 
         if (relationDetails.length.toString() == "0") {
           Navigator.pop(context);
