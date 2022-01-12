@@ -615,67 +615,60 @@ class device_list_screen_state extends State<device_list_screen> {
                                     ],
                                   )),
                               Visibility(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                          color: liorange,
-                                          child: Expanded(
-                                            child: _foundUsers!.isNotEmpty
-                                                ? ListView.builder(
-                                              primary: false,
-                                              scrollDirection: Axis.vertical,
-                                              shrinkWrap: true,
-                                              itemCount: _foundUsers!.length,
-                                              itemBuilder: (context, index) =>
-                                                  Card(
-                                                    key: ValueKey(_foundUsers),
-                                                    color: Colors.white,
-                                                    margin:
-                                                    const EdgeInsets.fromLTRB(
-                                                        15, 1, 10, 0),
-                                                    child: ListTile(
-                                                      onTap: () {
-                                                        fetchDeviceDetails(
-                                                            _foundUsers!
-                                                                .elementAt(index)
-                                                                .toString(),
-                                                            context);
-                                                      },
-                                                      title: Text(
-                                                          _foundUsers!
-                                                              .elementAt(index),
-                                                          style: const TextStyle(
-                                                              fontSize: 22.0,
-                                                              fontFamily:
-                                                              "Montserrat",
-                                                              fontWeight:
-                                                              FontWeight.bold,
-                                                              color: Colors.black)),
-                                                    ),
-                                                  ),
-                                            )
-                                                : Container(
-                                                color: Colors.white,
-                                                child: Column(children: [
-                                                  SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Text(
-                                                    'No results found',
-                                                    textAlign: TextAlign.center,
+                                child:  Container(
+                                    color: liorange,
+                                      child: _foundUsers!.isNotEmpty
+                                          ? ListView.builder(
+                                        primary: false,
+                                        scrollDirection: Axis.vertical,
+                                        shrinkWrap: true,
+                                        itemCount: _foundUsers!.length,
+                                        itemBuilder: (context, index) =>
+                                            Card(
+                                              key: ValueKey(_foundUsers),
+                                              color: Colors.white,
+                                              margin:
+                                              const EdgeInsets.fromLTRB(
+                                                  15, 1, 10, 0),
+                                              child: ListTile(
+                                                onTap: () {
+                                                  fetchDeviceDetails(
+                                                      _foundUsers!
+                                                          .elementAt(index)
+                                                          .toString(),
+                                                      context);
+                                                },
+                                                title: Text(
+                                                    _foundUsers!
+                                                        .elementAt(index),
                                                     style: const TextStyle(
-                                                        fontSize: 18.0,
-                                                        fontFamily: "Montserrat",
+                                                        fontSize: 22.0,
+                                                        fontFamily:
+                                                        "Montserrat",
                                                         fontWeight:
-                                                        FontWeight.normal,
-                                                        color: Colors.black),
-                                                  )
-                                                ])),
-                                          )),
-                                    ],
-                                  ),
-                                ),
+                                                        FontWeight.bold,
+                                                        color: Colors.black)),
+                                              ),
+                                            ),
+                                      )
+                                          : Container(
+                                          color: Colors.white,
+                                          child: Column(children: [
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            Text(
+                                              'No results found',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight:
+                                                  FontWeight.normal,
+                                                  color: Colors.black),
+                                            )
+                                          ])),
+                                    ),
                                 visible: _ilmvisible,
                               ),
                             ],
