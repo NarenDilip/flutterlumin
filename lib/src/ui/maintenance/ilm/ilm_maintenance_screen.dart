@@ -294,22 +294,24 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                   Row(
                                     children: <Widget>[
                                       Container(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            5, 0, 0, 0),
+                                        padding: const EdgeInsets.fromLTRB(5,
+                                            0, 0, 0),
                                         width: width / 3,
-                                        height: 80,
+                                        height: 45,
                                         alignment: Alignment.centerLeft,
                                         decoration: const BoxDecoration(
                                             color: Colors.white,
                                             borderRadius: BorderRadius.all(
                                                 Radius.circular(15.0))),
-                                        child: Text(
-                                          '$DeviceName',
-                                          style: TextStyle(
-                                              color: Colors.deepOrange,
-                                              fontSize: 26,
-                                              fontFamily: "Montserrat",
-                                              fontWeight: FontWeight.bold),
+                                        child: Center(
+                                          child: Text(
+                                            '$DeviceName',
+                                            style: TextStyle(
+                                                color: Colors.deepOrange,
+                                                fontSize: 26,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                         ),
                                       ), //Container
                                       SizedBox(
@@ -317,7 +319,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                       ), //SizedBox
                                       Container(
                                           width: width / 2.05,
-                                          height: 80,
+                                          height: 25,
                                           child: Text(
                                             "$location",
                                             style: const TextStyle(

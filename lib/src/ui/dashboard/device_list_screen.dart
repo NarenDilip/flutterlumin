@@ -193,7 +193,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                   bottomLeft: Radius.circular(0.0),
                                   bottomRight: Radius.circular(0.0))),
                           child: ListView(
-                            padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+                            padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                             children: <Widget>[
                               const SizedBox(
                                 height: 5,

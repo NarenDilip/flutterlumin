@@ -154,7 +154,7 @@ class device_count_screen_state extends State<device_count_screen> {
                         SizedBox(height: 5),
                         Container(
                             child: Padding(
-                                padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+                                padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                                 child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
