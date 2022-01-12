@@ -35,7 +35,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   flutter_secure_storage: ^4.2.0
   web_socket_channel: ^2.1.0
-  connectivity: ^3.0.3
+  connectivity: any
   email_validator: ^2.0.1
   fluttertoast: ^8.0.6
 
