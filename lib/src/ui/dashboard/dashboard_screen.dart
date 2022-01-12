@@ -99,7 +99,7 @@ class dashboard_screenState extends State<dashboard_screen> {
               color: Colors.black,
               size: 45,
             ),
-            title: Text('Dashboard'),
+            label:'Dashboard',
             activeIcon: Icon(
               Icons.analytics,
               color: Colors.white,
@@ -125,7 +125,7 @@ class dashboard_screenState extends State<dashboard_screen> {
               color: Colors.black,
               size: 45,
             ),
-            title: Text('Device List'),
+            label:'Device List',
             activeIcon: Icon(
               Icons.list,
               color: Colors.white,
