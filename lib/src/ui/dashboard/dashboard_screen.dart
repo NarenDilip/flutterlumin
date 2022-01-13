@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutterlumin/src/constants/const.dart';
@@ -10,7 +9,6 @@ import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
-import 'package:flutterlumin/src/ui/dashboard/map_view_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/installation/ilm/ilm_installation_screen.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
@@ -18,7 +16,6 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class dashboard_screen extends StatefulWidget {
