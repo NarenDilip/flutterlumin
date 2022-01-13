@@ -174,6 +174,7 @@ Future<Device?> fetchDeviceDetails(
   Utility.isConnected().then((value) async {
     if (value) {
       try {
+        Utility.progressDialog(context);
         Device response;
         Future<List<EntityGroupInfo>> deviceResponse;
         var tbClient = ThingsboardClient(serverUrl);
@@ -249,6 +250,7 @@ Future<Device?> fetchSmartDeviceDetails(
   Utility.isConnected().then((value) async {
     if (value) {
       try {
+        Utility.progressDialog(context);
         Device response;
         Future<List<EntityGroupInfo>> deviceResponse;
         var tbClient = ThingsboardClient(serverUrl);

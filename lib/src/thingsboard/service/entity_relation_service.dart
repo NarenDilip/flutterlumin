@@ -104,12 +104,60 @@ class EntityRelationService {
     return response.data!.map((e) => EntityRelation.fromJson(e)).toList();
   }
 
+  Future<List<EntityRelationInfo>> findInfoByAllFrom(EntityId fromId,
+      {RelationTypeGroup? relationTypeGroup,
+        RequestConfig? requestConfig}) async {
+    var queryParameters = {
+      'fromId': fromId.id,
+      'fromType': "DEVICE"
+    };
+    if (relationTypeGroup != null) {
+      queryParameters['relationTypeGroup'] = relationTypeGroup.toShortString();
+    }
+    var response = await _tbClient.get<List<dynamic>>('/api/relations/info',
+        queryParameters: queryParameters,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return response.data!.map((e) => EntityRelationInfo.fromJson(e)).toList();
+  }
+
   Future<List<EntityRelationInfo>> findInfoByFrom(EntityId fromId,
       {RelationTypeGroup? relationTypeGroup,
       RequestConfig? requestConfig}) async {
     var queryParameters = {
       'fromId': fromId.id,
       'fromType': fromId.entityType.toShortString()
+    };
+    if (relationTypeGroup != null) {
+      queryParameters['relationTypeGroup'] = relationTypeGroup.toShortString();
+    }
+    var response = await _tbClient.get<List<dynamic>>('/api/relations/info',
+        queryParameters: queryParameters,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return response.data!.map((e) => EntityRelationInfo.fromJson(e)).toList();
+  }
+
+  Future<List<EntityRelationInfo>> findInfoByAssetFrom(EntityId fromId,
+      {RelationTypeGroup? relationTypeGroup,
+        RequestConfig? requestConfig}) async {
+    var queryParameters = {
+      'fromId': fromId.id,
+      'fromType': "ASSET"
+    };
+    if (relationTypeGroup != null) {
+      queryParameters['relationTypeGroup'] = relationTypeGroup.toShortString();
+    }
+    var response = await _tbClient.get<List<dynamic>>('/api/relations/info',
+        queryParameters: queryParameters,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return response.data!.map((e) => EntityRelationInfo.fromJson(e)).toList();
+  }
+
+  Future<List<EntityRelationInfo>> findInfoByAssetDevice(EntityId fromId,
+      {RelationTypeGroup? relationTypeGroup,
+        RequestConfig? requestConfig}) async {
+    var queryParameters = {
+      'fromId': fromId.id,
+      'fromType': "DEVICE"
     };
     if (relationTypeGroup != null) {
       queryParameters['relationTypeGroup'] = relationTypeGroup.toShortString();

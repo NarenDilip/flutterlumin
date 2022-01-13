@@ -23,11 +23,12 @@ const liblue = Color(0xff65f2f9 );
 
 const splashscreen_text = "Luminator";
 
-const serverUrl = "http://iotpro.io:8077";
+// const serverUrl = "http://iotpro.io:8077";
+const serverUrl = "https://schnelliot.in/";
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
-const app_username = "smartLumi@gmail.com";
-const app_password = "smartLumi";
+// const app_username = "smartLumi@gmail.com";
+// const app_password = "smartLumi";
 
 const no_network = "Please check your Mobile Internet Connectivity";
 const user_email = "User Email";
@@ -36,14 +37,17 @@ const validate_email = "Please enter the validate email";
 const sign_in = "SIGN IN";
 const qr_text = "SCAN QR CODE";
 
+// const ILMserviceFolderName = "forRepairILM";
+const ILMserviceFolderName = "forServiceLuminodes";
+
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "ccms";
 const Gw_deviceType = "Gateway";
 
 const session_expired = "Session expired!";
 
-const smart_Username = "developer@schnellenergy.com";
-const smart_Password = "schnell";
+// const smart_Username = "developer@schnellenergy.com";
+// const smart_Password = "schnell";
 
 // const prod_Username = "production@schnellenergy.com";
 // const prod_Password = "LumiNode";

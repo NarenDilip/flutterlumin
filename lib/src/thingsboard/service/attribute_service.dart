@@ -39,6 +39,16 @@ class AttributeService {
     return RestJsonConverter.toAttributes(response.data);
   }
 
+  Future<List<AttributeKvEntry>> getAttributeallKvEntries(
+      String entityId, List<String> keys,
+      {RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<List<dynamic>>(
+        '/api/plugins/telemetry/DEVICE/${entityId}/values/attributes',
+        queryParameters: {'keys': keys.join(',')},
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return RestJsonConverter.toAttributes(response.data);
+  }
+
   Future<List<AttributeKvEntry>> getAttributesByScope(
       EntityId entityId, String scope, List<String> keys,
       {RequestConfig? requestConfig}) async {

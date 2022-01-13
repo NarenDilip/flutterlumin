@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
@@ -57,6 +58,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     location = prefs.getString("location").toString();
     version = prefs.getString("version").toString();
 
+    prefs.setString('Maintenance', "Yes");
+
     setState(() {
       Lampwatts = Lampwatts;
       DeviceName = DeviceName;
@@ -105,8 +108,11 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else {
+          SystemNavigator.pop();
+        }
         return true;
       },
       child: Scaffold(
@@ -294,8 +300,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                   Row(
                                     children: <Widget>[
                                       Container(
-                                        padding: const EdgeInsets.fromLTRB(5,
-                                            0, 0, 0),
+                                        padding: const EdgeInsets.fromLTRB(
+                                            5, 0, 0, 0),
                                         width: width / 3,
                                         height: 45,
                                         alignment: Alignment.centerLeft,
@@ -470,7 +476,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                       ),
                                       onTap: () {
                                         if ('$DeviceStatus' != "false") {
-                                          getLiveRPCCall(version,context);
+                                          getLiveRPCCall(version, context);
                                         } else {
                                           Fluttertoast.showToast(
                                               msg: "Device in Offline Mode",
@@ -734,14 +740,21 @@ Future<void> callONRPCCall(context) async {
             .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
             .timeout(Duration(minutes: 2));
 
-        if(response["lamp"].toString() == "1" ) {
-          calltoast("Device ON Sucessfully");
+        if (response["lamp"].toString() == "1") {
+          Fluttertoast.showToast(
+              msg: "Device ON Successfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+
           Navigator.pop(context);
-        }else {
+        } else {
           calltoast("Unable to Process, Please try again");
           Navigator.pop(context);
         }
-
       } catch (e) {
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -782,10 +795,18 @@ Future<void> callOFFRPCCall(context) async {
             .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
             .timeout(const Duration(minutes: 2));
 
-        if(response["lamp"].toString() == "0" ) {
-          calltoast("Device OFF Sucessfully");
+        if (response["lamp"].toString() == "0") {
+          Fluttertoast.showToast(
+              msg: "Device Off Successfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+
           Navigator.pop(context);
-        }else {
+        } else {
           calltoast("Unable to Process, Please try again");
           Navigator.pop(context);
         }
@@ -807,7 +828,7 @@ Future<void> callOFFRPCCall(context) async {
   });
 }
 
-Future<void> getLiveRPCCall(version,context) async {
+Future<void> getLiveRPCCall(version, context) async {
   Utility.isConnected().then((value) async {
     if (value) {
       Utility.progressDialog(context);
@@ -819,16 +840,20 @@ Future<void> getLiveRPCCall(version,context) async {
         // type: String
         final jsonData;
 
-        if(version == "0"){
-          jsonData = {"method": "get", "params":0};
-        }else{
-          jsonData = {"method": "get", "params":{"rpcType":2,"value":0}};
+        if (version == "0") {
+          jsonData = {"method": "get", "params": 0};
+        } else {
+          jsonData = {
+            "method": "get",
+            "params": {"rpcType": 2, "value": 0}
+          };
         }
 
         // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(deviceID, jsonData).timeout(const Duration(minutes: 5));
+            .handleOneWayDeviceRPCRequest(deviceID, jsonData)
+            .timeout(const Duration(minutes: 5));
         Navigator.pop(context);
         // if(response.) {
         //   calltoast("Device ON Sucessfully");
@@ -842,7 +867,7 @@ Future<void> getLiveRPCCall(version,context) async {
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
-            getLiveRPCCall(version,context);
+            getLiveRPCCall(version, context);
           }
         } else {
           calltoast("Unable to Process");
@@ -966,7 +991,7 @@ Future<void> replaceShortingCap(context) async {
 
           if (entitygroups != null) {
             for (int i = 0; i < entitygroups.length; i++) {
-              if (entitygroups.elementAt(i).name == "forRepairILM") {
+              if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
                 DevicemoveFolderName =
                     entitygroups.elementAt(i).id!.id!.toString();
               }
@@ -978,17 +1003,28 @@ Future<void> replaceShortingCap(context) async {
                 .getEntityGroupsForFolderEntity(response.id!.id!);
 
             if (currentdeviceresponse != null) {
-              if(currentdeviceresponse.last.id.toString().isNotEmpty) {
+              if (currentdeviceresponse.last.id.toString().isNotEmpty) {
+
+                var firstdetails = await tbClient
+                    .getEntityGroupService()
+                    .getEntityGroup(currentdeviceresponse.first.id!);
+                if (firstdetails!.name.toString() != "All") {
+                  DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                }
+                var seconddetails = await tbClient
+                    .getEntityGroupService()
+                    .getEntityGroup(currentdeviceresponse.last.id!);
+                if (seconddetails!.name.toString() != "All") {
+                  DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                }
+
                 var relation_response = await tbClient
                     .getEntityRelationService()
-                    .deleteDeviceRelation(
-                    relationDetails
-                        .elementAt(0)
-                        .from
-                        .id!, response.id!.id!);
+                    .deleteDeviceRelation(relationDetails.elementAt(0).from.id!,
+                        response.id!.id!);
 
-                DevicecurrentFolderName =
-                    currentdeviceresponse.last.id.toString();
+                // DevicecurrentFolderName =
+                //     currentdeviceresponse.last.id.toString();
 
                 List<String> myList = [];
                 myList.add(response.id!.id!);
@@ -996,7 +1032,7 @@ Future<void> replaceShortingCap(context) async {
                 var remove_response = tbClient
                     .getEntityGroupService()
                     .removeEntitiesFromEntityGroup(
-                    DevicecurrentFolderName, myList);
+                        DevicecurrentFolderName, myList);
 
                 var add_response = tbClient
                     .getEntityGroupService()
@@ -1004,8 +1040,7 @@ Future<void> replaceShortingCap(context) async {
 
                 Navigator.pop(context);
                 callDashboard(context);
-
-              }else{
+              } else {
                 calltoast("Device is not Found");
                 Navigator.pop(context);
               }
@@ -1066,7 +1101,7 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
 
           if (entitygroups != null) {
             for (int i = 0; i < entitygroups.length; i++) {
-              if (entitygroups.elementAt(i).name == "forRepairILM") {
+              if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
                 DevicemoveFolderName =
                     entitygroups.elementAt(i).id!.id!.toString();
               }
@@ -1078,8 +1113,20 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                 .getEntityGroupsForFolderEntity(response.id!.id!);
 
             if (currentdeviceresponse != null) {
-              DevicecurrentFolderName =
-                  currentdeviceresponse.last.id.toString();
+
+              var firstdetails = await tbClient
+                  .getEntityGroupService()
+                  .getEntityGroup(currentdeviceresponse.first.id!);
+              if (firstdetails!.name.toString() != "All") {
+                DevicecurrentFolderName = currentdeviceresponse.first.id!;
+              }
+              var seconddetails = await tbClient
+                  .getEntityGroupService()
+                  .getEntityGroup(currentdeviceresponse.last.id!);
+              if (seconddetails!.name.toString() != "All") {
+                DevicecurrentFolderName = currentdeviceresponse.first.id!;
+              }
+
 
               var relationDetails = await tbClient
                   .getEntityRelationService()
@@ -1119,7 +1166,7 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
 
                     if (newdeviceCredentials != null) {
                       var newQRID =
-                      newdeviceCredentials.credentialsId.toString();
+                          newdeviceCredentials.credentialsId.toString();
 
                       newdeviceCredentials.credentialsId = newQRID + "L";
                       var credresponse = await tbClient
@@ -1141,14 +1188,14 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                         var Old_Device_Name = Olddevicedetails.name;
 
                         olddeviceCredentials = await tbClient
-                            .getDeviceService()
-                            .getDeviceCredentialsByDeviceId(
-                            Olddevicedetails.id!.id.toString())
-                        as DeviceCredentials;
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                    Olddevicedetails.id!.id.toString())
+                            as DeviceCredentials;
 
                         if (olddeviceCredentials != null) {
                           var oldQRID =
-                          olddeviceCredentials.credentialsId.toString();
+                              olddeviceCredentials.credentialsId.toString();
 
                           olddeviceCredentials.credentialsId = oldQRID + "L";
                           var old_cred_response = await tbClient
@@ -1179,7 +1226,7 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                           var up_attribute = (await tbClient
                               .getAttributeService()
                               .saveDeviceAttributes(response.id!.id!,
-                              "SERVER_SCOPE", old_body_req));
+                                  "SERVER_SCOPE", old_body_req));
 
                           // New Device Updations
 
@@ -1202,7 +1249,7 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                           var up_newdevice_attribute = (await tbClient
                               .getAttributeService()
                               .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                              "SERVER_SCOPE", new_body_req));
+                                  "SERVER_SCOPE", new_body_req));
 
                           List<String> myList = [];
                           myList.add(response.id!.id!);
@@ -1210,12 +1257,12 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                           var remove_response = tbClient
                               .getEntityGroupService()
                               .removeEntitiesFromEntityGroup(
-                              DevicecurrentFolderName, myList);
+                                  DevicecurrentFolderName, myList);
 
                           var add_response = tbClient
                               .getEntityGroupService()
                               .addEntitiesToEntityGroup(
-                              DevicemoveFolderName, myList);
+                                  DevicemoveFolderName, myList);
 
                           Navigator.pop(context);
                           callDashboard(context);
@@ -1235,7 +1282,8 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                     var relation_response = await tbClient
                         .getEntityRelationService()
                         .deleteDeviceRelation(
-                        relationDetails.elementAt(0).from.id!, response.id!.id!);
+                            relationDetails.elementAt(0).from.id!,
+                            response.id!.id!);
 
                     if (newdeviceCredentials != null) {
                       var newQRID =

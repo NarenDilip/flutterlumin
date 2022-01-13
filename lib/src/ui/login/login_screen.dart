@@ -139,20 +139,30 @@ class LoginForm extends StatelessWidget {
     // storage = TbSecureStorage();
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
-
+        Utility.progressDialog(context);
         if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('username', user.username);
           var status = await login_thingsboard.callThingsboardLogin(
               context, user.username, user.password);
           if (status == true) {
+            prefs.setString('username', user.username);
+            prefs.setString('password', user.password);
             callRegionDetails(context);
             // Navigator.of(context).pushReplacement(MaterialPageRoute(
             //     builder: (BuildContext context) => dashboard_screen()));
+          }else{
+            Navigator.pop(context);
+            Fluttertoast.showToast(
+                msg: "Please check Username and Password, Invalid Credentials",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
         } else {
-          // Navigator.pop(context);
+          Navigator.pop(context);
           Fluttertoast.showToast(
               msg: "Please check Username and Password, Invalid Credentials",
               toastLength: Toast.LENGTH_SHORT,

@@ -22,7 +22,6 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import '../splash_screen.dart';
 import 'dashboard_screen.dart';
 
-
 class device_list_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -41,7 +40,8 @@ class device_list_screen_state extends State<device_list_screen> {
   bool _obscureText = true;
   String searchNumber = "0";
   final TextEditingController _emailController =
-  TextEditingController(text: "");
+      TextEditingController(text: "");
+  String Maintenance = "true";
 
   final user = DeviceRequester(
     ilmnumber: "",
@@ -54,11 +54,13 @@ class device_list_screen_state extends State<device_list_screen> {
     SelectedRegion = prefs.getString("SelectedRegion").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
+    Maintenance = prefs.getString("Maintenance").toString();
 
     setState(() {
       SelectedRegion = SelectedRegion;
       SelectedZone = SelectedZone;
       SelectedWard = SelectedWard;
+      Maintenance = Maintenance;
 
       if (SelectedRegion == "0" || SelectedRegion == "null") {
         SelectedRegion = "Region";
@@ -91,50 +93,53 @@ class device_list_screen_state extends State<device_list_screen> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery
-        .of(context)
-        .size;
+    Size size = MediaQuery.of(context).size;
     return WillPopScope(
         onWillPop: () async {
-          final result = await showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              insetPadding: EdgeInsets.symmetric(horizontal: 0),
-              backgroundColor: Colors.white,
-              title: Text("Luminator", style: const TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: liorange)),
-              content: Text("Are you sure you want to exit?", style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black)),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                  },
-                  child: Text("NO", style: const TextStyle(
-                      fontSize: 18.0,
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green)),
-                ),
-                TextButton(
-                  child: Text('YES',  style: const TextStyle(
-                      fontSize: 18.0,
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red)),
-                  onPressed: () {
-                    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-                  },
-                ),
-              ],
-            ),
-          );
+                final result = await showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                insetPadding: EdgeInsets.symmetric(horizontal: 0),
+                backgroundColor: Colors.white,
+                title: Text("Luminator",
+                    style: const TextStyle(
+                        fontSize: 25.0,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.bold,
+                        color: liorange)),
+                content: Text("Are you sure you want to exit devicelist?",
+                    style: const TextStyle(
+                        fontSize: 18.0,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black)),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text("NO",
+                        style: const TextStyle(
+                            fontSize: 18.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green)),
+                  ),
+                  TextButton(
+                    child: Text('YES',
+                        style: const TextStyle(
+                            fontSize: 18.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red)),
+                    onPressed: () {
+                      SystemChannels.platform
+                          .invokeMethod('SystemNavigator.pop');
+                    },
+                  ),
+                ],
+              ),
+            );
           return result;
         },
         child: Scaffold(
@@ -200,7 +205,7 @@ class device_list_screen_state extends State<device_list_screen> {
                               ),
                               Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceEvenly,
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   TextButton(
                                       child: Text('$SelectedRegion',
@@ -213,23 +218,23 @@ class device_list_screen_state extends State<device_list_screen> {
                                           padding: MaterialStateProperty.all<
                                               EdgeInsets>(EdgeInsets.all(20)),
                                           backgroundColor:
-                                          MaterialStateProperty.all(
-                                              lightorange),
+                                              MaterialStateProperty.all(
+                                                  lightorange),
                                           foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              Colors.black),
+                                              MaterialStateProperty.all<Color>(
+                                                  Colors.black),
                                           shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder>(
                                               RoundedRectangleBorder(
-                                                borderRadius:
+                                            borderRadius:
                                                 BorderRadius.circular(18.0),
-                                              ))),
+                                          ))),
                                       onPressed: () {
                                         Navigator.of(context).push(
                                             MaterialPageRoute(
                                                 builder:
                                                     (BuildContext context) =>
-                                                    region_list_screen()));
+                                                        region_list_screen()));
                                       }),
                                   SizedBox(width: 5),
                                   TextButton(
@@ -243,20 +248,20 @@ class device_list_screen_state extends State<device_list_screen> {
                                           padding: MaterialStateProperty.all<
                                               EdgeInsets>(EdgeInsets.all(20)),
                                           backgroundColor:
-                                          MaterialStateProperty.all(
-                                              lightorange),
+                                              MaterialStateProperty.all(
+                                                  lightorange),
                                           shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder>(
                                               RoundedRectangleBorder(
-                                                borderRadius:
+                                            borderRadius:
                                                 BorderRadius.circular(18.0),
-                                              ))),
+                                          ))),
                                       onPressed: () {
                                         Navigator.of(context).push(
                                             MaterialPageRoute(
                                                 builder:
                                                     (BuildContext context) =>
-                                                    zone_li_screen()));
+                                                        zone_li_screen()));
                                       }),
                                   SizedBox(width: 5),
                                   TextButton(
@@ -270,20 +275,20 @@ class device_list_screen_state extends State<device_list_screen> {
                                           padding: MaterialStateProperty.all<
                                               EdgeInsets>(EdgeInsets.all(20)),
                                           backgroundColor:
-                                          MaterialStateProperty.all(
-                                              lightorange),
+                                              MaterialStateProperty.all(
+                                                  lightorange),
                                           shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder>(
                                               RoundedRectangleBorder(
-                                                borderRadius:
+                                            borderRadius:
                                                 BorderRadius.circular(18.0),
-                                              ))),
+                                          ))),
                                       onPressed: () {
                                         Navigator.of(context).push(
                                             MaterialPageRoute(
                                                 builder:
                                                     (BuildContext context) =>
-                                                    ward_li_screen()));
+                                                        ward_li_screen()));
                                       })
                                 ],
                               ),
@@ -300,7 +305,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     decoration: BoxDecoration(
                                         color: liorange,
                                         borderRadius:
-                                        BorderRadius.circular(30)),
+                                            BorderRadius.circular(30)),
                                     child: Column(
                                       children: [
                                         Row(
@@ -314,13 +319,13 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         style: TextStyle(
                                                             fontSize: 18.0,
                                                             fontFamily:
-                                                            "Montserrat",
+                                                                "Montserrat",
                                                             color: Colors
                                                                 .black)))),
                                             Expanded(
                                               child: Align(
                                                 alignment:
-                                                Alignment.centerRight,
+                                                    Alignment.centerRight,
                                                 child: Padding(
                                                   padding: EdgeInsets.all(12),
                                                   child: Icon(
@@ -356,18 +361,18 @@ class device_list_screen_state extends State<device_list_screen> {
                                             child: TextFormField(
                                                 autofocus: false,
                                                 keyboardType:
-                                                TextInputType.text,
+                                                    TextInputType.text,
                                                 decoration: InputDecoration(
                                                   filled: true,
                                                   hintText: 'ILM Number',
                                                   fillColor: Colors.white,
                                                   contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                                      EdgeInsets.fromLTRB(
+                                                          10, 0, 0, 0),
                                                   border: OutlineInputBorder(
                                                       borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                          BorderRadius.circular(
+                                                              20.0),
                                                       borderSide: BorderSide(
                                                           color: Colors.white)),
                                                   suffixIcon: GestureDetector(
@@ -376,21 +381,21 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           .isNotEmpty) {
                                                         FocusScope.of(context)
                                                             .requestFocus(
-                                                            FocusNode());
+                                                                FocusNode());
                                                         callILMDeviceListFinder(
                                                             user.ilmnumber,
                                                             context);
                                                       } else {
                                                         Fluttertoast.showToast(
                                                             msg:
-                                                            "Please Enter Device",
+                                                                "Please Enter Device",
                                                             toastLength: Toast
                                                                 .LENGTH_SHORT,
                                                             gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
+                                                                ToastGravity
+                                                                    .BOTTOM,
                                                             timeInSecForIosWeb:
-                                                            1);
+                                                                1);
                                                       }
                                                     },
                                                     child: Icon(
@@ -398,15 +403,15 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           ? Icons.search
                                                           : Icons.search,
                                                       semanticLabel:
-                                                      _obscureText
-                                                          ? 'show password'
-                                                          : 'hide password',
+                                                          _obscureText
+                                                              ? 'show password'
+                                                              : 'hide password',
                                                     ),
                                                   ),
                                                 ),
                                                 onSaved: (value) =>
-                                                user.ilmnumber =
-                                                    value!.toUpperCase(),
+                                                    user.ilmnumber =
+                                                        value!.toUpperCase(),
                                                 onChanged: (String value) {
                                                   user.ilmnumber =
                                                       value.toUpperCase();
@@ -421,18 +426,18 @@ class device_list_screen_state extends State<device_list_screen> {
                                             child: TextFormField(
                                                 autofocus: false,
                                                 keyboardType:
-                                                TextInputType.text,
+                                                    TextInputType.text,
                                                 decoration: InputDecoration(
                                                   filled: true,
                                                   hintText: 'CCMS Number',
                                                   fillColor: Colors.white,
                                                   contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                                      EdgeInsets.fromLTRB(
+                                                          10, 0, 0, 0),
                                                   border: OutlineInputBorder(
                                                       borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                          BorderRadius.circular(
+                                                              20.0),
                                                       borderSide: BorderSide(
                                                           color: Colors.white)),
                                                   suffixIcon: GestureDetector(
@@ -441,7 +446,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           .isNotEmpty) {
                                                         FocusScope.of(context)
                                                             .requestFocus(
-                                                            FocusNode());
+                                                                FocusNode());
                                                         callccmsbasedILMDeviceListFinder(
                                                             user.ccmsnumber,
                                                             _relationdevices,
@@ -450,14 +455,14 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       } else {
                                                         Fluttertoast.showToast(
                                                             msg:
-                                                            "Please Enter Device",
+                                                                "Please Enter Device",
                                                             toastLength: Toast
                                                                 .LENGTH_SHORT,
                                                             gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
+                                                                ToastGravity
+                                                                    .BOTTOM,
                                                             timeInSecForIosWeb:
-                                                            1);
+                                                                1);
                                                       }
                                                     },
                                                     child: Icon(
@@ -465,15 +470,15 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           ? Icons.search
                                                           : Icons.search,
                                                       semanticLabel:
-                                                      _obscureText
-                                                          ? 'show password'
-                                                          : 'hide password',
+                                                          _obscureText
+                                                              ? 'show password'
+                                                              : 'hide password',
                                                     ),
                                                   ),
                                                 ),
                                                 onSaved: (value) =>
-                                                user.ccmsnumber =
-                                                    value!.toUpperCase(),
+                                                    user.ccmsnumber =
+                                                        value!.toUpperCase(),
                                                 onChanged: (String value) {
                                                   user.ccmsnumber =
                                                       value.toUpperCase();
@@ -488,18 +493,18 @@ class device_list_screen_state extends State<device_list_screen> {
                                             child: TextFormField(
                                                 autofocus: false,
                                                 keyboardType:
-                                                TextInputType.text,
+                                                    TextInputType.text,
                                                 decoration: InputDecoration(
                                                   filled: true,
                                                   hintText: 'Pole Number',
                                                   fillColor: Colors.white,
                                                   contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                                      EdgeInsets.fromLTRB(
+                                                          10, 0, 0, 0),
                                                   border: OutlineInputBorder(
                                                       borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                          BorderRadius.circular(
+                                                              20.0),
                                                       borderSide: BorderSide(
                                                           color: Colors.white)),
                                                   suffixIcon: GestureDetector(
@@ -508,7 +513,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           .isNotEmpty) {
                                                         FocusScope.of(context)
                                                             .requestFocus(
-                                                            FocusNode());
+                                                                FocusNode());
                                                         callpolebasedILMDeviceListFinder(
                                                             user.polenumber,
                                                             _relationdevices,
@@ -517,14 +522,14 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       } else {
                                                         Fluttertoast.showToast(
                                                             msg:
-                                                            "Please Enter Device",
+                                                                "Please Enter Device",
                                                             toastLength: Toast
                                                                 .LENGTH_SHORT,
                                                             gravity:
-                                                            ToastGravity
-                                                                .BOTTOM,
+                                                                ToastGravity
+                                                                    .BOTTOM,
                                                             timeInSecForIosWeb:
-                                                            1);
+                                                                1);
                                                       }
                                                     },
                                                     child: Icon(
@@ -532,15 +537,15 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           ? Icons.search
                                                           : Icons.search,
                                                       semanticLabel:
-                                                      _obscureText
-                                                          ? 'show password'
-                                                          : 'hide password',
+                                                          _obscureText
+                                                              ? 'show password'
+                                                              : 'hide password',
                                                     ),
                                                   ),
                                                 ),
                                                 onSaved: (value) =>
-                                                user.polenumber =
-                                                    value!.toUpperCase(),
+                                                    user.polenumber =
+                                                        value!.toUpperCase(),
                                                 onChanged: (String value) {
                                                   user.polenumber =
                                                       value.toUpperCase();
@@ -582,76 +587,69 @@ class device_list_screen_state extends State<device_list_screen> {
                                         },
                                         child: Container(
                                             child: Row(
-                                              children: [
-                                                Expanded(
-                                                    child: Padding(
-                                                        padding: EdgeInsets
-                                                            .only(
-                                                            left: 12),
-                                                        child: Text(
-                                                            'ILM Devices',
-                                                            style: TextStyle(
-                                                                fontSize: 18.0,
-                                                                fontFamily:
+                                          children: [
+                                            Expanded(
+                                                child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 12),
+                                                    child: Text('ILM Devices',
+                                                        style: TextStyle(
+                                                            fontSize: 18.0,
+                                                            fontFamily:
                                                                 "Montserrat",
-                                                                color: Colors
-                                                                    .black)))),
-                                                Expanded(
-                                                  child: Align(
-                                                    alignment:
+                                                            color: Colors
+                                                                .black)))),
+                                            Expanded(
+                                              child: Align(
+                                                alignment:
                                                     Alignment.centerRight,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.all(
-                                                          12),
-                                                      child: Icon(
-                                                        Icons.arrow_drop_down,
-                                                      ),
-                                                    ),
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(12),
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down,
                                                   ),
-                                                )
-                                              ],
-                                            )),
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        )),
                                       ),
                                     ],
                                   )),
                               Visibility(
-                                child:  Container(
-                                    color: liorange,
-                                      child: _foundUsers!.isNotEmpty
-                                          ? ListView.builder(
-                                        primary: false,
-                                        scrollDirection: Axis.vertical,
-                                        shrinkWrap: true,
-                                        itemCount: _foundUsers!.length,
-                                        itemBuilder: (context, index) =>
-                                            Card(
-                                              key: ValueKey(_foundUsers),
-                                              color: Colors.white,
-                                              margin:
-                                              const EdgeInsets.fromLTRB(
-                                                  15, 1, 10, 0),
-                                              child: ListTile(
-                                                onTap: () {
-                                                  fetchDeviceDetails(
-                                                      _foundUsers!
-                                                          .elementAt(index)
-                                                          .toString(),
-                                                      context);
-                                                },
-                                                title: Text(
+                                child: Container(
+                                  color: liorange,
+                                  child: _foundUsers!.isNotEmpty
+                                      ? ListView.builder(
+                                          primary: false,
+                                          scrollDirection: Axis.vertical,
+                                          shrinkWrap: true,
+                                          itemCount: _foundUsers!.length,
+                                          itemBuilder: (context, index) => Card(
+                                            key: ValueKey(_foundUsers),
+                                            color: Colors.white,
+                                            margin: const EdgeInsets.fromLTRB(
+                                                15, 1, 10, 0),
+                                            child: ListTile(
+                                              onTap: () {
+                                                fetchDeviceDetails(
                                                     _foundUsers!
-                                                        .elementAt(index),
-                                                    style: const TextStyle(
-                                                        fontSize: 22.0,
-                                                        fontFamily:
-                                                        "Montserrat",
-                                                        fontWeight:
-                                                        FontWeight.bold,
-                                                        color: Colors.black)),
-                                              ),
+                                                        .elementAt(index)
+                                                        .toString(),
+                                                    context);
+                                              },
+                                              title: Text(
+                                                  _foundUsers!.elementAt(index),
+                                                  style: const TextStyle(
+                                                      fontSize: 22.0,
+                                                      fontFamily: "Montserrat",
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black)),
                                             ),
-                                      )
-                                          : Container(
+                                          ),
+                                        )
+                                      : Container(
                                           color: Colors.white,
                                           child: Column(children: [
                                             SizedBox(
@@ -663,12 +661,11 @@ class device_list_screen_state extends State<device_list_screen> {
                                               style: const TextStyle(
                                                   fontSize: 18.0,
                                                   fontFamily: "Montserrat",
-                                                  fontWeight:
-                                                  FontWeight.normal,
+                                                  fontWeight: FontWeight.normal,
                                                   color: Colors.black),
                                             )
                                           ])),
-                                    ),
+                                ),
                                 visible: _ilmvisible,
                               ),
                             ],
@@ -676,8 +673,8 @@ class device_list_screen_state extends State<device_list_screen> {
                 ]))));
   }
 
-  Future<void> callILMDeviceListFinder(String searchNumber,
-      BuildContext context) async {
+  Future<void> callILMDeviceListFinder(
+      String searchNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
         Utility.progressDialog(context);
@@ -695,14 +692,11 @@ class device_list_screen_state extends State<device_list_screen> {
               .getDeviceService()
               .getTenantDevices(pageLink)) as PageData<Device>;
 
-          if(devicelist_response != null) {
+          if (devicelist_response != null) {
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {
                 String name =
-                devicelist_response.data
-                    .elementAt(i)
-                    .name
-                    .toString();
+                    devicelist_response.data.elementAt(i).name.toString();
                 _foundUsers!.add(name);
               }
             }
@@ -711,7 +705,7 @@ class device_list_screen_state extends State<device_list_screen> {
               _foundUsers = _foundUsers;
             });
             Navigator.pop(context);
-          }else{
+          } else {
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -721,24 +715,23 @@ class device_list_screen_state extends State<device_list_screen> {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callpolebasedILMDeviceListFinder(
-                  user.ilmnumber,
-                  _relationdevices,
-                  _foundUsers,
-                  context);
+                  user.ilmnumber, _relationdevices, _foundUsers, context);
             }
           } else {
             calltoast(searchNumber);
             // Navigator.pop(context);
           }
         }
-      }else{
+      } else {
         calltoast(no_network);
       }
     });
   }
 
-  void callpolebasedILMDeviceListFinder(String polenumber,
-      List<String>? _relationdevices, List<String>? _foundUsers,
+  void callpolebasedILMDeviceListFinder(
+      String polenumber,
+      List<String>? _relationdevices,
+      List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
@@ -749,28 +742,25 @@ class device_list_screen_state extends State<device_list_screen> {
           Asset response;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
-          response =
-          await tbClient.getAssetService().getTenantAsset(polenumber)
-          as Asset;
+          response = await tbClient.getAssetService().getTenantAsset(polenumber)
+              as Asset;
 
           if (response != null) {
             List<EntityRelation> relationresponse;
-            relationresponse =
-            await tbClient.getEntityRelationService().findByFrom(
-                response.id!);
+            relationresponse = await tbClient
+                .getEntityRelationService()
+                .findByFrom(response.id!);
             if (relationresponse != null) {
               for (int i = 0; i < relationresponse.length; i++) {
-                _relationdevices.add(relationresponse
-                    .elementAt(i)
-                    .to
-                    .id
-                    .toString());
+                _relationdevices
+                    .add(relationresponse.elementAt(i).to.id.toString());
               }
               Device devrelationresponse;
               for (int i = 0; i < _relationdevices.length; i++) {
-                devrelationresponse =
-                await tbClient.getDeviceService().getDevice(
-                    _relationdevices.elementAt(i).toString()) as Device;
+                devrelationresponse = await tbClient
+                        .getDeviceService()
+                        .getDevice(_relationdevices.elementAt(i).toString())
+                    as Device;
                 if (devrelationresponse != null) {
                   if (devrelationresponse.type == "lumiNode") {
                     _foundUsers!.add(devrelationresponse.name);
@@ -799,24 +789,23 @@ class device_list_screen_state extends State<device_list_screen> {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callpolebasedILMDeviceListFinder(
-                  user.polenumber,
-                  _relationdevices,
-                  _foundUsers,
-                  context);
+                  user.polenumber, _relationdevices, _foundUsers, context);
             }
           } else {
             calltoast(polenumber);
             Navigator.pop(context);
           }
         }
-      }else{
+      } else {
         calltoast(no_network);
       }
     });
   }
 
-  void callccmsbasedILMDeviceListFinder(String ccmsnumber,
-      List<String>? _relationdevices, List<String>? _foundUsers,
+  void callccmsbasedILMDeviceListFinder(
+      String ccmsnumber,
+      List<String>? _relationdevices,
+      List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
@@ -827,28 +816,26 @@ class device_list_screen_state extends State<device_list_screen> {
           Device response;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
-          response =
-          await tbClient.getDeviceService().getTenantDevice(ccmsnumber)
-          as Device;
+          response = await tbClient
+              .getDeviceService()
+              .getTenantDevice(ccmsnumber) as Device;
 
           if (response != null) {
             List<EntityRelation> relationresponse;
-            relationresponse =
-            await tbClient.getEntityRelationService().findByFrom(
-                response.id!);
+            relationresponse = await tbClient
+                .getEntityRelationService()
+                .findByFrom(response.id!);
             if (relationresponse != null) {
               for (int i = 0; i < relationresponse.length; i++) {
-                _relationdevices.add(relationresponse
-                    .elementAt(i)
-                    .to
-                    .id
-                    .toString());
+                _relationdevices
+                    .add(relationresponse.elementAt(i).to.id.toString());
               }
               Device Devrelationresponse;
               for (int i = 0; i < _relationdevices.length; i++) {
-                Devrelationresponse =
-                await tbClient.getDeviceService().getDevice(
-                    _relationdevices.elementAt(i).toString()) as Device;
+                Devrelationresponse = await tbClient
+                        .getDeviceService()
+                        .getDevice(_relationdevices.elementAt(i).toString())
+                    as Device;
                 if (Devrelationresponse != null) {
                   if (Devrelationresponse.type == "lumiNode") {
                     _foundUsers!.add(Devrelationresponse.name);
@@ -877,24 +864,21 @@ class device_list_screen_state extends State<device_list_screen> {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callccmsbasedILMDeviceListFinder(
-                  user.ccmsnumber,
-                  _relationdevices,
-                  _foundUsers,
-                  context);
+                  user.ccmsnumber, _relationdevices, _foundUsers, context);
             }
           } else {
             calltoast(ccmsnumber);
           }
         }
-      }else{
+      } else {
         calltoast(no_network);
       }
     });
   }
 
   @override
-  Future<Device?> fetchDeviceDetails(String deviceName,
-      BuildContext context) async {
+  Future<Device?> fetchDeviceDetails(
+      String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
         Utility.progressDialog(context);
@@ -903,15 +887,16 @@ class device_list_screen_state extends State<device_list_screen> {
           Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
-          response =
-          await tbClient.getDeviceService().getTenantDevice(deviceName)
-          as Device;
+          response = await tbClient
+              .getDeviceService()
+              .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
             if (response.type == ilm_deviceType) {
               fetchSmartDeviceDetails(
                   deviceName, response.id!.id.toString(), context);
-            } else if (response.type == ccms_deviceType) {} else
-            if (response.type == Gw_deviceType) {} else {
+            } else if (response.type == ccms_deviceType) {
+            } else if (response.type == Gw_deviceType) {
+            } else {
               calltoast("Device Details Not Found");
               Navigator.pop(context);
             }
@@ -939,8 +924,8 @@ class device_list_screen_state extends State<device_list_screen> {
   }
 
   @override
-  Future<Device?> fetchSmartDeviceDetails(String deviceName, String deviceid,
-      BuildContext context) async {
+  Future<Device?> fetchSmartDeviceDetails(
+      String deviceName, String deviceid, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
         Utility.progressDialog(context);
@@ -953,22 +938,23 @@ class device_list_screen_state extends State<device_list_screen> {
           response = (await tbClient
               .getDeviceService()
               .getTenantDevice(deviceName)) as Device;
-          if(response != null) {
+          if (response != null) {
             var relationDetails = await tbClient
                 .getEntityRelationService()
                 .findInfoByTo(response.id!);
 
-            if(relationDetails != null) {
+            if (relationDetails != null) {
               List<String> myList = [];
               myList.add("lampWatts");
               myList.add("active");
               List<BaseAttributeKvEntry> responser;
 
-              responser =
-              (await tbClient.getAttributeService().getAttributeKvEntries(
-                  response.id!, myList)) as List<BaseAttributeKvEntry>;
+              responser = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myList))
+                  as List<BaseAttributeKvEntry>;
 
-              if(responser!=null) {
+              if (responser != null) {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
 
                 prefs.setString(
@@ -987,40 +973,40 @@ class device_list_screen_state extends State<device_list_screen> {
                       builder: (BuildContext context) =>
                           ilm_installation_screen()));
                 } else {
-
                   List<String> myList = [];
                   myList.add("location");
 
                   List<BaseAttributeKvEntry> responser;
 
-                  responser = (await tbClient.getAttributeService().getAttributeKvEntries(
-                      response.id!, myList)) as List<BaseAttributeKvEntry>;
+                  responser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myList))
+                      as List<BaseAttributeKvEntry>;
 
-                  if(responser != null) {
-                    SharedPreferences prefs = await SharedPreferences
-                        .getInstance();
+                  if (responser != null) {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
                     prefs.setString(
                         'location', responser.first.kv.getValue().toString());
-                  }else{
-                    SharedPreferences prefs = await SharedPreferences
-                        .getInstance();
-                    prefs.setString(
-                        'location', "-");
+                  } else {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setString('location', "-");
                   }
 
                   Navigator.pop(context);
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (BuildContext context) => MaintenanceScreen()));
                 }
-              }else{
+              } else {
                 calltoast(deviceName);
                 Navigator.pop(context);
               }
-            }else{
+            } else {
               calltoast(deviceName);
               Navigator.pop(context);
             }
-          }else{
+          } else {
             calltoast(deviceName);
             Navigator.pop(context);
           }
@@ -1135,35 +1121,40 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",style: const TextStyle(
-          fontSize: 25.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: liorange)),
-      content: Text("Are you sure you want to Logout?",style: const TextStyle(
-          fontSize: 18.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: Colors.black)),
+      title: Text("Luminator",
+          style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: liorange)),
+      content: Text("Are you sure you want to Logout?",
+          style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.black)),
       actions: <Widget>[
         TextButton(
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.green)),
+          child: Text("NO",
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.red)),
+          child: Text('YES',
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red)),
           onPressed: () async {
-            SharedPreferences preferences = await SharedPreferences.getInstance();
+            SharedPreferences preferences =
+                await SharedPreferences.getInstance();
             await preferences.clear();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => splash_screen()));

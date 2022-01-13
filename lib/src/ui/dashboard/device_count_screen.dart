@@ -20,6 +20,11 @@ class device_count_screen_state extends State<device_count_screen> {
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
+  String totalCount = "0";
+  String activeCount = "0";
+  String nonactiveCount = "0";
+  String ncCount = "0";
+  String Maintenance = "true";
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -27,15 +32,33 @@ class device_count_screen_state extends State<device_count_screen> {
     SelectedZone = prefs.getString("SelectedZone").toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
 
+    totalCount = prefs.getString("totalCount").toString();
+    activeCount = prefs.getString("activeCount").toString();
+    nonactiveCount = prefs.getString("nonactiveCount").toString();
+    ncCount = prefs.getString("ncCount").toString();
+    Maintenance = prefs.getString("Maintenance").toString();
+
     setState(() {
       SelectedRegion = SelectedRegion;
       SelectedZone = SelectedZone;
       SelectedWard = SelectedWard;
 
+      totalCount = totalCount;
+      activeCount = activeCount;
+      nonactiveCount = nonactiveCount;
+      ncCount = ncCount;
+      Maintenance = Maintenance;
+
       if(SelectedRegion == "0" || SelectedRegion == "null"){
         SelectedRegion = "Region";
         SelectedZone = "Zone";
         SelectedWard = "Ward";
+      }
+      if(totalCount == "null"){
+        totalCount = "0";
+        activeCount = "0";
+        nonactiveCount = "0";
+        ncCount = "0";
       }
     });
   }
@@ -51,47 +74,51 @@ class device_count_screen_state extends State<device_count_screen> {
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: () async {
-      final result = await showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          insetPadding: EdgeInsets.symmetric(horizontal: 0),
-          backgroundColor: Colors.white,
-          title: Text("Luminator", style: const TextStyle(
-              fontSize: 25.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: liorange)),
-          content: Text("Are you sure you want to exit?", style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.black)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text("NO", style: const TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green)),
-            ),
-            TextButton(
-              child: Text('YES',  style: const TextStyle(
-          fontSize: 25.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: Colors.red)),
-              onPressed: () {
-                SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-              },
-            ),
-          ],
-        ),
-      );
-      return result;
-    },
+
+            final result = await showDialog(
+              context: context,
+              builder: (ctx) =>
+                  AlertDialog(
+                    insetPadding: EdgeInsets.symmetric(horizontal: 0),
+                    backgroundColor: Colors.white,
+                    title: Text("Luminator", style: const TextStyle(
+                        fontSize: 25.0,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.bold,
+                        color: liorange)),
+                    content: Text("Are you sure you want to exit device count?",
+                        style: const TextStyle(
+                            fontSize: 18.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black)),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                        },
+                        child: Text("NO", style: const TextStyle(
+                            fontSize: 25.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green)),
+                      ),
+                      TextButton(
+                        child: Text('YES', style: const TextStyle(
+                            fontSize: 25.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red)),
+                        onPressed: () {
+                          SystemChannels.platform.invokeMethod(
+                              'SystemNavigator.pop');
+                        },
+                      ),
+                    ],
+                  ),
+            );
+            return result;
+            },
     child: Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: true,
@@ -265,10 +292,10 @@ class device_count_screen_state extends State<device_count_screen> {
                                   child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: <Widget>[
-                                        const SizedBox(height: 10),
+                                        SizedBox(height: 10),
                                         Container(
                                             child: Row(
-                                          children: const <Widget>[
+                                          children: <Widget>[
                                             Expanded(
                                               child: Padding(
                                                 padding: EdgeInsets.fromLTRB(
@@ -308,8 +335,8 @@ class device_count_screen_state extends State<device_count_screen> {
                                                     backgroundColor:
                                                         Colors.blue,
                                                     child: Center(
-                                                      child: Text(
-                                                        "110",
+                                                      child: new Text(
+                                                        '$totalCount',
                                                         style: TextStyle(
                                                             fontSize: 16.0,
                                                             fontFamily:
@@ -396,7 +423,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                         ),
                                         const SizedBox(height: 10),
                                         Row(
-                                          children: const <Widget>[
+                                          children: <Widget>[
                                             Expanded(
                                               child: Padding(
                                                 padding: EdgeInsets.fromLTRB(
@@ -407,7 +434,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                         Colors.green,
                                                     child: Center(
                                                       child: Text(
-                                                        "30",
+                                                        '$activeCount',
                                                         style: TextStyle(
                                                             fontSize: 16.0,
                                                             fontFamily:
@@ -433,7 +460,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                     backgroundColor: Colors.red,
                                                     child: Center(
                                                       child: Text(
-                                                        "40",
+                                                        '$nonactiveCount',
                                                         style: TextStyle(
                                                             fontSize: 16.0,
                                                             fontFamily:
@@ -459,7 +486,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                         Colors.orange,
                                                     child: Center(
                                                       child: Text(
-                                                        "40",
+                                                        '$ncCount',
                                                         style: TextStyle(
                                                             fontSize: 16.0,
                                                             fontFamily:

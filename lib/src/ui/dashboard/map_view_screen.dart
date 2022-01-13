@@ -1,21 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
-import 'package:flutterlumin/src/ui/components/dropdown_button_field.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'dashboard_screen.dart';
 
 class map_view_screen extends StatefulWidget {
   @override
