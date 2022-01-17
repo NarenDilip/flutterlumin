@@ -280,7 +280,7 @@ Future<Device?> fetchSmartDeviceDetails(
         prefs.setString('devicetimeStamp', responser.first.lastUpdateTs.toString());
 
         List<String> myLister = [];
-        myLister.add("location");
+        myLister.add("landmark");
 
         List<AttributeKvEntry> responserse;
 
