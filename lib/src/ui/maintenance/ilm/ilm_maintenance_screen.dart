@@ -1015,7 +1015,7 @@ Future<void> replaceShortingCap(context) async {
                     .getEntityGroupService()
                     .getEntityGroup(currentdeviceresponse.last.id!);
                 if (seconddetails!.name.toString() != "All") {
-                  DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                  DevicecurrentFolderName = currentdeviceresponse.last.id!;
                 }
 
                 var relation_response = await tbClient
@@ -1124,7 +1124,7 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                   .getEntityGroupService()
                   .getEntityGroup(currentdeviceresponse.last.id!);
               if (seconddetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                DevicecurrentFolderName = currentdeviceresponse.last.id!;
               }
 
 
