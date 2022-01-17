@@ -20,6 +20,7 @@ const pistagreY = Color(0xff8A97A2);
 const lightorange = Color(0xfff57D0ff);
 const liorange = Color(0xfff57D0ff);
 const liblue = Color(0xff65f2f9 );
+const thbblue = Color(0xff00696e );
 
 const splashscreen_text = "Luminator";
 

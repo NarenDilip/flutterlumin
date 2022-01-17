@@ -158,6 +158,12 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
                 var totalval = activeDevice!.length + nonactiveDevices!.length;
                 var ncdevices = relatedDevices!.length - totalval;
+                var noncomdevice = "";
+                if(ncdevices.toString().contains("-")){
+                  noncomdevice = ncdevices.toString().replaceAll("-", "");
+                }else{
+                  noncomdevice = ncdevices.toString();
+                }
 
                 sharedPreferences.setString(
                     'totalCount', relatedDevices!.length.toString());
@@ -165,11 +171,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     'activeCount', activeDevice!.length.toString());
                 sharedPreferences.setString(
                     'nonactiveCount', nonactiveDevices!.length.toString());
-                sharedPreferences.setString('ncCount', ncdevices.toString());
+                sharedPreferences.setString('ncCount', noncomdevice);
 
+                Navigator.pop(context);
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
-                Navigator.pop(context);
               }
             } else {
               Fluttertoast.showToast(
@@ -181,11 +187,17 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   textColor: Colors.black,
                   fontSize: 16.0);
 
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          dashboard_screen()));
+              sharedPreferences.setString(
+                  'totalCount', "0");
+              sharedPreferences.setString(
+                  'activeCount', "0");
+              sharedPreferences.setString(
+                  'nonactiveCount', "0");
+              sharedPreferences.setString('ncCount', "0");
+
               Navigator.pop(context);
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => dashboard_screen()));
             }
           }
         } catch (e) {
