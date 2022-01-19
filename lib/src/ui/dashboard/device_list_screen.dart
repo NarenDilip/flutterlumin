@@ -905,20 +905,20 @@ class device_list_screen_state extends State<device_list_screen> {
                           ilm_installation_screen()));
                 } else {
                   List<String> myList = [];
-                  myList.add("location");
+                  myList.add("landmark");
 
-                  List<BaseAttributeKvEntry> responser;
+                  List<AttributeKvEntry> responser;
 
                   responser = (await tbClient
                           .getAttributeService()
                           .getAttributeKvEntries(response.id!, myList))
-                      as List<BaseAttributeKvEntry>;
+                      as List<AttributeKvEntry>;
 
                   if (responser != null) {
                     SharedPreferences prefs =
                         await SharedPreferences.getInstance();
                     prefs.setString(
-                        'location', responser.first.kv.getValue().toString());
+                        'location', responser.first.getValue().toString());
                   } else {
                     SharedPreferences prefs =
                         await SharedPreferences.getInstance();
