@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
@@ -40,7 +41,53 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+      final result = await showDialog(
+        context: context,
+        builder: (ctx) =>
+            AlertDialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 0),
+              backgroundColor: Colors.white,
+              title: Text("Luminator", style: const TextStyle(
+                  fontSize: 25.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: liorange)),
+              content: Text("Are you sure you want to exit device count?",
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black)),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text("NO", style: const TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green)),
+                ),
+                TextButton(
+                  child: Text('YES', style: const TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red)),
+                  onPressed: () {
+                    SystemChannels.platform.invokeMethod(
+                        'SystemNavigator.pop');
+                  },
+                ),
+              ],
+            ),
+      );
+      return result;
+    },
+    child: Scaffold(
       body: Stack(
         children: <Widget>[
           _widgetOptions.elementAt(_selectedIndex),
@@ -136,7 +183,7 @@ class dashboard_screenState extends State<dashboard_screen> {
           });
         },
       ),
-    );
+    ));
   }
 }
 
@@ -188,6 +235,7 @@ Future<Device?> fetchDeviceDetails(
           } else if (response.type == ccms_deviceType) {
           } else if (response.type == Gw_deviceType) {
           } else {
+            Navigator.pop(context);
             Fluttertoast.showToast(
                 msg: "Device Details Not Found",
                 toastLength: Toast.LENGTH_SHORT,
@@ -196,9 +244,10 @@ Future<Device?> fetchDeviceDetails(
                 backgroundColor: Colors.white,
                 textColor: Colors.black,
                 fontSize: 16.0);
-            Navigator.pop(context);
+
           }
         } else {
+          Navigator.pop(context);
           Fluttertoast.showToast(
               msg: device_toast_msg + deviceName + device_toast_notfound,
               toastLength: Toast.LENGTH_SHORT,
@@ -207,12 +256,11 @@ Future<Device?> fetchDeviceDetails(
               backgroundColor: Colors.white,
               textColor: Colors.black,
               fontSize: 16.0);
-          Navigator.pop(context);
-
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (BuildContext context) => dashboard_screen()));
         }
       } catch (e) {
+        Navigator.pop(context);
         var message = toThingsboardError(e,context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -228,7 +276,6 @@ Future<Device?> fetchDeviceDetails(
               backgroundColor: Colors.white,
               textColor: Colors.black,
               fontSize: 16.0);
-          Navigator.pop(context);
         }
       }
     } else {
@@ -281,6 +328,7 @@ Future<Device?> fetchSmartDeviceDetails(
 
         List<String> myLister = [];
         myLister.add("landmark");
+        // myLister.add("location");
 
         List<AttributeKvEntry> responserse;
 
@@ -309,20 +357,21 @@ Future<Device?> fetchSmartDeviceDetails(
 
           if (relationDetails.length.toString() == "0") {
             Navigator.pop(context);
-            Navigator.of(context).push(MaterialPageRoute(
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => ilm_installation_screen()));
 
 
           } else {
             Navigator.pop(context);
-            Navigator.of(context).push(MaterialPageRoute(
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => MaintenanceScreen()));
           }
         }else{
-          calltoast("Device Details Not Found");
           Navigator.pop(context);
+          calltoast("Device Details Not Found");
         }
       } catch (e) {
+        Navigator.pop(context);
         var message = toThingsboardError(e,context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -338,7 +387,6 @@ Future<Device?> fetchSmartDeviceDetails(
               backgroundColor: Colors.white,
               textColor: Colors.black,
               fontSize: 16.0);
-          Navigator.pop(context);
         }
       }
     } else {

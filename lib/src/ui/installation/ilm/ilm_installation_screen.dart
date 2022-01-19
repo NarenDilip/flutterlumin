@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +28,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
   String timevalue = "0";
   String location = "0";
   String version = "0";
+  bool _obscureText = true;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -80,8 +80,6 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
 
   BuildContext get context => super.context;
 
-
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -101,7 +99,6 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
         extendBody: true,
         body: Stack(
           children: [
-
             Container(
               color: lightorange,
               child: Column(
@@ -156,118 +153,211 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                         child: Padding(
                           padding: EdgeInsets.only(left: 10, right: 10),
                           child:
-                          Column(mainAxisSize: MainAxisSize.min, children: <
-                              Widget>[
+                              Column(mainAxisSize: MainAxisSize.min, children: <
+                                  Widget>[
                             Container(
                                 child: Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                  child: Row(
-                                      mainAxisAlignment:
+                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                              child: Row(
+                                  mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        TextButton(
-                                            child: Text('$SelectedRegion',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0,
-                                                    fontFamily: "Montserrat",
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white)),
-                                            style: ButtonStyle(
-                                                padding: MaterialStateProperty.all<
-                                                    EdgeInsets>(EdgeInsets.all(20)),
-                                                backgroundColor:
+                                  children: [
+                                    TextButton(
+                                        child: Text('$SelectedRegion',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
                                                 MaterialStateProperty.all(
                                                     lightorange),
-                                                foregroundColor:
+                                            foregroundColor:
                                                 MaterialStateProperty.all<
                                                     Color>(Colors.black),
-                                                shape: MaterialStateProperty.all<
+                                            shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
-                                                    RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(18.0),
-                                                    ))),
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                      context) =>
-                                                          region_list_screen()));
-                                            }),
-                                        SizedBox(width: 5),
-                                        TextButton(
-                                            child: Text('$SelectedZone',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0,
-                                                    fontFamily: "Montserrat",
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white)),
-                                            style: ButtonStyle(
-                                                padding: MaterialStateProperty.all<
-                                                    EdgeInsets>(EdgeInsets.all(20)),
-                                                backgroundColor:
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      region_list_screen()));
+                                        }),
+                                    SizedBox(width: 5),
+                                    TextButton(
+                                        child: Text('$SelectedZone',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
                                                 MaterialStateProperty.all(
                                                     lightorange),
-                                                shape: MaterialStateProperty.all<
+                                            shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
-                                                    RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(18.0),
-                                                    ))),
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder:
-                                                          (BuildContext context) =>
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder:
+                                                      (BuildContext context) =>
                                                           zone_li_screen()));
-                                            }),
-                                        SizedBox(width: 5),
-                                        TextButton(
-                                            child: Text('$SelectedWard',
-                                                style: const TextStyle(
-                                                    fontSize: 18.0,
-                                                    fontFamily: "Montserrat",
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white)),
-                                            style: ButtonStyle(
-                                                padding: MaterialStateProperty.all<
-                                                    EdgeInsets>(EdgeInsets.all(20)),
-                                                backgroundColor:
+                                        }),
+                                    SizedBox(width: 5),
+                                    TextButton(
+                                        child: Text('$SelectedWard',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
                                                 MaterialStateProperty.all(
                                                     lightorange),
-                                                shape: MaterialStateProperty.all<
+                                            shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
-                                                    RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(18.0),
-                                                    ))),
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder:
-                                                          (BuildContext context) =>
+                                                RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                            ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder:
+                                                      (BuildContext context) =>
                                                           ward_li_screen()));
-                                            })
-                                      ]),
-                                )),
+                                        })
+                                  ]),
+                            )),
                             const SizedBox(
                               height: 15,
                             ),
                             Container(
-                              padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
+                              padding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
                               decoration: const BoxDecoration(
-                                  color: lightorange,
                                   borderRadius:
-                                  BorderRadius.all(Radius.circular(35.0))),
+                                      BorderRadius.all(Radius.circular(35.0))),
                               child: Column(
                                 children: [
-                                  Row(
-                                    children: <Widget>[], //<Widget>[]
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                  ),
+                                  Row(children: [
+                                    Flexible(
+                                        child: TextFormField(
+                                      autofocus: false,
+                                      keyboardType: TextInputType.text,
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        hintText: '$DeviceName',
+                                        fillColor: Colors.white,
+                                        contentPadding:
+                                            EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            borderSide: BorderSide(
+                                                color: Colors.white)),
+                                        suffixIcon: GestureDetector(
+                                          onTap: () {},
+                                          child: Icon(
+                                            _obscureText
+                                                ? Icons.qr_code_scanner_sharp
+                                                : Icons.qr_code_scanner_sharp,
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                  ]),
                                 ],
                               ),
                             ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Container(
+                              height: 350,
+                              padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
+                              decoration: const BoxDecoration(
+                                  color: Colors.black12,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(35.0))),
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Container(
+                                width: double.infinity,
+                                child: TextButton(
+                                    child: Text('Location Details',
+                                        style: const TextStyle(
+                                            fontSize: 18.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                                    style: ButtonStyle(
+                                        padding: MaterialStateProperty.all<
+                                            EdgeInsets>(EdgeInsets.all(20)),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(
+                                                lightorange),
+                                        shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0),
+                                        ))),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (BuildContext context) =>
+                                                  ward_li_screen()));
+                                    })),
+                                const SizedBox(
+                                  height: 15,
+                                ),
+                                Container(
+                                    width: double.infinity,
+                                    child: TextButton(
+                                        child: Text('Start Install ILM',
+                                            style: const TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white)),
+                                        style: ButtonStyle(
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsets>(EdgeInsets.all(20)),
+                                            backgroundColor:
+                                            MaterialStateProperty.all(
+                                                Colors.green),
+                                            shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                                RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                                ))),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (BuildContext context) =>
+                                                      ward_li_screen()));
+                                        }))
                           ]),
                         )),
                   )
@@ -280,5 +370,3 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
     );
   }
 }
-
-

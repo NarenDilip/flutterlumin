@@ -72,54 +72,7 @@ class device_count_screen_state extends State<device_count_screen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: () async {
-
-            final result = await showDialog(
-              context: context,
-              builder: (ctx) =>
-                  AlertDialog(
-                    insetPadding: EdgeInsets.symmetric(horizontal: 0),
-                    backgroundColor: Colors.white,
-                    title: Text("Luminator", style: const TextStyle(
-                        fontSize: 25.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: liorange)),
-                    content: Text("Are you sure you want to exit device count?",
-                        style: const TextStyle(
-                            fontSize: 18.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black)),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                        },
-                        child: Text("NO", style: const TextStyle(
-                            fontSize: 25.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green)),
-                      ),
-                      TextButton(
-                        child: Text('YES', style: const TextStyle(
-                            fontSize: 25.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red)),
-                        onPressed: () {
-                          SystemChannels.platform.invokeMethod(
-                              'SystemNavigator.pop');
-                        },
-                      ),
-                    ],
-                  ),
-            );
-            return result;
-            },
-    child: Scaffold(
+    return Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: true,
         body: Container(
@@ -513,7 +466,7 @@ class device_count_screen_state extends State<device_count_screen> {
                       ])))
             ],
           ),
-        )));
+        ));
   }
 }
 

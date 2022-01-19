@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +13,11 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 
 class login_screen extends StatefulWidget {
   @override
@@ -191,9 +189,9 @@ class LoginForm extends StatelessWidget {
           "type": ["region"],
         };
 
-        PageLink pageLink = new PageLink(100);
+        PageLink pageLink = new PageLink(250);
         pageLink.page = 0;
-        pageLink.pageSize = 100;
+        pageLink.pageSize = 250;
 
         DBHelper dbHelper = new DBHelper();
 
@@ -270,16 +268,16 @@ class LoginForm extends StatelessWidget {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             } else {
-              calltoast("Ward Details found");
               Navigator.pop(context);
+              calltoast("Ward Details found");
             }
           } else {
-            calltoast("Zone Details found");
             Navigator.pop(context);
+            calltoast("Zone Details found");
           }
         } else {
-          calltoast("Region Details found");
           Navigator.pop(context);
+          calltoast("Region Details found");
         }
       }
     });

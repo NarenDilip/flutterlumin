@@ -94,583 +94,514 @@ class device_list_screen_state extends State<device_list_screen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return WillPopScope(
-        onWillPop: () async {
-                final result = await showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                insetPadding: EdgeInsets.symmetric(horizontal: 0),
-                backgroundColor: Colors.white,
-                title: Text("Luminator",
-                    style: const TextStyle(
-                        fontSize: 25.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: liorange)),
-                content: Text("Are you sure you want to exit devicelist?",
-                    style: const TextStyle(
-                        fontSize: 18.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black)),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                    },
-                    child: Text("NO",
-                        style: const TextStyle(
-                            fontSize: 18.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green)),
-                  ),
-                  TextButton(
-                    child: Text('YES',
-                        style: const TextStyle(
-                            fontSize: 18.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red)),
-                    onPressed: () {
-                      SystemChannels.platform
-                          .invokeMethod('SystemNavigator.pop');
-                    },
-                  ),
-                ],
-              ),
-            );
-          return result;
-        },
-        child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            extendBody: true,
-            body: Container(
-                color: lightorange,
-                child: Column(children: [
-                  Container(
-                    height: 100,
-                    decoration: const BoxDecoration(
-                        color: lightorange,
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(0.0),
-                            topRight: Radius.circular(0.0),
-                            bottomLeft: Radius.circular(0.0),
-                            bottomRight: Radius.circular(0.0))),
-                    child: Stack(
-                      children: [
-                        Container(
-                          alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
-                          child: Text('Device List view',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 25.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
-                        ),
-                        Positioned(
-                          right: 10,
-                          top: 15,
-                          bottom: 0,
-                          child: IconButton(
-                            color: Colors.red,
-                            icon: const Icon(
-                              Icons.logout_outlined,
-                              size: 35,
-                            ),
-                            onPressed: () {
-                              callLogoutoption(context);
-                            },
-                          ),
-                        ),
-                      ],
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
+        body: Container(
+            color: lightorange,
+            child: Column(children: [
+              Container(
+                height: 100,
+                decoration: const BoxDecoration(
+                    color: lightorange,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(0.0),
+                        topRight: Radius.circular(0.0),
+                        bottomLeft: Radius.circular(0.0),
+                        bottomRight: Radius.circular(0.0))),
+                child: Stack(
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                      child: Text('Device List view',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 25.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
                     ),
-                  ),
-                  Expanded(
-                      child: Container(
-                          decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(35.0),
-                                  topRight: Radius.circular(35.0),
-                                  bottomLeft: Radius.circular(0.0),
-                                  bottomRight: Radius.circular(0.0))),
-                          child: ListView(
-                            padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
-                            children: <Widget>[
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  TextButton(
-                                      child: Text('$SelectedRegion',
-                                          style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontFamily: "Montserrat",
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white)),
-                                      style: ButtonStyle(
-                                          padding: MaterialStateProperty.all<
-                                              EdgeInsets>(EdgeInsets.all(20)),
-                                          backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  lightorange),
-                                          foregroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  Colors.black),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                          ))),
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder:
-                                                    (BuildContext context) =>
-                                                        region_list_screen()));
-                                      }),
-                                  SizedBox(width: 5),
-                                  TextButton(
-                                      child: Text('$SelectedZone',
-                                          style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontFamily: "Montserrat",
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white)),
-                                      style: ButtonStyle(
-                                          padding: MaterialStateProperty.all<
-                                              EdgeInsets>(EdgeInsets.all(20)),
-                                          backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  lightorange),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                          ))),
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder:
-                                                    (BuildContext context) =>
-                                                        zone_li_screen()));
-                                      }),
-                                  SizedBox(width: 5),
-                                  TextButton(
-                                      child: Text('$SelectedWard',
-                                          style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontFamily: "Montserrat",
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white)),
-                                      style: ButtonStyle(
-                                          padding: MaterialStateProperty.all<
-                                              EdgeInsets>(EdgeInsets.all(20)),
-                                          backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  lightorange),
-                                          shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                          ))),
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder:
-                                                    (BuildContext context) =>
-                                                        ward_li_screen()));
-                                      })
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 30,
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _toggle();
-                                  });
-                                },
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        color: liorange,
+                    Positioned(
+                      right: 10,
+                      top: 15,
+                      bottom: 0,
+                      child: IconButton(
+                        color: Colors.red,
+                        icon: const Icon(
+                          Icons.logout_outlined,
+                          size: 35,
+                        ),
+                        onPressed: () {
+                          callLogoutoption(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                  child: Container(
+                      decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(35.0),
+                              topRight: Radius.circular(35.0),
+                              bottomLeft: Radius.circular(0.0),
+                              bottomRight: Radius.circular(0.0))),
+                      child: ListView(
+                        padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
+                        children: <Widget>[
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              TextButton(
+                                  child: Text('$SelectedRegion',
+                                      style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontFamily: "Montserrat",
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                  style: ButtonStyle(
+                                      padding:
+                                          MaterialStateProperty.all<EdgeInsets>(
+                                              EdgeInsets.all(20)),
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              lightorange),
+                                      foregroundColor:
+                                          MaterialStateProperty.all<Color>(
+                                              Colors.black),
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
                                         borderRadius:
-                                            BorderRadius.circular(30)),
-                                    child: Column(
+                                            BorderRadius.circular(18.0),
+                                      ))),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                region_list_screen()));
+                                  }),
+                              SizedBox(width: 5),
+                              TextButton(
+                                  child: Text('$SelectedZone',
+                                      style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontFamily: "Montserrat",
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                  style: ButtonStyle(
+                                      padding:
+                                          MaterialStateProperty.all<EdgeInsets>(
+                                              EdgeInsets.all(20)),
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              lightorange),
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(18.0),
+                                      ))),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                zone_li_screen()));
+                                  }),
+                              SizedBox(width: 5),
+                              TextButton(
+                                  child: Text('$SelectedWard',
+                                      style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontFamily: "Montserrat",
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                  style: ButtonStyle(
+                                      padding:
+                                          MaterialStateProperty.all<EdgeInsets>(
+                                              EdgeInsets.all(20)),
+                                      backgroundColor:
+                                          MaterialStateProperty.all(
+                                              lightorange),
+                                      shape: MaterialStateProperty.all<
+                                              RoundedRectangleBorder>(
+                                          RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(18.0),
+                                      ))),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                ward_li_screen()));
+                                  })
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 30,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _toggle();
+                              });
+                            },
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    color: liorange,
+                                    borderRadius: BorderRadius.circular(30)),
+                                child: Column(
+                                  children: [
+                                    Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                                child: Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 12),
-                                                    child: Text(
-                                                        'Device Filters',
-                                                        style: TextStyle(
-                                                            fontSize: 18.0,
-                                                            fontFamily:
-                                                                "Montserrat",
-                                                            color: Colors
-                                                                .black)))),
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Padding(
-                                                  padding: EdgeInsets.all(12),
-                                                  child: Icon(
-                                                    Icons.arrow_drop_down,
-                                                  ),
-                                                ),
+                                        Expanded(
+                                            child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 12),
+                                                child: Text('Device Filters',
+                                                    style: TextStyle(
+                                                        fontSize: 18.0,
+                                                        fontFamily:
+                                                            "Montserrat",
+                                                        color: Colors.black)))),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: Icon(
+                                                Icons.arrow_drop_down,
                                               ),
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    )),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Visibility(
-                                child: Container(
-                                  padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-                                  decoration: BoxDecoration(
-                                      color: liorange,
-                                      borderRadius: BorderRadius.circular(30)),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(
-                                        height: 15,
-                                      ),
-                                      Row(children: [
-                                        Flexible(
-                                            child: TextFormField(
-                                                autofocus: false,
-                                                keyboardType:
-                                                    TextInputType.text,
-                                                decoration: InputDecoration(
-                                                  filled: true,
-                                                  hintText: 'ILM Number',
-                                                  fillColor: Colors.white,
-                                                  contentPadding:
-                                                      EdgeInsets.fromLTRB(
-                                                          10, 0, 0, 0),
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              20.0),
-                                                      borderSide: BorderSide(
-                                                          color: Colors.white)),
-                                                  suffixIcon: GestureDetector(
-                                                    onTap: () {
-                                                      if (user.ilmnumber
-                                                          .isNotEmpty) {
-                                                        FocusScope.of(context)
-                                                            .requestFocus(
-                                                                FocusNode());
-                                                        callILMDeviceListFinder(
-                                                            user.ilmnumber,
-                                                            context);
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                "Please Enter Device",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                                ToastGravity
-                                                                    .BOTTOM,
-                                                            timeInSecForIosWeb:
-                                                                1);
-                                                      }
-                                                    },
-                                                    child: Icon(
-                                                      _obscureText
-                                                          ? Icons.search
-                                                          : Icons.search,
-                                                      semanticLabel:
-                                                          _obscureText
-                                                              ? 'show password'
-                                                              : 'hide password',
-                                                    ),
-                                                  ),
-                                                ),
-                                                onSaved: (value) =>
-                                                    user.ilmnumber =
-                                                        value!.toUpperCase(),
-                                                onChanged: (String value) {
-                                                  user.ilmnumber =
-                                                      value.toUpperCase();
-                                                  setState(() {
-                                                    _foundUsers!.clear();
-                                                  });
-                                                }))
-                                      ]),
-                                      const SizedBox(height: 5),
-                                      Row(children: [
-                                        Flexible(
-                                            child: TextFormField(
-                                                autofocus: false,
-                                                keyboardType:
-                                                    TextInputType.text,
-                                                decoration: InputDecoration(
-                                                  filled: true,
-                                                  hintText: 'CCMS Number',
-                                                  fillColor: Colors.white,
-                                                  contentPadding:
-                                                      EdgeInsets.fromLTRB(
-                                                          10, 0, 0, 0),
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              20.0),
-                                                      borderSide: BorderSide(
-                                                          color: Colors.white)),
-                                                  suffixIcon: GestureDetector(
-                                                    onTap: () {
-                                                      if (user.ccmsnumber
-                                                          .isNotEmpty) {
-                                                        FocusScope.of(context)
-                                                            .requestFocus(
-                                                                FocusNode());
-                                                        callccmsbasedILMDeviceListFinder(
-                                                            user.ccmsnumber,
-                                                            _relationdevices,
-                                                            _foundUsers,
-                                                            context);
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                "Please Enter Device",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                                ToastGravity
-                                                                    .BOTTOM,
-                                                            timeInSecForIosWeb:
-                                                                1);
-                                                      }
-                                                    },
-                                                    child: Icon(
-                                                      _obscureText
-                                                          ? Icons.search
-                                                          : Icons.search,
-                                                      semanticLabel:
-                                                          _obscureText
-                                                              ? 'show password'
-                                                              : 'hide password',
-                                                    ),
-                                                  ),
-                                                ),
-                                                onSaved: (value) =>
-                                                    user.ccmsnumber =
-                                                        value!.toUpperCase(),
-                                                onChanged: (String value) {
-                                                  user.ccmsnumber =
-                                                      value.toUpperCase();
-                                                  setState(() {
-                                                    _foundUsers!.clear();
-                                                  });
-                                                }))
-                                      ]),
-                                      const SizedBox(height: 5),
-                                      Row(children: [
-                                        Flexible(
-                                            child: TextFormField(
-                                                autofocus: false,
-                                                keyboardType:
-                                                    TextInputType.text,
-                                                decoration: InputDecoration(
-                                                  filled: true,
-                                                  hintText: 'Pole Number',
-                                                  fillColor: Colors.white,
-                                                  contentPadding:
-                                                      EdgeInsets.fromLTRB(
-                                                          10, 0, 0, 0),
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              20.0),
-                                                      borderSide: BorderSide(
-                                                          color: Colors.white)),
-                                                  suffixIcon: GestureDetector(
-                                                    onTap: () {
-                                                      if (user.polenumber
-                                                          .isNotEmpty) {
-                                                        FocusScope.of(context)
-                                                            .requestFocus(
-                                                                FocusNode());
-                                                        callpolebasedILMDeviceListFinder(
-                                                            user.polenumber,
-                                                            _relationdevices,
-                                                            _foundUsers,
-                                                            context);
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                "Please Enter Device",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity:
-                                                                ToastGravity
-                                                                    .BOTTOM,
-                                                            timeInSecForIosWeb:
-                                                                1);
-                                                      }
-                                                    },
-                                                    child: Icon(
-                                                      _obscureText
-                                                          ? Icons.search
-                                                          : Icons.search,
-                                                      semanticLabel:
-                                                          _obscureText
-                                                              ? 'show password'
-                                                              : 'hide password',
-                                                    ),
-                                                  ),
-                                                ),
-                                                onSaved: (value) =>
-                                                    user.polenumber =
-                                                        value!.toUpperCase(),
-                                                onChanged: (String value) {
-                                                  user.polenumber =
-                                                      value.toUpperCase();
-                                                  setState(() {
-                                                    _foundUsers!.clear();
-                                                  });
-                                                }))
-                                      ]),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                visible: _visible,
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Container(
-                                child: Row(
-                                  children: [],
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Container(
-                                  decoration: BoxDecoration(
-                                      color: liorange,
-                                      borderRadius: BorderRadius.circular(0)),
-                                  child: Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _vtoggle();
-                                          });
-                                        },
-                                        child: Container(
-                                            child: Row(
-                                          children: [
-                                            Expanded(
-                                                child: Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 12),
-                                                    child: Text('ILM Devices',
-                                                        style: TextStyle(
-                                                            fontSize: 18.0,
-                                                            fontFamily:
-                                                                "Montserrat",
-                                                            color: Colors
-                                                                .black)))),
-                                            Expanded(
-                                              child: Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Padding(
-                                                  padding: EdgeInsets.all(12),
-                                                  child: Icon(
-                                                    Icons.arrow_drop_down,
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        )),
-                                      ),
-                                    ],
-                                  )),
-                              Visibility(
-                                child: Container(
-                                  color: liorange,
-                                  child: _foundUsers!.isNotEmpty
-                                      ? ListView.builder(
-                                          primary: false,
-                                          scrollDirection: Axis.vertical,
-                                          shrinkWrap: true,
-                                          itemCount: _foundUsers!.length,
-                                          itemBuilder: (context, index) => Card(
-                                            key: ValueKey(_foundUsers),
-                                            color: Colors.white,
-                                            margin: const EdgeInsets.fromLTRB(
-                                                15, 1, 10, 0),
-                                            child: ListTile(
-                                              onTap: () {
-                                                fetchDeviceDetails(
-                                                    _foundUsers!
-                                                        .elementAt(index)
-                                                        .toString(),
-                                                    context);
-                                              },
-                                              title: Text(
-                                                  _foundUsers!.elementAt(index),
-                                                  style: const TextStyle(
-                                                      fontSize: 22.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black)),
                                             ),
                                           ),
                                         )
-                                      : Container(
-                                          color: Colors.white,
-                                          child: Column(children: [
-                                            SizedBox(
-                                              height: 10,
+                                      ],
+                                    )
+                                  ],
+                                )),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          const SizedBox(
+                            height: 5,
+                          ),
+                          Visibility(
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                              decoration: BoxDecoration(
+                                  color: liorange,
+                                  borderRadius: BorderRadius.circular(30)),
+                              child: Column(
+                                children: [
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  Row(children: [
+                                    Flexible(
+                                        child: TextFormField(
+                                            autofocus: false,
+                                            keyboardType: TextInputType.text,
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              hintText: 'ILM Number',
+                                              fillColor: Colors.white,
+                                              contentPadding:
+                                                  EdgeInsets.fromLTRB(
+                                                      10, 0, 0, 0),
+                                              border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.white)),
+                                              suffixIcon: GestureDetector(
+                                                onTap: () {
+                                                  if (user
+                                                      .ilmnumber.isNotEmpty) {
+                                                    FocusScope.of(context)
+                                                        .requestFocus(
+                                                            FocusNode());
+                                                    callILMDeviceListFinder(
+                                                        user.ilmnumber,
+                                                        context);
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        msg:
+                                                            "Please Enter Device",
+                                                        toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                        gravity:
+                                                            ToastGravity.BOTTOM,
+                                                        timeInSecForIosWeb: 1);
+                                                  }
+                                                },
+                                                child: Icon(
+                                                  _obscureText
+                                                      ? Icons.search
+                                                      : Icons.search,
+                                                  semanticLabel: _obscureText
+                                                      ? 'show password'
+                                                      : 'hide password',
+                                                ),
+                                              ),
                                             ),
-                                            Text(
-                                              'No results found',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                  fontSize: 18.0,
-                                                  fontFamily: "Montserrat",
-                                                  fontWeight: FontWeight.normal,
-                                                  color: Colors.black),
-                                            )
-                                          ])),
-                                ),
-                                visible: _ilmvisible,
+                                            onSaved: (value) => user.ilmnumber =
+                                                value!.toUpperCase(),
+                                            onChanged: (String value) {
+                                              user.ilmnumber =
+                                                  value.toUpperCase();
+                                              setState(() {
+                                                _foundUsers!.clear();
+                                              });
+                                            }))
+                                  ]),
+                                  const SizedBox(height: 5),
+                                  Row(children: [
+                                    Flexible(
+                                        child: TextFormField(
+                                            autofocus: false,
+                                            keyboardType: TextInputType.text,
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              hintText: 'CCMS Number',
+                                              fillColor: Colors.white,
+                                              contentPadding:
+                                                  EdgeInsets.fromLTRB(
+                                                      10, 0, 0, 0),
+                                              border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.white)),
+                                              suffixIcon: GestureDetector(
+                                                onTap: () {
+                                                  if (user
+                                                      .ccmsnumber.isNotEmpty) {
+                                                    FocusScope.of(context)
+                                                        .requestFocus(
+                                                            FocusNode());
+                                                    callccmsbasedILMDeviceListFinder(
+                                                        user.ccmsnumber,
+                                                        _relationdevices,
+                                                        _foundUsers,
+                                                        context);
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        msg:
+                                                            "Please Enter Device",
+                                                        toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                        gravity:
+                                                            ToastGravity.BOTTOM,
+                                                        timeInSecForIosWeb: 1);
+                                                  }
+                                                },
+                                                child: Icon(
+                                                  _obscureText
+                                                      ? Icons.search
+                                                      : Icons.search,
+                                                  semanticLabel: _obscureText
+                                                      ? 'show password'
+                                                      : 'hide password',
+                                                ),
+                                              ),
+                                            ),
+                                            onSaved: (value) =>
+                                                user.ccmsnumber =
+                                                    value!.toUpperCase(),
+                                            onChanged: (String value) {
+                                              user.ccmsnumber =
+                                                  value.toUpperCase();
+                                              setState(() {
+                                                _foundUsers!.clear();
+                                              });
+                                            }))
+                                  ]),
+                                  const SizedBox(height: 5),
+                                  Row(children: [
+                                    Flexible(
+                                        child: TextFormField(
+                                            autofocus: false,
+                                            keyboardType: TextInputType.text,
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              hintText: 'Pole Number',
+                                              fillColor: Colors.white,
+                                              contentPadding:
+                                                  EdgeInsets.fromLTRB(
+                                                      10, 0, 0, 0),
+                                              border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.white)),
+                                              suffixIcon: GestureDetector(
+                                                onTap: () {
+                                                  if (user
+                                                      .polenumber.isNotEmpty) {
+                                                    FocusScope.of(context)
+                                                        .requestFocus(
+                                                            FocusNode());
+                                                    callpolebasedILMDeviceListFinder(
+                                                        user.polenumber,
+                                                        _relationdevices,
+                                                        _foundUsers,
+                                                        context);
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        msg:
+                                                            "Please Enter Device",
+                                                        toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                        gravity:
+                                                            ToastGravity.BOTTOM,
+                                                        timeInSecForIosWeb: 1);
+                                                  }
+                                                },
+                                                child: Icon(
+                                                  _obscureText
+                                                      ? Icons.search
+                                                      : Icons.search,
+                                                  semanticLabel: _obscureText
+                                                      ? 'show password'
+                                                      : 'hide password',
+                                                ),
+                                              ),
+                                            ),
+                                            onSaved: (value) =>
+                                                user.polenumber =
+                                                    value!.toUpperCase(),
+                                            onChanged: (String value) {
+                                              user.polenumber =
+                                                  value.toUpperCase();
+                                              setState(() {
+                                                _foundUsers!.clear();
+                                              });
+                                            }))
+                                  ]),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                ],
                               ),
-                            ],
-                          )))
-                ]))));
+                            ),
+                            visible: _visible,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                            child: Row(
+                              children: [],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                              decoration: BoxDecoration(
+                                  color: liorange,
+                                  borderRadius: BorderRadius.circular(0)),
+                              child: Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _vtoggle();
+                                      });
+                                    },
+                                    child: Container(
+                                        child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 12),
+                                                child: Text('ILM Devices',
+                                                    style: TextStyle(
+                                                        fontSize: 18.0,
+                                                        fontFamily:
+                                                            "Montserrat",
+                                                        color: Colors.black)))),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: Icon(
+                                                Icons.arrow_drop_down,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ),
+                                ],
+                              )),
+                          Visibility(
+                            child: Container(
+                              color: liorange,
+                              child: _foundUsers!.isNotEmpty
+                                  ? ListView.builder(
+                                      primary: false,
+                                      scrollDirection: Axis.vertical,
+                                      shrinkWrap: true,
+                                      itemCount: _foundUsers!.length,
+                                      itemBuilder: (context, index) => Card(
+                                        key: ValueKey(_foundUsers),
+                                        color: Colors.white,
+                                        margin: const EdgeInsets.fromLTRB(
+                                            15, 1, 10, 0),
+                                        child: ListTile(
+                                          onTap: () {
+                                            fetchDeviceDetails(
+                                                _foundUsers!
+                                                    .elementAt(index)
+                                                    .toString(),
+                                                context);
+                                          },
+                                          title: Text(
+                                              _foundUsers!.elementAt(index),
+                                              style: const TextStyle(
+                                                  fontSize: 22.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black)),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.white,
+                                      child: Column(children: [
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Text(
+                                          'No results found',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                              fontSize: 18.0,
+                                              fontFamily: "Montserrat",
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.black),
+                                        )
+                                      ])),
+                            ),
+                            visible: _ilmvisible,
+                          ),
+                        ],
+                      )))
+            ])));
   }
 
   Future<void> callILMDeviceListFinder(
@@ -706,6 +637,7 @@ class device_list_screen_state extends State<device_list_screen> {
             });
             Navigator.pop(context);
           } else {
+            Navigator.pop(context);
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -775,12 +707,12 @@ class device_list_screen_state extends State<device_list_screen> {
               });
               Navigator.pop(context);
             } else {
-              calltoast(polenumber);
               Navigator.pop(context);
+              calltoast(polenumber);
             }
           } else {
-            calltoast(polenumber);
             Navigator.pop(context);
+            calltoast(polenumber);
           }
         } catch (e) {
           Navigator.pop(context);
@@ -792,8 +724,8 @@ class device_list_screen_state extends State<device_list_screen> {
                   user.polenumber, _relationdevices, _foundUsers, context);
             }
           } else {
-            calltoast(polenumber);
             Navigator.pop(context);
+            calltoast(polenumber);
           }
         }
       } else {
@@ -841,8 +773,8 @@ class device_list_screen_state extends State<device_list_screen> {
                     _foundUsers!.add(Devrelationresponse.name);
                   } else {}
                 } else {
-                  calltoast(ccmsnumber);
                   Navigator.pop(context);
+                  calltoast(ccmsnumber);
                 }
               }
               setState(() {
@@ -850,12 +782,12 @@ class device_list_screen_state extends State<device_list_screen> {
               });
               Navigator.pop(context);
             } else {
-              calltoast(ccmsnumber);
               Navigator.pop(context);
+              calltoast(ccmsnumber);
             }
           } else {
-            calltoast(ccmsnumber);
             Navigator.pop(context);
+            calltoast(ccmsnumber);
           }
         } catch (e) {
           Navigator.pop(context);
@@ -901,8 +833,8 @@ class device_list_screen_state extends State<device_list_screen> {
               Navigator.pop(context);
             }
           } else {
-            calltoast(deviceName);
             Navigator.pop(context);
+            calltoast(deviceName);
           }
         } catch (e) {
           Navigator.pop(context);
@@ -914,7 +846,6 @@ class device_list_screen_state extends State<device_list_screen> {
             }
           } else {
             calltoast(deviceName);
-            Navigator.pop(context);
           }
         }
       } else {
@@ -999,18 +930,19 @@ class device_list_screen_state extends State<device_list_screen> {
                       builder: (BuildContext context) => MaintenanceScreen()));
                 }
               } else {
-                calltoast(deviceName);
                 Navigator.pop(context);
+                calltoast(deviceName);
               }
             } else {
-              calltoast(deviceName);
               Navigator.pop(context);
+              calltoast(deviceName);
             }
           } else {
-            calltoast(deviceName);
             Navigator.pop(context);
+            calltoast(deviceName);
           }
         } catch (e) {
+          Navigator.pop(context);
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -1019,7 +951,6 @@ class device_list_screen_state extends State<device_list_screen> {
             }
           } else {
             calltoast(deviceName);
-            Navigator.pop(context);
           }
         }
       } else {

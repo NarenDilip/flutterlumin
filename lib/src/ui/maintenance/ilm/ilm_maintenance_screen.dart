@@ -12,6 +12,7 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
+import 'package:flutterlumin/src/ui/dashboard/replace_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/replacement_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
@@ -108,11 +109,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        } else {
-          SystemNavigator.pop();
-        }
+        Navigator.pop(context);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
         return true;
       },
       child: Scaffold(
@@ -492,9 +491,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               height: 15,
                             ),
                             Container(
-                              padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                               decoration: const BoxDecoration(
-                                  color: Colors.white,
+                                  color: Colors.black12,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(18.0))),
                               child: Column(
@@ -503,7 +502,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                     "Replace With",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        fontSize: 18, fontFamily: "Montserrat"),
+                                      color: Colors.red,
+                                        fontSize: 35, fontFamily: "Montserrat",fontWeight: FontWeight.bold,),
                                   ),
                                   const SizedBox(
                                     height: 15,
@@ -749,13 +749,13 @@ Future<void> callONRPCCall(context) async {
               backgroundColor: Colors.white,
               textColor: Colors.black,
               fontSize: 16.0);
-
           Navigator.pop(context);
         } else {
-          calltoast("Unable to Process, Please try again");
           Navigator.pop(context);
+          calltoast("Unable to Process, Please try again");
         }
       } catch (e) {
+        Navigator.pop(context);
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -764,7 +764,6 @@ Future<void> callONRPCCall(context) async {
           }
         } else {
           calltoast("Unable to Process");
-          Navigator.pop(context);
         }
       }
     } else {
@@ -796,6 +795,7 @@ Future<void> callOFFRPCCall(context) async {
             .timeout(const Duration(minutes: 2));
 
         if (response["lamp"].toString() == "0") {
+          Navigator.pop(context);
           Fluttertoast.showToast(
               msg: "Device Off Successfully",
               toastLength: Toast.LENGTH_SHORT,
@@ -804,11 +804,9 @@ Future<void> callOFFRPCCall(context) async {
               backgroundColor: Colors.white,
               textColor: Colors.black,
               fontSize: 16.0);
-
-          Navigator.pop(context);
         } else {
-          calltoast("Unable to Process, Please try again");
           Navigator.pop(context);
+          calltoast("Unable to Process, Please try again");
         }
       } catch (e) {
         var message = toThingsboardError(e, context);
@@ -818,8 +816,8 @@ Future<void> callOFFRPCCall(context) async {
             callOFFRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
           Navigator.pop(context);
+          calltoast("Unable to Process");
         }
       }
     } else {
@@ -863,6 +861,7 @@ Future<void> getLiveRPCCall(version, context) async {
         //   Navigator.pop(context);
         // }
       } catch (e) {
+        Navigator.pop(context);
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -871,8 +870,7 @@ Future<void> getLiveRPCCall(version, context) async {
           }
         } else {
           calltoast("Unable to Process");
-          Navigator.pop(context);
-        }
+               }
       }
     } else {
       calltoast(no_network);
@@ -881,6 +879,10 @@ Future<void> getLiveRPCCall(version, context) async {
 }
 
 Future<void> replaceILM(context) async {
+  // Navigator.pop(context);
+  // Navigator.of(context).pushReplacement(
+  //     MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
+
   Utility.isConnected().then((value) async {
     if (value) {
       Utility.progressDialog(context);
@@ -894,17 +896,21 @@ Future<void> replaceILM(context) async {
           (route) => true).then((value) async {
         if (value != null) {
           if (OlddeviceName.toString() != value.toString()) {
-            late Future<Device?> entityFuture;
-            Utility.progressDialog(context);
-            entityFuture =
-                ilm_main_fetchDeviceDetails(OlddeviceName, value, context);
-          } else {
-            calltoast("Duplicate QR Code");
+
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            prefs.setString('newDevicename', value);
+
             Navigator.pop(context);
-          }
+            // showActionAlertDialog(context,OlddeviceName,value);
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
+          } else {
+            Navigator.pop(context);
+            calltoast("Duplicate QR Code");
+                      }
         } else {
-          calltoast("Invalid QR Code");
           Navigator.pop(context);
+          calltoast("Invalid QR Code");
         }
       });
     } else {
@@ -933,12 +939,12 @@ Future<Device?> ilm_main_fetchDeviceDetails(
           } else if (response.type == ccms_deviceType) {
           } else if (response.type == Gw_deviceType) {
           } else {
-            calltoast("Device Details Not Found");
             Navigator.pop(context);
+            calltoast("Device Details Not Found");
           }
         } else {
-          calltoast(deviceName);
           Navigator.pop(context);
+          calltoast(deviceName);
         }
       } catch (e) {
         Navigator.pop(context);
@@ -950,7 +956,6 @@ Future<Device?> ilm_main_fetchDeviceDetails(
           }
         } else {
           calltoast(deviceName);
-          Navigator.pop(context);
         }
       }
     } else {
@@ -960,116 +965,117 @@ Future<Device?> ilm_main_fetchDeviceDetails(
 }
 
 Future<void> replaceShortingCap(context) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String deviceID = prefs.getString('deviceId').toString();
-  String deviceName = prefs.getString('deviceName').toString();
-
-  var DevicecurrentFolderName = "";
-  var DevicemoveFolderName = "";
-
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      try {
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-
-        Device response;
-        response = (await tbClient
-            .getDeviceService()
-            .getTenantDevice(deviceName)) as Device;
-
-        if (response != null) {
-          var relationDetails = await tbClient
-              .getEntityRelationService()
-              .findInfoByTo(response.id!);
-
-          List<EntityGroupInfo> entitygroups;
-          entitygroups = await tbClient
-              .getEntityGroupService()
-              .getEntityGroupsByFolderType();
-
-          if (entitygroups != null) {
-            for (int i = 0; i < entitygroups.length; i++) {
-              if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-                DevicemoveFolderName =
-                    entitygroups.elementAt(i).id!.id!.toString();
-              }
-            }
-
-            List<EntityGroupId> currentdeviceresponse;
-            currentdeviceresponse = await tbClient
-                .getEntityGroupService()
-                .getEntityGroupsForFolderEntity(response.id!.id!);
-
-            if (currentdeviceresponse != null) {
-              if (currentdeviceresponse.last.id.toString().isNotEmpty) {
-
-                var firstdetails = await tbClient
-                    .getEntityGroupService()
-                    .getEntityGroup(currentdeviceresponse.first.id!);
-                if (firstdetails!.name.toString() != "All") {
-                  DevicecurrentFolderName = currentdeviceresponse.first.id!;
-                }
-                var seconddetails = await tbClient
-                    .getEntityGroupService()
-                    .getEntityGroup(currentdeviceresponse.last.id!);
-                if (seconddetails!.name.toString() != "All") {
-                  DevicecurrentFolderName = currentdeviceresponse.last.id!;
-                }
-
-                var relation_response = await tbClient
-                    .getEntityRelationService()
-                    .deleteDeviceRelation(relationDetails.elementAt(0).from.id!,
-                        response.id!.id!);
-
-                // DevicecurrentFolderName =
-                //     currentdeviceresponse.last.id.toString();
-
-                List<String> myList = [];
-                myList.add(response.id!.id!);
-
-                var remove_response = tbClient
-                    .getEntityGroupService()
-                    .removeEntitiesFromEntityGroup(
-                        DevicecurrentFolderName, myList);
-
-                var add_response = tbClient
-                    .getEntityGroupService()
-                    .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
-
+  // SharedPreferences prefs = await SharedPreferences.getInstance();
+  // String deviceID = prefs.getString('deviceId').toString();
+  // String deviceName = prefs.getString('deviceName').toString();
+  //
+  // var DevicecurrentFolderName = "";
+  // var DevicemoveFolderName = "";
+  //
+  // Utility.isConnected().then((value) async {
+  //   if (value) {
+  //     Utility.progressDialog(context);
+  //     try {
+  //       var tbClient = ThingsboardClient(serverUrl);
+  //       tbClient.smart_init();
+  //
+  //       Device response;
+  //       response = (await tbClient
+  //           .getDeviceService()
+  //           .getTenantDevice(deviceName)) as Device;
+  //
+  //       if (response != null) {
+  //         var relationDetails = await tbClient
+  //             .getEntityRelationService()
+  //             .findInfoByTo(response.id!);
+  //
+  //         List<EntityGroupInfo> entitygroups;
+  //         entitygroups = await tbClient
+  //             .getEntityGroupService()
+  //             .getEntityGroupsByFolderType();
+  //
+  //         if (entitygroups != null) {
+  //           for (int i = 0; i < entitygroups.length; i++) {
+  //             if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+  //               DevicemoveFolderName =
+  //                   entitygroups.elementAt(i).id!.id!.toString();
+  //             }
+  //           }
+  //
+  //           List<EntityGroupId> currentdeviceresponse;
+  //           currentdeviceresponse = await tbClient
+  //               .getEntityGroupService()
+  //               .getEntityGroupsForFolderEntity(response.id!.id!);
+  //
+  //           if (currentdeviceresponse != null) {
+  //             if (currentdeviceresponse.last.id.toString().isNotEmpty) {
+  //
+  //               var firstdetails = await tbClient
+  //                   .getEntityGroupService()
+  //                   .getEntityGroup(currentdeviceresponse.first.id!);
+  //               if (firstdetails!.name.toString() != "All") {
+  //                 DevicecurrentFolderName = currentdeviceresponse.first.id!;
+  //               }
+  //               var seconddetails = await tbClient
+  //                   .getEntityGroupService()
+  //                   .getEntityGroup(currentdeviceresponse.last.id!);
+  //               if (seconddetails!.name.toString() != "All") {
+  //                 DevicecurrentFolderName = currentdeviceresponse.last.id!;
+  //               }
+  //
+  //               var relation_response = await tbClient
+  //                   .getEntityRelationService()
+  //                   .deleteDeviceRelation(relationDetails.elementAt(0).from.id!,
+  //                       response.id!.id!);
+  //
+  //               // DevicecurrentFolderName =
+  //               //     currentdeviceresponse.last.id.toString();
+  //
+  //               List<String> myList = [];
+  //               myList.add(response.id!.id!);
+  //
+  //               var remove_response = tbClient
+  //                   .getEntityGroupService()
+  //                   .removeEntitiesFromEntityGroup(
+  //                       DevicecurrentFolderName, myList);
+  //
+  //               var add_response = tbClient
+  //                   .getEntityGroupService()
+  //                   .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
+  //
                 Navigator.pop(context);
-                callDashboard(context);
-              } else {
-                calltoast("Device is not Found");
-                Navigator.pop(context);
-              }
-            } else {
-              calltoast("Device EntityGroup Not Found");
-              Navigator.pop(context);
-            }
-          } else {
-            calltoast(deviceName);
-            Navigator.pop(context);
-          }
-        } else {
-          calltoast(deviceName);
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            replaceILM(context);
-          }
-        } else {
-          calltoast(deviceName);
-          Navigator.pop(context);
-        }
-      }
-    }
-  });
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+  //             } else {
+  //               calltoast("Device is not Found");
+  //               Navigator.pop(context);
+  //             }
+  //           } else {
+  //             calltoast("Device EntityGroup Not Found");
+  //             Navigator.pop(context);
+  //           }
+  //         } else {
+  //           calltoast(deviceName);
+  //           Navigator.pop(context);
+  //         }
+  //       } else {
+  //         calltoast(deviceName);
+  //         Navigator.pop(context);
+  //       }
+  //     } catch (e) {
+  //       var message = toThingsboardError(e, context);
+  //       if (message == session_expired) {
+  //         var status = loginThingsboard.callThingsboardLogin(context);
+  //         if (status == true) {
+  //           replaceILM(context);
+  //         }
+  //       } else {
+  //         calltoast(deviceName);
+  //         Navigator.pop(context);
+  //       }
+  //     }
+  //   }
+  // });
 }
 
 @override
@@ -1268,8 +1274,8 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                           callDashboard(context);
                         }
                       } else {
-                        calltoast(deviceName);
                         Navigator.pop(context);
+                        calltoast(deviceName);
                       }
                     }
                   } else {
@@ -1390,35 +1396,36 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                           callDashboard(context);
                         }
                       } else {
-                        calltoast(deviceName);
                         Navigator.pop(context);
+                        calltoast(deviceName);
                       }
                     } else {
-                      calltoast(deviceName);
                       Navigator.pop(context);
+                      calltoast(deviceName);
                     }
                   }
                 } else {
-                  calltoast(deviceName);
                   Navigator.pop(context);
+                  calltoast(deviceName);
                 }
               } else {
-                calltoast(deviceName);
                 Navigator.pop(context);
+                calltoast(deviceName);
               }
             } else {
-              calltoast(deviceName);
               Navigator.pop(context);
+              calltoast(deviceName);
             }
           } else {
-            calltoast(deviceName);
             Navigator.pop(context);
+            calltoast(deviceName);
           }
         } else {
-          calltoast(deviceName);
           Navigator.pop(context);
+          calltoast(deviceName);
         }
       } catch (e) {
+        Navigator.pop(context);
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -1427,13 +1434,96 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
           }
         } else {
           calltoast(deviceName);
-          Navigator.pop(context);
         }
       }
     } else {
       calltoast(no_network);
     }
   });
+}
+
+showActionAlertDialog(context,OldDevice,NewDevice) {
+  // set up the buttons
+  Widget cancelButton = TextButton(
+    child: Text("Cancel",style: const TextStyle(
+        fontSize: 25.0,
+        fontFamily: "Montserrat",
+        fontWeight: FontWeight.bold,
+        color: Colors.red)),
+    onPressed:  () {
+      Navigator.of(context, rootNavigator: true).pop('dialog');
+    },
+  );
+  Widget continueButton = TextButton(
+    child: Text("Replace",style: const TextStyle(
+        fontSize: 25.0,
+        fontFamily: "Montserrat",
+        fontWeight: FontWeight.bold,
+        color: Colors.green)),
+    onPressed:  () {
+      late Future<Device?> entityFuture;
+      Utility.progressDialog(context);
+      entityFuture =
+          ilm_main_fetchDeviceDetails(context,OldDevice,NewDevice);
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Luminator",style: const TextStyle(
+        fontSize: 25.0,
+        fontFamily: "Montserrat",
+        fontWeight: FontWeight.bold,
+        color: thbblue)),
+
+    content: RichText( text: new TextSpan(text: 'Would you like to replace ',style: const TextStyle(
+        fontSize: 16.0,
+        fontFamily: "Montserrat",
+        fontWeight: FontWeight.bold,
+        color: liorange), children:
+    <TextSpan>[
+
+      new TextSpan(text: OldDevice, style: const TextStyle(
+          fontSize: 18.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: Colors.red)),
+      new TextSpan(text: ' With ',style: const TextStyle(
+          fontSize: 16.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: liorange)),
+      new TextSpan(text: NewDevice, style: const TextStyle(
+          fontSize: 18.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: Colors.green)),
+      new TextSpan(text: ' ? ',style: const TextStyle(
+          fontSize: 16.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: liorange)),
+    ], ), ),
+
+
+    // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
+    //     fontSize: 18.0,
+    //     fontFamily: "Montserrat",
+    //     fontWeight: FontWeight.normal,
+    //     color: liorange)),
+    actions: [
+      cancelButton,
+      continueButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
 }
 
 void calltoast(String polenumber) {

@@ -118,6 +118,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 if (wardlist.elementAt(i).to.entityType.name != "DEVICE") {
                   relatedDeviceId = wardlist.elementAt(i).to;
                   AssetDevices?.add(relatedDeviceId);
+                }else{
+
                 }
               }
 
