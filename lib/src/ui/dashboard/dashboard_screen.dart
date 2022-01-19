@@ -244,7 +244,6 @@ Future<Device?> fetchDeviceDetails(
                 backgroundColor: Colors.white,
                 textColor: Colors.black,
                 fontSize: 16.0);
-
           }
         } else {
           Navigator.pop(context);
@@ -341,7 +340,7 @@ Future<Device?> fetchSmartDeviceDetails(
           prefs.setString('deviceName', deviceName);
 
           List<String> versionlist = [];
-          versionlist.add("ver");
+          versionlist.add("version");
 
           List<AttributeKvEntry> version_responserse;
 
