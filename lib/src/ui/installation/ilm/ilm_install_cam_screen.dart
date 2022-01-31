@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -12,6 +15,7 @@ import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -34,23 +38,34 @@ class ilmcaminstall extends StatefulWidget {
 class ilmcaminstallState extends State<ilmcaminstall> {
   String DeviceName = "0";
   var imageFile;
+  var accuvalue;
+  var addvalue;
   LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
-  String lattitude = "0";
-  String longitude = "0";
-  String accuracy = "0";
+  double lattitude = 0;
+  double longitude = 0;
+  double accuracy = 0;
   String addresss = "0";
+  String? _error;
+  List<double>? _latt = [];
+  List<double>? _long = [];
+  List<double>? _acc = [];
+  List<String>? _add = [];
+
+  final Location locations = Location();
+  LocationData? _location;
+  StreamSubscription<LocationData>? _locationSubscription;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
 
-    lattitude = prefs.getString('lattitude').toString();
-    longitude = prefs.getString('longitude').toString();
-    accuracy = prefs.getString('accuracy').toString();
-    addresss = prefs.getString('address').toString();
+    // lattitude = prefs.getString('lattitude').toString();
+    // longitude = prefs.getString('longitude').toString();
+    // accuracy = prefs.getString('accuracy').toString();
+    // addresss = prefs.getString('address').toString();
 
     setState(() {
       DeviceName = DeviceName;
@@ -61,26 +76,66 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   @override
   void initState() {
     super.initState();
-    getLocation();
+    // getLocation();
     DeviceName = "";
     SelectedWard = "";
     _openCamera(context);
     getSharedPrefs();
   }
 
-  void getLocation() {
-    setState(() {
-      _getLocation().then((value) {
-        LocationData? location = value;
-        _getAddress(location?.latitude, location?.longitude).then((value) {
+  Future<void> _listenLocation() async {
+    _locationSubscription =
+        locations.onLocationChanged.handleError((dynamic err) {
+      if (err is PlatformException) {
+        setState(() {
+          _error = err.code;
+        });
+      }
+      _locationSubscription?.cancel();
+      setState(() {
+        _locationSubscription = null;
+      });
+    }).listen((LocationData currentLocation) {
+      setState(() {
+        _error = null;
+        _location = currentLocation;
+        _getAddress(_location!.latitude, _location!.longitude).then((value) {
           setState(() {
-            currentLocation = location;
             address = value;
+            if (_latt!.length <= 5) {
+              _latt!.add(_location!.latitude!);
+              lattitude = _location!.latitude!;
+              longitude = _location!.latitude!;
+              accuracy = _location!.accuracy!;
+              // addresss = addresss;
+            } else {
+              _locationSubscription?.cancel();
+
+              accuvalue = accuracy.toString().split(".");
+              addvalue = value.toString().split(",");
+
+              callReplacementComplete(
+                  context, imageFile, DeviceName, SelectedWard);
+            }
           });
         });
       });
     });
   }
+
+  // void getLocation() {
+  //   setState(() {
+  //     _getLocation().then((value) {
+  //       LocationData? location = value;
+  //       _getAddress(location?.latitude, location?.longitude).then((value) {
+  //         setState(() {
+  //           currentLocation = location;
+  //           address = value;
+  //         });
+  //       });
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -136,8 +191,11 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                 borderRadius: BorderRadius.circular(25.0),
                               ))),
                           onPressed: () {
-                            callReplacementComplete(
-                                context, imageFile, DeviceName, SelectedWard);
+                            Utility.progressDialog(context);
+                            _listenLocation();
+
+                            // callReplacementComplete(
+                            //     context, imageFile, DeviceName, SelectedWard);
                           }))
                   // rounded_button(
                   //   text: "Complete Replacement",
@@ -209,7 +267,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
                 if (faultyDetails == false) {
                   if (SelectedWard != "Ward") {
-                    if (lattitude != null) {
+                    if (lattitude.toString() != null) {
                       DBHelper dbHelper = DBHelper();
                       List<Ward> warddetails = await dbHelper
                           .ward_basedDetails(SelectedWard) as List<Ward>;
@@ -237,9 +295,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
                         Map data = {
                           'landmark': addresss,
-                          'lattitude': lattitude,
-                          'longitude': longitude,
-                          'accuracy': accuracy
+                          'lattitude': lattitude.toString(),
+                          'longitude': longitude.toString(),
+                          'accuracy': accuracy.toString()
                         };
 
                         var saveAttributes = await tbClient
@@ -417,6 +475,77 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     });
   }
 
+  void showMyDialog(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+            content: Container(
+              height: height/1.65,
+                child: Column(
+                    children: [
+                      Text(
+                        "LumiNode " + ' $DeviceName ',
+                        style: const TextStyle(
+                            fontSize: 20.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: thbDblue),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 10),
+                      Container(
+                        width: 250,
+                        height: 350,
+                        child: imageFile != null
+                            ? Image.file(File(imageFile.path))
+                            : Container(
+                            decoration: BoxDecoration(color: Colors.white),
+                            width: 200,
+                            height: 200,
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.grey[800],
+                            )),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                         addvalue[0].toString() +","+ addvalue[1].toString(),
+                        style: const TextStyle(
+                            fontSize: 16.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                        textAlign: TextAlign.left,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'With ' + accuvalue[0].toString() + "m Accuracy",
+                        style: const TextStyle(
+                            fontSize: 16.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                        textAlign: TextAlign.left,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Installed Successfully",
+                        style: const TextStyle(
+                            fontSize: 22.0,
+                            fontFamily: "Montserrat",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green),
+                        textAlign: TextAlign.left,
+                      ),
+                      SizedBox(height: 10),
+                    ])));
+      }
+    );
+  }
+
   void calltoast(String polenumber) {
     Fluttertoast.showToast(
         msg: device_toast_msg + polenumber + device_toast_notfound,
@@ -455,17 +584,26 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     return _locationData;
   }
 
+  // Future<String> _getAddress(double? lat, double? lang) async {
+  //   if (lat == null || lang == null) return "";
+  //   Geolocator geolocator = Geolocator();
+  //   List<Placemark> placemarks =
+  //       await geolocator.placemarkFromCoordinates(lat, lang);
+  //   Placemark place = placemarks[0];
+  //   // GeoCode geoCode = GeoCode();
+  //   // Address address =
+  //   //     await geoCode.reverseGeocoding(latitude: lat, longitude: lang);
+  //   return "${place.name}, ${place.locality}, ${place.country}";
+  // }
+
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
-    Geolocator geolocator = Geolocator();
-    List<Placemark> placemarks =
-        await geolocator.placemarkFromCoordinates(lat, lang);
-    Placemark place = placemarks[0];
-    // GeoCode geoCode = GeoCode();
-    // Address address =
-    //     await geoCode.reverseGeocoding(latitude: lat, longitude: lang);
-    return "${place.name}, ${place.locality}, ${place.country}";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)) as List<Address>;
+    return "${addresss.elementAt(1).addressLine}";
   }
+
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
@@ -481,17 +619,20 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       print("${response.statusCode}");
 
       if (response.statusCode.toString() == "200") {
-        Fluttertoast.showToast(
-            msg: "Device Installation Completed",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen()));
+        showMyDialog(context);
+        // Fluttertoast.showToast(
+        //     msg: "Device Installation Completed",
+        //     toastLength: Toast.LENGTH_SHORT,
+        //     gravity: ToastGravity.BOTTOM,
+        //     timeInSecForIosWeb: 1,
+        //     backgroundColor: Colors.white,
+        //     textColor: Colors.black,
+        //     fontSize: 16.0);
+        //
+        // Navigator.of(context).pushReplacement(MaterialPageRoute(
+        //     builder: (BuildContext context) => dashboard_screen()));
       } else {}
       return response;
     } catch (e) {

@@ -19,6 +19,8 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../installation/ilm/ilm_install_cam_screen.dart';
+
 class dashboard_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -30,6 +32,7 @@ class dashboard_screenState extends State<dashboard_screen> {
   int _selectedIndex = 0;
   bool clickedCentreFAB = false;
   var isPressed = false;
+
   @override
   // TODO: implement context
   BuildContext get context => super.context;
@@ -45,17 +48,17 @@ class dashboard_screenState extends State<dashboard_screen> {
     Color? _foreground = Colors.green[900];
     return WillPopScope(
         onWillPop: () async {
-      final result = await showDialog(
-        context: context,
-        builder: (ctx) =>
-            AlertDialog(
+          final result = await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
               insetPadding: EdgeInsets.symmetric(horizontal: 0),
               backgroundColor: Colors.white,
-              title: Text("Luminator", style: const TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: liorange)),
+              title: Text("Luminator",
+                  style: const TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: liorange)),
               content: Text("Are you sure you want to exit device count?",
                   style: const TextStyle(
                       fontSize: 18.0,
@@ -67,126 +70,129 @@ class dashboard_screenState extends State<dashboard_screen> {
                   onPressed: () {
                     Navigator.of(ctx).pop();
                   },
-                  child: Text("NO", style: const TextStyle(
-                      fontSize: 25.0,
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green)),
+                  child: Text("NO",
+                      style: const TextStyle(
+                          fontSize: 25.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green)),
                 ),
                 TextButton(
-                  child: Text('YES', style: const TextStyle(
-                      fontSize: 25.0,
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red)),
+                  child: Text('YES',
+                      style: const TextStyle(
+                          fontSize: 25.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red)),
                   onPressed: () {
-                    SystemChannels.platform.invokeMethod(
-                        'SystemNavigator.pop');
+                    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                   },
                 ),
               ],
             ),
-      );
-      return result;
-    },
-    child: Scaffold(
-      body: Stack(
-        children: <Widget>[
-          _widgetOptions.elementAt(_selectedIndex),
-          // Align(
-          //   alignment: FractionalOffset.center,
-          //   //in this demo, only the button text is updated based on the bottom app bar clicks
-          //   child: RaisedButton(
-          //     // child: Text(""),
-          //     onPressed: () {},
-          //   ),
-          // ),
-          //this is the code for the widget container that comes from behind the floating action button (FAB)
-          Align(
-            alignment: FractionalOffset.bottomRight,
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 250),
-              //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
-              height:
-                  clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
-              width:
-                  clickedCentreFAB ? MediaQuery.of(context).size.height : 10.0,
-              decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
-                  color: Colors.white),
-            ),
-          )
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      //specify the location of the FAB
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: _foreground,
-        onPressed: () {
-          deviceFetcher(context);
+          );
+          return result;
         },
-        tooltip: "SCAN QR",
-        child: Container(
-          margin: EdgeInsets.all(15.0),
-          child: Icon(Icons.qr_code),
-        ),
-        elevation: 3.0,
-      ),
-      backgroundColor: thbDblue,
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: thbDblue,
-        currentIndex: _selectedIndex,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.analytics,
-              color: Colors.black,
-              size: 45,
-            ),
-            label:'Dashboard',
-            activeIcon: Icon(
-              Icons.analytics,
-              color: Colors.white,
-              size: 45,
-            ),
+        child: Scaffold(
+          body: Stack(
+            children: <Widget>[
+              _widgetOptions.elementAt(_selectedIndex),
+              // Align(
+              //   alignment: FractionalOffset.center,
+              //   //in this demo, only the button text is updated based on the bottom app bar clicks
+              //   child: RaisedButton(
+              //     // child: Text(""),
+              //     onPressed: () {},
+              //   ),
+              // ),
+              //this is the code for the widget container that comes from behind the floating action button (FAB)
+              Align(
+                alignment: FractionalOffset.bottomRight,
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: 250),
+                  //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
+                  height: clickedCentreFAB
+                      ? MediaQuery.of(context).size.height
+                      : 10.0,
+                  width: clickedCentreFAB
+                      ? MediaQuery.of(context).size.height
+                      : 10.0,
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                      color: Colors.white),
+                ),
+              )
+            ],
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(
-          //     Icons.map,
-          //     color: Colors.black,
-          //     size: 45,
-          //   ),
-          //   title: Text('Map View'),
-          //   activeIcon: Icon(
-          //     Icons.map,
-          //     color: Colors.white,
-          //     size: 45,
-          //   ),
-          // ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.list,
-              color: Colors.black,
-              size: 45,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+          //specify the location of the FAB
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: _foreground,
+            onPressed: () {
+              deviceFetcher(context);
+            },
+            tooltip: "SCAN QR",
+            child: Container(
+              margin: EdgeInsets.all(15.0),
+              child: Icon(Icons.qr_code),
             ),
-            label:'Device List',
-            activeIcon: Icon(
-              Icons.list,
-              color: Colors.white,
-              size: 45,
-            ),
+            elevation: 3.0,
           ),
-        ],
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
-    ));
+          backgroundColor: thbDblue,
+          bottomNavigationBar: BottomNavigationBar(
+            backgroundColor: thbDblue,
+            currentIndex: _selectedIndex,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.analytics,
+                  color: Colors.black,
+                  size: 45,
+                ),
+                label: 'Dashboard',
+                activeIcon: Icon(
+                  Icons.analytics,
+                  color: Colors.white,
+                  size: 45,
+                ),
+              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(
+              //     Icons.map,
+              //     color: Colors.black,
+              //     size: 45,
+              //   ),
+              //   title: Text('Map View'),
+              //   activeIcon: Icon(
+              //     Icons.map,
+              //     color: Colors.white,
+              //     size: 45,
+              //   ),
+              // ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.list,
+                  color: Colors.black,
+                  size: 45,
+                ),
+                label: 'Device List',
+                activeIcon: Icon(
+                  Icons.list,
+                  color: Colors.white,
+                  size: 45,
+                ),
+              ),
+            ],
+            onTap: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+          ),
+        ));
   }
 }
 
@@ -202,7 +208,7 @@ Future<void> deviceFetcher(BuildContext context) async {
           late Future<Device?> entityFuture;
           Utility.progressDialog(context);
           entityFuture = fetchDeviceDetails(value, context);
-        }else{
+        } else {
           Fluttertoast.showToast(
               msg: "No Device Found",
               toastLength: Toast.LENGTH_SHORT,
@@ -241,13 +247,17 @@ Future<Device?> fetchDeviceDetails(
         response = await tbClient.getDeviceService().getTenantDevice(deviceName)
             as Device;
         if (response != null) {
-          DeviceCredentials deviceCredentials = (await tbClient.getDeviceService().getDeviceCredentialsByDeviceId(response.id!.id!)) as DeviceCredentials;
+          DeviceCredentials deviceCredentials = (await tbClient
+                  .getDeviceService()
+                  .getDeviceCredentialsByDeviceId(response.id!.id!))
+              as DeviceCredentials;
           if (deviceCredentials.credentialsId.length == 16) {
             if (response.type == ilm_deviceType) {
               fetchSmartDeviceDetails(
                   deviceName, response.id!.id.toString(), context);
-            } else if (response.type == ccms_deviceType) {} else
-            if (response.type == Gw_deviceType) {} else {
+            } else if (response.type == ccms_deviceType) {
+            } else if (response.type == Gw_deviceType) {
+            } else {
               Navigator.pop(context);
               Fluttertoast.showToast(
                   msg: "Device Details Not Found",
@@ -258,10 +268,11 @@ Future<Device?> fetchDeviceDetails(
                   textColor: Colors.black,
                   fontSize: 16.0);
             }
-          }else{
+          } else {
             Navigator.pop(context);
             Fluttertoast.showToast(
-                msg: "Device Credentials are invalid, Device not despatched properly",
+                msg:
+                    "Device Credentials are invalid, Device not despatched properly",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -284,7 +295,7 @@ Future<Device?> fetchDeviceDetails(
         }
       } catch (e) {
         Navigator.pop(context);
-        var message = toThingsboardError(e,context);
+        var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
@@ -334,7 +345,6 @@ Future<Device?> fetchSmartDeviceDetails(
             .getEntityRelationService()
             .findInfoByTo(response.id!);
 
-
         List<String> firstmyList = [];
         firstmyList.add("lmp");
 
@@ -342,15 +352,16 @@ Future<Device?> fetchSmartDeviceDetails(
 
         try {
           List<TsKvEntry> faultresponser;
-          faultresponser =
-          await tbClient.getAttributeService().getselectedLatestTimeseries(
-              response.id!.id!, "lmp") as List<TsKvEntry>;
+          faultresponser = await tbClient
+                  .getAttributeService()
+                  .getselectedLatestTimeseries(response.id!.id!, "lmp")
+              as List<TsKvEntry>;
           if (faultresponser.length != 0) {
             prefs.setString(
                 'faultyStatus', faultresponser.first.getValue().toString());
           }
-        }catch(e){
-          var message = toThingsboardError(e,context);
+        } catch (e) {
+          var message = toThingsboardError(e, context);
         }
 
         List<String> myList = [];
@@ -362,20 +373,24 @@ Future<Device?> fetchSmartDeviceDetails(
         responser = (await tbClient.getAttributeService().getAttributeKvEntries(
             response.id!, myList)) as List<BaseAttributeKvEntry>;
 
-        prefs.setString('deviceStatus', responser.first.kv.getValue().toString());
+        prefs.setString(
+            'deviceStatus', responser.first.kv.getValue().toString());
         prefs.setString('deviceWatts', responser.last.kv.getValue().toString());
-        prefs.setString('devicetimeStamp', responser.first.lastUpdateTs.toString());
+        prefs.setString(
+            'devicetimeStamp', responser.first.lastUpdateTs.toString());
 
         List<String> myLister = [];
-        myLister.add("landmark");
-        // myLister.add("location");
+        // myLister.add("landmark");
+        myLister.add("location");
 
         List<AttributeKvEntry> responserse;
 
-        responserse = (await tbClient.getAttributeService().getAttributeKvEntries(
-            response.id!, myLister)) as List<AttributeKvEntry>;
+        responserse = (await tbClient
+                .getAttributeService()
+                .getAttributeKvEntries(response.id!, myLister))
+            as List<AttributeKvEntry>;
 
-        if(responserse.length != "0") {
+        if (responserse.length != "0") {
           prefs.setString('location', responserse.first.getValue().toString());
           prefs.setString('deviceId', deviceid);
           prefs.setString('deviceName', deviceName);
@@ -385,9 +400,10 @@ Future<Device?> fetchSmartDeviceDetails(
 
           List<AttributeKvEntry> version_responserse;
 
-          version_responserse =
-          (await tbClient.getAttributeService().getAttributeKvEntries(
-              response.id!, versionlist)) as List<AttributeKvEntry>;
+          version_responserse = (await tbClient
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, versionlist))
+              as List<AttributeKvEntry>;
 
           if (version_responserse.length == 0) {
             prefs.setString('version', "0");
@@ -396,23 +412,35 @@ Future<Device?> fetchSmartDeviceDetails(
           }
 
           if (relationDetails.length.toString() == "0") {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            var SelectedRegion = prefs.getString("SelectedRegion").toString();
             Navigator.pop(context);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => ilm_installation_screen()));
-
-
+            if (SelectedRegion != "Region") {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      ilmcaminstall()));
+            } else {
+              Fluttertoast.showToast(
+                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
+            }
           } else {
             Navigator.pop(context);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => MaintenanceScreen()));
           }
-        }else{
+        } else {
           Navigator.pop(context);
           calltoast("Device Details Not Found");
         }
       } catch (e) {
-        Navigator.pop(context);
-        var message = toThingsboardError(e,context);
+        // Navigator.pop(context);
+        var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
@@ -442,15 +470,16 @@ Future<Device?> fetchSmartDeviceDetails(
   });
 }
 
-Future<ThingsboardError> toThingsboardError(error, context,[StackTrace? stackTrace]) async {
+Future<ThingsboardError> toThingsboardError(error, context,
+    [StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
-  if(error.message == "Session expired!"){
+  if (error.message == "Session expired!") {
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (BuildContext context) => dashboard_screen()));
     }
-  }else {
+  } else {
     if (error is DioError) {
       if (error.response != null && error.response!.data != null) {
         var data = error.response!.data;
@@ -514,4 +543,3 @@ Future<ThingsboardError> toThingsboardError(error, context,[StackTrace? stackTra
 
   return tbError;
 }
-
