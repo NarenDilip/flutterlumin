@@ -19,6 +19,8 @@ import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import '../../localdb/db_helper.dart';
+import '../../localdb/model/region_model.dart';
 import '../splash_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -67,6 +69,14 @@ class device_list_screen_state extends State<device_list_screen> {
         SelectedZone = "Zone";
         SelectedWard = "Ward";
       }
+
+      if (SelectedZone == "0" || SelectedZone == "null") {
+        SelectedZone = "Zone";
+      }
+
+      if (SelectedWard == "0" || SelectedWard == "null") {
+        SelectedWard = "Ward";
+      }
     });
   }
 
@@ -98,12 +108,12 @@ class device_list_screen_state extends State<device_list_screen> {
         resizeToAvoidBottomInset: false,
         extendBody: true,
         body: Container(
-            color: lightorange,
+            color: thbDblue,
             child: Column(children: [
               Container(
                 height: 100,
                 decoration: const BoxDecoration(
-                    color: lightorange,
+                    color: thbDblue,
                     borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(0.0),
                         topRight: Radius.circular(0.0),
@@ -113,7 +123,7 @@ class device_list_screen_state extends State<device_list_screen> {
                   children: [
                     Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                      padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: Text('Device List view',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
@@ -124,7 +134,7 @@ class device_list_screen_state extends State<device_list_screen> {
                     ),
                     Positioned(
                       right: 10,
-                      top: 15,
+                      top: 20,
                       bottom: 0,
                       child: IconButton(
                         color: Colors.red,
@@ -171,7 +181,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                               EdgeInsets.all(20)),
                                       backgroundColor:
                                           MaterialStateProperty.all(
-                                              lightorange),
+                                              thbDblue),
                                       foregroundColor:
                                           MaterialStateProperty.all<Color>(
                                               Colors.black),
@@ -201,7 +211,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                               EdgeInsets.all(20)),
                                       backgroundColor:
                                           MaterialStateProperty.all(
-                                              lightorange),
+                                              thbDblue),
                                       shape: MaterialStateProperty.all<
                                               RoundedRectangleBorder>(
                                           RoundedRectangleBorder(
@@ -228,7 +238,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                               EdgeInsets.all(20)),
                                       backgroundColor:
                                           MaterialStateProperty.all(
-                                              lightorange),
+                                              thbDblue),
                                       shape: MaterialStateProperty.all<
                                               RoundedRectangleBorder>(
                                           RoundedRectangleBorder(
@@ -254,7 +264,7 @@ class device_list_screen_state extends State<device_list_screen> {
                             },
                             child: Container(
                                 decoration: BoxDecoration(
-                                    color: liorange,
+                                    color: thbDblue,
                                     borderRadius: BorderRadius.circular(30)),
                                 child: Column(
                                   children: [
@@ -265,11 +275,11 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 padding:
                                                     EdgeInsets.only(left: 12),
                                                 child: Text('Device Filters',
-                                                    style: TextStyle(
-                                                        fontSize: 18.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        color: Colors.black)))),
+                                                  style: TextStyle(
+                                                      fontSize: 18.0,
+                                                      fontFamily: "Montserrat",
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.white),))),
                                         Expanded(
                                           child: Align(
                                             alignment: Alignment.centerRight,
@@ -296,7 +306,7 @@ class device_list_screen_state extends State<device_list_screen> {
                             child: Container(
                               padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
                               decoration: BoxDecoration(
-                                  color: liorange,
+                                  color: thbDblue,
                                   borderRadius: BorderRadius.circular(30)),
                               child: Column(
                                 children: [
@@ -308,6 +318,11 @@ class device_list_screen_state extends State<device_list_screen> {
                                         child: TextFormField(
                                             autofocus: false,
                                             keyboardType: TextInputType.text,
+                                            style: TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
                                             decoration: InputDecoration(
                                               filled: true,
                                               hintText: 'ILM Number',
@@ -315,12 +330,18 @@ class device_list_screen_state extends State<device_list_screen> {
                                               contentPadding:
                                                   EdgeInsets.fromLTRB(
                                                       10, 0, 0, 0),
+
                                               border: OutlineInputBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          20.0),
-                                                  borderSide: BorderSide(
-                                                      color: Colors.white)),
+                                                          70.0),
+                                                borderSide: BorderSide(color: thbDblue)),
+                                              enabledBorder: const OutlineInputBorder(
+                                                // width: 0.0 produces a thin "hairline" border
+                                                borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                                                borderSide: BorderSide(color: thbDblue),
+                                                //borderSide: const BorderSide(),
+                                              ),
                                               suffixIcon: GestureDetector(
                                                 onTap: () {
                                                   if (user
@@ -368,6 +389,11 @@ class device_list_screen_state extends State<device_list_screen> {
                                         child: TextFormField(
                                             autofocus: false,
                                             keyboardType: TextInputType.text,
+                                            style: TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
                                             decoration: InputDecoration(
                                               filled: true,
                                               hintText: 'CCMS Number',
@@ -381,6 +407,12 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
+                                              enabledBorder: const OutlineInputBorder(
+                                                // width: 0.0 produces a thin "hairline" border
+                                                borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                                                borderSide: BorderSide(color: thbDblue),
+                                                //borderSide: const BorderSide(),
+                                              ),
                                               suffixIcon: GestureDetector(
                                                 onTap: () {
                                                   if (user
@@ -431,6 +463,11 @@ class device_list_screen_state extends State<device_list_screen> {
                                         child: TextFormField(
                                             autofocus: false,
                                             keyboardType: TextInputType.text,
+                                            style: TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
                                             decoration: InputDecoration(
                                               filled: true,
                                               hintText: 'Pole Number',
@@ -444,6 +481,12 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
+                                              enabledBorder: const OutlineInputBorder(
+                                                // width: 0.0 produces a thin "hairline" border
+                                                borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                                                borderSide: BorderSide(color: thbDblue),
+                                                //borderSide: const BorderSide(),
+                                              ),
                                               suffixIcon: GestureDetector(
                                                 onTap: () {
                                                   if (user
@@ -509,7 +552,7 @@ class device_list_screen_state extends State<device_list_screen> {
                           ),
                           Container(
                               decoration: BoxDecoration(
-                                  color: liorange,
+                                  color: thbDblue,
                                   borderRadius: BorderRadius.circular(0)),
                               child: Column(
                                 children: [
@@ -531,7 +574,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         fontSize: 18.0,
                                                         fontFamily:
                                                             "Montserrat",
-                                                        color: Colors.black)))),
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.white)))),
                                         Expanded(
                                           child: Align(
                                             alignment: Alignment.centerRight,
@@ -550,7 +594,7 @@ class device_list_screen_state extends State<device_list_screen> {
                               )),
                           Visibility(
                             child: Container(
-                              color: liorange,
+                              color: thbDblue,
                               child: _foundUsers!.isNotEmpty
                                   ? ListView.builder(
                                       primary: false,
@@ -1084,9 +1128,29 @@ Future<void> callLogoutoption(BuildContext context) async {
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
           onPressed: () async {
+            //
+            // DBHelper dbhelper = new DBHelper();
+            // dbhelper.region_delete();
+            // dbhelper.zone_delete();
+            // dbhelper.ward_delete();
+
+            DBHelper dbhelper = new DBHelper();
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+
+            var SelectedRegion = prefs.getString("SelectedRegion").toString();
+            List<Region> details = await dbhelper.region_getDetails();
+
+            for(int i=0;i<details.length;i++){
+              dbhelper.delete(details.elementAt(i).id!.toInt());
+            }
+            dbhelper.zone_delete(SelectedRegion);
+            dbhelper.ward_delete(SelectedRegion);
+
             SharedPreferences preferences =
                 await SharedPreferences.getInstance();
             await preferences.clear();
+            // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => splash_screen()));
           },

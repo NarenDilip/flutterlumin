@@ -7,7 +7,7 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class map_view_screen extends StatefulWidget {
@@ -49,10 +49,10 @@ class map_view_screen_state extends State<map_view_screen> {
   }
 
   var dropDownValue = "";
-  final Completer<GoogleMapController> _controller = Completer();
-
-  static const CameraPosition _kGooglePlex = CameraPosition(
-      target: LatLng(37.42796133580664, -122.085749655962), zoom: 14.00);
+  // final Completer<GoogleMapController> _controller = Completer();
+  //
+  // static const CameraPosition _kGooglePlex = CameraPosition(
+  //     target: LatLng(37.42796133580664, -122.085749655962), zoom: 14.00);
 
   @override
   Widget build(BuildContext context) {

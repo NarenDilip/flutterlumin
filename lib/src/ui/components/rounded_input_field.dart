@@ -45,13 +45,13 @@ class rounded_input_field extends StatelessWidget {
             focusedBorder: const OutlineInputBorder(
               // width: 0.0 produces a thin "hairline" border
               borderRadius: BorderRadius.all(Radius.circular(70.0)),
-              borderSide: BorderSide(color: borderColor),
+              borderSide: BorderSide(color: thbDblue),
               //borderSide: const BorderSide(),
             ),
             enabledBorder: const OutlineInputBorder(
               // width: 0.0 produces a thin "hairline" border
               borderRadius: BorderRadius.all(Radius.circular(70.0)),
-              borderSide: BorderSide(color: borderColor),
+              borderSide: BorderSide(color: thbDblue),
               //borderSide: const BorderSide(),
             ),
           ),

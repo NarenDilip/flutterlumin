@@ -42,24 +42,24 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
-    Future<List<Ward>> wards;
 
     var sharedPreferences = await SharedPreferences.getInstance();
     selectedZone = sharedPreferences.getString("SelectedZone").toString();
 
     if (selectedZone != "0") {
-      wards = dbHelper.ward_zonebasedDetails(selectedZone);
-      wards.then((data) {
-        for (int i = 0; i < data.length; i++) {
-          String regionname = data[i].wardname.toString();
+      List<Ward> wards = await dbHelper.ward_getDetails() as List<Ward>;
+      // wards = (await dbHelper.ward_zonebasedDetails(selectedZone)) as List<Ward>;
+      // wards.then((data) {
+        for (int i = 0; i < wards.length; i++) {
+          String regionname = wards[i].wardname.toString();
           _allUsers?.add(regionname);
         }
         setState(() {
           _foundUsers = _allUsers!;
         });
-      }, onError: (e) {
-        print(e);
-      });
+      // }, onError: (e) {
+      //   print(e);
+      // });
     }
     // setState(() {
     //   _foundUsers = _allUsers! ;
@@ -257,7 +257,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
         //   return result;
         // },
         child: Scaffold(
-      backgroundColor: liorange,
+      backgroundColor: thbDblue,
       body: Padding(
         padding: const EdgeInsets.all(30),
         child: Column(
@@ -272,7 +272,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   fontSize: 25.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
-                  color: Colors.black),
+                  color: Colors.white),
             ),
             const SizedBox(
               height: 20,
@@ -283,9 +283,18 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
-                  color: Colors.black),
+                  color: Colors.white),
               decoration: const InputDecoration(
-                  labelText: 'Search', suffixIcon: Icon(Icons.search)),
+                labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
+                labelText: 'Search',
+                suffixIcon: Icon(Icons.search,color: Colors.white,),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
             ),
             Expanded(
               child: _foundUsers!.isNotEmpty
@@ -317,7 +326,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                                   fontSize: 22.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black)),
+                                  color: thbDblue)),
                         ),
                       ),
                     )

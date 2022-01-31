@@ -37,6 +37,77 @@ class DBHelper {
     return region;
   }
 
+  Future<List<Region>> region_getDetails() async {
+    var dbClient = await db;
+    List<Map> maps = await dbClient
+        .query('region', columns: ['id', 'regionid', 'regionname']);
+    List<Region> region = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        region.add(Region.fromMap(maps[i] as dynamic));
+      }
+    }
+    return region;
+  }
+
+  Future<List<Region>> region_name_regionbasedDetails(String? selectedRegion) async {
+    var dbClient = await db;
+    List<Map> maps = await dbClient
+        .query('region',
+      where: 'regionname = ?',
+      whereArgs: [selectedRegion],);
+    List<Region> region = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        region.add(Region.fromMap(maps[i] as dynamic));
+      }
+    }
+    return region;
+  }
+
+  Future<int> delete(int id) async {
+    var dbClient = await db;
+    return await dbClient.delete(
+      'region',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+
+  Future<int> zone_delete(String? regioninfo) async {
+    var dbClient = await db;
+    return await dbClient.delete(
+      'zone',
+      where: 'regioninfo = ?',
+      whereArgs: [regioninfo],
+    );
+  }
+
+  Future<int> ward_delete(String? zoneinfo) async {
+    var dbClient = await db;
+    return await dbClient.delete(
+      'ward',
+      where: 'zoneinfo = ?',
+      whereArgs: [zoneinfo],
+    );
+  }
+
+  // Future<int> region_delete() async {
+  //   var dbClient = await db;
+  //   return await dbClient.rawDelete("DROP TABLE IF EXISTS region");
+  // }
+  //
+  // Future<int> zone_delete() async {
+  //   var dbClient = await db;
+  //   return await dbClient.rawDelete("DROP TABLE IF EXISTS zone");
+  // }
+  //
+  // Future<int> ward_delete() async {
+  //   var dbClient = await db;
+  //   return await dbClient.rawDelete("DROP TABLE IF EXISTS ward");
+  // }
+
   Future<Zone> zone_add(Zone zone) async {
     var dbClient = await db;
     zone.id = await dbClient.insert('zone', zone.toMap());
@@ -62,6 +133,8 @@ class DBHelper {
     return ward;
   }
 
+
+
   Future<List<Ward>> ward_basedDetails(String? selectedWard) async {
     var dbClient = await db;
     List<Map> maps = await dbClient
@@ -81,6 +154,21 @@ class DBHelper {
     var dbClient = await db;
     List<Map> maps = await dbClient
         .query('zone', columns: ['id', 'zoneid', 'zonename', 'regioninfo']);
+    List<Zone> zone = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        zone.add(Zone.fromMap(maps[i] as dynamic));
+      }
+    }
+    return zone;
+  }
+
+  Future<List<Zone>> zone_zonebasedDetails(String? selectedZone) async {
+    var dbClient = await db;
+    List<Map> maps = await dbClient
+        .query('zone',
+      where: 'zonename = ?',
+      whereArgs: [selectedZone],);
     List<Zone> zone = [];
     if (maps.length > 0) {
       for (int i = 0; i < maps.length; i++) {
@@ -133,14 +221,14 @@ class DBHelper {
     return region;
   }
 
-  Future<int> delete(int id) async {
-    var dbClient = await db;
-    return await dbClient.delete(
-      'region',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
+  // Future<int> delete(int id) async {
+  //   var dbClient = await db;
+  //   return await dbClient.delete(
+  //     'region',
+  //     where: 'id = ?',
+  //     whereArgs: [id],
+  //   );
+  // }
 
 
   Future<int> update(Region region) async {

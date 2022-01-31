@@ -13,7 +13,6 @@ import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
-import '../../../localdb/model/region_model.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../../thingsboard/thingsboard_client_base.dart';
 import '../../../utils/utility.dart';
@@ -92,41 +91,32 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
         SelectedZone = "Zone";
         SelectedWard = "Ward";
       }
-
-      if (SelectedZone == "0" || SelectedZone == "null") {
-        SelectedZone = "Zone";
-      }
-
-      if (SelectedWard == "0" || SelectedWard == "null") {
-        SelectedWard = "Ward";
-      }
-
     });
   }
 
   Future<void> _listenLocation() async {
     _locationSubscription =
         locations.onLocationChanged.handleError((dynamic err) {
-      if (err is PlatformException) {
-        setState(() {
-          _error = err.code;
-        });
-      }
-      _locationSubscription?.cancel();
-      setState(() {
-        _locationSubscription = null;
-      });
-    }).listen((LocationData currentLocation) {
-      setState(() {
-        _error = null;
-        _location = currentLocation;
-        _getAddress(_location!.latitude, _location!.longitude).then((value) {
+          if (err is PlatformException) {
+            setState(() {
+              _error = err.code;
+            });
+          }
+          _locationSubscription?.cancel();
           setState(() {
-            address = value;
+            _locationSubscription = null;
+          });
+        }).listen((LocationData currentLocation) {
+          setState(() {
+            _error = null;
+            _location = currentLocation;
+            _getAddress(_location!.latitude, _location!.longitude).then((value) {
+              setState(() {
+                address = value;
+              });
+            });
           });
         });
-      });
-    });
   }
 
   // void getLocation() {
@@ -172,6 +162,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
             builder: (BuildContext context) => dashboard_screen()));
         return true;
       },
+
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: true,
@@ -222,12 +213,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                     ),
                   ),
                   Expanded(
-                    child: ListView(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.fromLTRB(10, 15, 10, 10),
-                        children: <Widget>[
-                          Container(
-                              width: double.infinity,
+                    child: Container(
                         decoration: const BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.only(
@@ -238,100 +224,100 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                         child: Padding(
                           padding: EdgeInsets.only(left: 10, right: 10),
                           child:
-                              Column(mainAxisSize: MainAxisSize.min, children: <
-                                  Widget>[
+                          Column(mainAxisSize: MainAxisSize.min, children: <
+                              Widget>[
                             Container(
                                 child: Padding(
-                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                              child: Row(
-                                  mainAxisAlignment:
+                                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  child: Row(
+                                      mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    TextButton(
-                                        child: Text('$SelectedRegion',
-                                            style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white)),
-                                        style: ButtonStyle(
-                                            padding: MaterialStateProperty.all<
-                                                EdgeInsets>(EdgeInsets.all(20)),
-                                            backgroundColor:
+                                      children: [
+                                        TextButton(
+                                            child: Text('$SelectedRegion',
+                                                style: const TextStyle(
+                                                    fontSize: 18.0,
+                                                    fontFamily: "Montserrat",
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white)),
+                                            style: ButtonStyle(
+                                                padding: MaterialStateProperty.all<
+                                                    EdgeInsets>(EdgeInsets.all(20)),
+                                                backgroundColor:
                                                 MaterialStateProperty.all(
                                                     thbDblue),
-                                            foregroundColor:
+                                                foregroundColor:
                                                 MaterialStateProperty.all<
                                                     Color>(Colors.black),
-                                            shape: MaterialStateProperty.all<
+                                                shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ))),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (BuildContext
-                                                          context) =>
-                                                      region_list_screen()));
-                                        }),
-                                    SizedBox(width: 5),
-                                    TextButton(
-                                        child: Text('$SelectedZone',
-                                            style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white)),
-                                        style: ButtonStyle(
-                                            padding: MaterialStateProperty.all<
-                                                EdgeInsets>(EdgeInsets.all(20)),
-                                            backgroundColor:
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                      BorderRadius.circular(18.0),
+                                                    ))),
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (BuildContext
+                                                      context) =>
+                                                          region_list_screen()));
+                                            }),
+                                        SizedBox(width: 5),
+                                        TextButton(
+                                            child: Text('$SelectedZone',
+                                                style: const TextStyle(
+                                                    fontSize: 18.0,
+                                                    fontFamily: "Montserrat",
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white)),
+                                            style: ButtonStyle(
+                                                padding: MaterialStateProperty.all<
+                                                    EdgeInsets>(EdgeInsets.all(20)),
+                                                backgroundColor:
                                                 MaterialStateProperty.all(
                                                     thbDblue),
-                                            shape: MaterialStateProperty.all<
+                                                shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ))),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder:
-                                                      (BuildContext context) =>
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                      BorderRadius.circular(18.0),
+                                                    ))),
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder:
+                                                          (BuildContext context) =>
                                                           zone_li_screen()));
-                                        }),
-                                    SizedBox(width: 5),
-                                    TextButton(
-                                        child: Text('$SelectedWard',
-                                            style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white)),
-                                        style: ButtonStyle(
-                                            padding: MaterialStateProperty.all<
-                                                EdgeInsets>(EdgeInsets.all(20)),
-                                            backgroundColor:
+                                            }),
+                                        SizedBox(width: 5),
+                                        TextButton(
+                                            child: Text('$SelectedWard',
+                                                style: const TextStyle(
+                                                    fontSize: 18.0,
+                                                    fontFamily: "Montserrat",
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white)),
+                                            style: ButtonStyle(
+                                                padding: MaterialStateProperty.all<
+                                                    EdgeInsets>(EdgeInsets.all(20)),
+                                                backgroundColor:
                                                 MaterialStateProperty.all(
                                                     thbDblue),
-                                            shape: MaterialStateProperty.all<
+                                                shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ))),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder:
-                                                      (BuildContext context) =>
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                      BorderRadius.circular(18.0),
+                                                    ))),
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder:
+                                                          (BuildContext context) =>
                                                           ward_li_screen()));
-                                        })
-                                  ]),
-                            )),
+                                            })
+                                      ]),
+                                )),
                             const SizedBox(
                               height: 15,
                             ),
@@ -339,73 +325,73 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                               padding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
                               decoration: const BoxDecoration(
                                   borderRadius:
-                                      BorderRadius.all(Radius.circular(35.0))),
+                                  BorderRadius.all(Radius.circular(35.0))),
                               child: Column(
                                 children: [
                                   Row(children: [
                                     Flexible(
                                         child: TextFormField(
-                                      autofocus: false,
-                                      readOnly: true,
-                                      keyboardType: TextInputType.text,
-                                      style: const TextStyle(
-                                          fontSize: 25.0,
-                                          fontFamily: "Montserrat",
-                                          fontWeight: FontWeight.bold,
-                                          color: thbDblue),
-                                      decoration: InputDecoration(
-                                        filled: true,
-                                        hintText: '$DeviceName',
-                                        hintStyle: TextStyle(
-                                            fontSize: 25.0,
-                                            fontFamily: "Montserrat",
-                                            color: thbDblue),
-                                        fillColor: Colors.white,
-                                        contentPadding:
+                                          autofocus: false,
+                                          readOnly: true,
+                                          keyboardType: TextInputType.text,
+                                          style: const TextStyle(
+                                              fontSize: 25.0,
+                                              fontFamily: "Montserrat",
+                                              fontWeight: FontWeight.bold,
+                                              color: thbDblue),
+                                          decoration: InputDecoration(
+                                            filled: true,
+                                            hintText: '$DeviceName',
+                                            hintStyle: TextStyle(
+                                                fontSize: 25.0,
+                                                fontFamily: "Montserrat",
+                                                color: thbDblue),
+                                            fillColor: Colors.white,
+                                            contentPadding:
                                             EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                        border: OutlineInputBorder(
-                                            borderRadius:
+                                            border: OutlineInputBorder(
+                                                borderRadius:
                                                 BorderRadius.circular(20.0),
-                                            borderSide: BorderSide(
-                                                color: Colors.white)),
-                                        enabledBorder: const OutlineInputBorder(
-                                          // width: 0.0 produces a thin "hairline" border
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(20.0)),
-                                          borderSide:
+                                                borderSide: BorderSide(
+                                                    color: Colors.white)),
+                                            enabledBorder: const OutlineInputBorder(
+                                              // width: 0.0 produces a thin "hairline" border
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(20.0)),
+                                              borderSide:
                                               BorderSide(color: thbDblue),
-                                          //borderSide: const BorderSide(),
-                                        ),
-                                        // suffixIcon: GestureDetector(
-                                        //   onTap: () {
-                                        //     Navigator.pushAndRemoveUntil(
-                                        //             context,
-                                        //             MaterialPageRoute(
-                                        //                 builder: (BuildContext
-                                        //                         context) =>
-                                        //                     QRScreen()),
-                                        //             (route) => true)
-                                        //         .then((value) async {
-                                        //       if (value != null) {
-                                        //         SharedPreferences prefs =
-                                        //             await SharedPreferences
-                                        //                 .getInstance();
-                                        //         prefs.setString(
-                                        //             'deviceName', value);
-                                        //         setState(() {
-                                        //           DeviceName = value;
-                                        //         });
-                                        //       }
-                                        //     });
-                                        //   },
-                                        //   child: Icon(
-                                        //     _obscureText
-                                        //         ? Icons.qr_code_scanner_sharp
-                                        //         : Icons.qr_code_scanner_sharp,
-                                        //   ),
-                                        // ),
-                                      ),
-                                    ))
+                                              //borderSide: const BorderSide(),
+                                            ),
+                                            // suffixIcon: GestureDetector(
+                                            //   onTap: () {
+                                            //     Navigator.pushAndRemoveUntil(
+                                            //             context,
+                                            //             MaterialPageRoute(
+                                            //                 builder: (BuildContext
+                                            //                         context) =>
+                                            //                     QRScreen()),
+                                            //             (route) => true)
+                                            //         .then((value) async {
+                                            //       if (value != null) {
+                                            //         SharedPreferences prefs =
+                                            //             await SharedPreferences
+                                            //                 .getInstance();
+                                            //         prefs.setString(
+                                            //             'deviceName', value);
+                                            //         setState(() {
+                                            //           DeviceName = value;
+                                            //         });
+                                            //       }
+                                            //     });
+                                            //   },
+                                            //   child: Icon(
+                                            //     _obscureText
+                                            //         ? Icons.qr_code_scanner_sharp
+                                            //         : Icons.qr_code_scanner_sharp,
+                                            //   ),
+                                            // ),
+                                          ),
+                                        ))
                                   ]),
                                 ],
                               ),
@@ -446,14 +432,14 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                                           padding: MaterialStateProperty.all<
                                               EdgeInsets>(EdgeInsets.all(20)),
                                           backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  thbDblue),
+                                          MaterialStateProperty.all(
+                                              thbDblue),
                                           shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder>(
                                               RoundedRectangleBorder(
-                                            borderRadius:
+                                                borderRadius:
                                                 BorderRadius.circular(18.0),
-                                          ))),
+                                              ))),
                                       onPressed: () {})),
                             const SizedBox(
                               height: 20,
@@ -482,14 +468,14 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                                           padding: MaterialStateProperty.all<
                                               EdgeInsets>(EdgeInsets.all(20)),
                                           backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  thbDblue),
+                                          MaterialStateProperty.all(
+                                              thbDblue),
                                           shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder>(
                                               RoundedRectangleBorder(
-                                            borderRadius:
+                                                borderRadius:
                                                 BorderRadius.circular(18.0),
-                                          ))),
+                                              ))),
                                       onPressed: () {})),
                             const SizedBox(
                               height: 20,
@@ -517,14 +503,14 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                                           padding: MaterialStateProperty.all<
                                               EdgeInsets>(EdgeInsets.all(20)),
                                           backgroundColor:
-                                              MaterialStateProperty.all(
-                                                  thbDblue),
+                                          MaterialStateProperty.all(
+                                              thbDblue),
                                           shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
+                                              RoundedRectangleBorder>(
                                               RoundedRectangleBorder(
-                                            borderRadius:
+                                                borderRadius:
                                                 BorderRadius.circular(18.0),
-                                          ))),
+                                              ))),
                                       onPressed: () {})),
                             const SizedBox(
                               height: 15,
@@ -542,23 +528,19 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                                         padding: MaterialStateProperty.all<
                                             EdgeInsets>(EdgeInsets.all(20)),
                                         backgroundColor:
-                                            MaterialStateProperty.all(
-                                                Colors.green),
+                                        MaterialStateProperty.all(
+                                            Colors.green),
                                         shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
+                                            RoundedRectangleBorder>(
                                             RoundedRectangleBorder(
-                                          borderRadius:
+                                              borderRadius:
                                               BorderRadius.circular(18.0),
-                                        ))),
+                                            ))),
                                     onPressed: () {
                                       ilmInstallationStart(context);
-                                    })),
-                                const SizedBox(
-                                  height: 15,
-                                ),
+                                    }))
                           ]),
                         )),
-                        ])
                   )
                 ],
               ),
@@ -649,22 +631,21 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                 List<AttributeKvEntry> responser;
 
                 responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<AttributeKvEntry>;
+                    .getAttributeService()
+                    .getAttributeKvEntries(response.id!, myList))
+                as List<AttributeKvEntry>;
 
-                var faultyDetails = false;
+                var faultyDetails = "false";
                 if (responser.length == 0) {
-                  faultyDetails = false;
+                  faultyDetails = "true";
                 } else {
                   faultyDetails = responser.first.getValue();
                 }
 
-                if (faultyDetails == false) {
+                if (faultyDetails.toString() == "false") {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => ilmcaminstall()));
                 } else {
-                  Navigator.pop(context);
                   Fluttertoast.showToast(
                       msg: "Device Currently in Faulty State Unable to Install.",
                       toastLength: Toast.LENGTH_SHORT,
@@ -679,7 +660,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
               Navigator.pop(context);
               Fluttertoast.showToast(
                   msg:
-                      "Please wait to load lattitude, longitude Details to Install.",
+                  "Please wait to load lattitude, longitude Details to Install.",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -691,7 +672,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
             Navigator.pop(context);
             Fluttertoast.showToast(
                 msg:
-                    "Kindly Select the Region, Zone and Ward Details to Install.",
+                "Kindly Select the Region, Zone and Ward Details to Install.",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -749,20 +730,8 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
               // dbhelper.zone_delete();
               // dbhelper.ward_delete();
 
-              DBHelper dbhelper = new DBHelper();
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-
-              var SelectedRegion = prefs.getString("SelectedRegion").toString();
-              List<Region> details = await dbhelper.region_getDetails();
-
-              for(int i=0;i<details.length;i++){
-                dbhelper.delete(details.elementAt(i).id!.toInt());
-              }
-              dbhelper.zone_delete(SelectedRegion);
-              dbhelper.ward_delete(SelectedRegion);
-
               SharedPreferences preferences =
-                  await SharedPreferences.getInstance();
+              await SharedPreferences.getInstance();
               await preferences.clear();
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
 

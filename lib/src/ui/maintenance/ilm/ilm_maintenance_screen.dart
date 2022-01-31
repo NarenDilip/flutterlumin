@@ -12,8 +12,8 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
-import 'package:flutterlumin/src/ui/dashboard/replace_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/dashboard/replacement_ilm_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/replacement_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
@@ -22,6 +22,10 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../localdb/db_helper.dart';
+import '../../../localdb/model/region_model.dart';
+import '../../splash_screen.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen({Key? key}) : super(key: key);
@@ -43,6 +47,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
+  String faultyStatus = "0";
   String timevalue = "0";
   String location = "0";
   String version = "0";
@@ -58,6 +63,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     timevalue = prefs.getString("devicetimeStamp").toString();
     location = prefs.getString("location").toString();
     version = prefs.getString("version").toString();
+    faultyStatus = prefs.getString("faultyStatus").toString();
 
     prefs.setString('Maintenance', "Yes");
 
@@ -71,6 +77,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       timevalue = timevalue;
       location = location;
       version = version;
+      faultyStatus = faultyStatus;
 
       date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
 
@@ -78,7 +85,17 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         SelectedRegion = "Region";
         SelectedZone = "Zone";
         SelectedWard = "Ward";
+        faultyStatus = "0";
       }
+
+      if (SelectedZone == "0" || SelectedZone == "null") {
+        SelectedZone = "Zone";
+      }
+
+      if (SelectedWard == "0" || SelectedWard == "null") {
+        SelectedWard = "Ward";
+      }
+
     });
   }
 
@@ -138,13 +155,13 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               ),
             ),
             Container(
-              color: lightorange,
+              color: thbDblue,
               child: Column(
                 children: [
                   Container(
                     height: 100,
                     decoration: const BoxDecoration(
-                        color: lightorange,
+                        color: thbDblue,
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(0.0),
                             topRight: Radius.circular(0.0),
@@ -154,7 +171,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                       children: [
                         Container(
                           alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                           child: Text('ILM Maintanance',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
@@ -165,7 +182,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                         ),
                         Positioned(
                           right: 10,
-                          top: 15,
+                          top: 20,
                           bottom: 0,
                           child: IconButton(
                             color: Colors.red,
@@ -173,7 +190,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                               Icons.logout_outlined,
                               size: 35,
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              callLogoutoption(context);
+                            },
                           ),
                         ),
                       ],
@@ -212,7 +231,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                                 EdgeInsets>(EdgeInsets.all(20)),
                                             backgroundColor:
                                                 MaterialStateProperty.all(
-                                                    lightorange),
+                                                    thbDblue),
                                             foregroundColor:
                                                 MaterialStateProperty.all<
                                                     Color>(Colors.black),
@@ -242,7 +261,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                                 EdgeInsets>(EdgeInsets.all(20)),
                                             backgroundColor:
                                                 MaterialStateProperty.all(
-                                                    lightorange),
+                                                    thbDblue),
                                             shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
                                                 RoundedRectangleBorder(
@@ -269,7 +288,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                                 EdgeInsets>(EdgeInsets.all(20)),
                                             backgroundColor:
                                                 MaterialStateProperty.all(
-                                                    lightorange),
+                                                    thbDblue),
                                             shape: MaterialStateProperty.all<
                                                     RoundedRectangleBorder>(
                                                 RoundedRectangleBorder(
@@ -291,7 +310,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                             Container(
                               padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
                               decoration: const BoxDecoration(
-                                  color: lightorange,
+                                  color: thbDblue,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(35.0))),
                               child: Column(
@@ -330,6 +349,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                             style: const TextStyle(
                                                 fontSize: 18,
                                                 fontFamily: "Montserrat",
+                                                color: Colors.white,
                                                 fontWeight: FontWeight.bold),
                                           ) //BoxDecoration
                                           ) //Container
@@ -337,7 +357,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                   ),
                                   const SizedBox(
-                                    height: 10,
+                                    height: 20,
                                   ),
                                   Row(
                                     children: <Widget>[
@@ -348,7 +368,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                             "Lamp watts",
                                             style: const TextStyle(
                                                 fontSize: 16,
-                                                fontFamily: "Montserrat"),
+                                                fontFamily: "Montserrat",
+                                                color: Colors.white),
                                           )), //Container
                                       SizedBox(
                                         width: 5,
@@ -360,6 +381,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                             "$Lampwatts",
                                             style: const TextStyle(
                                                 fontSize: 18,
+                                                color: Colors.white,
                                                 fontFamily: "Montserrat",
                                                 fontWeight: FontWeight.bold),
                                           ) //BoxDecoration
@@ -379,6 +401,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                             "Last Comm @ ",
                                             style: const TextStyle(
                                                 fontSize: 16,
+                                                color: Colors.white,
                                                 fontFamily: "Montserrat"),
                                           )), //Container
                                       SizedBox(
@@ -391,6 +414,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                             "$date",
                                             style: const TextStyle(
                                                 fontSize: 18,
+                                                color: Colors.white,
                                                 fontFamily: "Montserrat",
                                                 fontWeight: FontWeight.bold),
                                           ) //BoxDecoration
@@ -502,8 +526,11 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                     "Replace With",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: Colors.red,
-                                        fontSize: 35, fontFamily: "Montserrat",fontWeight: FontWeight.bold,),
+                                      color: thbDblue,
+                                      fontSize: 35,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(
                                     height: 15,
@@ -870,7 +897,7 @@ Future<void> getLiveRPCCall(version, context) async {
           }
         } else {
           calltoast("Unable to Process");
-               }
+        }
       }
     } else {
       calltoast(no_network);
@@ -896,18 +923,17 @@ Future<void> replaceILM(context) async {
           (route) => true).then((value) async {
         if (value != null) {
           if (OlddeviceName.toString() != value.toString()) {
-
             SharedPreferences prefs = await SharedPreferences.getInstance();
             prefs.setString('newDevicename', value);
 
             Navigator.pop(context);
             // showActionAlertDialog(context,OlddeviceName,value);
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => replaceilm()));
           } else {
             Navigator.pop(context);
             calltoast("Duplicate QR Code");
-                      }
+          }
         } else {
           Navigator.pop(context);
           calltoast("Invalid QR Code");
@@ -1043,9 +1069,9 @@ Future<void> replaceShortingCap(context) async {
   //                   .getEntityGroupService()
   //                   .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
   //
-                Navigator.pop(context);
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+  // Navigator.pop(context);
+  Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
   //             } else {
   //               calltoast("Device is not Found");
   //               Navigator.pop(context);
@@ -1119,7 +1145,6 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
                 .getEntityGroupsForFolderEntity(response.id!.id!);
 
             if (currentdeviceresponse != null) {
-
               var firstdetails = await tbClient
                   .getEntityGroupService()
                   .getEntityGroup(currentdeviceresponse.first.id!);
@@ -1132,7 +1157,6 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
               if (seconddetails!.name.toString() != "All") {
                 DevicecurrentFolderName = currentdeviceresponse.last.id!;
               }
-
 
               var relationDetails = await tbClient
                   .getEntityRelationService()
@@ -1442,69 +1466,82 @@ Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
   });
 }
 
-showActionAlertDialog(context,OldDevice,NewDevice) {
+showActionAlertDialog(context, OldDevice, NewDevice) {
   // set up the buttons
   Widget cancelButton = TextButton(
-    child: Text("Cancel",style: const TextStyle(
-        fontSize: 25.0,
-        fontFamily: "Montserrat",
-        fontWeight: FontWeight.bold,
-        color: Colors.red)),
-    onPressed:  () {
+    child: Text("Cancel",
+        style: const TextStyle(
+            fontSize: 25.0,
+            fontFamily: "Montserrat",
+            fontWeight: FontWeight.bold,
+            color: Colors.red)),
+    onPressed: () {
       Navigator.of(context, rootNavigator: true).pop('dialog');
     },
   );
   Widget continueButton = TextButton(
-    child: Text("Replace",style: const TextStyle(
-        fontSize: 25.0,
-        fontFamily: "Montserrat",
-        fontWeight: FontWeight.bold,
-        color: Colors.green)),
-    onPressed:  () {
+    child: Text("Replace",
+        style: const TextStyle(
+            fontSize: 25.0,
+            fontFamily: "Montserrat",
+            fontWeight: FontWeight.bold,
+            color: Colors.green)),
+    onPressed: () {
       late Future<Device?> entityFuture;
       Utility.progressDialog(context);
-      entityFuture =
-          ilm_main_fetchDeviceDetails(context,OldDevice,NewDevice);
+      entityFuture = ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice);
     },
   );
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text("Luminator",style: const TextStyle(
-        fontSize: 25.0,
-        fontFamily: "Montserrat",
-        fontWeight: FontWeight.bold,
-        color: thbblue)),
+    title: Text("Luminator",
+        style: const TextStyle(
+            fontSize: 25.0,
+            fontFamily: "Montserrat",
+            fontWeight: FontWeight.bold,
+            color: thbDblue)),
 
-    content: RichText( text: new TextSpan(text: 'Would you like to replace ',style: const TextStyle(
-        fontSize: 16.0,
-        fontFamily: "Montserrat",
-        fontWeight: FontWeight.bold,
-        color: liorange), children:
-    <TextSpan>[
-
-      new TextSpan(text: OldDevice, style: const TextStyle(
-          fontSize: 18.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: Colors.red)),
-      new TextSpan(text: ' With ',style: const TextStyle(
-          fontSize: 16.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: liorange)),
-      new TextSpan(text: NewDevice, style: const TextStyle(
-          fontSize: 18.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: Colors.green)),
-      new TextSpan(text: ' ? ',style: const TextStyle(
-          fontSize: 16.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: liorange)),
-    ], ), ),
-
+    content: RichText(
+      text: new TextSpan(
+        text: 'Would you like to replace ',
+        style: const TextStyle(
+            fontSize: 16.0,
+            fontFamily: "Montserrat",
+            fontWeight: FontWeight.bold,
+            color: liorange),
+        children: <TextSpan>[
+          new TextSpan(
+              text: OldDevice,
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red)),
+          new TextSpan(
+              text: ' With ',
+              style: const TextStyle(
+                  fontSize: 16.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: liorange)),
+          new TextSpan(
+              text: NewDevice,
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green)),
+          new TextSpan(
+              text: ' ? ',
+              style: const TextStyle(
+                  fontSize: 16.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: liorange)),
+        ],
+      ),
+    ),
 
     // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
     //     fontSize: 18.0,
@@ -1674,4 +1711,69 @@ Future<ThingsboardError> toThingsboardError(error, context,
       StackTrace.current;
 
   return tbError;
+}
+
+Future<void> callLogoutoption(BuildContext context) async {
+  final result = await showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 10),
+      backgroundColor: Colors.white,
+      title: Text("Luminator",style: const TextStyle(
+          fontSize: 25.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: liorange)),
+      content: Text("Are you sure you want to Logout?",style: const TextStyle(
+          fontSize: 18.0,
+          fontFamily: "Montserrat",
+          fontWeight: FontWeight.bold,
+          color: Colors.black)),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+          },
+          child: Text("NO",style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.green)),
+        ),
+        TextButton(
+          child: Text('YES',style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.red)),
+          onPressed: () async {
+
+            // DBHelper dbhelper = new DBHelper();
+            // dbhelper.region_delete();
+            // dbhelper.zone_delete();
+            // dbhelper.ward_delete();
+
+            DBHelper dbhelper = new DBHelper();
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+
+            var SelectedRegion = prefs.getString("SelectedRegion").toString();
+            List<Region> details = await dbhelper.region_getDetails();
+
+            for(int i=0;i<details.length;i++){
+              dbhelper.delete(details.elementAt(i).id!.toInt());
+            }
+            dbhelper.zone_delete(SelectedRegion);
+            dbhelper.ward_delete(SelectedRegion);
+
+            SharedPreferences preferences = await SharedPreferences.getInstance();
+            await preferences.clear();
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => splash_screen()));
+          },
+        ),
+      ],
+    ),
+  );
 }

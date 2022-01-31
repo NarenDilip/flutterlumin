@@ -5,7 +5,6 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
-import 'package:geocode/geocode.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -344,9 +343,10 @@ class ilm_installation_screenState extends State<ilm_installation_screen1> {
 
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
-    GeoCode geoCode = GeoCode();
-    Address address =
-    await geoCode.reverseGeocoding(latitude: lat, longitude: lang);
-    return "${address.streetAddress}, ${address.city}, ${address.countryName}, ${address.postal}";
+    // GeoCode geoCode = GeoCode();
+    // Address address =
+    // await geoCode.reverseGeocoding(latitude: lat, longitude: lang);
+    // return "${address.streetAddress}, ${address.city}, ${address.countryName}, ${address.postal}";
+    return "";
   }
 }

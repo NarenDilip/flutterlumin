@@ -1,13 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../localdb/model/region_model.dart';
+import '../../localdb/model/ward_model.dart';
 
 class device_count_screen extends StatefulWidget {
   @override
@@ -49,12 +55,21 @@ class device_count_screen_state extends State<device_count_screen> {
       ncCount = ncCount;
       Maintenance = Maintenance;
 
-      if(SelectedRegion == "0" || SelectedRegion == "null"){
+      if (SelectedRegion == "0" || SelectedRegion == "null") {
         SelectedRegion = "Region";
         SelectedZone = "Zone";
         SelectedWard = "Ward";
       }
-      if(totalCount == "null"){
+
+      if (SelectedZone == "0" || SelectedZone == "null") {
+        SelectedZone = "Zone";
+      }
+
+      if (SelectedWard == "0" || SelectedWard == "null") {
+        SelectedWard = "Ward";
+      }
+
+      if (totalCount == "null") {
         totalCount = "0";
         activeCount = "0";
         nonactiveCount = "0";
@@ -76,36 +91,34 @@ class device_count_screen_state extends State<device_count_screen> {
         resizeToAvoidBottomInset: false,
         extendBody: true,
         body: Container(
-          color: lightorange,
+          color: thbDblue,
           child: Column(
             children: [
               Container(
-                  height: 100,
-                  decoration: const BoxDecoration(
-                      color: lightorange,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(0.0),
-                          topRight: Radius.circular(0.0),
-                          bottomLeft: Radius.circular(0.0),
-                          bottomRight: Radius.circular(0.0))),
+                height: 100,
+                decoration: const BoxDecoration(
+                    color: thbDblue,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(0.0),
+                        topRight: Radius.circular(0.0),
+                        bottomLeft: Radius.circular(0.0),
+                        bottomRight: Radius.circular(0.0))),
                 child: Stack(
                   children: [
                     Container(
                       alignment: Alignment.center,
-                      padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
-                      child: Text(
-                        'Dashboard',
-                        textAlign: TextAlign.center,
+                      padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Text('Dashboard',
+                          textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 25.0,
                               fontFamily: "Montserrat",
                               fontWeight: FontWeight.bold,
-                              color: Colors.white)
-                      ),
+                              color: Colors.white)),
                     ),
                     Positioned(
                       right: 10,
-                      top: 15,
+                      top: 20,
                       bottom: 0,
                       child: IconButton(
                         color: Colors.red,
@@ -119,7 +132,8 @@ class device_count_screen_state extends State<device_count_screen> {
                       ),
                     ),
                   ],
-                ),),
+                ),
+              ),
               Expanded(
                   child: Container(
                       decoration: const BoxDecoration(
@@ -152,10 +166,10 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       EdgeInsets.all(20)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      lightorange),
+                                                      thbDblue),
                                               foregroundColor:
-                                                  MaterialStateProperty.all<Color>(
-                                                      Colors.black),
+                                                  MaterialStateProperty.all<
+                                                      Color>(Colors.black),
                                               shape: MaterialStateProperty.all<
                                                       RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
@@ -183,7 +197,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       EdgeInsets.all(20)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      lightorange),
+                                                      thbDblue),
                                               shape: MaterialStateProperty.all<
                                                       RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
@@ -211,7 +225,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       EdgeInsets.all(20)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
-                                                      lightorange),
+                                                      thbDblue),
                                               shape: MaterialStateProperty.all<
                                                       RoundedRectangleBorder>(
                                                   RoundedRectangleBorder(
@@ -273,7 +287,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                             "Montserrat",
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.black),
+                                                        color: thbDblue),
                                                   ),
                                                   alignment: Alignment.center,
                                                 ),
@@ -325,7 +339,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                             "Montserrat",
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.grey),
+                                                        color: thbDblue),
                                                   ),
                                                   alignment:
                                                       Alignment.centerLeft,
@@ -346,7 +360,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                             "Montserrat",
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.grey),
+                                                        color: thbDblue),
                                                   ),
                                                   alignment: Alignment.center,
                                                 ),
@@ -365,7 +379,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                             "Montserrat",
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.grey),
+                                                        color: thbDblue),
                                                   ),
                                                   alignment:
                                                       Alignment.centerRight,
@@ -476,36 +490,65 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",style: const TextStyle(
-          fontSize: 25.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: liorange)),
-      content: Text("Are you sure you want to Logout?",style: const TextStyle(
-          fontSize: 18.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: Colors.black)),
+      title: Text("Luminator",
+          style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: liorange)),
+      content: Text("Are you sure you want to Logout?",
+          style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.black)),
       actions: <Widget>[
         TextButton(
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.green)),
+          child: Text("NO",
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.red)),
+          child: Text('YES',
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red)),
           onPressed: () async {
-            SharedPreferences preferences = await SharedPreferences.getInstance();
+
+            DBHelper dbhelper = new DBHelper();
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+
+            var SelectedRegion = prefs.getString("SelectedRegion").toString();
+            List<Region> details = await dbhelper.region_getDetails();
+
+            for(int i=0;i<details.length;i++){
+              dbhelper.delete(details.elementAt(i).id!.toInt());
+            }
+            dbhelper.zone_delete(SelectedRegion);
+            dbhelper.ward_delete(SelectedRegion);
+
+            // List<Region> detailss = await dbhelper.region_getDetails();
+            // List<Zone> zdetails =
+            //     (await dbhelper.zone_getDetails()).cast<Zone>();
+            // List<Ward> wdetails = await dbhelper.ward_getDetails();
+
+            // dbhelper.region_delete();
+            // dbhelper.zone_delete();
+            // dbhelper.ward_delete();
+
+            SharedPreferences preferences =
+                await SharedPreferences.getInstance();
             await preferences.clear();
+            // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => splash_screen()));
           },

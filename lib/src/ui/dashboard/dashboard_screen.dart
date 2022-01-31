@@ -29,6 +29,7 @@ class dashboard_screen extends StatefulWidget {
 class dashboard_screenState extends State<dashboard_screen> {
   int _selectedIndex = 0;
   bool clickedCentreFAB = false;
+  var isPressed = false;
   @override
   // TODO: implement context
   BuildContext get context => super.context;
@@ -41,6 +42,7 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   @override
   Widget build(BuildContext context) {
+    Color? _foreground = Colors.green[900];
     return WillPopScope(
         onWillPop: () async {
       final result = await showDialog(
@@ -120,19 +122,20 @@ class dashboard_screenState extends State<dashboard_screen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       //specify the location of the FAB
       floatingActionButton: FloatingActionButton(
+        backgroundColor: _foreground,
         onPressed: () {
           deviceFetcher(context);
         },
-        tooltip: "Centre FAB",
+        tooltip: "SCAN QR",
         child: Container(
           margin: EdgeInsets.all(15.0),
           child: Icon(Icons.qr_code),
         ),
         elevation: 3.0,
       ),
-      backgroundColor: Colors.black12,
+      backgroundColor: thbDblue,
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: liorange,
+        backgroundColor: thbDblue,
         currentIndex: _selectedIndex,
         showSelectedLabels: false,
         showUnselectedLabels: false,
@@ -199,6 +202,15 @@ Future<void> deviceFetcher(BuildContext context) async {
           late Future<Device?> entityFuture;
           Utility.progressDialog(context);
           entityFuture = fetchDeviceDetails(value, context);
+        }else{
+          Fluttertoast.showToast(
+              msg: "No Device Found",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
         }
       });
     } else {
@@ -228,16 +240,28 @@ Future<Device?> fetchDeviceDetails(
         tbClient.smart_init();
         response = await tbClient.getDeviceService().getTenantDevice(deviceName)
             as Device;
-        if (response.name.isNotEmpty) {
-          if (response.type == ilm_deviceType) {
-            fetchSmartDeviceDetails(
-                deviceName, response.id!.id.toString(), context);
-          } else if (response.type == ccms_deviceType) {
-          } else if (response.type == Gw_deviceType) {
-          } else {
+        if (response != null) {
+          DeviceCredentials deviceCredentials = (await tbClient.getDeviceService().getDeviceCredentialsByDeviceId(response.id!.id!)) as DeviceCredentials;
+          if (deviceCredentials.credentialsId.length == 16) {
+            if (response.type == ilm_deviceType) {
+              fetchSmartDeviceDetails(
+                  deviceName, response.id!.id.toString(), context);
+            } else if (response.type == ccms_deviceType) {} else
+            if (response.type == Gw_deviceType) {} else {
+              Navigator.pop(context);
+              Fluttertoast.showToast(
+                  msg: "Device Details Not Found",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
+            }
+          }else{
             Navigator.pop(context);
             Fluttertoast.showToast(
-                msg: "Device Details Not Found",
+                msg: "Device Credentials are invalid, Device not despatched properly",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -310,6 +334,25 @@ Future<Device?> fetchSmartDeviceDetails(
             .getEntityRelationService()
             .findInfoByTo(response.id!);
 
+
+        List<String> firstmyList = [];
+        firstmyList.add("lmp");
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        try {
+          List<TsKvEntry> faultresponser;
+          faultresponser =
+          await tbClient.getAttributeService().getselectedLatestTimeseries(
+              response.id!.id!, "lmp") as List<TsKvEntry>;
+          if (faultresponser.length != 0) {
+            prefs.setString(
+                'faultyStatus', faultresponser.first.getValue().toString());
+          }
+        }catch(e){
+          var message = toThingsboardError(e,context);
+        }
+
         List<String> myList = [];
         myList.add("lampWatts");
         myList.add("active");
@@ -318,8 +361,6 @@ Future<Device?> fetchSmartDeviceDetails(
 
         responser = (await tbClient.getAttributeService().getAttributeKvEntries(
             response.id!, myList)) as List<BaseAttributeKvEntry>;
-
-        SharedPreferences prefs = await SharedPreferences.getInstance();
 
         prefs.setString('deviceStatus', responser.first.kv.getValue().toString());
         prefs.setString('deviceWatts', responser.last.kv.getValue().toString());

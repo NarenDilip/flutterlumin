@@ -1,6 +1,7 @@
 
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -59,9 +60,14 @@ class LoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return SingleChildScrollView(
+    return WillPopScope(
+        onWillPop: () async {
+          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+          return true;
+        },
+    child: SingleChildScrollView(
       child: Container(
-        color: liorange,
+        color: Colors.white,
           height: size.height,
           width: double.infinity,
 
@@ -72,19 +78,19 @@ class LoginForm extends StatelessWidget {
                 children: <Widget>[
                   const Image(
                       image: AssetImage("assets/icons/logo.png"),
-                      height: 75,
-                      width: 75),
-                  const SizedBox(height: 20),
+                      height: 95,
+                      width: 95),
+                  const SizedBox(height: 35),
                   const SizedBox(
                     width: double.infinity,
                     child: Text(
-                      "LOG IN",
+                      "Log-In with User email and Password",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          fontSize: 30.0,
+                          fontSize: 18.0,
                           fontFamily: "Montserrat",
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: Colors.grey),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -115,10 +121,10 @@ class LoginForm extends StatelessWidget {
                     },
                     onChanged: (value) {},
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   rounded_button(
                     text: sign_in,
-                    color: Colors.blue,
+                    color: thbDblue,
                     press: () {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
@@ -129,7 +135,7 @@ class LoginForm extends StatelessWidget {
                     key: null,
                   ),
                 ],
-              ))),
+              )))),
     );
   }
 
@@ -182,6 +188,10 @@ class LoginForm extends StatelessWidget {
         var tbClient = ThingsboardClient(serverUrl);
         tbClient.smart_init();
 
+        DBHelper dbHelper = new DBHelper();
+        // dbHelper.region_delete();
+
+
         // final jsonData = '{"region"}';
         // final parsedJson = jsonDecode(jsonData);
 
@@ -192,8 +202,6 @@ class LoginForm extends StatelessWidget {
         PageLink pageLink = new PageLink(250);
         pageLink.page = 0;
         pageLink.pageSize = 250;
-
-        DBHelper dbHelper = new DBHelper();
 
         PageData<Asset> region_response;
         region_response = (await tbClient
@@ -222,59 +230,59 @@ class LoginForm extends StatelessWidget {
               .getAssetService()
               .getZoneTenantAssets(pageLink));
 
-          if (zone_response != null) {
-            if (zone_response.totalElements != 0) {
-              for (int i = 0; i < zone_response.data.length; i++) {
-                String id = zone_response.data
-                    .elementAt(i)
-                    .id!
-                    .id
-                    .toString();
-                String name = zone_response.data
-                    .elementAt(i)
-                    .name
-                    .toString();
-                var regionname = name.split("-");
-                Zone zone = new Zone(i, id, name, regionname[0].toString());
-                dbHelper.zone_add(zone);
-              }
-            }
+          // if (zone_response != null) {
+          //   if (zone_response.totalElements != 0) {
+          //     for (int i = 0; i < zone_response.data.length; i++) {
+          //       String id = zone_response.data
+          //           .elementAt(i)
+          //           .id!
+          //           .id
+          //           .toString();
+          //       String name = zone_response.data
+          //           .elementAt(i)
+          //           .name
+          //           .toString();
+          //       var regionname = name.split("-");
+          //       Zone zone = new Zone(i, id, name, regionname[0].toString());
+          //       dbHelper.zone_add(zone);
+          //     }
+          //   }
+          //
+          //   PageData<Asset> ward_response;
+          //   ward_response = (await tbClient
+          //       .getAssetService()
+          //       .getWardTenantAssets(pageLink));
 
-            PageData<Asset> ward_response;
-            ward_response = (await tbClient
-                .getAssetService()
-                .getWardTenantAssets(pageLink));
-
-            if (ward_response != null) {
-              if (ward_response.totalElements != 0) {
-                for (int i = 0; i < ward_response.data.length; i++) {
-                  String id = ward_response.data
-                      .elementAt(i)
-                      .id!
-                      .id
-                      .toString();
-                  String name = ward_response.data
-                      .elementAt(i)
-                      .name
-                      .toString();
-                  var regionname = name.split("-");
-                  Ward ward = new Ward(i, id, name, regionname[0].toString(),
-                      regionname[0].toString() + "-" +
-                          regionname[1].toString());
-                  dbHelper.ward_add(ward);
-                }
-              }
+            // if (ward_response != null) {
+            //   if (ward_response.totalElements != 0) {
+            //     for (int i = 0; i < ward_response.data.length; i++) {
+            //       String id = ward_response.data
+            //           .elementAt(i)
+            //           .id!
+            //           .id
+            //           .toString();
+            //       String name = ward_response.data
+            //           .elementAt(i)
+            //           .name
+            //           .toString();
+            //       var regionname = name.split("-");
+            //       Ward ward = new Ward(i, id, name, regionname[0].toString(),
+            //           regionname[0].toString() + "-" +
+            //               regionname[1].toString());
+            //       dbHelper.ward_add(ward);
+            //     }
+            //   }
               Navigator.pop(context);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
-            } else {
-              Navigator.pop(context);
-              calltoast("Ward Details found");
-            }
-          } else {
-            Navigator.pop(context);
-            calltoast("Zone Details found");
-          }
+            // } else {
+            //   Navigator.pop(context);
+            //   calltoast("Ward Details found");
+            // }
+          // } else {
+          //   Navigator.pop(context);
+          //   calltoast("Zone Details found");
+          // }
         } else {
           Navigator.pop(context);
           calltoast("Region Details found");

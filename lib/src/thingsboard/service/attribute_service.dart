@@ -80,6 +80,19 @@ class AttributeService {
     return RestJsonConverter.toTimeseries(response.data);
   }
 
+  Future<List<TsKvEntry>> getselectedLatestTimeseries(
+      String entityId, String keys,
+      {bool useStrictDataTypes = true, RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<Map<String, dynamic>>(
+        '/api/plugins/telemetry/DEVICE/$entityId/values/timeseries',
+        queryParameters: {
+          'keys': 'lmp',
+          'useStrictDataTypes': true
+        },
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return RestJsonConverter.toTimeseries(response.data);
+  }
+
   Future<List<TsKvEntry>> getTimeseries(EntityId entityId, List<String> keys,
       {int? interval,
       Aggregation? agg,

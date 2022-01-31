@@ -20,12 +20,13 @@ const pistagreY = Color(0xff8A97A2);
 const lightorange = Color(0xfff57D0ff);
 const liorange = Color(0xfff57D0ff);
 const liblue = Color(0xff65f2f9 );
-const thbblue = Color(0xff00696e );
+const thbblue = Color(0xff00696e);
+const thbDblue = Color(0xff2F96BF);
 
-const splashscreen_text = "Luminator";
+const splashscreen_text = "LUMINATOR";
 
-// const serverUrl = "http://iotpro.io:8077";
-const serverUrl = "https://schnelliot.in/";
+const serverUrl = "http://iotpro.io:8077";
+// const serverUrl = "https://schnelliot.in/";
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
 // const app_username = "smartLumi@gmail.com";
@@ -35,11 +36,13 @@ const no_network = "Please check your Mobile Internet Connectivity";
 const user_email = "User Email";
 const user_password = "Password";
 const validate_email = "Please enter the validate email";
-const sign_in = "SIGN IN";
+const sign_in = "Start Process";
 const qr_text = "SCAN QR CODE";
 
-// const ILMserviceFolderName = "forRepairILM";
-const ILMserviceFolderName = "forServiceLuminodes";
+const ILMDeviceInstallationFolder = "lumismartLights";
+
+const ILMserviceFolderName = "forRepairILM";
+// const ILMserviceFolderName = "forServiceLuminodes";
 
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "ccms";
