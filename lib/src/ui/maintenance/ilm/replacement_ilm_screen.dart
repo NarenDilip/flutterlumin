@@ -153,90 +153,100 @@ class replacementilmState extends State<replacementilm> {
               .getDeviceService()
               .getTenantDevice(deviceName)) as Device;
 
-          if (response != null) {
-            if (faultyStatus == "2") {
-              Map data = {'faulty': "true"};
-              var saveAttributes = await tbClient
-                  .getAttributeService()
-                  .saveDeviceAttributes(response.id!.id!, "SERVER_SCOPE", data);
-            }
-
-            var relationDetails = await tbClient
-                .getEntityRelationService()
-                .findInfoByTo(response.id!);
-
-            List<EntityGroupInfo> entitygroups;
-            entitygroups = await tbClient
-                .getEntityGroupService()
-                .getEntityGroupsByFolderType();
-
-            if (entitygroups != null) {
-              for (int i = 0; i < entitygroups.length; i++) {
-                if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-                  DevicemoveFolderName =
-                      entitygroups.elementAt(i).id!.id!.toString();
-                }
+          if (imageFile != null) {
+            if (response != null) {
+              if (faultyStatus == "2") {
+                Map data = {'faulty': "true"};
+                var saveAttributes = await tbClient
+                    .getAttributeService()
+                    .saveDeviceAttributes(
+                        response.id!.id!, "SERVER_SCOPE", data);
               }
 
-              List<EntityGroupId> currentdeviceresponse;
-              currentdeviceresponse = await tbClient
+              var relationDetails = await tbClient
+                  .getEntityRelationService()
+                  .findInfoByTo(response.id!);
+
+              List<EntityGroupInfo> entitygroups;
+              entitygroups = await tbClient
                   .getEntityGroupService()
-                  .getEntityGroupsForFolderEntity(response.id!.id!);
+                  .getEntityGroupsByFolderType();
 
-              if (currentdeviceresponse != null) {
-                if (currentdeviceresponse.last.id.toString().isNotEmpty) {
-                  var firstdetails = await tbClient
-                      .getEntityGroupService()
-                      .getEntityGroup(currentdeviceresponse.first.id!);
-                  if (firstdetails!.name.toString() != "All") {
-                    DevicecurrentFolderName = currentdeviceresponse.first.id!;
+              if (entitygroups != null) {
+                for (int i = 0; i < entitygroups.length; i++) {
+                  if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+                    DevicemoveFolderName =
+                        entitygroups.elementAt(i).id!.id!.toString();
                   }
-                  var seconddetails = await tbClient
-                      .getEntityGroupService()
-                      .getEntityGroup(currentdeviceresponse.last.id!);
-                  if (seconddetails!.name.toString() != "All") {
-                    DevicecurrentFolderName = currentdeviceresponse.last.id!;
+                }
+
+                List<EntityGroupId> currentdeviceresponse;
+                currentdeviceresponse = await tbClient
+                    .getEntityGroupService()
+                    .getEntityGroupsForFolderEntity(response.id!.id!);
+
+                if (currentdeviceresponse != null) {
+                  if (currentdeviceresponse.last.id.toString().isNotEmpty) {
+                    var firstdetails = await tbClient
+                        .getEntityGroupService()
+                        .getEntityGroup(currentdeviceresponse.first.id!);
+                    if (firstdetails!.name.toString() != "All") {
+                      DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                    }
+                    var seconddetails = await tbClient
+                        .getEntityGroupService()
+                        .getEntityGroup(currentdeviceresponse.last.id!);
+                    if (seconddetails!.name.toString() != "All") {
+                      DevicecurrentFolderName = currentdeviceresponse.last.id!;
+                    }
+
+                    var relation_response = await tbClient
+                        .getEntityRelationService()
+                        .deleteDeviceRelation(
+                            relationDetails.elementAt(0).from.id!,
+                            response.id!.id!);
+
+                    // DevicecurrentFolderName =
+                    //     currentdeviceresponse.last.id.toString();
+
+                    List<String> myList = [];
+                    myList.add(response.id!.id!);
+
+                    try {
+                      var remove_response = await tbClient
+                          .getEntityGroupService()
+                          .removeEntitiesFromEntityGroup(
+                              DevicecurrentFolderName, myList);
+                    } catch (e) {}
+                    try {
+                      var add_response = await tbClient
+                          .getEntityGroupService()
+                          .addEntitiesToEntityGroup(
+                              DevicemoveFolderName, myList);
+                    } catch (e) {}
+
+                    final bytes = File(imageFile!.path).readAsBytesSync();
+                    String img64 = base64Encode(bytes);
+
+                    postRequest(context, img64, DeviceName);
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pop(context);
+                    calltoast("Device is not Found");
+
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (BuildContext context) => dashboard_screen()));
                   }
-
-                  var relation_response = await tbClient
-                      .getEntityRelationService()
-                      .deleteDeviceRelation(
-                          relationDetails.elementAt(0).from.id!,
-                          response.id!.id!);
-
-                  // DevicecurrentFolderName =
-                  //     currentdeviceresponse.last.id.toString();
-
-                  List<String> myList = [];
-                  myList.add(response.id!.id!);
-
-                  try {
-                    var remove_response = await tbClient
-                        .getEntityGroupService()
-                        .removeEntitiesFromEntityGroup(
-                            DevicecurrentFolderName, myList);
-                  } catch (e) {}
-                  try {
-                    var add_response = await tbClient
-                        .getEntityGroupService()
-                        .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
-                  } catch (e) {}
-
-                  final bytes = File(imageFile!.path).readAsBytesSync();
-                  String img64 = base64Encode(bytes);
-
-                  postRequest(context, img64, DeviceName);
-                  Navigator.pop(context);
                 } else {
                   Navigator.pop(context);
-                  calltoast("Device is not Found");
+                  calltoast("Device EntityGroup Not Found");
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
                 Navigator.pop(context);
-                calltoast("Device EntityGroup Not Found");
+                calltoast(deviceName);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
@@ -250,10 +260,15 @@ class replacementilmState extends State<replacementilm> {
             }
           } else {
             Navigator.pop(context);
-            calltoast(deviceName);
-
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+            Fluttertoast.showToast(
+                msg:
+                    "Invalid Image Capture, Please recapture and try replacement",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
         } catch (e) {
           Navigator.pop(context);
