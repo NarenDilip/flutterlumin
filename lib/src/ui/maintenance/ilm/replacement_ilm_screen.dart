@@ -12,10 +12,13 @@ import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+
+import 'ilm_maintenance_screen.dart';
 
 class replacementilm extends StatefulWidget {
   const replacementilm({Key? key}) : super(key: key);
@@ -28,6 +31,7 @@ class replacementilmState extends State<replacementilm> {
   String DeviceName = "0";
   var imageFile;
   String faultyStatus = "0";
+  late ProgressDialog pr;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -57,6 +61,25 @@ class replacementilmState extends State<replacementilm> {
     Size size = MediaQuery.of(context).size;
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -106,8 +129,22 @@ class replacementilmState extends State<replacementilm> {
                                 borderRadius: BorderRadius.circular(25.0),
                               ))),
                           onPressed: () {
-                            callReplacementComplete(
-                                context, imageFile, DeviceName);
+                            if (imageFile != null) {
+                              pr.show();
+                              callReplacementComplete(
+                                  context, imageFile, DeviceName);
+                            } else {
+                              pr.hide();
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Invalid Image Capture, Please recapture and try installation",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.white,
+                                  textColor: Colors.black,
+                                  fontSize: 16.0);
+                            }
                           }))
                   // rounded_button(
                   //   text: "Complete Replacement",
@@ -143,7 +180,8 @@ class replacementilmState extends State<replacementilm> {
 
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         try {
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -229,37 +267,37 @@ class replacementilmState extends State<replacementilm> {
                     String img64 = base64Encode(bytes);
 
                     postRequest(context, img64, DeviceName);
-                    Navigator.pop(context);
+                    pr.hide();
                   } else {
-                    Navigator.pop(context);
+                    pr.hide();
                     calltoast("Device is not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
-                  Navigator.pop(context);
+                  pr.hide();
                   calltoast("Device EntityGroup Not Found");
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
-                Navigator.pop(context);
+                pr.hide();
                 calltoast(deviceName);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
-              Navigator.pop(context);
+              pr.hide();
               calltoast(deviceName);
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             Fluttertoast.showToast(
                 msg:
                     "Invalid Image Capture, Please recapture and try replacement",
@@ -271,7 +309,7 @@ class replacementilmState extends State<replacementilm> {
                 fontSize: 16.0);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -302,6 +340,7 @@ class replacementilmState extends State<replacementilm> {
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
     try {
+      pr.show();
       Uri myUri = Uri.parse(localAPICall);
 
       Map data = {'img': imageFile, 'name': DeviceName};
@@ -311,7 +350,7 @@ class replacementilmState extends State<replacementilm> {
       response = await http.post(myUri,
           headers: {"Content-Type": "application/json"}, body: body);
       print("${response.statusCode}");
-
+      pr.hide();
       if (response.statusCode.toString() == "200") {
         Fluttertoast.showToast(
             msg: "Device Replacement Completed",
@@ -327,6 +366,7 @@ class replacementilmState extends State<replacementilm> {
       } else {}
       return response;
     } catch (e) {
+      pr.hide();
       Fluttertoast.showToast(
           msg: "Device Replacement Image Upload Error",
           toastLength: Toast.LENGTH_SHORT,

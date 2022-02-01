@@ -13,15 +13,16 @@ class Utility {
     return false;
   }
 
-  static void progressDialog(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        });
-  }
+  // static void progressDialog(BuildContext context) {
+  //   showDialog(
+  //       barrierDismissible: false,
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return const Center(
+  //           child: CircularProgressIndicator(),
+  //         );
+  //       });
+  // }
 
   static double getResponsiveWidth(BuildContext context) {
     if (Responsive.isDesktop(context)) {

@@ -10,6 +10,7 @@ import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:location/location.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
@@ -18,7 +19,6 @@ import '../../../thingsboard/model/model.dart';
 import '../../../thingsboard/thingsboard_client_base.dart';
 import '../../../utils/utility.dart';
 import '../../dashboard/dashboard_screen.dart';
-import '../../qr_scanner/qr_scanner.dart';
 import '../../splash_screen.dart';
 import 'ilm_install_cam_screen.dart';
 
@@ -43,6 +43,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
   String timevalue = "0";
   String location = "0";
   String version = "0";
+  late ProgressDialog pr;
   bool _obscureText = true;
 
   // LocationData? currentLocation;
@@ -165,9 +166,27 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
     Size size = MediaQuery.of(context).size;
     double width = MediaQuery.of(context).size.width;
 
+    pr = ProgressDialog(
+        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
+
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context);
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen()));
         return true;
@@ -624,7 +643,8 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
   void ilmInstallationStart(context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         try {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('lattitude', _location!.latitude.toString());
@@ -661,10 +681,12 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                 }
 
                 if (faultyDetails == false) {
+                  pr.hide();
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => ilmcaminstall()));
                 } else {
-                  Navigator.pop(context);
+                  // Navigator.pop(context);
+                  pr.hide();
                   Fluttertoast.showToast(
                       msg: "Device Currently in Faulty State Unable to Install.",
                       toastLength: Toast.LENGTH_SHORT,
@@ -676,7 +698,8 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                 }
               } else {}
             } else {
-              Navigator.pop(context);
+              // Navigator.pop(context);
+              pr.hide();
               Fluttertoast.showToast(
                   msg:
                       "Please wait to load lattitude, longitude Details to Install.",
@@ -688,7 +711,8 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                   fontSize: 16.0);
             }
           } else {
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            pr.hide();
             Fluttertoast.showToast(
                 msg:
                     "Kindly Select the Region, Zone and Ward Details to Install.",
@@ -700,7 +724,8 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
                 fontSize: 16.0);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
+          // Navigator.pop(context);
         }
       } else {}
     });

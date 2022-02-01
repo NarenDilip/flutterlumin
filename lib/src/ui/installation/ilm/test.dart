@@ -606,7 +606,7 @@ class ilm_installation_screenState extends State<ilm_installation_screen> {
   void ilmInstallationStart(context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
         try {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('lattitude', _location!.latitude.toString());

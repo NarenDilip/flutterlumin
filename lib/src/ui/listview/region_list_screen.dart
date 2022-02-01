@@ -5,6 +5,7 @@ import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../localdb/model/zone_model.dart';
@@ -25,6 +26,7 @@ class region_list_screen_state extends State<region_list_screen> {
   List<String>? _foundUsers = [];
   List<String>? relatedzones = [];
   String selectedZone = "0";
+  late ProgressDialog pr;
 
   @override
   initState() {
@@ -75,6 +77,26 @@ class region_list_screen_state extends State<region_list_screen> {
 
   @override
   Widget build(BuildContext context) {
+
+    pr = ProgressDialog(
+        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
+
     return Container(
         // onWillPop: () async {
         //   final result = await showDialog(
@@ -191,9 +213,13 @@ class region_list_screen_state extends State<region_list_screen> {
   void callZoneDetailsFinder(BuildContext context, selectedZone) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         var tbClient = await ThingsboardClient(serverUrl);
         tbClient.smart_init();
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString("SelectedRegion", selectedZone);
 
         DBHelper dbHelper = new DBHelper();
         List<Zone> details =
@@ -232,10 +258,11 @@ class region_list_screen_state extends State<region_list_screen> {
                   dbHelper.zone_add(zone);
                 }
               }
-
+              pr.hide();
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => zone_li_screen()));
             } else {
+              pr.hide();
               Fluttertoast.showToast(
                   msg: "No Zones releated to this Region",
                   toastLength: Toast.LENGTH_SHORT,
@@ -246,6 +273,7 @@ class region_list_screen_state extends State<region_list_screen> {
                   fontSize: 16.0);
             }
           } else {
+            pr.hide();
             Fluttertoast.showToast(
                 msg: "Unable to find Region Details",
                 toastLength: Toast.LENGTH_SHORT,
@@ -256,6 +284,7 @@ class region_list_screen_state extends State<region_list_screen> {
                 fontSize: 16.0);
           }
         } else {
+          pr.hide();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (BuildContext context) => zone_li_screen()));
         }

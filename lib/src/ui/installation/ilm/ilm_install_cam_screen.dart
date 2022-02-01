@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -11,19 +11,19 @@ import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/entity_group_id.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/ward_model.dart';
+import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
@@ -48,10 +48,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   double accuracy = 0;
   String addresss = "0";
   String? _error;
+  late ProgressDialog pr;
   List<double>? _latt = [];
-  List<double>? _long = [];
-  List<double>? _acc = [];
-  List<String>? _add = [];
 
   final Location locations = Location();
   LocationData? _location;
@@ -61,11 +59,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
-
-    // lattitude = prefs.getString('lattitude').toString();
-    // longitude = prefs.getString('longitude').toString();
-    // accuracy = prefs.getString('accuracy').toString();
-    // addresss = prefs.getString('address').toString();
 
     setState(() {
       DeviceName = DeviceName;
@@ -123,25 +116,31 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     });
   }
 
-  // void getLocation() {
-  //   setState(() {
-  //     _getLocation().then((value) {
-  //       LocationData? location = value;
-  //       _getAddress(location?.latitude, location?.longitude).then((value) {
-  //         setState(() {
-  //           currentLocation = location;
-  //           address = value;
-  //         });
-  //       });
-  //     });
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
+    pr = ProgressDialog(
+        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -191,21 +190,23 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                 borderRadius: BorderRadius.circular(25.0),
                               ))),
                           onPressed: () {
-                            Utility.progressDialog(context);
-                            _listenLocation();
-
-                            // callReplacementComplete(
-                            //     context, imageFile, DeviceName, SelectedWard);
+                            // Utility.progressDialog(context);
+                            if(imageFile != null) {
+                              pr.show();
+                              _listenLocation();
+                            }else{
+                              pr.hide();
+                              Fluttertoast.showToast(
+                                  msg:
+                                  "Invalid Image Capture, Please recapture and try installation",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.white,
+                                  textColor: Colors.black,
+                                  fontSize: 16.0);
+                            }
                           }))
-                  // rounded_button(
-                  //   text: "Complete Replacement",
-                  //   color: Colors.green,
-                  //   press: () {
-                  //     callReplacementComplete(context, imageFile, DeviceName,
-                  //         address, SelectedWard);
-                  //   },
-                  //   key: null,
-                  // ),
                 ]))));
   }
 
@@ -232,7 +233,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         try {
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -362,9 +364,10 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                             String img64 = base64Encode(bytes);
 
                             postRequest(context, img64, DeviceName);
-                            Navigator.pop(context);
+                            pr.hide();
                           } else {
-                            Navigator.pop(context);
+                            // Navigator.pop(context);
+                            pr.hide();
                             Fluttertoast.showToast(
                                 msg: "Unable to Find Folder Details",
                                 toastLength: Toast.LENGTH_SHORT,
@@ -379,7 +382,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                         dashboard_screen()));
                           }
                         } else {
-                          Navigator.pop(context);
+                          // Navigator.pop(context);
+                          pr.hide();
                           calltoast(deviceName);
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
@@ -387,14 +391,16 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                       dashboard_screen()));
                         }
                       } else {
-                        Navigator.pop(context);
+                        // Navigator.pop(context);
+                        pr.hide();
                         calltoast(deviceName);
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                             builder: (BuildContext context) =>
                                 dashboard_screen()));
                       }
                     } else {
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
+                      pr.hide();
                       Fluttertoast.showToast(
                           msg:
                               "Please wait to load lattitude, longitude Details to Install.",
@@ -406,7 +412,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                           fontSize: 16.0);
                     }
                   } else {
-                    Navigator.pop(context);
+                    // Navigator.pop(context);
+                    pr.hide();
                     Fluttertoast.showToast(
                         msg:
                             "Kindly Select the Region, Zone and Ward Details to Install.",
@@ -418,7 +425,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                         fontSize: 16.0);
                   }
                 } else {
-                  Navigator.pop(context);
+                  // Navigator.pop(context);
+                  pr.hide();
                   Fluttertoast.showToast(
                       msg:
                           "Device Currently in Faulty State Unable to Install.",
@@ -432,19 +440,22 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
-                Navigator.pop(context);
+                // Navigator.pop(context);
+                pr.hide();
                 calltoast(deviceName);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
-              Navigator.pop(context);
+              // Navigator.pop(context);
+              pr.hide();
               calltoast(deviceName);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            pr.hide();
             Fluttertoast.showToast(
                 msg:
                     "Invalid Image Capture, Please recapture and try installation",
@@ -456,7 +467,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                 fontSize: 16.0);
           }
         } catch (e) {
-          Navigator.pop(context);
+          // Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -466,7 +478,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             }
           } else {
             calltoast(deviceName);
-            Navigator.pop(context);
+            // Navigator.pop(context);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen()));
           }
@@ -483,7 +495,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       builder: (BuildContext context) {
         return AlertDialog(
             content: Container(
-              height: height/1.65,
+              height: height/1.25,
                 child: Column(
                     children: [
                       Text(
@@ -584,18 +596,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     return _locationData;
   }
 
-  // Future<String> _getAddress(double? lat, double? lang) async {
-  //   if (lat == null || lang == null) return "";
-  //   Geolocator geolocator = Geolocator();
-  //   List<Placemark> placemarks =
-  //       await geolocator.placemarkFromCoordinates(lat, lang);
-  //   Placemark place = placemarks[0];
-  //   // GeoCode geoCode = GeoCode();
-  //   // Address address =
-  //   //     await geoCode.reverseGeocoding(latitude: lat, longitude: lang);
-  //   return "${place.name}, ${place.locality}, ${place.country}";
-  // }
-
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
     final coordinates = new Coordinates(lat, lang);
@@ -611,7 +611,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       Uri myUri = Uri.parse(localAPICall);
 
       Map data = {'img': imageFile, 'name': DeviceName};
-      //encode Map to JSON
       var body = json.encode(data);
 
       response = await http.post(myUri,
@@ -622,17 +621,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen()));
         showMyDialog(context);
-        // Fluttertoast.showToast(
-        //     msg: "Device Installation Completed",
-        //     toastLength: Toast.LENGTH_SHORT,
-        //     gravity: ToastGravity.BOTTOM,
-        //     timeInSecForIosWeb: 1,
-        //     backgroundColor: Colors.white,
-        //     textColor: Colors.black,
-        //     fontSize: 16.0);
-        //
-        // Navigator.of(context).pushReplacement(MaterialPageRoute(
-        //     builder: (BuildContext context) => dashboard_screen()));
       } else {}
       return response;
     } catch (e) {
@@ -646,5 +634,79 @@ class ilmcaminstallState extends State<ilmcaminstall> {
           fontSize: 16.0);
       return response;
     }
+  }
+
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
   }
 }

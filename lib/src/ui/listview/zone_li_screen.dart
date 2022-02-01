@@ -5,6 +5,7 @@ import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/zone_model.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../localdb/model/ward_model.dart';
@@ -26,6 +27,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
   String selectedRegion = "0";
   String selectedZone = "0";
   List<String>? relatedzones = [];
+  late ProgressDialog pr;
 
   @override
   initState() {
@@ -36,6 +38,24 @@ class zone_li_screen_state extends State<zone_li_screen> {
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
     Future<List<Zone>> zones;
+
+    pr = ProgressDialog(
+        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
 
     var sharedPreferences = await SharedPreferences.getInstance();
     selectedRegion = sharedPreferences.getString("SelectedRegion").toString();
@@ -207,9 +227,13 @@ class zone_li_screen_state extends State<zone_li_screen> {
   void callWardDetailsFinder(BuildContext context, selectedZone) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         var tbClient = await ThingsboardClient(serverUrl);
         tbClient.smart_init();
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString("SelectedZone", selectedZone);
 
         DBHelper dbHelper = new DBHelper();
         List<Ward> ward = await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
@@ -246,10 +270,11 @@ class zone_li_screen_state extends State<zone_li_screen> {
                   dbHelper.ward_add(ward);
                 }
               }
-
+              pr.hide();
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => ward_li_screen()));
             } else {
+              pr.hide();
               Fluttertoast.showToast(
                   msg: "No Wards releated to this zone",
                   toastLength: Toast.LENGTH_SHORT,
@@ -260,6 +285,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                   fontSize: 16.0);
             }
           } else {
+            pr.hide();
             Fluttertoast.showToast(
                 msg: "Unable to find Region Details",
                 toastLength: Toast.LENGTH_SHORT,
@@ -270,6 +296,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                 fontSize: 16.0);
           }
         }else{
+          pr.hide();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (BuildContext context) => ward_li_screen()));
         }

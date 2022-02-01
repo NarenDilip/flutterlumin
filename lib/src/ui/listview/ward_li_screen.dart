@@ -13,8 +13,11 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+
+import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
 class ward_li_screen extends StatefulWidget {
   @override
@@ -33,6 +36,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
   List<DeviceId>? nonactiveDevices = [];
   String selectedZone = "0";
   String selectedWard = "0";
+  late ProgressDialog pr;
 
   @override
   initState() {
@@ -42,6 +46,24 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
+
+    pr = ProgressDialog(
+        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
 
     var sharedPreferences = await SharedPreferences.getInstance();
     selectedZone = sharedPreferences.getString("SelectedZone").toString();
@@ -88,7 +110,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
   loadLocalData(context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         try {
           var sharedPreferences =
               await SharedPreferences.getInstance() as SharedPreferences;
@@ -175,11 +198,13 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     'nonactiveCount', nonactiveDevices!.length.toString());
                 sharedPreferences.setString('ncCount', noncomdevice);
 
-                Navigator.pop(context);
+                // Navigator.pop(context);
+                pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
+              pr.hide();
               Fluttertoast.showToast(
                   msg: "No Devices Directly Related to Ward",
                   toastLength: Toast.LENGTH_SHORT,
@@ -197,12 +222,13 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   'nonactiveCount', "0");
               sharedPreferences.setString('ncCount', "0");
 
-              Navigator.pop(context);
+              pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
           }
         } catch (e) {
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -212,7 +238,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen()));
-            Navigator.pop(context);
+            // Navigator.pop(context);
           }
         }
       } else {
@@ -341,11 +367,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
     ));
   }
 }
-
-void callNavigator(context) {
-  if (Navigator.canPop(context)) {
-    Navigator.pop(context);
-  } else {
-    SystemNavigator.pop();
-  }
-}
+//
+// void callNavigator(context) {
+//   if (Navigator.canPop(context)) {
+//     Navigator.pop(context);
+//   } else {
+//     SystemNavigator.pop();
+//   }
+// }

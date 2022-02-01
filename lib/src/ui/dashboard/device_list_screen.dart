@@ -17,10 +17,12 @@ import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import '../../localdb/db_helper.dart';
 import '../../localdb/model/region_model.dart';
+import '../installation/ilm/ilm_install_cam_screen.dart';
 import '../splash_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -41,6 +43,7 @@ class device_list_screen_state extends State<device_list_screen> {
   bool _ilmvisible = true;
   bool _obscureText = true;
   String searchNumber = "0";
+  late ProgressDialog pr;
   final TextEditingController _emailController =
       TextEditingController(text: "");
   String Maintenance = "true";
@@ -104,6 +107,25 @@ class device_list_screen_state extends State<device_list_screen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
+    pr = ProgressDialog(
+        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         extendBody: true,
@@ -649,18 +671,20 @@ class device_list_screen_state extends State<device_list_screen> {
   }
 
   Future<void> callILMDeviceListFinder(
-      String searchNumber, BuildContext context) async {
+      String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        pr.show();
         try {
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
 
+          String searchnumber = user.ilmnumber.replaceAll(" ", "");
+
           PageLink pageLink = new PageLink(100);
           pageLink.page = 0;
           pageLink.pageSize = 100;
-          pageLink.textSearch = user.ilmnumber.toString();
+          pageLink.textSearch =searchnumber;
 
           PageData<Device> devicelist_response;
           devicelist_response = (await tbClient
@@ -679,13 +703,13 @@ class device_list_screen_state extends State<device_list_screen> {
             setState(() {
               _foundUsers = _foundUsers;
             });
-            Navigator.pop(context);
+          pr.hide();
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(searchNumber);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -705,16 +729,19 @@ class device_list_screen_state extends State<device_list_screen> {
   }
 
   void callpolebasedILMDeviceListFinder(
-      String polenumber,
+      String searchnumber,
       List<String>? _relationdevices,
       List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+       pr.show();
         try {
           _relationdevices!.clear();
           _foundUsers!.clear();
+
+          String polenumber = searchnumber.replaceAll(" ", "");
+
           Asset response;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -743,23 +770,23 @@ class device_list_screen_state extends State<device_list_screen> {
                   } else {}
                 } else {
                   calltoast(polenumber);
-                  Navigator.pop(context);
+                  pr.hide();
                 }
               }
               setState(() {
                 _foundUsers = _foundUsers;
               });
-              Navigator.pop(context);
+              pr.hide();
             } else {
-              Navigator.pop(context);
+              pr.hide();
               calltoast(polenumber);
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(polenumber);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -768,8 +795,8 @@ class device_list_screen_state extends State<device_list_screen> {
                   user.polenumber, _relationdevices, _foundUsers, context);
             }
           } else {
-            Navigator.pop(context);
-            calltoast(polenumber);
+            pr.hide();
+            calltoast(searchnumber);
           }
         }
       } else {
@@ -779,16 +806,19 @@ class device_list_screen_state extends State<device_list_screen> {
   }
 
   void callccmsbasedILMDeviceListFinder(
-      String ccmsnumber,
+      String searchnumber,
       List<String>? _relationdevices,
       List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+       pr.show();
         try {
           _relationdevices!.clear();
           _foundUsers!.clear();
+
+          String ccmsnumber = searchnumber.replaceAll(" ", "");
+
           Device response;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -817,24 +847,24 @@ class device_list_screen_state extends State<device_list_screen> {
                     _foundUsers!.add(Devrelationresponse.name);
                   } else {}
                 } else {
-                  Navigator.pop(context);
+                  pr.hide();
                   calltoast(ccmsnumber);
                 }
               }
               setState(() {
                 _foundUsers = _foundUsers;
               });
-              Navigator.pop(context);
+              pr.hide();
             } else {
-              Navigator.pop(context);
+              pr.hide();
               calltoast(ccmsnumber);
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(ccmsnumber);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -843,7 +873,7 @@ class device_list_screen_state extends State<device_list_screen> {
                   user.ccmsnumber, _relationdevices, _foundUsers, context);
             }
           } else {
-            calltoast(ccmsnumber);
+            calltoast(searchnumber);
           }
         }
       } else {
@@ -857,7 +887,7 @@ class device_list_screen_state extends State<device_list_screen> {
       String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+       pr.show();
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
@@ -874,14 +904,14 @@ class device_list_screen_state extends State<device_list_screen> {
             } else if (response.type == Gw_deviceType) {
             } else {
               calltoast("Device Details Not Found");
-              Navigator.pop(context);
+              pr.hide();
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(deviceName);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -903,7 +933,7 @@ class device_list_screen_state extends State<device_list_screen> {
       String deviceName, String deviceid, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+       pr.show();
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
@@ -943,10 +973,63 @@ class device_list_screen_state extends State<device_list_screen> {
                 prefs.setString('deviceName', deviceName);
 
                 if (relationDetails.length.toString() == "0") {
-                  Navigator.pop(context);
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          ilm_installation_screen()));
+
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  var SelectedRegion = prefs.getString("SelectedRegion").toString();
+                  if (SelectedRegion != "null") {
+
+                    List<String> myList = [];
+                    myList.add("faulty");
+                    List<AttributeKvEntry> responser;
+
+                    responser = (await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myList))
+                    as List<AttributeKvEntry>;
+
+                    var faultyDetails = false;
+                    if (responser.length == 0) {
+                      faultyDetails = false;
+                    } else {
+                      faultyDetails = responser.first.getValue();
+                    }
+
+                    if(faultyDetails == false) {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              ilmcaminstall()));
+                    }else{
+                      pr.hide();
+                      Scaffold.of(context).openEndDrawer();
+                      Fluttertoast.showToast(
+                          msg: "Device Currently in Faulty State Unable to Install.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.white,
+                          textColor: Colors.black,
+                          fontSize: 16.0);
+                      
+                      // Navigator.of(context).pushNamed('/device_list_screen');
+
+                    }
+                  } else {
+                    pr.hide();
+                    Scaffold.of(context).openEndDrawer();
+                    Fluttertoast.showToast(
+                        msg: "Kindly Choose your Region, Zone and Ward to Install",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                        fontSize: 16.0);
+                  }
+
+                  // Navigator.pop(context);
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //     builder: (BuildContext context) =>
+                  //         ilm_installation_screen()));
                 } else {
                   List<String> myList = [];
                   myList.add("landmark");
@@ -969,24 +1052,24 @@ class device_list_screen_state extends State<device_list_screen> {
                     prefs.setString('location', "-");
                   }
 
-                  Navigator.pop(context);
+                  pr.hide();
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (BuildContext context) => MaintenanceScreen()));
                 }
               } else {
-                Navigator.pop(context);
+                pr.hide();
                 calltoast(deviceName);
               }
             } else {
-              Navigator.pop(context);
+              pr.hide();
               calltoast(deviceName);
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(deviceName);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -1018,7 +1101,7 @@ class device_list_screen_state extends State<device_list_screen> {
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
     if (error.message == "Session expired!") {
-      Navigator.pop(context);
+      // Navigator.pop(context);
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(

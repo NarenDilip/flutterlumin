@@ -21,6 +21,7 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
@@ -51,6 +52,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String timevalue = "0";
   String location = "0";
   String version = "0";
+  late ProgressDialog pr;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -96,6 +98,10 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         SelectedWard = "Ward";
       }
 
+      if(location == "0"){
+        location = location;
+      }
+
     });
   }
 
@@ -124,9 +130,20 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     Size size = MediaQuery.of(context).size;
     double width = MediaQuery.of(context).size.width;
 
+    pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context);
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen()));
         return true;
@@ -745,845 +762,933 @@ class _ToggleButtonState extends State<ToggleButton> {
   }
 }
 
-Future<void> callONRPCCall(context) async {
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      try {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
+  Future<void> callONRPCCall(context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        late ProgressDialog pr;
+        pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+        // Utility.progressDialog(context);
+        try {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String deviceID = prefs.getString('deviceId').toString();
 
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-        // type: String
-        final jsonData = {
-          "method": "ctrl",
-          "params": {"lamp": 1, "mode": 2}
-        };
-        // final parsedJson = jsonDecode(jsonData);
-
-        var response = await tbClient
-            .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
-            .timeout(Duration(minutes: 2));
-
-        if (response["lamp"].toString() == "1") {
-          Fluttertoast.showToast(
-              msg: "Device ON Successfully",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.white,
-              textColor: Colors.black,
-              fontSize: 16.0);
-          Navigator.pop(context);
-        } else {
-          Navigator.pop(context);
-          calltoast("Unable to Process, Please try again");
-        }
-      } catch (e) {
-        Navigator.pop(context);
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            callONRPCCall(context);
-          }
-        } else {
-          calltoast("Unable to Process");
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
-
-Future<void> callOFFRPCCall(context) async {
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      try {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
-
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-        // type: String
-        final jsonData = {
-          "method": "ctrl",
-          "params": {"lamp": 0, "mode": 2}
-        };
-        // final parsedJson = jsonDecode(jsonData);
-
-        var response = await tbClient
-            .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
-            .timeout(const Duration(minutes: 2));
-
-        if (response["lamp"].toString() == "0") {
-          Navigator.pop(context);
-          Fluttertoast.showToast(
-              msg: "Device Off Successfully",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.white,
-              textColor: Colors.black,
-              fontSize: 16.0);
-        } else {
-          Navigator.pop(context);
-          calltoast("Unable to Process, Please try again");
-        }
-      } catch (e) {
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            callOFFRPCCall(context);
-          }
-        } else {
-          Navigator.pop(context);
-          calltoast("Unable to Process");
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
-
-Future<void> getLiveRPCCall(version, context) async {
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      try {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-        // type: String
-        final jsonData;
-
-        if (version == "0") {
-          jsonData = {"method": "get", "params": 0};
-        } else {
-          jsonData = {
-            "method": "get",
-            "params": {"rpcType": 2, "value": 0}
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+          // type: String
+          final jsonData = {
+            "method": "ctrl",
+            "params": {"lamp": 1, "mode": 2}
           };
-        }
+          // final parsedJson = jsonDecode(jsonData);
 
-        // final parsedJson = jsonDecode(jsonData);
-        var response = await tbClient
-            .getDeviceService()
-            .handleOneWayDeviceRPCRequest(deviceID, jsonData)
-            .timeout(const Duration(minutes: 5));
-        Navigator.pop(context);
-        // if(response.) {
-        //   calltoast("Device ON Sucessfully");
-        //   Navigator.pop(context);
-        // }else {
-        //   calltoast("Unable to Process, Please try again");
-        //   Navigator.pop(context);
-        // }
-      } catch (e) {
-        Navigator.pop(context);
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            getLiveRPCCall(version, context);
-          }
-        } else {
-          calltoast("Unable to Process");
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
+          var response = await tbClient
+              .getDeviceService()
+              .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+              .timeout(Duration(minutes: 2));
 
-Future<void> replaceILM(context) async {
-  // Navigator.pop(context);
-  // Navigator.of(context).pushReplacement(
-  //     MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
-
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String OlddeviceID = prefs.getString('deviceId').toString();
-      String OlddeviceName = prefs.getString('deviceName').toString();
-
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-          (route) => true).then((value) async {
-        if (value != null) {
-          if (OlddeviceName.toString() != value.toString()) {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            prefs.setString('newDevicename', value);
-
-            Navigator.pop(context);
-            // showActionAlertDialog(context,OlddeviceName,value);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => replaceilm()));
+          if (response["lamp"].toString() == "1") {
+            Fluttertoast.showToast(
+                msg: "Device ON Successfully",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+            pr.hide();
+            // Navigator.pop(context);
           } else {
-            Navigator.pop(context);
-            calltoast("Duplicate QR Code");
+            pr.hide();
+            // Navigator.pop(context);
+            calltoast("Unable to Process, Please try again");
           }
-        } else {
-          Navigator.pop(context);
-          calltoast("Invalid QR Code");
-        }
-      });
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
-
-@override
-Future<Device?> ilm_main_fetchDeviceDetails(
-    String OlddeviceName, String deviceName, BuildContext context) async {
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      try {
-        Device response;
-        Future<List<EntityGroupInfo>> deviceResponse;
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-        response = await tbClient.getDeviceService().getTenantDevice(deviceName)
-            as Device;
-        if (response.name.isNotEmpty) {
-          if (response.type == ilm_deviceType) {
-            ilm_main_fetchSmartDeviceDetails(
-                OlddeviceName, deviceName, response.id!.id.toString(), context);
-          } else if (response.type == ccms_deviceType) {
-          } else if (response.type == Gw_deviceType) {
-          } else {
-            Navigator.pop(context);
-            calltoast("Device Details Not Found");
-          }
-        } else {
-          Navigator.pop(context);
-          calltoast(deviceName);
-        }
-      } catch (e) {
-        Navigator.pop(context);
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            ilm_main_fetchDeviceDetails(OlddeviceName, deviceName, context);
-          }
-        } else {
-          calltoast(deviceName);
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
-
-Future<void> replaceShortingCap(context) async {
-  // SharedPreferences prefs = await SharedPreferences.getInstance();
-  // String deviceID = prefs.getString('deviceId').toString();
-  // String deviceName = prefs.getString('deviceName').toString();
-  //
-  // var DevicecurrentFolderName = "";
-  // var DevicemoveFolderName = "";
-  //
-  // Utility.isConnected().then((value) async {
-  //   if (value) {
-  //     Utility.progressDialog(context);
-  //     try {
-  //       var tbClient = ThingsboardClient(serverUrl);
-  //       tbClient.smart_init();
-  //
-  //       Device response;
-  //       response = (await tbClient
-  //           .getDeviceService()
-  //           .getTenantDevice(deviceName)) as Device;
-  //
-  //       if (response != null) {
-  //         var relationDetails = await tbClient
-  //             .getEntityRelationService()
-  //             .findInfoByTo(response.id!);
-  //
-  //         List<EntityGroupInfo> entitygroups;
-  //         entitygroups = await tbClient
-  //             .getEntityGroupService()
-  //             .getEntityGroupsByFolderType();
-  //
-  //         if (entitygroups != null) {
-  //           for (int i = 0; i < entitygroups.length; i++) {
-  //             if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-  //               DevicemoveFolderName =
-  //                   entitygroups.elementAt(i).id!.id!.toString();
-  //             }
-  //           }
-  //
-  //           List<EntityGroupId> currentdeviceresponse;
-  //           currentdeviceresponse = await tbClient
-  //               .getEntityGroupService()
-  //               .getEntityGroupsForFolderEntity(response.id!.id!);
-  //
-  //           if (currentdeviceresponse != null) {
-  //             if (currentdeviceresponse.last.id.toString().isNotEmpty) {
-  //
-  //               var firstdetails = await tbClient
-  //                   .getEntityGroupService()
-  //                   .getEntityGroup(currentdeviceresponse.first.id!);
-  //               if (firstdetails!.name.toString() != "All") {
-  //                 DevicecurrentFolderName = currentdeviceresponse.first.id!;
-  //               }
-  //               var seconddetails = await tbClient
-  //                   .getEntityGroupService()
-  //                   .getEntityGroup(currentdeviceresponse.last.id!);
-  //               if (seconddetails!.name.toString() != "All") {
-  //                 DevicecurrentFolderName = currentdeviceresponse.last.id!;
-  //               }
-  //
-  //               var relation_response = await tbClient
-  //                   .getEntityRelationService()
-  //                   .deleteDeviceRelation(relationDetails.elementAt(0).from.id!,
-  //                       response.id!.id!);
-  //
-  //               // DevicecurrentFolderName =
-  //               //     currentdeviceresponse.last.id.toString();
-  //
-  //               List<String> myList = [];
-  //               myList.add(response.id!.id!);
-  //
-  //               var remove_response = tbClient
-  //                   .getEntityGroupService()
-  //                   .removeEntitiesFromEntityGroup(
-  //                       DevicecurrentFolderName, myList);
-  //
-  //               var add_response = tbClient
-  //                   .getEntityGroupService()
-  //                   .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
-  //
-  // Navigator.pop(context);
-  Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
-  //             } else {
-  //               calltoast("Device is not Found");
-  //               Navigator.pop(context);
-  //             }
-  //           } else {
-  //             calltoast("Device EntityGroup Not Found");
-  //             Navigator.pop(context);
-  //           }
-  //         } else {
-  //           calltoast(deviceName);
-  //           Navigator.pop(context);
-  //         }
-  //       } else {
-  //         calltoast(deviceName);
-  //         Navigator.pop(context);
-  //       }
-  //     } catch (e) {
-  //       var message = toThingsboardError(e, context);
-  //       if (message == session_expired) {
-  //         var status = loginThingsboard.callThingsboardLogin(context);
-  //         if (status == true) {
-  //           replaceILM(context);
-  //         }
-  //       } else {
-  //         calltoast(deviceName);
-  //         Navigator.pop(context);
-  //       }
-  //     }
-  //   }
-  // });
-}
-
-@override
-Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
-    String deviceName, String deviceid, BuildContext context) async {
-  var DevicecurrentFolderName = "";
-  var DevicemoveFolderName = "";
-
-  Utility.isConnected().then((value) async {
-    if (value) {
-      Utility.progressDialog(context);
-      try {
-        Device response;
-        Future<List<EntityGroupInfo>> deviceResponse;
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-
-        response = (await tbClient
-            .getDeviceService()
-            .getTenantDevice(deviceName)) as Device;
-
-        if (response != null) {
-          var new_Device_Name = response.name;
-
-          List<EntityGroupInfo> entitygroups;
-          entitygroups = await tbClient
-              .getEntityGroupService()
-              .getEntityGroupsByFolderType();
-
-          if (entitygroups != null) {
-            for (int i = 0; i < entitygroups.length; i++) {
-              if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-                DevicemoveFolderName =
-                    entitygroups.elementAt(i).id!.id!.toString();
-              }
+        } catch (e) {
+          pr.hide();
+          // Navigator.pop(context);
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              callONRPCCall(context);
             }
+          } else {
+            calltoast("Unable to Process");
+          }
+        }
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
 
-            List<EntityGroupId> currentdeviceresponse;
-            currentdeviceresponse = await tbClient
+  Future<void> callOFFRPCCall(context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        late ProgressDialog pr;
+        pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+        try {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String deviceID = prefs.getString('deviceId').toString();
+
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+          // type: String
+          final jsonData = {
+            "method": "ctrl",
+            "params": {"lamp": 0, "mode": 2}
+          };
+          // final parsedJson = jsonDecode(jsonData);
+
+          var response = await tbClient
+              .getDeviceService()
+              .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+              .timeout(const Duration(minutes: 2));
+
+          if (response["lamp"].toString() == "0") {
+           pr.hide();
+            Fluttertoast.showToast(
+                msg: "Device Off Successfully",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          } else {
+           pr.hide();
+            calltoast("Unable to Process, Please try again");
+          }
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              callOFFRPCCall(context);
+            }
+          } else {
+            calltoast("Unable to Process");
+          }
+        }
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
+
+  Future<void> getLiveRPCCall(version, context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        late ProgressDialog pr;
+        pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+        try {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String deviceID = prefs.getString('deviceId').toString();
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+          // type: String
+          final jsonData;
+
+          if (version == "0") {
+            jsonData = {"method": "get", "params": 0};
+          } else {
+            jsonData = {
+              "method": "get",
+              "params": {"rpcType": 2, "value": 0}
+            };
+          }
+
+          // final parsedJson = jsonDecode(jsonData);
+          var response = await tbClient
+              .getDeviceService()
+              .handleOneWayDeviceRPCRequest(deviceID, jsonData)
+              .timeout(const Duration(minutes: 5));
+         pr.hide();
+          // if(response.) {
+          //   calltoast("Device ON Sucessfully");
+          //   Navigator.pop(context);
+          // }else {
+          //   calltoast("Unable to Process, Please try again");
+          //   Navigator.pop(context);
+          // }
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              getLiveRPCCall(version, context);
+            }
+          } else {
+            calltoast("Unable to Process");
+          }
+        }
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
+
+  Future<void> replaceILM(context) async {
+    // Navigator.pop(context);
+    // Navigator.of(context).pushReplacement(
+    //     MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
+
+    Utility.isConnected().then((value) async {
+      if (value) {
+        late ProgressDialog pr;
+        pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String OlddeviceID = prefs.getString('deviceId').toString();
+        String OlddeviceName = prefs.getString('deviceName').toString();
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
+                (route) => true).then((value) async {
+          if (value != null) {
+            if (OlddeviceName.toString() != value.toString()) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('newDevicename', value);
+
+             pr.hide();
+              // showActionAlertDialog(context,OlddeviceName,value);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => replaceilm()));
+            } else {
+             pr.hide();
+              calltoast("Duplicate QR Code");
+            }
+          } else {
+            pr.hide();
+            calltoast("Invalid QR Code");
+          }
+        });
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
+
+  @override
+  Future<Device?> ilm_main_fetchDeviceDetails(String OlddeviceName,
+      String deviceName, BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        late ProgressDialog pr;
+        pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+        try {
+          Device response;
+          Future<List<EntityGroupInfo>> deviceResponse;
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+          response =
+          await tbClient.getDeviceService().getTenantDevice(deviceName)
+          as Device;
+          if (response.name.isNotEmpty) {
+            if (response.type == ilm_deviceType) {
+              ilm_main_fetchSmartDeviceDetails(
+                  OlddeviceName, deviceName, response.id!.id.toString(),
+                  context);
+            } else if (response.type == ccms_deviceType) {} else
+            if (response.type == Gw_deviceType) {} else {
+              pr.hide();
+              calltoast("Device Details Not Found");
+            }
+          } else {
+            pr.hide();
+            calltoast(deviceName);
+          }
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              ilm_main_fetchDeviceDetails(OlddeviceName, deviceName, context);
+            }
+          } else {
+            calltoast(deviceName);
+          }
+        }
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
+
+  Future<void> replaceShortingCap(context) async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String deviceID = prefs.getString('deviceId').toString();
+    // String deviceName = prefs.getString('deviceName').toString();
+    //
+    // var DevicecurrentFolderName = "";
+    // var DevicemoveFolderName = "";
+    //
+    // Utility.isConnected().then((value) async {
+    //   if (value) {
+    //     Utility.progressDialog(context);
+    //     try {
+    //       var tbClient = ThingsboardClient(serverUrl);
+    //       tbClient.smart_init();
+    //
+    //       Device response;
+    //       response = (await tbClient
+    //           .getDeviceService()
+    //           .getTenantDevice(deviceName)) as Device;
+    //
+    //       if (response != null) {
+    //         var relationDetails = await tbClient
+    //             .getEntityRelationService()
+    //             .findInfoByTo(response.id!);
+    //
+    //         List<EntityGroupInfo> entitygroups;
+    //         entitygroups = await tbClient
+    //             .getEntityGroupService()
+    //             .getEntityGroupsByFolderType();
+    //
+    //         if (entitygroups != null) {
+    //           for (int i = 0; i < entitygroups.length; i++) {
+    //             if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+    //               DevicemoveFolderName =
+    //                   entitygroups.elementAt(i).id!.id!.toString();
+    //             }
+    //           }
+    //
+    //           List<EntityGroupId> currentdeviceresponse;
+    //           currentdeviceresponse = await tbClient
+    //               .getEntityGroupService()
+    //               .getEntityGroupsForFolderEntity(response.id!.id!);
+    //
+    //           if (currentdeviceresponse != null) {
+    //             if (currentdeviceresponse.last.id.toString().isNotEmpty) {
+    //
+    //               var firstdetails = await tbClient
+    //                   .getEntityGroupService()
+    //                   .getEntityGroup(currentdeviceresponse.first.id!);
+    //               if (firstdetails!.name.toString() != "All") {
+    //                 DevicecurrentFolderName = currentdeviceresponse.first.id!;
+    //               }
+    //               var seconddetails = await tbClient
+    //                   .getEntityGroupService()
+    //                   .getEntityGroup(currentdeviceresponse.last.id!);
+    //               if (seconddetails!.name.toString() != "All") {
+    //                 DevicecurrentFolderName = currentdeviceresponse.last.id!;
+    //               }
+    //
+    //               var relation_response = await tbClient
+    //                   .getEntityRelationService()
+    //                   .deleteDeviceRelation(relationDetails.elementAt(0).from.id!,
+    //                       response.id!.id!);
+    //
+    //               // DevicecurrentFolderName =
+    //               //     currentdeviceresponse.last.id.toString();
+    //
+    //               List<String> myList = [];
+    //               myList.add(response.id!.id!);
+    //
+    //               var remove_response = tbClient
+    //                   .getEntityGroupService()
+    //                   .removeEntitiesFromEntityGroup(
+    //                       DevicecurrentFolderName, myList);
+    //
+    //               var add_response = tbClient
+    //                   .getEntityGroupService()
+    //                   .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
+    //
+    // Navigator.pop(context);
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+    //             } else {
+    //               calltoast("Device is not Found");
+    //               Navigator.pop(context);
+    //             }
+    //           } else {
+    //             calltoast("Device EntityGroup Not Found");
+    //             Navigator.pop(context);
+    //           }
+    //         } else {
+    //           calltoast(deviceName);
+    //           Navigator.pop(context);
+    //         }
+    //       } else {
+    //         calltoast(deviceName);
+    //         Navigator.pop(context);
+    //       }
+    //     } catch (e) {
+    //       var message = toThingsboardError(e, context);
+    //       if (message == session_expired) {
+    //         var status = loginThingsboard.callThingsboardLogin(context);
+    //         if (status == true) {
+    //           replaceILM(context);
+    //         }
+    //       } else {
+    //         calltoast(deviceName);
+    //         Navigator.pop(context);
+    //       }
+    //     }
+    //   }
+    // });
+  }
+
+  @override
+  Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
+      String deviceName, String deviceid, BuildContext context) async {
+    var DevicecurrentFolderName = "";
+    var DevicemoveFolderName = "";
+
+    Utility.isConnected().then((value) async {
+      if (value) {
+        late ProgressDialog pr;
+        pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+        try {
+          Device response;
+          Future<List<EntityGroupInfo>> deviceResponse;
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+
+          response = (await tbClient
+              .getDeviceService()
+              .getTenantDevice(deviceName)) as Device;
+
+          if (response != null) {
+            var new_Device_Name = response.name;
+
+            List<EntityGroupInfo> entitygroups;
+            entitygroups = await tbClient
                 .getEntityGroupService()
-                .getEntityGroupsForFolderEntity(response.id!.id!);
+                .getEntityGroupsByFolderType();
 
-            if (currentdeviceresponse != null) {
-              var firstdetails = await tbClient
-                  .getEntityGroupService()
-                  .getEntityGroup(currentdeviceresponse.first.id!);
-              if (firstdetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.first.id!;
+            if (entitygroups != null) {
+              for (int i = 0; i < entitygroups.length; i++) {
+                if (entitygroups
+                    .elementAt(i)
+                    .name == ILMserviceFolderName) {
+                  DevicemoveFolderName =
+                      entitygroups
+                          .elementAt(i)
+                          .id!
+                          .id!
+                          .toString();
+                }
               }
-              var seconddetails = await tbClient
+
+              List<EntityGroupId> currentdeviceresponse;
+              currentdeviceresponse = await tbClient
                   .getEntityGroupService()
-                  .getEntityGroup(currentdeviceresponse.last.id!);
-              if (seconddetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.last.id!;
-              }
+                  .getEntityGroupsForFolderEntity(response.id!.id!);
 
-              var relationDetails = await tbClient
-                  .getEntityRelationService()
-                  .findInfoByTo(response.id!);
+              if (currentdeviceresponse != null) {
+                var firstdetails = await tbClient
+                    .getEntityGroupService()
+                    .getEntityGroup(currentdeviceresponse.first.id!);
+                if (firstdetails!.name.toString() != "All") {
+                  DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                }
+                var seconddetails = await tbClient
+                    .getEntityGroupService()
+                    .getEntityGroup(currentdeviceresponse.last.id!);
+                if (seconddetails!.name.toString() != "All") {
+                  DevicecurrentFolderName = currentdeviceresponse.last.id!;
+                }
 
-              if (relationDetails != null) {
-                List<String> myList = [];
-                myList.add("lampWatts");
-                myList.add("active");
+                var relationDetails = await tbClient
+                    .getEntityRelationService()
+                    .findInfoByTo(response.id!);
 
-                List<BaseAttributeKvEntry> responser;
+                if (relationDetails != null) {
+                  List<String> myList = [];
+                  myList.add("lampWatts");
+                  myList.add("active");
 
-                responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<BaseAttributeKvEntry>;
+                  List<BaseAttributeKvEntry> responser;
 
-                if (responser != null) {
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  prefs.setString(
-                      'deviceStatus', responser.first.kv.getValue().toString());
-                  prefs.setString(
-                      'deviceWatts', responser.last.kv.getValue().toString());
+                  responser = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myList))
+                  as List<BaseAttributeKvEntry>;
 
-                  prefs.setString('deviceId', deviceid);
-                  prefs.setString('deviceName', deviceName);
+                  if (responser != null) {
+                    SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+                    prefs.setString(
+                        'deviceStatus',
+                        responser.first.kv.getValue().toString());
+                    prefs.setString(
+                        'deviceWatts', responser.last.kv.getValue().toString());
 
-                  DeviceCredentials? newdeviceCredentials;
-                  DeviceCredentials? olddeviceCredentials;
+                    prefs.setString('deviceId', deviceid);
+                    prefs.setString('deviceName', deviceName);
 
-                  if (relationDetails.length.toString() == "0") {
-                    newdeviceCredentials = await tbClient
-                        .getDeviceService()
-                        .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString()) as DeviceCredentials;
+                    DeviceCredentials? newdeviceCredentials;
+                    DeviceCredentials? olddeviceCredentials;
 
-                    if (newdeviceCredentials != null) {
-                      var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
-
-                      newdeviceCredentials.credentialsId = newQRID + "L";
-                      var credresponse = await tbClient
+                    if (relationDetails.length.toString() == "0") {
+                      newdeviceCredentials = await tbClient
                           .getDeviceService()
-                          .saveDeviceCredentials(newdeviceCredentials);
+                          .getDeviceCredentialsByDeviceId(
+                          response.id!.id.toString()) as DeviceCredentials;
 
-                      response.name = deviceName + "99";
-                      var devresponse = await tbClient
-                          .getDeviceService()
-                          .saveDevice(response);
+                      if (newdeviceCredentials != null) {
+                        var newQRID =
+                        newdeviceCredentials.credentialsId.toString();
 
-                      // Old Device Updations
-                      Device Olddevicedetails = null as Device;
-                      Olddevicedetails = await tbClient
-                          .getDeviceService()
-                          .getTenantDevice(Olddevicename) as Device;
+                        newdeviceCredentials.credentialsId = newQRID + "L";
+                        var credresponse = await tbClient
+                            .getDeviceService()
+                            .saveDeviceCredentials(newdeviceCredentials);
 
-                      if (Olddevicedetails != null) {
-                        var Old_Device_Name = Olddevicedetails.name;
+                        response.name = deviceName + "99";
+                        var devresponse = await tbClient
+                            .getDeviceService()
+                            .saveDevice(response);
 
-                        olddeviceCredentials = await tbClient
+                        // Old Device Updations
+                        Device Olddevicedetails = null as Device;
+                        Olddevicedetails = await tbClient
+                            .getDeviceService()
+                            .getTenantDevice(Olddevicename) as Device;
+
+                        if (Olddevicedetails != null) {
+                          var Old_Device_Name = Olddevicedetails.name;
+
+                          olddeviceCredentials = await tbClient
+                              .getDeviceService()
+                              .getDeviceCredentialsByDeviceId(
+                              Olddevicedetails.id!.id.toString())
+                          as DeviceCredentials;
+
+                          if (olddeviceCredentials != null) {
+                            var oldQRID =
+                            olddeviceCredentials.credentialsId.toString();
+
+                            olddeviceCredentials.credentialsId = oldQRID + "L";
+                            var old_cred_response = await tbClient
                                 .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                    Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
+                                .saveDeviceCredentials(olddeviceCredentials);
 
-                        if (olddeviceCredentials != null) {
-                          var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
+                            Olddevicedetails.name = Olddevicename + "99";
+                            var old_dev_response = await tbClient
+                                .getDeviceService()
+                                .saveDevice(Olddevicedetails);
 
-                          olddeviceCredentials.credentialsId = oldQRID + "L";
-                          var old_cred_response = await tbClient
+                            olddeviceCredentials.credentialsId = newQRID;
+                            var oldcredresponse = await tbClient
+                                .getDeviceService()
+                                .saveDeviceCredentials(olddeviceCredentials);
+
+                            response.name = Old_Device_Name;
+                            response.label = Old_Device_Name;
+                            var olddevresponse = await tbClient
+                                .getDeviceService()
+                                .saveDevice(response);
+
+                            final old_body_req = {
+                              'boardNumber': Old_Device_Name,
+                              'ieeeAddress': oldQRID,
+                            };
+
+                            var up_attribute = (await tbClient
+                                .getAttributeService()
+                                .saveDeviceAttributes(response.id!.id!,
+                                "SERVER_SCOPE", old_body_req));
+
+                            // New Device Updations
+
+                            Olddevicedetails.name = new_Device_Name;
+                            Olddevicedetails.label = new_Device_Name;
+                            var up_devresponse = await tbClient
+                                .getDeviceService()
+                                .saveDevice(Olddevicedetails);
+
+                            newdeviceCredentials.credentialsId = oldQRID;
+                            var up_credresponse = await tbClient
+                                .getDeviceService()
+                                .saveDeviceCredentials(newdeviceCredentials);
+
+                            final new_body_req = {
+                              'boardNumber': new_Device_Name,
+                              'ieeeAddress': newQRID,
+                            };
+
+                            var up_newdevice_attribute = (await tbClient
+                                .getAttributeService()
+                                .saveDeviceAttributes(Olddevicedetails.id!.id!,
+                                "SERVER_SCOPE", new_body_req));
+
+                            List<String> myList = [];
+                            myList.add(response.id!.id!);
+
+                            var remove_response = tbClient
+                                .getEntityGroupService()
+                                .removeEntitiesFromEntityGroup(
+                                DevicecurrentFolderName, myList);
+
+                            var add_response = tbClient
+                                .getEntityGroupService()
+                                .addEntitiesToEntityGroup(
+                                DevicemoveFolderName, myList);
+
+                           pr.hide();
+                            callDashboard(context);
+                          }
+                        } else {
+                          pr.hide();
+                          calltoast(deviceName);
+                        }
+                      }
+                    } else {
+                      // New Device Updations
+                      newdeviceCredentials = await tbClient
+                          .getDeviceService()
+                          .getDeviceCredentialsByDeviceId(
+                          response.id!.id.toString()) as DeviceCredentials;
+
+                      var relation_response = await tbClient
+                          .getEntityRelationService()
+                          .deleteDeviceRelation(
+                          relationDetails
+                              .elementAt(0)
+                              .from
+                              .id!,
+                          response.id!.id!);
+
+                      if (newdeviceCredentials != null) {
+                        var newQRID =
+                        newdeviceCredentials.credentialsId.toString();
+
+                        newdeviceCredentials.credentialsId = newQRID + "L";
+                        var credresponse = await tbClient
+                            .getDeviceService()
+                            .saveDeviceCredentials(newdeviceCredentials);
+
+                        response.name = deviceName + "99";
+                        var devresponse = await tbClient
+                            .getDeviceService()
+                            .saveDevice(response);
+
+                        // Old Device Updations
+
+                        Device Olddevicedetails = null as Device;
+                        Olddevicedetails = await tbClient
+                            .getDeviceService()
+                            .getTenantDevice(Olddevicename) as Device;
+
+                        if (Olddevicedetails != null) {
+                          var Old_Device_Name = Olddevicedetails.name;
+
+                          olddeviceCredentials = await tbClient
                               .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
+                              .getDeviceCredentialsByDeviceId(
+                              Olddevicedetails.id!.id.toString())
+                          as DeviceCredentials;
 
-                          Olddevicedetails.name = Olddevicename + "99";
-                          var old_dev_response = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
+                          if (olddeviceCredentials != null) {
+                            var oldQRID =
+                            olddeviceCredentials.credentialsId.toString();
 
-                          olddeviceCredentials.credentialsId = newQRID;
-                          var oldcredresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
+                            olddeviceCredentials.credentialsId = oldQRID + "L";
+                            var old_cred_response = await tbClient
+                                .getDeviceService()
+                                .saveDeviceCredentials(olddeviceCredentials);
 
-                          response.name = Old_Device_Name;
-                          response.label = Old_Device_Name;
-                          var olddevresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(response);
+                            Olddevicedetails.name = Olddevicename + "99";
+                            var old_dev_response = await tbClient
+                                .getDeviceService()
+                                .saveDevice(Olddevicedetails);
 
-                          final old_body_req = {
-                            'boardNumber': Old_Device_Name,
-                            'ieeeAddress': oldQRID,
-                          };
+                            olddeviceCredentials.credentialsId = newQRID;
+                            var oldcredresponse = await tbClient
+                                .getDeviceService()
+                                .saveDeviceCredentials(olddeviceCredentials);
 
-                          var up_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
+                            response.name = Old_Device_Name;
+                            response.label = Old_Device_Name;
+                            var olddevresponse = await tbClient
+                                .getDeviceService()
+                                .saveDevice(response);
 
-                          // New Device Updations
+                            final old_body_req = {
+                              'boardNumber': Old_Device_Name,
+                              'ieeeAddress': oldQRID,
+                            };
 
-                          Olddevicedetails.name = new_Device_Name;
-                          Olddevicedetails.label = new_Device_Name;
-                          var up_devresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
+                            var up_attribute = (await tbClient
+                                .getAttributeService()
+                                .saveDeviceAttributes(response.id!.id!,
+                                "SERVER_SCOPE", old_body_req));
 
-                          newdeviceCredentials.credentialsId = oldQRID;
-                          var up_credresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(newdeviceCredentials);
+                            // New Device Updations
 
-                          final new_body_req = {
-                            'boardNumber': new_Device_Name,
-                            'ieeeAddress': newQRID,
-                          };
+                            Olddevicedetails.name = new_Device_Name;
+                            Olddevicedetails.label = new_Device_Name;
+                            var up_devresponse = await tbClient
+                                .getDeviceService()
+                                .saveDevice(Olddevicedetails);
 
-                          var up_newdevice_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                                  "SERVER_SCOPE", new_body_req));
+                            newdeviceCredentials.credentialsId = oldQRID;
+                            var up_credresponse = await tbClient
+                                .getDeviceService()
+                                .saveDeviceCredentials(newdeviceCredentials);
 
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
+                            final new_body_req = {
+                              'boardNumber': new_Device_Name,
+                              'ieeeAddress': newQRID,
+                            };
 
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                                  DevicecurrentFolderName, myList);
+                            var up_newdevice_attribute = (await tbClient
+                                .getAttributeService()
+                                .saveDeviceAttributes(Olddevicedetails.id!.id!,
+                                "SERVER_SCOPE", new_body_req));
 
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                                  DevicemoveFolderName, myList);
+                            List<String> myList = [];
+                            myList.add(response.id!.id!);
 
-                          Navigator.pop(context);
-                          callDashboard(context);
+                            var remove_response = tbClient
+                                .getEntityGroupService()
+                                .removeEntitiesFromEntityGroup(
+                                DevicecurrentFolderName, myList);
+
+                            var add_response = tbClient
+                                .getEntityGroupService()
+                                .addEntitiesToEntityGroup(
+                                DevicemoveFolderName, myList);
+
+                            pr.hide();
+                            callDashboard(context);
+                          }
+                        } else {
+                          pr.hide();
+                          calltoast(deviceName);
                         }
                       } else {
-                        Navigator.pop(context);
+                        pr.hide();
                         calltoast(deviceName);
                       }
                     }
                   } else {
-                    // New Device Updations
-                    newdeviceCredentials = await tbClient
-                        .getDeviceService()
-                        .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString()) as DeviceCredentials;
-
-                    var relation_response = await tbClient
-                        .getEntityRelationService()
-                        .deleteDeviceRelation(
-                            relationDetails.elementAt(0).from.id!,
-                            response.id!.id!);
-
-                    if (newdeviceCredentials != null) {
-                      var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
-
-                      newdeviceCredentials.credentialsId = newQRID + "L";
-                      var credresponse = await tbClient
-                          .getDeviceService()
-                          .saveDeviceCredentials(newdeviceCredentials);
-
-                      response.name = deviceName + "99";
-                      var devresponse = await tbClient
-                          .getDeviceService()
-                          .saveDevice(response);
-
-                      // Old Device Updations
-
-                      Device Olddevicedetails = null as Device;
-                      Olddevicedetails = await tbClient
-                          .getDeviceService()
-                          .getTenantDevice(Olddevicename) as Device;
-
-                      if (Olddevicedetails != null) {
-                        var Old_Device_Name = Olddevicedetails.name;
-
-                        olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                    Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
-
-                        if (olddeviceCredentials != null) {
-                          var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
-
-                          olddeviceCredentials.credentialsId = oldQRID + "L";
-                          var old_cred_response = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          Olddevicedetails.name = Olddevicename + "99";
-                          var old_dev_response = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          olddeviceCredentials.credentialsId = newQRID;
-                          var oldcredresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          response.name = Old_Device_Name;
-                          response.label = Old_Device_Name;
-                          var olddevresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(response);
-
-                          final old_body_req = {
-                            'boardNumber': Old_Device_Name,
-                            'ieeeAddress': oldQRID,
-                          };
-
-                          var up_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
-
-                          // New Device Updations
-
-                          Olddevicedetails.name = new_Device_Name;
-                          Olddevicedetails.label = new_Device_Name;
-                          var up_devresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          newdeviceCredentials.credentialsId = oldQRID;
-                          var up_credresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(newdeviceCredentials);
-
-                          final new_body_req = {
-                            'boardNumber': new_Device_Name,
-                            'ieeeAddress': newQRID,
-                          };
-
-                          var up_newdevice_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                                  "SERVER_SCOPE", new_body_req));
-
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
-
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                                  DevicecurrentFolderName, myList);
-
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                                  DevicemoveFolderName, myList);
-
-                          Navigator.pop(context);
-                          callDashboard(context);
-                        }
-                      } else {
-                        Navigator.pop(context);
-                        calltoast(deviceName);
-                      }
-                    } else {
-                      Navigator.pop(context);
-                      calltoast(deviceName);
-                    }
+                    pr.hide();
+                    calltoast(deviceName);
                   }
                 } else {
-                  Navigator.pop(context);
+                  pr.hide();
                   calltoast(deviceName);
                 }
               } else {
-                Navigator.pop(context);
+                pr.hide();
                 calltoast(deviceName);
               }
             } else {
-              Navigator.pop(context);
+              pr.hide();
               calltoast(deviceName);
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(deviceName);
           }
-        } else {
-          Navigator.pop(context);
-          calltoast(deviceName);
-        }
-      } catch (e) {
-        Navigator.pop(context);
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context);
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context);
+            }
+          } else {
+            calltoast(deviceName);
           }
-        } else {
-          calltoast(deviceName);
         }
+      } else {
+        calltoast(no_network);
       }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
+    });
+  }
 
-showActionAlertDialog(context, OldDevice, NewDevice) {
-  // set up the buttons
-  Widget cancelButton = TextButton(
-    child: Text("Cancel",
-        style: const TextStyle(
-            fontSize: 25.0,
-            fontFamily: "Montserrat",
-            fontWeight: FontWeight.bold,
-            color: Colors.red)),
-    onPressed: () {
-      Navigator.of(context, rootNavigator: true).pop('dialog');
-    },
-  );
-  Widget continueButton = TextButton(
-    child: Text("Replace",
-        style: const TextStyle(
-            fontSize: 25.0,
-            fontFamily: "Montserrat",
-            fontWeight: FontWeight.bold,
-            color: Colors.green)),
-    onPressed: () {
-      late Future<Device?> entityFuture;
-      Utility.progressDialog(context);
-      entityFuture = ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice);
-    },
-  );
+  showActionAlertDialog(context, OldDevice, NewDevice) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("Cancel",
+          style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.red)),
+      onPressed: () {
+        Navigator.of(context, rootNavigator: true).pop('dialog');
+      },
+    );
+    Widget continueButton = TextButton(
+      child: Text("Replace",
+          style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.green)),
+      onPressed: () {
+        late Future<Device?> entityFuture;
+        // Utility.progressDialog(context);
+        entityFuture =
+            ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice);
+      },
+    );
 
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: Text("Luminator",
-        style: const TextStyle(
-            fontSize: 25.0,
-            fontFamily: "Montserrat",
-            fontWeight: FontWeight.bold,
-            color: thbDblue)),
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Luminator",
+          style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: thbDblue)),
 
-    content: RichText(
-      text: new TextSpan(
-        text: 'Would you like to replace ',
-        style: const TextStyle(
-            fontSize: 16.0,
-            fontFamily: "Montserrat",
-            fontWeight: FontWeight.bold,
-            color: liorange),
-        children: <TextSpan>[
-          new TextSpan(
-              text: OldDevice,
-              style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red)),
-          new TextSpan(
-              text: ' With ',
-              style: const TextStyle(
-                  fontSize: 16.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: liorange)),
-          new TextSpan(
-              text: NewDevice,
-              style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green)),
-          new TextSpan(
-              text: ' ? ',
-              style: const TextStyle(
-                  fontSize: 16.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: liorange)),
-        ],
+      content: RichText(
+        text: new TextSpan(
+          text: 'Would you like to replace ',
+          style: const TextStyle(
+              fontSize: 16.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: liorange),
+          children: <TextSpan>[
+            new TextSpan(
+                text: OldDevice,
+                style: const TextStyle(
+                    fontSize: 18.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red)),
+            new TextSpan(
+                text: ' With ',
+                style: const TextStyle(
+                    fontSize: 16.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: liorange)),
+            new TextSpan(
+                text: NewDevice,
+                style: const TextStyle(
+                    fontSize: 18.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green)),
+            new TextSpan(
+                text: ' ? ',
+                style: const TextStyle(
+                    fontSize: 16.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: liorange)),
+          ],
+        ),
       ),
-    ),
 
-    // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
-    //     fontSize: 18.0,
-    //     fontFamily: "Montserrat",
-    //     fontWeight: FontWeight.normal,
-    //     color: liorange)),
-    actions: [
-      cancelButton,
-      continueButton,
-    ],
-  );
+      // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
+      //     fontSize: 18.0,
+      //     fontFamily: "Montserrat",
+      //     fontWeight: FontWeight.normal,
+      //     color: liorange)),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
 
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
-void calltoast(String polenumber) {
-  Fluttertoast.showToast(
-      msg: device_toast_msg + polenumber + device_toast_notfound,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.white,
-      textColor: Colors.black,
-      fontSize: 16.0);
-}
+  void calltoast(String polenumber) {
+    Fluttertoast.showToast(
+        msg: device_toast_msg + polenumber + device_toast_notfound,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
 
-void callDashboard(context) {
-  Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
-}
+  void callDashboard(context) {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+  }
 
-Future<void> callDeviceCurrentStatus(context) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String deviceID = prefs.getString('deviceId').toString();
-  String deviceName = prefs.getString('deviceName').toString();
-}
+  Future<void> callDeviceCurrentStatus(context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String deviceID = prefs.getString('deviceId').toString();
+    String deviceName = prefs.getString('deviceName').toString();
+  }
 
 // void showDialog(context, timevalue) {
 //   showGeneralDialog(
@@ -1638,142 +1743,148 @@ Future<void> callDeviceCurrentStatus(context) async {
 //   );
 // }
 
-Future<ThingsboardError> toThingsboardError(error, context,
-    [StackTrace? stackTrace]) async {
-  ThingsboardError? tbError;
-  if (error.message == "Session expired!") {
-    Navigator.pop(context);
-    var status = loginThingsboard.callThingsboardLogin(context);
-    if (status == true) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
-    }
-  } else {
-    if (error is DioError) {
-      if (error.response != null && error.response!.data != null) {
-        var data = error.response!.data;
-        if (data is ThingsboardError) {
-          tbError = data;
-        } else if (data is Map<String, dynamic>) {
-          tbError = ThingsboardError.fromJson(data);
-        } else if (data is String) {
-          try {
-            tbError = ThingsboardError.fromJson(jsonDecode(data));
-          } catch (_) {}
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
         }
-      } else if (error.error != null) {
-        if (error.error is ThingsboardError) {
-          tbError = error.error;
-        } else if (error.error is SocketException) {
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
           tbError = ThingsboardError(
               error: error,
-              message: 'Unable to connect',
-              errorCode: ThingsBoardErrorCode.general);
-        } else {
-          tbError = ThingsboardError(
-              error: error,
-              message: error.error.toString(),
-              errorCode: ThingsBoardErrorCode.general);
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
         }
+      } else if (error is ThingsboardError) {
+        tbError = error;
       }
-      if (tbError == null &&
-          error.response != null &&
-          error.response!.statusCode != null) {
-        var httpStatus = error.response!.statusCode!;
-        var message = (httpStatus.toString() +
-            ': ' +
-            (error.response!.statusMessage != null
-                ? error.response!.statusMessage!
-                : 'Unknown'));
-        tbError = ThingsboardError(
-            error: error,
-            message: message,
-            errorCode: httpStatusToThingsboardErrorCode(httpStatus),
-            status: httpStatus);
-      }
-    } else if (error is ThingsboardError) {
-      tbError = error;
     }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
   }
-  tbError ??= ThingsboardError(
-      error: error,
-      message: error.toString(),
-      errorCode: ThingsBoardErrorCode.general);
 
-  var errorStackTrace;
-  if (tbError.error is Error) {
-    errorStackTrace = tbError.error.stackTrace;
+  Future<void> callLogoutoption(BuildContext context) async {
+    final result = await showDialog(
+      context: context,
+      builder: (ctx) =>
+          AlertDialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: 10),
+            backgroundColor: Colors.white,
+            title: Text("Luminator", style: const TextStyle(
+                fontSize: 25.0,
+                fontFamily: "Montserrat",
+                fontWeight: FontWeight.bold,
+                color: liorange)),
+            content: Text(
+                "Are you sure you want to Logout?", style: const TextStyle(
+                fontSize: 18.0,
+                fontFamily: "Montserrat",
+                fontWeight: FontWeight.bold,
+                color: Colors.black)),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: Text("NO", style: const TextStyle(
+                    fontSize: 18.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green)),
+              ),
+              TextButton(
+                child: Text('YES', style: const TextStyle(
+                    fontSize: 18.0,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red)),
+                onPressed: () async {
+                  // DBHelper dbhelper = new DBHelper();
+                  // dbhelper.region_delete();
+                  // dbhelper.zone_delete();
+                  // dbhelper.ward_delete();
+
+                  DBHelper dbhelper = new DBHelper();
+                  SharedPreferences prefs = await SharedPreferences
+                      .getInstance();
+
+                  var SelectedRegion = prefs.getString("SelectedRegion")
+                      .toString();
+                  List<Region> details = await dbhelper.region_getDetails();
+
+                  for (int i = 0; i < details.length; i++) {
+                    dbhelper.delete(details
+                        .elementAt(i)
+                        .id!
+                        .toInt());
+                  }
+                  dbhelper.zone_delete(SelectedRegion);
+                  dbhelper.ward_delete(SelectedRegion);
+
+                  SharedPreferences preferences = await SharedPreferences
+                      .getInstance();
+                  await preferences.clear();
+                  SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (BuildContext context) => splash_screen()));
+                },
+              ),
+            ],
+          ),
+    );
   }
-
-  tbError.stackTrace = stackTrace ??
-      tbError.getStackTrace() ??
-      errorStackTrace ??
-      StackTrace.current;
-
-  return tbError;
-}
-
-Future<void> callLogoutoption(BuildContext context) async {
-  final result = await showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 10),
-      backgroundColor: Colors.white,
-      title: Text("Luminator",style: const TextStyle(
-          fontSize: 25.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: liorange)),
-      content: Text("Are you sure you want to Logout?",style: const TextStyle(
-          fontSize: 18.0,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-          color: Colors.black)),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(ctx).pop();
-          },
-          child: Text("NO",style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.green)),
-        ),
-        TextButton(
-          child: Text('YES',style: const TextStyle(
-              fontSize: 18.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.bold,
-              color: Colors.red)),
-          onPressed: () async {
-
-            // DBHelper dbhelper = new DBHelper();
-            // dbhelper.region_delete();
-            // dbhelper.zone_delete();
-            // dbhelper.ward_delete();
-
-            DBHelper dbhelper = new DBHelper();
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-
-            var SelectedRegion = prefs.getString("SelectedRegion").toString();
-            List<Region> details = await dbhelper.region_getDetails();
-
-            for(int i=0;i<details.length;i++){
-              dbhelper.delete(details.elementAt(i).id!.toInt());
-            }
-            dbhelper.zone_delete(SelectedRegion);
-            dbhelper.ward_delete(SelectedRegion);
-
-            SharedPreferences preferences = await SharedPreferences.getInstance();
-            await preferences.clear();
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => splash_screen()));
-          },
-        ),
-      ],
-    ),
-  );
-}

@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
-import 'package:flutterlumin/src/localdb/model/ward_model.dart';
-import 'package:flutterlumin/src/localdb/model/zone_model.dart';
 import 'package:flutterlumin/src/models/loginrequester.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
@@ -18,6 +16,7 @@ import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class login_screen extends StatefulWidget {
@@ -45,6 +44,7 @@ class login_screenState extends State<login_screen> {
 class LoginForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   late SharedPreferences logindata;
+  late ProgressDialog pr;
   final user = LoginRequester(
       username: "",
       password: "",
@@ -57,9 +57,21 @@ class LoginForm extends StatelessWidget {
   final TextEditingController _emailController =
       TextEditingController(text: "");
 
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
     return WillPopScope(
         onWillPop: () async {
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
@@ -143,7 +155,9 @@ class LoginForm extends StatelessWidget {
     // storage = TbSecureStorage();
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
+
         if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           var status = await login_thingsboard.callThingsboardLogin(
@@ -155,7 +169,8 @@ class LoginForm extends StatelessWidget {
             // Navigator.of(context).pushReplacement(MaterialPageRoute(
             //     builder: (BuildContext context) => dashboard_screen()));
           }else{
-            Navigator.pop(context);
+            // Navigator.pop(context);
+            pr.hide();
             Fluttertoast.showToast(
                 msg: "Please check Username and Password, Invalid Credentials",
                 toastLength: Toast.LENGTH_SHORT,
@@ -166,7 +181,8 @@ class LoginForm extends StatelessWidget {
                 fontSize: 16.0);
           }
         } else {
-          Navigator.pop(context);
+          // Navigator.pop(context);
+          pr.hide();
           Fluttertoast.showToast(
               msg: "Please check Username and Password, Invalid Credentials",
               toastLength: Toast.LENGTH_SHORT,
@@ -183,8 +199,8 @@ class LoginForm extends StatelessWidget {
   void callRegionDetails(BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
-
+        // Utility.progressDialog(context);
+        pr.show();
         var tbClient = ThingsboardClient(serverUrl);
         tbClient.smart_init();
 
@@ -272,7 +288,8 @@ class LoginForm extends StatelessWidget {
             //       dbHelper.ward_add(ward);
             //     }
             //   }
-              Navigator.pop(context);
+            //   Navigator.pop(context);
+          pr.hide();
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             // } else {
@@ -284,7 +301,8 @@ class LoginForm extends StatelessWidget {
           //   calltoast("Zone Details found");
           // }
         } else {
-          Navigator.pop(context);
+          // Navigator.pop(context);
+          pr.hide();
           calltoast("Region Details found");
         }
       }

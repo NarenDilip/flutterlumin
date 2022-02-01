@@ -14,10 +14,13 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+
+import 'ilm_maintenance_screen.dart';
 
 class replaceilm extends StatefulWidget {
   const replaceilm({Key? key}) : super(key: key);
@@ -31,6 +34,7 @@ class replaceilmState extends State<replaceilm> {
   String newDeviceName = "0";
   var imageFile;
   String faultyStatus = "0";
+  late ProgressDialog pr;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -63,6 +67,25 @@ class replaceilmState extends State<replaceilm> {
     Size size = MediaQuery.of(context).size;
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -112,11 +135,26 @@ class replaceilmState extends State<replaceilm> {
                                 borderRadius: BorderRadius.circular(25.0),
                               ))),
                           onPressed: () {
-                            late Future<Device?> entityFuture;
-                            entityFuture = ilm_main_fetchDeviceDetails(
-                                DeviceName, newDeviceName, context, imageFile);
-                            showActionAlertDialog(
-                                context, DeviceName, newDeviceName);
+                            if(imageFile != null) {
+                              pr.show();
+                              late Future<Device?> entityFuture;
+                              entityFuture = ilm_main_fetchDeviceDetails(
+                                  DeviceName, newDeviceName, context,
+                                  imageFile);
+                              showActionAlertDialog(
+                                  context, DeviceName, newDeviceName);
+                            }else{
+                              pr.hide();
+                              Fluttertoast.showToast(
+                                  msg:
+                                  "Invalid Image Capture, Please recapture and try installation",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.white,
+                                  textColor: Colors.black,
+                                  fontSize: 16.0);
+                            }
                           })),
                   // rounded_button(
                   //   text: "Complete Replacement",
@@ -294,7 +332,7 @@ class replaceilmState extends State<replaceilm> {
       String deviceName, BuildContext context, imageFile) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        pr.show();
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
@@ -310,15 +348,15 @@ class replaceilmState extends State<replaceilm> {
             } else if (response.type == ccms_deviceType) {
             } else if (response.type == Gw_deviceType) {
             } else {
-              Navigator.pop(context);
+              pr.hide();
               calltoast("Device Details Not Found");
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             calltoast(deviceName);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -348,7 +386,8 @@ class replaceilmState extends State<replaceilm> {
 
     Utility.isConnected().then((value) async {
       if (value) {
-        Utility.progressDialog(context);
+        // Utility.progressDialog(context);
+        pr.show();
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
@@ -547,12 +586,12 @@ class replaceilmState extends State<replaceilm> {
                                     .addEntitiesToEntityGroup(
                                         DevicemoveFolderName, myList);
                               } catch (e) {}
-                              Navigator.pop(context);
+                              pr.hide();
                               callReplacementComplete(
                                   context, imageFile, deviceName);
                             }
                           } else {
-                            Navigator.pop(context);
+                            pr.hide();
                             calltoast(deviceName);
 
                             Navigator.of(context).pushReplacement(
@@ -683,14 +722,14 @@ class replaceilmState extends State<replaceilm> {
                                         DevicemoveFolderName, myList);
                               } catch (e) {}
 
-                              Navigator.pop(context);
+                              pr.hide();
                               Navigator.of(context, rootNavigator: true)
                                   .pop('dialog');
                               callReplacementComplete(
                                   context, imageFile, deviceName);
                             }
                           } else {
-                            Navigator.pop(context);
+                            pr.hide();
                             calltoast(deviceName);
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
@@ -698,7 +737,7 @@ class replaceilmState extends State<replaceilm> {
                                         dashboard_screen()));
                           }
                         } else {
-                          Navigator.pop(context);
+                          pr.hide();
                           callstoast("Unable to Fetch Device Credentials");
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
@@ -707,38 +746,38 @@ class replaceilmState extends State<replaceilm> {
                         }
                       }
                     } else {
-                      Navigator.pop(context);
+                      pr.hide();
                       callstoast("Unable to find device attributes");
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
                               dashboard_screen()));
                     }
                   } else {
-                    Navigator.pop(context);
+                    pr.hide();
                     callstoast("Unable to Find Related Devices");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
-                  Navigator.pop(context);
+                  pr.hide();
                   callstoast("Unable to find current Device Folder Details");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
-                Navigator.pop(context);
+                pr.hide();
                 callstoast("Unable to find Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
-              Navigator.pop(context);
+              pr.hide();
               callstoast("Unable to find Selected Device Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
-            Navigator.pop(context);
+            pr.hide();
             Fluttertoast.showToast(
                 msg:
                     "Invalid Image Capture, Please recapture and try replacement",
@@ -750,7 +789,7 @@ class replaceilmState extends State<replaceilm> {
                 fontSize: 16.0);
           }
         } catch (e) {
-          Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -801,6 +840,7 @@ class replaceilmState extends State<replaceilm> {
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
     try {
+      pr.show();
       Uri myUri = Uri.parse(localAPICall);
 
       Map data = {'img': imageFile, 'name': DeviceName};
@@ -810,7 +850,7 @@ class replaceilmState extends State<replaceilm> {
       response = await http.post(myUri,
           headers: {"Content-Type": "application/json"}, body: body);
       print("${response.statusCode}");
-
+      pr.hide();
       if (response.statusCode.toString() == "200") {
         Fluttertoast.showToast(
             msg: "Device Replacement Completed",
@@ -826,6 +866,7 @@ class replaceilmState extends State<replaceilm> {
       } else {}
       return response;
     } catch (e) {
+      pr.hide();
       Fluttertoast.showToast(
           msg: "Device Replacement Image Upload Error",
           toastLength: Toast.LENGTH_SHORT,

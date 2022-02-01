@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class loginThingsboard {
   static Future<bool> callThingsboardLogin(BuildContext context) async {
     try {
-      Utility.progressDialog(context);
+      // Utility.progressDialog(context);
       var tbClient = ThingsboardClient(serverUrl);
       SharedPreferences prefs = await SharedPreferences.getInstance();
 

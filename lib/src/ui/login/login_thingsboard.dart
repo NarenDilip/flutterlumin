@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class login_thingsboard {
   static Future<bool> callThingsboardLogin(BuildContext context, String username,String password) async {
     try {
-      Utility.progressDialog(context);
+      // Utility.progressDialog(context);
       var tbClient = ThingsboardClient(serverUrl);
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -20,7 +20,7 @@ class login_thingsboard {
         prefs.setString('smart_refreshtoken', smartToken.refreshToken);
       }
     } catch (e) {
-      Navigator.pop(context);
+      // Navigator.pop(context);
       return false;
     }
     return true;
