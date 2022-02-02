@@ -98,7 +98,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             if (_latt!.length <= 5) {
               _latt!.add(_location!.latitude!);
               lattitude = _location!.latitude!;
-              longitude = _location!.latitude!;
+              longitude = _location!.longitude!;
               accuracy = _location!.accuracy!;
               // addresss = addresss;
             } else {
