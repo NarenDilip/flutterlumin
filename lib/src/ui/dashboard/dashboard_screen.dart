@@ -19,6 +19,7 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../installation/ilm/ilm_install_cam_screen.dart';
+import 'map_view_screen.dart';
 
 class dashboard_screen extends StatefulWidget {
   @override
@@ -39,7 +40,7 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   final List<Widget> _widgetOptions = <Widget>[
     device_count_screen(),
-    // map_view_screen(),
+    map_view_screen(),
     device_list_screen()
   ];
 
@@ -184,19 +185,19 @@ class dashboard_screenState extends State<dashboard_screen> {
                   size: 45,
                 ),
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(
-              //     Icons.map,
-              //     color: Colors.black,
-              //     size: 45,
-              //   ),
-              //   title: Text('Map View'),
-              //   activeIcon: Icon(
-              //     Icons.map,
-              //     color: Colors.white,
-              //     size: 45,
-              //   ),
-              // ),
+              BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.map,
+                  color: Colors.black,
+                  size: 45,
+                ),
+                  label : 'Map View',
+                activeIcon: Icon(
+                  Icons.map,
+                  color: Colors.white,
+                  size: 45,
+                ),
+              ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.list,

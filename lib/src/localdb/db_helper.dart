@@ -1,3 +1,4 @@
+import 'package:flutterlumin/src/localdb/model/mapdata_model.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
 import 'package:flutterlumin/src/localdb/model/zone_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -29,6 +30,26 @@ class DBHelper {
         'CREATE TABLE region (id INTEGER PRIMARY KEY, regionid TEXT, regionname TEXT)');
     await db.execute('CREATE TABLE zone (id INTEGER PRIMARY KEY, zoneid TEXT, zonename TEXT, regioninfo TEXT)');
     await db.execute('CREATE TABLE ward (id INTEGER PRIMARY KEY, wardid TEXT, wardname TEXT, regionsinfo TEXT, zoneinfo TEXT)');
+    await db.execute('CREATE TABLE mapdata (id INTEGER PRIMARY KEY, deviceid TEXT, devicename TEXT, lattitude TEXT, longitude TEXT, devicetype TEXT, wardname TEXT)');
+  }
+
+  Future<Mapdata> mapdata_add(Mapdata mapdata) async {
+    var dbClient = await db;
+    mapdata.id = await dbClient.insert('mapdata', mapdata.toMap());
+    return mapdata;
+  }
+
+  Future<List<Mapdata>> mapdata_getDetails() async {
+    var dbClient = await db;
+    List<Map> maps = await dbClient
+        .query('mapdata', columns: ['id', 'deviceid', 'devicename', 'lattitude', 'longitude', 'devicetype', 'wardname']);
+    List<Mapdata> mapdata = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        mapdata.add(Mapdata.fromMap(maps[i] as dynamic));
+      }
+    }
+    return mapdata;
   }
 
   Future<Region> add(Region region) async {

@@ -84,6 +84,26 @@ class EntityRelationService {
     );
   }
 
+  Future<List<EntityRelation>> findByWardFrom(String fromId,
+      {String? relationType,
+        RelationTypeGroup? relationTypeGroup,
+        RequestConfig? requestConfig}) async {
+    var queryParameters = {
+      'fromId': fromId,
+      'fromType': "ASSET"
+    };
+    if (relationType != null) {
+      queryParameters['relationType'] = relationType;
+    }
+    if (relationTypeGroup != null) {
+      queryParameters['relationTypeGroup'] = relationTypeGroup.toShortString();
+    }
+    var response = await _tbClient.get<List<dynamic>>('/api/relations',
+        queryParameters: queryParameters,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return response.data!.map((e) => EntityRelation.fromJson(e)).toList();
+  }
+
   Future<List<EntityRelation>> findByFrom(EntityId fromId,
       {String? relationType,
       RelationTypeGroup? relationTypeGroup,
