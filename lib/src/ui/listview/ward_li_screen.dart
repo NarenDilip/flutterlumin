@@ -21,7 +21,6 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
-
 import '../../thingsboard/error/thingsboard_error.dart';
 import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
@@ -53,8 +52,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
 
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -78,13 +77,13 @@ class ward_li_screen_state extends State<ward_li_screen> {
       List<Ward> wards = await dbHelper.ward_getDetails() as List<Ward>;
       // wards = (await dbHelper.ward_zonebasedDetails(selectedZone)) as List<Ward>;
       // wards.then((data) {
-        for (int i = 0; i < wards.length; i++) {
-          String regionname = wards[i].wardname.toString();
-          _allUsers?.add(regionname);
-        }
-        setState(() {
-          _foundUsers = _allUsers!;
-        });
+      for (int i = 0; i < wards.length; i++) {
+        String regionname = wards[i].wardname.toString();
+        _allUsers?.add(regionname);
+      }
+      setState(() {
+        _foundUsers = _allUsers!;
+      });
       // }, onError: (e) {
       //   print(e);
       // });
@@ -147,23 +146,26 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 if (wardlist.elementAt(i).to.entityType.name != "DEVICE") {
                   relatedDeviceId = wardlist.elementAt(i).to;
                   AssetDevices?.add(relatedDeviceId);
-                }else{
-
+                } else {
+                  relatedDeviceId = wardlist.elementAt(i).from;
+                  AssetDevices?.add(relatedDeviceId);
+                  break;
                 }
               }
 
               var assetrelatedwardid;
-
               for (int j = 0; j < AssetDevices!.length; j++) {
-                  List<EntityRelationInfo> relationdevicelist = await tbClient
-                          .getEntityRelationService()
-                          .findInfoByAssetFrom(AssetDevices!.elementAt(j))
-                      as List<EntityRelationInfo>;
+                List<EntityRelationInfo> relationdevicelist = await tbClient
+                        .getEntityRelationService()
+                        .findInfoByAssetFrom(AssetDevices!.elementAt(j))
+                    as List<EntityRelationInfo>;
 
+                for (int k = 0; k < relationdevicelist.length; k++) {
                   if (relationdevicelist.length != 0) {
-                    assetrelatedwardid = relationdevicelist.elementAt(0).to;
+                    assetrelatedwardid = relationdevicelist.elementAt(k).to;
                     relatedDevices?.add(assetrelatedwardid);
                   }
+                }
               }
 
               if (relatedDevices != null) {
@@ -190,9 +192,9 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 var totalval = activeDevice!.length + nonactiveDevices!.length;
                 var ncdevices = relatedDevices!.length - totalval;
                 var noncomdevice = "";
-                if(ncdevices.toString().contains("-")){
+                if (ncdevices.toString().contains("-")) {
                   noncomdevice = ncdevices.toString().replaceAll("-", "");
-                }else{
+                } else {
                   noncomdevice = ncdevices.toString();
                 }
 
@@ -220,12 +222,9 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   textColor: Colors.black,
                   fontSize: 16.0);
 
-              sharedPreferences.setString(
-                  'totalCount', "0");
-              sharedPreferences.setString(
-                  'activeCount', "0");
-              sharedPreferences.setString(
-                  'nonactiveCount', "0");
+              sharedPreferences.setString('totalCount', "0");
+              sharedPreferences.setString('activeCount', "0");
+              sharedPreferences.setString('nonactiveCount', "0");
               sharedPreferences.setString('ncCount', "0");
 
               pr.hide();
@@ -319,7 +318,10 @@ class ward_li_screen_state extends State<ward_li_screen> {
               decoration: const InputDecoration(
                 labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
                 labelText: 'Search',
-                suffixIcon: Icon(Icons.search,color: Colors.white,),
+                suffixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.white),
                 ),
@@ -352,7 +354,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                                   _foundUsers!.elementAt(index).toString();
                               loadLocalData(context);
                             });
-                            },
+                          },
                           title: Text(_foundUsers!.elementAt(index),
                               style: const TextStyle(
                                   fontSize: 22.0,
@@ -446,7 +448,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
     return tbError;
   }
-
 }
 //
 // void callNavigator(context) {

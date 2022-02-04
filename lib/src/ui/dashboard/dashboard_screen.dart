@@ -20,7 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/ilm/ilm_install_cam_screen.dart';
-import 'map_view_screen.dart';
+import '../map/map_view_screen.dart';
 
 class dashboard_screen extends StatefulWidget {
   @override

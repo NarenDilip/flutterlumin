@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/ui/installation/ilm/location_map.dart';
+import 'package:flutterlumin/src/ui/map/location_map.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -100,7 +100,7 @@ class map_view_screen_state extends State<map_view_screen> {
                       children: [
                         Container(
                           alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                           child: Text(
                               'Map view',
                               textAlign: TextAlign.center,
@@ -113,12 +113,12 @@ class map_view_screen_state extends State<map_view_screen> {
                         ),
                         Positioned(
                           right: 10,
-                          top: 15,
+                          top: 20,
                           bottom: 0,
                           child: IconButton(
                             color: Colors.red,
                             icon: Icon(
-                              Icons.cancel_outlined,
+                              Icons.logout_outlined,
                               size: 35,
                             ),
                             onPressed: () {
@@ -253,6 +253,8 @@ class map_view_screen_state extends State<map_view_screen> {
                                 ),
                                 SizedBox(height: 5,),
                                 Expanded(
+                                    child: Container(
+                                      color: Colors.grey,
                                     child: Stack(
                                       children: [
                                         LocationWidget(
@@ -260,7 +262,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                           // print('switched to: $index');
                                         },),
                                       ],
-                                    )
+                                    ))
                                 )
                               ])))
                 ]))));
