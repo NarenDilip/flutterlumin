@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -9,9 +13,11 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../localdb/model/zone_model.dart';
+import '../../thingsboard/error/thingsboard_error.dart';
 import '../../thingsboard/model/model.dart';
 import '../../thingsboard/thingsboard_client_base.dart';
 import '../../utils/utility.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 class region_list_screen extends StatefulWidget {
   @override
@@ -77,9 +83,8 @@ class region_list_screen_state extends State<region_list_screen> {
 
   @override
   Widget build(BuildContext context) {
-
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -95,7 +100,6 @@ class region_list_screen_state extends State<region_list_screen> {
           valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
           strokeWidth: 3.0),
     );
-
 
     return Container(
         // onWillPop: () async {
@@ -154,7 +158,10 @@ class region_list_screen_state extends State<region_list_screen> {
               decoration: const InputDecoration(
                 labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
                 labelText: 'Search',
-                suffixIcon: Icon(Icons.search,color: Colors.white,),
+                suffixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.white),
                 ),
@@ -210,61 +217,147 @@ class region_list_screen_state extends State<region_list_screen> {
     ));
   }
 
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => region_list_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
+  }
+
   void callZoneDetailsFinder(BuildContext context, selectedZone) {
     Utility.isConnected().then((value) async {
       if (value) {
         // Utility.progressDialog(context);
-        pr.show();
-        var tbClient = await ThingsboardClient(serverUrl);
-        tbClient.smart_init();
+        try {
+          pr.show();
+          var tbClient = await ThingsboardClient(serverUrl);
+          tbClient.smart_init();
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString("SelectedRegion", selectedZone);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString("SelectedRegion", selectedZone);
 
-        DBHelper dbHelper = new DBHelper();
-        List<Zone> details =
-            await dbHelper.zone_regionbasedDetails(selectedZone) as List<Zone>;
-        if (details.isEmpty) {
-          // dbHelper.zone_delete();
+          DBHelper dbHelper = new DBHelper();
+          List<Zone> details = await dbHelper
+              .zone_regionbasedDetails(selectedZone) as List<Zone>;
+          if (details.isEmpty) {
+            // dbHelper.zone_delete();
 
-          List<Region> regiondetails =
-              await dbHelper.region_name_regionbasedDetails(selectedZone);
-          if (regiondetails.length != 0) {
-            Map<String, dynamic> fromId = {
-              'entityType': 'ASSET',
-              'id': regiondetails.first.regionid
-            };
+            List<Region> regiondetails =
+                await dbHelper.region_name_regionbasedDetails(selectedZone);
+            if (regiondetails.length != 0) {
+              Map<String, dynamic> fromId = {
+                'entityType': 'ASSET',
+                'id': regiondetails.first.regionid
+              };
 
-            List<EntityRelationInfo> wardlist = await tbClient
-                .getEntityRelationService()
-                .findInfoByAssetFrom(EntityId.fromJson(fromId));
+              List<EntityRelationInfo> wardlist = await tbClient
+                  .getEntityRelationService()
+                  .findInfoByAssetFrom(EntityId.fromJson(fromId));
 
-            if (wardlist.isNotEmpty) {
-              for (int i = 0; i < wardlist.length; i++) {
-                relatedzones?.add(wardlist.elementAt(i).to.id.toString());
-              }
-
-              // DBHelper dbHelper = new DBHelper();
-              // dbHelper.region_delete();
-
-              for (int j = 0; j < relatedzones!.length; j++) {
-                Asset asset = await tbClient
-                    .getAssetService()
-                    .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
-                if (asset.name != null) {
-                  // var regionname = selectedZone.split("-");
-                  Zone zone =
-                      new Zone(j, asset.id!.id, asset.name, selectedZone);
-                  dbHelper.zone_add(zone);
+              if (wardlist.isNotEmpty) {
+                for (int i = 0; i < wardlist.length; i++) {
+                  relatedzones?.add(wardlist.elementAt(i).to.id.toString());
                 }
+
+                // DBHelper dbHelper = new DBHelper();
+                // dbHelper.region_delete();
+
+                for (int j = 0; j < relatedzones!.length; j++) {
+                  Asset asset = await tbClient
+                      .getAssetService()
+                      .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
+                  if (asset.name != null) {
+                    // var regionname = selectedZone.split("-");
+                    Zone zone =
+                        new Zone(j, asset.id!.id, asset.name, selectedZone);
+                    dbHelper.zone_add(zone);
+                  }
+                }
+                pr.hide();
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => zone_li_screen()));
+              } else {
+                pr.hide();
+                Fluttertoast.showToast(
+                    msg: "No Zones releated to this Region",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
+                    fontSize: 16.0);
               }
-              pr.hide();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => zone_li_screen()));
             } else {
               pr.hide();
               Fluttertoast.showToast(
-                  msg: "No Zones releated to this Region",
+                  msg: "Unable to find Region Details",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -274,19 +367,23 @@ class region_list_screen_state extends State<region_list_screen> {
             }
           } else {
             pr.hide();
-            Fluttertoast.showToast(
-                msg: "Unable to find Region Details",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => zone_li_screen()));
           }
-        } else {
+        } catch (e) {
           pr.hide();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => zone_li_screen()));
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => region_list_screen()));
+            }
+          } else {
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => region_list_screen()));
+            // Navigator.pop(context);
+          }
         }
       } else {
         Fluttertoast.showToast(

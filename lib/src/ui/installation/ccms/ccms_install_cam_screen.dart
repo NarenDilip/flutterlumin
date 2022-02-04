@@ -28,14 +28,14 @@ import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 
-class ilmcaminstall extends StatefulWidget {
-  const ilmcaminstall({Key? key}) : super(key: key);
+class ccmscaminstall extends StatefulWidget {
+  const ccmscaminstall({Key? key}) : super(key: key);
 
   @override
-  ilmcaminstallState createState() => ilmcaminstallState();
+  ccmscaminstallState createState() => ccmscaminstallState();
 }
 
-class ilmcaminstallState extends State<ilmcaminstall> {
+class ccmscaminstallState extends State<ccmscaminstall> {
   String DeviceName = "0";
   var imageFile;
   var accuvalue;

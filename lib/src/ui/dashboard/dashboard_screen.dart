@@ -18,6 +18,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/ilm/ilm_install_cam_screen.dart';
 import 'map_view_screen.dart';
 
@@ -47,8 +48,8 @@ class dashboard_screenState extends State<dashboard_screen> {
   @override
   Widget build(BuildContext context) {
     Color? _foreground = Colors.green[900];
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -68,48 +69,46 @@ class dashboard_screenState extends State<dashboard_screen> {
         onWillPop: () async {
           final result = await showDialog(
             context: context,
-            builder: (ctx) =>
-                AlertDialog(
-                  insetPadding: EdgeInsets.symmetric(horizontal: 0),
-                  backgroundColor: Colors.white,
-                  title: Text("Luminator",
+            builder: (ctx) => AlertDialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 0),
+              backgroundColor: Colors.white,
+              title: Text("Luminator",
+                  style: const TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: liorange)),
+              content: Text("Are you sure you want to exit Luminator?",
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black)),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text("NO",
                       style: const TextStyle(
                           fontSize: 25.0,
                           fontFamily: "Montserrat",
                           fontWeight: FontWeight.bold,
-                          color: liorange)),
-                  content: Text("Are you sure you want to exit Luminator?",
+                          color: Colors.green)),
+                ),
+                TextButton(
+                  child: Text('YES',
                       style: const TextStyle(
-                          fontSize: 18.0,
+                          fontSize: 25.0,
                           fontFamily: "Montserrat",
                           fontWeight: FontWeight.bold,
-                          color: Colors.black)),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                      },
-                      child: Text("NO",
-                          style: const TextStyle(
-                              fontSize: 25.0,
-                              fontFamily: "Montserrat",
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green)),
-                    ),
-                    TextButton(
-                      child: Text('YES',
-                          style: const TextStyle(
-                              fontSize: 25.0,
-                              fontFamily: "Montserrat",
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red)),
-                      onPressed: () {
-                        SystemChannels.platform.invokeMethod(
-                            'SystemNavigator.pop');
-                      },
-                    ),
-                  ],
+                          color: Colors.red)),
+                  onPressed: () {
+                    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                  },
                 ),
+              ],
+            ),
           );
           return result;
         },
@@ -132,20 +131,14 @@ class dashboard_screenState extends State<dashboard_screen> {
                   duration: Duration(milliseconds: 250),
                   //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
                   height: clickedCentreFAB
-                      ? MediaQuery
-                      .of(context)
-                      .size
-                      .height
+                      ? MediaQuery.of(context).size.height
                       : 10.0,
                   width: clickedCentreFAB
-                      ? MediaQuery
-                      .of(context)
-                      .size
-                      .height
+                      ? MediaQuery.of(context).size.height
                       : 10.0,
                   decoration: BoxDecoration(
                       borderRadius:
-                      BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                          BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
                       color: Colors.white),
                 ),
               )
@@ -227,7 +220,7 @@ class dashboard_screenState extends State<dashboard_screen> {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-                (route) => true).then((value) async {
+            (route) => true).then((value) async {
           if (value != null) {
             // if (value.toString().length == 6) {
             late Future<Device?> entityFuture;
@@ -259,8 +252,8 @@ class dashboard_screenState extends State<dashboard_screen> {
 
 // Fetching the device details from smart server
   @override
-  Future<Device?> fetchDeviceDetails(String deviceName,
-      BuildContext context) async {
+  Future<Device?> fetchDeviceDetails(
+      String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
@@ -270,20 +263,23 @@ class dashboard_screenState extends State<dashboard_screen> {
           Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
-          response =
-          await tbClient.getDeviceService().getTenantDevice(deviceName)
-          as Device;
+          response = await tbClient
+              .getDeviceService()
+              .getTenantDevice(deviceName) as Device;
           if (response != null) {
             DeviceCredentials deviceCredentials = (await tbClient
-                .getDeviceService()
-                .getDeviceCredentialsByDeviceId(response.id!.id!))
-            as DeviceCredentials;
+                    .getDeviceService()
+                    .getDeviceCredentialsByDeviceId(response.id!.id!))
+                as DeviceCredentials;
             if (deviceCredentials.credentialsId.length == 16) {
               if (response.type == ilm_deviceType) {
                 fetchSmartDeviceDetails(
                     deviceName, response.id!.id.toString(), context);
-              } else if (response.type == ccms_deviceType) {} else
-              if (response.type == Gw_deviceType) {} else {
+              } else if (response.type == ccms_deviceType) {
+                fetchCCMSDeviceDetails(
+                    deviceName, response.id!.id.toString(), context);
+              } else if (response.type == Gw_deviceType) {
+              } else {
                 pr.hide();
                 // Navigator.pop(context);
                 Fluttertoast.showToast(
@@ -300,7 +296,7 @@ class dashboard_screenState extends State<dashboard_screen> {
               pr.hide();
               Fluttertoast.showToast(
                   msg:
-                  "Device Credentials are invalid, Device not despatched properly",
+                      "Device Credentials are invalid, Device not despatched properly",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -356,8 +352,56 @@ class dashboard_screenState extends State<dashboard_screen> {
   }
 
   @override
-  Future<Device?> fetchSmartDeviceDetails(String deviceName, String deviceid,
-      BuildContext context) async {
+  Future<Device?> fetchCCMSDeviceDetails(
+      String deviceName, String string, BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        try {
+          pr.show();
+          Device response;
+          Future<List<EntityGroupInfo>> deviceResponse;
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+
+          response = (await tbClient
+              .getDeviceService()
+              .getTenantDevice(deviceName)) as Device;
+
+          var relationDetails = await tbClient
+              .getEntityRelationService()
+              .findInfoByTo(response.id!);
+
+          if (relationDetails.length.toString() == "0") {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            var SelectedRegion = prefs.getString("SelectedRegion").toString();
+            if (SelectedRegion != "null") {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => ccmscaminstall()));
+            } else {
+              // Navigator.pop(context);
+              pr.hide();
+              Fluttertoast.showToast(
+                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
+              // refreshPage(context);
+            }
+          } else {}
+          pr.hide();
+        } catch (e) {
+          pr.hide();
+        }
+      }
+    });
+  }
+
+  @override
+  Future<Device?> fetchSmartDeviceDetails(
+      String deviceName, String deviceid, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
@@ -384,9 +428,9 @@ class dashboard_screenState extends State<dashboard_screen> {
           try {
             List<TsKvEntry> faultresponser;
             faultresponser = await tbClient
-                .getAttributeService()
-                .getselectedLatestTimeseries(response.id!.id!, "lmp")
-            as List<TsKvEntry>;
+                    .getAttributeService()
+                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
+                as List<TsKvEntry>;
             if (faultresponser.length != 0) {
               prefs.setString(
                   'faultyStatus', faultresponser.first.getValue().toString());
@@ -401,9 +445,10 @@ class dashboard_screenState extends State<dashboard_screen> {
 
           List<BaseAttributeKvEntry> responser;
 
-          responser =
-          (await tbClient.getAttributeService().getAttributeKvEntries(
-              response.id!, myList)) as List<BaseAttributeKvEntry>;
+          responser = (await tbClient
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myList))
+              as List<BaseAttributeKvEntry>;
 
           prefs.setString(
               'deviceStatus', responser.first.kv.getValue().toString());
@@ -419,9 +464,9 @@ class dashboard_screenState extends State<dashboard_screen> {
           List<AttributeKvEntry> responserse;
 
           responserse = (await tbClient
-              .getAttributeService()
-              .getAttributeKvEntries(response.id!, myLister))
-          as List<AttributeKvEntry>;
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myLister))
+              as List<AttributeKvEntry>;
 
           if (responserse.length != "0") {
             prefs.setString(
@@ -435,9 +480,9 @@ class dashboard_screenState extends State<dashboard_screen> {
             List<AttributeKvEntry> version_responserse;
 
             version_responserse = (await tbClient
-                .getAttributeService()
-                .getAttributeKvEntries(response.id!, versionlist))
-            as List<AttributeKvEntry>;
+                    .getAttributeService()
+                    .getAttributeKvEntries(response.id!, versionlist))
+                as List<AttributeKvEntry>;
 
             if (version_responserse.length == 0) {
               prefs.setString('version', "0");
@@ -454,9 +499,9 @@ class dashboard_screenState extends State<dashboard_screen> {
                 List<AttributeKvEntry> responser;
 
                 responser = (await tbClient
-                    .getAttributeService()
-                    .getAttributeKvEntries(response.id!, myList))
-                as List<AttributeKvEntry>;
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myList))
+                    as List<AttributeKvEntry>;
 
                 var faultyDetails = false;
                 if (responser.length == 0) {
@@ -467,13 +512,13 @@ class dashboard_screenState extends State<dashboard_screen> {
 
                 if (faultyDetails == false) {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          ilmcaminstall()));
+                      builder: (BuildContext context) => ilmcaminstall()));
                 } else {
                   // Navigator.pop(context);
                   pr.hide();
                   Fluttertoast.showToast(
-                      msg: "Device Currently in Faulty State Unable to Install.",
+                      msg:
+                          "Device Currently in Faulty State Unable to Install.",
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.BOTTOM,
                       timeInSecForIosWeb: 1,
@@ -544,8 +589,7 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   void refreshPage(context) {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) =>
-            dashboard_screen()));
+        builder: (BuildContext context) => dashboard_screen()));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,

@@ -45,7 +45,7 @@ const ILMserviceFolderName = "forRepairILM";
 // const ILMserviceFolderName = "forServiceLuminodes";
 
 const ilm_deviceType = "lumiNode";
-const ccms_deviceType = "ccms";
+const ccms_deviceType = "CCMS";
 const Gw_deviceType = "Gateway";
 
 const session_expired = "Session expired!";

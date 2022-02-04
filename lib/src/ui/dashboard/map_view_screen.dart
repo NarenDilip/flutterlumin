@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/ui/installation/ilm/loaction_map.dart';
+import 'package:flutterlumin/src/ui/installation/ilm/location_map.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -257,7 +257,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                       children: [
                                         LocationWidget(
                                           initialLabel: 0, onToggle: (index) {
-                                          print('switched to: $index');
+                                          // print('switched to: $index');
                                         },),
                                       ],
                                     )

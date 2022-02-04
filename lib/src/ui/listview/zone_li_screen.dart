@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -9,9 +13,13 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../localdb/model/ward_model.dart';
+import '../../thingsboard/error/thingsboard_error.dart';
 import '../../thingsboard/model/model.dart';
 import '../../thingsboard/thingsboard_client_base.dart';
 import '../../utils/utility.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+
+import '../dashboard/dashboard_screen.dart';
 
 class zone_li_screen extends StatefulWidget {
   @override
@@ -39,8 +47,8 @@ class zone_li_screen_state extends State<zone_li_screen> {
     DBHelper dbHelper = DBHelper();
     Future<List<Zone>> zones;
 
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -164,7 +172,10 @@ class zone_li_screen_state extends State<zone_li_screen> {
               decoration: const InputDecoration(
                 labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
                 labelText: 'Search',
-                suffixIcon: Icon(Icons.search,color: Colors.white,),
+                suffixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.white),
                 ),
@@ -209,7 +220,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                                   fontSize: 22.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
-                                  color:thbDblue)),
+                                  color: thbDblue)),
                         ),
                       ),
                     )
@@ -227,56 +238,69 @@ class zone_li_screen_state extends State<zone_li_screen> {
   void callWardDetailsFinder(BuildContext context, selectedZone) {
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
-        pr.show();
-        var tbClient = await ThingsboardClient(serverUrl);
-        tbClient.smart_init();
+        try {
+          // Utility.progressDialog(context);
+          pr.show();
+          var tbClient = await ThingsboardClient(serverUrl);
+          tbClient.smart_init();
 
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString("SelectedZone", selectedZone);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString("SelectedZone", selectedZone);
 
-        DBHelper dbHelper = new DBHelper();
-        List<Ward> ward = await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
-        if(ward.isEmpty) {
-          // dbHelper.ward_delete();
+          DBHelper dbHelper = new DBHelper();
+          List<Ward> ward =
+              await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
+          if (ward.isEmpty) {
+            // dbHelper.ward_delete();
 
-          List<Zone> regiondetails =
-          await dbHelper.zone_zonebasedDetails(selectedZone);
-          if (regiondetails.length != 0) {
-            Map<String, dynamic> fromId = {
-              'entityType': 'ASSET',
-              'id': regiondetails.first.zoneid
-            };
+            List<Zone> regiondetails =
+                await dbHelper.zone_zonebasedDetails(selectedZone);
+            if (regiondetails.length != 0) {
+              Map<String, dynamic> fromId = {
+                'entityType': 'ASSET',
+                'id': regiondetails.first.zoneid
+              };
 
-            List<EntityRelationInfo> wardlist = await tbClient
-                .getEntityRelationService()
-                .findInfoByAssetFrom(EntityId.fromJson(fromId));
+              List<EntityRelationInfo> wardlist = await tbClient
+                  .getEntityRelationService()
+                  .findInfoByAssetFrom(EntityId.fromJson(fromId));
 
-            if (wardlist.isNotEmpty) {
-              for (int i = 0; i < wardlist.length; i++) {
-                relatedzones?.add(wardlist.elementAt(i).to.id.toString());
-              }
-
-              for (int j = 0; j < relatedzones!.length; j++) {
-                Asset asset = await tbClient
-                    .getAssetService()
-                    .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
-                if (asset.name != null) {
-                  var regionname = selectedZone.split("-");
-
-                  Ward ward = Ward(j, asset.id!.id, asset.name, selectedZone,
-                      regionname[0].toString());
-
-                  dbHelper.ward_add(ward);
+              if (wardlist.isNotEmpty) {
+                for (int i = 0; i < wardlist.length; i++) {
+                  relatedzones?.add(wardlist.elementAt(i).to.id.toString());
                 }
+
+                for (int j = 0; j < relatedzones!.length; j++) {
+                  Asset asset = await tbClient
+                      .getAssetService()
+                      .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
+                  if (asset.name != null) {
+                    var regionname = selectedZone.split("-");
+
+                    Ward ward = Ward(j, asset.id!.id, asset.name, selectedZone,
+                        regionname[0].toString());
+
+                    dbHelper.ward_add(ward);
+                  }
+                }
+                pr.hide();
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => ward_li_screen()));
+              } else {
+                pr.hide();
+                Fluttertoast.showToast(
+                    msg: "No Wards releated to this zone",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
+                    fontSize: 16.0);
               }
-              pr.hide();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => ward_li_screen()));
             } else {
               pr.hide();
               Fluttertoast.showToast(
-                  msg: "No Wards releated to this zone",
+                  msg: "Unable to find Region Details",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -286,19 +310,23 @@ class zone_li_screen_state extends State<zone_li_screen> {
             }
           } else {
             pr.hide();
-            Fluttertoast.showToast(
-                msg: "Unable to find Region Details",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => ward_li_screen()));
           }
-        }else{
+        } catch (e) {
           pr.hide();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => ward_li_screen()));
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => zone_li_screen()));
+            }
+          } else {
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => dashboard_screen()));
+            // Navigator.pop(context);
+          }
         }
       } else {
         Fluttertoast.showToast(
@@ -311,5 +339,79 @@ class zone_li_screen_state extends State<zone_li_screen> {
             fontSize: 16.0);
       }
     });
+  }
+
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => zone_li_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
   }
 }
