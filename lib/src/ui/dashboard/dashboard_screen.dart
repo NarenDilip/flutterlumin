@@ -160,7 +160,7 @@ class dashboard_screenState extends State<dashboard_screen> {
           ),
           backgroundColor: thbDblue,
           bottomNavigationBar: BottomNavigationBar(
-            backgroundColor: thbDblue,
+            backgroundColor: Colors.white,
             currentIndex: _selectedIndex,
             showSelectedLabels: false,
             showUnselectedLabels: false,
@@ -168,39 +168,39 @@ class dashboard_screenState extends State<dashboard_screen> {
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.analytics,
-                  color: Colors.black,
+                  color: Colors.grey,
                   size: 45,
                 ),
                 label: 'Dashboard',
                 activeIcon: Icon(
                   Icons.analytics,
-                  color: Colors.white,
+                  color: darkgreen,
                   size: 45,
                 ),
               ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.map,
-                  color: Colors.black,
+                  color: Colors.grey,
                   size: 45,
                 ),
-                  label : 'Map View',
+                label: 'Map View',
                 activeIcon: Icon(
                   Icons.map,
-                  color: Colors.white,
+                  color: darkgreen,
                   size: 45,
                 ),
               ),
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.list,
-                  color: Colors.black,
+                  color: Colors.grey,
                   size: 45,
                 ),
                 label: 'Device List',
                 activeIcon: Icon(
                   Icons.list,
-                  color: Colors.white,
+                  color: darkgreen,
                   size: 45,
                 ),
               ),
@@ -371,8 +371,21 @@ class dashboard_screenState extends State<dashboard_screen> {
               .getEntityRelationService()
               .findInfoByTo(response.id!);
 
+          List<String> myList = [];
+          myList.add("firmwareVersion");
+
+          List<BaseAttributeKvEntry> deviceresponser;
+
+          deviceresponser = (await tbClient
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myList))
+              as List<BaseAttributeKvEntry>;
+
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString(
+              'firmwareVersion', deviceresponser.first.kv.getValue().toString());
+
           if (relationDetails.length.toString() == "0") {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
             var SelectedRegion = prefs.getString("SelectedRegion").toString();
             if (SelectedRegion != "null") {
               Navigator.of(context).pushReplacement(MaterialPageRoute(

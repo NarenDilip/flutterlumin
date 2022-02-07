@@ -43,6 +43,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
+  String FirmwareVersion = "0";
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
@@ -59,6 +60,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
+    FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     setState(() {
       DeviceName = DeviceName;
@@ -103,10 +105,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
               // addresss = addresss;
             } else {
               _locationSubscription?.cancel();
-
               accuvalue = accuracy.toString().split(".");
               addvalue = value.toString().split(",");
-
               callReplacementComplete(
                   context, imageFile, DeviceName, SelectedWard);
             }
@@ -122,8 +122,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -190,14 +190,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               ))),
                           onPressed: () {
                             // Utility.progressDialog(context);
-                            if(imageFile != null) {
+                            if (imageFile != null) {
                               pr.show();
                               _listenLocation();
-                            }else{
+                            } else {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                  "Invalid Image Capture, Please recapture and try installation",
+                                      "Invalid Image Capture, Please recapture and try installation",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -490,71 +490,69 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-            content: Container(
-              height: height/1.25,
-                child: Column(
-                    children: [
-                      Text(
-                        "LumiNode " + ' $DeviceName ',
-                        style: const TextStyle(
-                            fontSize: 20.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: thbDblue),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        width: 250,
-                        height: 350,
-                        child: imageFile != null
-                            ? Image.file(File(imageFile.path))
-                            : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                         addvalue[0].toString() +","+ addvalue[1].toString(),
-                        style: const TextStyle(
-                            fontSize: 16.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'With ' + accuvalue[0].toString() + "m Accuracy",
-                        style: const TextStyle(
-                            fontSize: 16.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Installed Successfully",
-                        style: const TextStyle(
-                            fontSize: 22.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(height: 10),
-                    ])));
-      }
-    );
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              content: Container(
+                  height: height / 1.25,
+                  child: Column(children: [
+                    Text(
+                      "LumiNode " + ' $DeviceName ',
+                      style: const TextStyle(
+                          fontSize: 20.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: thbDblue),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 250,
+                      height: 350,
+                      child: imageFile != null
+                          ? Image.file(File(imageFile.path))
+                          : Container(
+                              decoration: BoxDecoration(color: Colors.white),
+                              width: 200,
+                              height: 200,
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.grey[800],
+                              )),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      style: const TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'With ' + accuvalue[0].toString() + "m Accuracy",
+                      style: const TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Installed Successfully",
+                      style: const TextStyle(
+                          fontSize: 22.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                  ])));
+        });
   }
 
   void calltoast(String polenumber) {
@@ -602,7 +600,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         .findAddressesFromCoordinates(coordinates)) as List<Address>;
     return "${addresss.elementAt(1).addressLine}";
   }
-
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;

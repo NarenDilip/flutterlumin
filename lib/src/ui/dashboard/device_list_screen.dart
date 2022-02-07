@@ -108,8 +108,8 @@ class device_list_screen_state extends State<device_list_screen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
 
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -184,96 +184,91 @@ class device_list_screen_state extends State<device_list_screen> {
                       child: ListView(
                         padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                         children: <Widget>[
-                          const SizedBox(
-                            height: 5,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TextButton(
-                                  child: Text('$SelectedRegion',
-                                      style: const TextStyle(
-                                          fontSize: 18.0,
-                                          fontFamily: "Montserrat",
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white)),
-                                  style: ButtonStyle(
-                                      padding:
-                                          MaterialStateProperty.all<EdgeInsets>(
-                                              EdgeInsets.all(20)),
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              thbDblue),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                              Colors.black),
-                                      shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
-                                          RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                      ))),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (BuildContext context) =>
-                                                region_list_screen()));
-                                  }),
-                              SizedBox(width: 5),
-                              TextButton(
-                                  child: Text('$SelectedZone',
-                                      style: const TextStyle(
-                                          fontSize: 18.0,
-                                          fontFamily: "Montserrat",
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white)),
-                                  style: ButtonStyle(
-                                      padding:
-                                          MaterialStateProperty.all<EdgeInsets>(
-                                              EdgeInsets.all(20)),
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              thbDblue),
-                                      shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
-                                          RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                      ))),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (BuildContext context) =>
-                                                zone_li_screen()));
-                                  }),
-                              SizedBox(width: 5),
-                              TextButton(
-                                  child: Text('$SelectedWard',
-                                      style: const TextStyle(
-                                          fontSize: 18.0,
-                                          fontFamily: "Montserrat",
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white)),
-                                  style: ButtonStyle(
-                                      padding:
-                                          MaterialStateProperty.all<EdgeInsets>(
-                                              EdgeInsets.all(20)),
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              thbDblue),
-                                      shape: MaterialStateProperty.all<
-                                              RoundedRectangleBorder>(
-                                          RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                      ))),
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (BuildContext context) =>
-                                                ward_li_screen()));
-                                  })
-                            ],
+                          SizedBox(height: 5),
+                          Container(
+                            height: 55,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                TextButton(
+                                    child: Text('$SelectedRegion',
+                                        style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                                    style: ButtonStyle(
+                                        padding: MaterialStateProperty.all<
+                                            EdgeInsets>(EdgeInsets.all(15)),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(thbDblue),
+                                        foregroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                Colors.black),
+                                        shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0),
+                                        ))),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (BuildContext context) =>
+                                                  region_list_screen()));
+                                    }),
+                                SizedBox(width: 5),
+                                TextButton(
+                                    child: Text('$SelectedZone',
+                                        style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                                    style: ButtonStyle(
+                                        padding: MaterialStateProperty.all<
+                                            EdgeInsets>(EdgeInsets.all(15)),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(thbDblue),
+                                        shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0),
+                                        ))),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (BuildContext context) =>
+                                                  zone_li_screen()));
+                                    }),
+                                SizedBox(width: 5),
+                                TextButton(
+                                    child: Text('$SelectedWard',
+                                        style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                                    style: ButtonStyle(
+                                        padding: MaterialStateProperty.all<
+                                            EdgeInsets>(EdgeInsets.all(15)),
+                                        backgroundColor:
+                                            MaterialStateProperty.all(thbDblue),
+                                        shape: MaterialStateProperty.all<
+                                                RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(18.0),
+                                        ))),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (BuildContext context) =>
+                                                  ward_li_screen()));
+                                    })
+                              ],
+                            ),
                           ),
                           const SizedBox(
                             height: 30,
@@ -296,12 +291,15 @@ class device_list_screen_state extends State<device_list_screen> {
                                             child: Padding(
                                                 padding:
                                                     EdgeInsets.only(left: 12),
-                                                child: Text('Device Filters',
+                                                child: Text(
+                                                  'Device Filters',
                                                   style: TextStyle(
                                                       fontSize: 18.0,
                                                       fontFamily: "Montserrat",
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.white),))),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white),
+                                                ))),
                                         Expanded(
                                           child: Align(
                                             alignment: Alignment.centerRight,
@@ -352,16 +350,19 @@ class device_list_screen_state extends State<device_list_screen> {
                                               contentPadding:
                                                   EdgeInsets.fromLTRB(
                                                       10, 0, 0, 0),
-
                                               border: OutlineInputBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           70.0),
-                                                borderSide: BorderSide(color: thbDblue)),
-                                              enabledBorder: const OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: thbDblue)),
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                                                borderSide: BorderSide(color: thbDblue),
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20.0)),
+                                                borderSide:
+                                                    BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -429,10 +430,13 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
-                                              enabledBorder: const OutlineInputBorder(
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                                                borderSide: BorderSide(color: thbDblue),
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20.0)),
+                                                borderSide:
+                                                    BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -503,10 +507,13 @@ class device_list_screen_state extends State<device_list_screen> {
                                                           20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
-                                              enabledBorder: const OutlineInputBorder(
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                                                borderSide: BorderSide(color: thbDblue),
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20.0)),
+                                                borderSide:
+                                                    BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -596,7 +603,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         fontSize: 18.0,
                                                         fontFamily:
                                                             "Montserrat",
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         color: Colors.white)))),
                                         Expanded(
                                           child: Align(
@@ -684,7 +692,7 @@ class device_list_screen_state extends State<device_list_screen> {
           PageLink pageLink = new PageLink(100);
           pageLink.page = 0;
           pageLink.pageSize = 100;
-          pageLink.textSearch =searchnumber;
+          pageLink.textSearch = searchnumber;
 
           PageData<Device> devicelist_response;
           devicelist_response = (await tbClient
@@ -703,7 +711,7 @@ class device_list_screen_state extends State<device_list_screen> {
             setState(() {
               _foundUsers = _foundUsers;
             });
-          pr.hide();
+            pr.hide();
           } else {
             pr.hide();
             calltoast(searchNumber);
@@ -735,7 +743,7 @@ class device_list_screen_state extends State<device_list_screen> {
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-       pr.show();
+        pr.show();
         try {
           _relationdevices!.clear();
           _foundUsers!.clear();
@@ -812,7 +820,7 @@ class device_list_screen_state extends State<device_list_screen> {
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-       pr.show();
+        pr.show();
         try {
           _relationdevices!.clear();
           _foundUsers!.clear();
@@ -887,7 +895,7 @@ class device_list_screen_state extends State<device_list_screen> {
       String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-       pr.show();
+        pr.show();
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
@@ -933,7 +941,7 @@ class device_list_screen_state extends State<device_list_screen> {
       String deviceName, String deviceid, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-       pr.show();
+        pr.show();
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
@@ -973,19 +981,19 @@ class device_list_screen_state extends State<device_list_screen> {
                 prefs.setString('deviceName', deviceName);
 
                 if (relationDetails.length.toString() == "0") {
-
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  var SelectedRegion = prefs.getString("SelectedRegion").toString();
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  var SelectedRegion =
+                      prefs.getString("SelectedRegion").toString();
                   if (SelectedRegion != "null") {
-
                     List<String> myList = [];
                     myList.add("faulty");
                     List<AttributeKvEntry> responser;
 
                     responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<AttributeKvEntry>;
+                            .getAttributeService()
+                            .getAttributeKvEntries(response.id!, myList))
+                        as List<AttributeKvEntry>;
 
                     var faultyDetails = false;
                     if (responser.length == 0) {
@@ -994,22 +1002,22 @@ class device_list_screen_state extends State<device_list_screen> {
                       faultyDetails = responser.first.getValue();
                     }
 
-                    if(faultyDetails == false) {
+                    if (faultyDetails == false) {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              ilmcaminstall()));
-                    }else{
+                          builder: (BuildContext context) => ilmcaminstall()));
+                    } else {
                       pr.hide();
                       Scaffold.of(context).openEndDrawer();
                       Fluttertoast.showToast(
-                          msg: "Device Currently in Faulty State Unable to Install.",
+                          msg:
+                              "Device Currently in Faulty State Unable to Install.",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
                           backgroundColor: Colors.white,
                           textColor: Colors.black,
                           fontSize: 16.0);
-                      
+
                       // Navigator.of(context).pushNamed('/device_list_screen');
 
                     }
@@ -1017,7 +1025,8 @@ class device_list_screen_state extends State<device_list_screen> {
                     pr.hide();
                     Scaffold.of(context).openEndDrawer();
                     Fluttertoast.showToast(
-                        msg: "Kindly Choose your Region, Zone and Ward to Install",
+                        msg:
+                            "Kindly Choose your Region, Zone and Ward to Install",
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -1223,7 +1232,7 @@ Future<void> callLogoutoption(BuildContext context) async {
             var SelectedRegion = prefs.getString("SelectedRegion").toString();
             List<Region> details = await dbhelper.region_getDetails();
 
-            for(int i=0;i<details.length;i++){
+            for (int i = 0; i < details.length; i++) {
               dbhelper.delete(details.elementAt(i).id!.toInt());
             }
             dbhelper.zone_delete(SelectedRegion);

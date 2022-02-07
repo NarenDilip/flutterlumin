@@ -147,6 +147,7 @@ class device_count_screen_state extends State<device_count_screen> {
                           Widget>[
                         SizedBox(height: 5),
                         Container(
+                          height: 55,
                             child: Padding(
                                 padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                                 child: Row(
@@ -156,14 +157,14 @@ class device_count_screen_state extends State<device_count_screen> {
                                       TextButton(
                                           child: Text('$SelectedRegion',
                                               style: const TextStyle(
-                                                  fontSize: 18.0,
+                                                  fontSize: 16.0,
                                                   fontFamily: "Montserrat",
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white)),
                                           style: ButtonStyle(
                                               padding: MaterialStateProperty
                                                   .all<EdgeInsets>(
-                                                      EdgeInsets.all(20)),
+                                                      EdgeInsets.all(15)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
                                                       thbDblue),
@@ -187,14 +188,14 @@ class device_count_screen_state extends State<device_count_screen> {
                                       TextButton(
                                           child: Text('$SelectedZone',
                                               style: const TextStyle(
-                                                  fontSize: 18.0,
+                                                  fontSize: 16.0,
                                                   fontFamily: "Montserrat",
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white)),
                                           style: ButtonStyle(
                                               padding: MaterialStateProperty
                                                   .all<EdgeInsets>(
-                                                      EdgeInsets.all(20)),
+                                                      EdgeInsets.all(15)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
                                                       thbDblue),
@@ -215,14 +216,14 @@ class device_count_screen_state extends State<device_count_screen> {
                                       TextButton(
                                           child: Text('$SelectedWard',
                                               style: const TextStyle(
-                                                  fontSize: 18.0,
+                                                  fontSize: 16.0,
                                                   fontFamily: "Montserrat",
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white)),
                                           style: ButtonStyle(
                                               padding: MaterialStateProperty
                                                   .all<EdgeInsets>(
-                                                      EdgeInsets.all(20)),
+                                                      EdgeInsets.all(15)),
                                               backgroundColor:
                                                   MaterialStateProperty.all(
                                                       thbDblue),

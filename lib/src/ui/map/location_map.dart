@@ -240,8 +240,11 @@ class _LocationWidgetState extends State<LocationWidget> {
                               child: Container(
                                 alignment: Alignment.center,
                                   height: 65,
-                                  width: 200,
+                                  width: 150,
                                   child: Column(children: [
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
                                     Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
@@ -336,7 +339,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                           width: 60,
                                           height: 60,
                                           builder: (context) => const Icon(
-                                            Icons.pin_drop,
+                                            Icons.location_pin,
                                             size: 60,
                                             color: Colors.blueAccent,
                                           ),
@@ -350,7 +353,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                           width: 60,
                                           height: 60,
                                           builder: (context) => const Icon(
-                                            Icons.pin_drop,
+                                            Icons.location_pin,
                                             size: 60,
                                             color: Colors.red,
                                           ),
@@ -364,7 +367,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                           width: 60,
                                           height: 60,
                                           builder: (context) => const Icon(
-                                            Icons.pin_drop,
+                                            Icons.location_pin,
                                             size: 60,
                                             color: Colors.green,
                                           ),
@@ -378,7 +381,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                           width: 60,
                                           height: 60,
                                           builder: (context) => const Icon(
-                                            Icons.pin_drop,
+                                            Icons.location_pin,
                                             size: 60,
                                             color: Colors.purple,
                                           ),
@@ -416,7 +419,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                               width: 60,
                               height: 60,
                               builder: (context) => Icon(
-                                Icons.pin_drop,
+                                Icons.location_pin,
                                 size: 60,
                                 color: Colors.cyan,
                               ),

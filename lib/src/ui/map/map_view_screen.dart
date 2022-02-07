@@ -142,6 +142,7 @@ class map_view_screen_state extends State<map_view_screen> {
                               children: <Widget>[
                                 SizedBox(height: 5),
                                 Container(
+                                  height: 55,
                                     child: Padding(
                                         padding: EdgeInsets.fromLTRB(5, 5, 5,
                                             0),
@@ -152,7 +153,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                               TextButton(
                                                   child: Text('$SelectedRegion',
                                                       style: const TextStyle(
-                                                          fontSize: 18.0,
+                                                          fontSize: 16.0,
                                                           fontFamily: "Montserrat",
                                                           fontWeight: FontWeight
                                                               .bold,
@@ -160,7 +161,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                   style: ButtonStyle(
                                                       padding: MaterialStateProperty
                                                           .all<EdgeInsets>(
-                                                          EdgeInsets.all(20)),
+                                                          EdgeInsets.all(15)),
                                                       backgroundColor:
                                                       MaterialStateProperty.all(
                                                           thbDblue),
@@ -188,7 +189,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                               TextButton(
                                                   child: Text('$SelectedZone',
                                                       style: const TextStyle(
-                                                          fontSize: 18.0,
+                                                          fontSize: 16.0,
                                                           fontFamily: "Montserrat",
                                                           fontWeight: FontWeight
                                                               .bold,
@@ -196,7 +197,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                   style: ButtonStyle(
                                                       padding: MaterialStateProperty
                                                           .all<EdgeInsets>(
-                                                          EdgeInsets.all(20)),
+                                                          EdgeInsets.all(15)),
                                                       backgroundColor:
                                                       MaterialStateProperty.all(
                                                           thbDblue),
@@ -220,7 +221,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                               TextButton(
                                                   child: Text('$SelectedWard',
                                                       style: const TextStyle(
-                                                          fontSize: 18.0,
+                                                          fontSize: 16.0,
                                                           fontFamily: "Montserrat",
                                                           fontWeight: FontWeight
                                                               .bold,
@@ -228,7 +229,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                   style: ButtonStyle(
                                                       padding: MaterialStateProperty
                                                           .all<EdgeInsets>(
-                                                          EdgeInsets.all(20)),
+                                                          EdgeInsets.all(15)),
                                                       backgroundColor:
                                                       MaterialStateProperty.all(
                                                           thbDblue),
