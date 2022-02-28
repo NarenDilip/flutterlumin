@@ -20,6 +20,7 @@ import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -243,89 +244,120 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    TextButton(
-                                        child: Text('$SelectedRegion',
-                                            style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white)),
-                                        style: ButtonStyle(
-                                            padding: MaterialStateProperty.all<
-                                                EdgeInsets>(EdgeInsets.all(20)),
-                                            backgroundColor:
-                                                MaterialStateProperty.all(
-                                                    thbDblue),
-                                            foregroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(Colors.black),
-                                            shape: MaterialStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ))),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (BuildContext
-                                                          context) =>
-                                                      region_list_screen()));
-                                        }),
-                                    SizedBox(width: 5),
-                                    TextButton(
-                                        child: Text('$SelectedZone',
-                                            style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white)),
-                                        style: ButtonStyle(
-                                            padding: MaterialStateProperty.all<
-                                                EdgeInsets>(EdgeInsets.all(20)),
-                                            backgroundColor:
-                                                MaterialStateProperty.all(
-                                                    thbDblue),
-                                            shape: MaterialStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ))),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          zone_li_screen()));
-                                        }),
-                                    SizedBox(width: 5),
-                                    TextButton(
-                                        child: Text('$SelectedWard',
-                                            style: const TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white)),
-                                        style: ButtonStyle(
-                                            padding: MaterialStateProperty.all<
-                                                EdgeInsets>(EdgeInsets.all(20)),
-                                            backgroundColor:
-                                                MaterialStateProperty.all(
-                                                    thbDblue),
-                                            shape: MaterialStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(18.0),
-                                            ))),
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder:
-                                                      (BuildContext context) =>
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Padding(
+                                        padding:
+                                        EdgeInsets.only(left: 5.0),
+                                        child: Point(
+                                          triangleHeight: 25.0,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (BuildContext
+                                                      context) =>
                                                           ward_li_screen()));
-                                        })
+                                              setState(() {});
+                                            },
+                                            child: Container(
+                                              color: thbDblue,
+                                              width: 120.0,
+                                              height: 50.0,
+                                              child: Center(
+                                                child: Text(
+                                                    '$SelectedRegion',
+                                                    style: const TextStyle(
+                                                        fontSize: 16.0,
+                                                        fontFamily:
+                                                        "Montserrat",
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                        color: Colors
+                                                            .white)),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Padding(
+                                        padding:
+                                        EdgeInsets.only(left: 5.0),
+                                        child: Point(
+                                          triangleHeight: 25.0,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (BuildContext
+                                                      context) =>
+                                                          zone_li_screen()));
+                                              setState(() {});
+                                            },
+                                            child: Container(
+                                              color: thbDblue,
+                                              width: 120.0,
+                                              height: 50.0,
+                                              child: Center(
+                                                child: Text(
+                                                    '$SelectedZone',
+                                                    style: const TextStyle(
+                                                        fontSize: 16.0,
+                                                        fontFamily:
+                                                        "Montserrat",
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                        color: Colors
+                                                            .white)),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Padding(
+                                        padding:
+                                        EdgeInsets.only(left: 5.0),
+                                        child: Point(
+                                          triangleHeight: 25.0,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (BuildContext
+                                                      context) =>
+                                                          ward_li_screen()));
+                                              setState(() {});
+                                            },
+                                            child: Container(
+                                              color: thbDblue,
+                                              width: 120.0,
+                                              height: 50.0,
+                                              child: Center(
+                                                child: Text(
+                                                    '$SelectedWard',
+                                                    style: const TextStyle(
+                                                        fontSize: 16.0,
+                                                        fontFamily:
+                                                        "Montserrat",
+                                                        fontWeight:
+                                                        FontWeight
+                                                            .bold,
+                                                        color: Colors
+                                                            .white)),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ]),
                             )),
                             const SizedBox(
