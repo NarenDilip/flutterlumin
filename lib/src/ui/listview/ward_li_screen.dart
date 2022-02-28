@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 import '../../thingsboard/error/thingsboard_error.dart';
+import '../../thingsboard/model/model.dart';
 import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
 class ward_li_screen extends StatefulWidget {
@@ -39,6 +40,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
   List<AssetId>? AssetDevices = [];
   List<DeviceId>? activeDevice = [];
   List<DeviceId>? nonactiveDevices = [];
+  List<DeviceId>? ncDevices = [];
   String selectedZone = "0";
   String selectedWard = "0";
   late ProgressDialog pr;
@@ -173,38 +175,51 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   List<String> myList = [];
                   myList.add("active");
 
-                  List<AttributeKvEntry> responser;
-                  responser = await tbClient
-                      .getAttributeService()
-                      .getAttributeKvEntries(
-                          relatedDevices!.elementAt(k), myList);
+                  Device data_response;
+                  data_response = (await tbClient
+                          .getDeviceService()
+                          .getDevice(relatedDevices!.elementAt(k).id.toString()))
+                      as Device;
 
-                  if (responser != null) {
-                    if (responser.first.getValue().toString() == "true") {
-                      activeDevice!.add(relatedDevices!.elementAt(k));
-                    } else if (responser.first.getValue().toString() ==
-                        "false") {
-                      nonactiveDevices!.add(relatedDevices!.elementAt(k));
+                  if (data_response.type == "lumiNode") {
+                    List<AttributeKvEntry> responser;
+                    responser = await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(
+                            relatedDevices!.elementAt(k), myList);
+
+                    if (responser != null) {
+                      if (responser.first.getValue().toString() == "true") {
+                        activeDevice!.add(relatedDevices!.elementAt(k));
+                      } else if (responser.first.getValue().toString() ==
+                          "false") {
+                        nonactiveDevices!.add(relatedDevices!.elementAt(k));
+                      }else{
+                        ncDevices!.add(relatedDevices!.elementAt(k));
+                      }
                     }
+
+                    var totalval =
+                        activeDevice!.length + nonactiveDevices!.length + ncDevices!.length;
+                    var parttotalval =
+                        activeDevice!.length + nonactiveDevices!.length ;
+                    var ncdevices = parttotalval - totalval;
+                    var noncomdevice = "";
+                    if (ncdevices.toString().contains("-")) {
+                      noncomdevice = ncdevices.toString().replaceAll("-", "");
+                    } else {
+                      noncomdevice = ncdevices.toString();
+                    }
+
+                    sharedPreferences.setString(
+                        'totalCount', totalval.toString());
+                    sharedPreferences.setString(
+                        'activeCount', activeDevice!.length.toString());
+                    sharedPreferences.setString(
+                        'nonactiveCount', nonactiveDevices!.length.toString());
+                    sharedPreferences.setString('ncCount', noncomdevice);
                   }
                 }
-
-                var totalval = activeDevice!.length + nonactiveDevices!.length;
-                var ncdevices = relatedDevices!.length - totalval;
-                var noncomdevice = "";
-                if (ncdevices.toString().contains("-")) {
-                  noncomdevice = ncdevices.toString().replaceAll("-", "");
-                } else {
-                  noncomdevice = ncdevices.toString();
-                }
-
-                sharedPreferences.setString(
-                    'totalCount', relatedDevices!.length.toString());
-                sharedPreferences.setString(
-                    'activeCount', activeDevice!.length.toString());
-                sharedPreferences.setString(
-                    'nonactiveCount', nonactiveDevices!.length.toString());
-                sharedPreferences.setString('ncCount', noncomdevice);
 
                 // Navigator.pop(context);
                 pr.hide();

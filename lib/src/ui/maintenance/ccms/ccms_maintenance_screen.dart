@@ -12,6 +12,8 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/replace_ccms_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/replacement_ccms_screen.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/replacement_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
@@ -51,7 +53,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   String faultyStatus = "0";
   String timevalue = "0";
   String location = "0";
-  String version = "0";
+
+  // String version = "0";
   late ProgressDialog pr;
 
   Future<Null> getSharedPrefs() async {
@@ -64,9 +67,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
     location = prefs.getString("location").toString();
-    version = prefs.getString("version").toString();
+    // version = prefs.getString("version").toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
-
     prefs.setString('Maintenance', "Yes");
 
     setState(() {
@@ -78,7 +80,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       SelectedWard = SelectedWard;
       timevalue = timevalue;
       location = location;
-      version = version;
+      // version = version;
       faultyStatus = faultyStatus;
 
       date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
@@ -521,7 +523,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                       ),
                                       onTap: () {
                                         if ('$DeviceStatus' != "false") {
-                                          getLiveRPCCall(version, context);
+                                          getLiveRPCCall(context);
                                         } else {
                                           Fluttertoast.showToast(
                                               msg: "Device in Offline Mode",
@@ -556,30 +558,40 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                   fontFamily: "Montserrat")),
                                         ),
                                       ),
-                                      onTap: () {},
+                                      onTap: () {
+                                        if ('$DeviceStatus' != "false") {
+                                          callMCBTrip(context);
+                                        } else {
+                                          Fluttertoast.showToast(
+                                              msg: "Device in Offline Mode",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              gravity: ToastGravity.BOTTOM,
+                                              timeInSecForIosWeb: 1);
+                                        }
+                                      },
                                     )),
                                 const SizedBox(
                                   width: 15,
                                 ),
-                                Expanded(
-                                    flex: 2,
-                                    child: InkWell(
-                                      child: Container(
-                                        height: 90,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.lightGreen,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0))),
-                                        child: const Center(
-                                          child: Text('MCB CLEAR',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontFamily: "Montserrat")),
-                                        ),
-                                      ),
-                                      onTap: () {},
-                                    )),
+                                // Expanded(
+                                //     flex: 2,
+                                //     child: InkWell(
+                                //       child: Container(
+                                //         height: 90,
+                                //         decoration: const BoxDecoration(
+                                //             color: Colors.lightGreen,
+                                //             borderRadius: BorderRadius.all(
+                                //                 Radius.circular(50.0))),
+                                //         child: const Center(
+                                //           child: Text('MCB CLEAR',
+                                //               style: TextStyle(
+                                //                   fontSize: 18,
+                                //                   color: Colors.white,
+                                //                   fontFamily: "Montserrat")),
+                                //         ),
+                                //       ),
+                                //       onTap: () {},
+                                //     )),
                               ],
                             ),
                             const SizedBox(
@@ -620,7 +632,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                           "Montserrat")),
                                             ),
                                             onTap: () {
-                                              replaceShortingCap(context);
+                                              removeCCMS(context);
                                             },
                                           )),
                                       const SizedBox(
@@ -647,7 +659,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                             "Montserrat")),
                                               ),
                                               onTap: () {
-                                                replaceILM(context);
+                                                replaceCCMS(context);
                                               })),
                                     ],
                                   ),
@@ -841,7 +853,7 @@ Future<void> callONRPCCall(context) async {
         // type: String
         final jsonData = {
           "method": "ctrl",
-          "params": {"lamp": 1, "mode": 2}
+          "params": {"lamp": 1}
         };
         // final parsedJson = jsonDecode(jsonData);
 
@@ -916,7 +928,7 @@ Future<void> callOFFRPCCall(context) async {
         // type: String
         final jsonData = {
           "method": "ctrl",
-          "params": {"lamp": 0, "mode": 2}
+          "params": {"lamp": 0}
         };
         // final parsedJson = jsonDecode(jsonData);
 
@@ -957,7 +969,7 @@ Future<void> callOFFRPCCall(context) async {
   });
 }
 
-Future<void> getLiveRPCCall(version, context) async {
+Future<void> callMCBTrip(context) async {
   Utility.isConnected().then((value) async {
     if (value) {
       late ProgressDialog pr;
@@ -987,14 +999,86 @@ Future<void> getLiveRPCCall(version, context) async {
         // type: String
         final jsonData;
 
-        if (version == "0") {
-          jsonData = {"method": "get", "params": 0};
+        jsonData = {"method": "clr", "params": "8"};
+
+        // final parsedJson = jsonDecode(jsonData);
+        var response = await tbClient
+            .getDeviceService()
+            .handleOneWayDeviceRPCRequest(deviceID, jsonData)
+            .timeout(const Duration(minutes: 5));
+
+        final jsonDatat;
+
+        jsonDatat = {
+          "method": "set",
+          "params": {'rostat': 0, 'yostat': 0, 'bostat': 0}
+        };
+
+        var responsee = await tbClient
+            .getDeviceService()
+            .handleOneWayDeviceRPCRequest(deviceID, jsonDatat)
+            .timeout(const Duration(minutes: 5));
+
+        pr.hide();
+        // if(response.) {
+        //   calltoast("Device ON Sucessfully");
+        //   Navigator.pop(context);
+        // }else {
+        //   calltoast("Unable to Process, Please try again");
+        //   Navigator.pop(context);
+        // }
+      } catch (e) {
+        pr.hide();
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+          if (status == true) {
+            getLiveRPCCall(context);
+          }
         } else {
-          jsonData = {
-            "method": "get",
-            "params": {"rpcType": 2, "value": 0}
-          };
+          calltoast("Unable to Process");
         }
+      }
+    } else {
+      calltoast(no_network);
+    }
+  });
+}
+
+Future<void> getLiveRPCCall(context) async {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      late ProgressDialog pr;
+      pr = ProgressDialog(context,
+          type: ProgressDialogType.Normal, isDismissible: false);
+      pr.style(
+        message: 'Please wait ..',
+        borderRadius: 20.0,
+        backgroundColor: Colors.lightBlueAccent,
+        elevation: 10.0,
+        messageTextStyle: const TextStyle(
+            color: Colors.white,
+            fontFamily: "Montserrat",
+            fontSize: 19.0,
+            fontWeight: FontWeight.w600),
+        progressWidget: const CircularProgressIndicator(
+            backgroundColor: Colors.lightBlueAccent,
+            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+            strokeWidth: 3.0),
+      );
+      pr.show();
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String deviceID = prefs.getString('deviceId').toString();
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+        // type: String
+        final jsonData;
+
+        jsonData = {
+          "method": "get",
+          "params": {"value": 0}
+        };
 
         // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
@@ -1015,7 +1099,7 @@ Future<void> getLiveRPCCall(version, context) async {
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
-            getLiveRPCCall(version, context);
+            getLiveRPCCall(context);
           }
         } else {
           calltoast("Unable to Process");
@@ -1027,7 +1111,7 @@ Future<void> getLiveRPCCall(version, context) async {
   });
 }
 
-Future<void> replaceILM(context) async {
+Future<void> replaceCCMS(context) async {
   // Navigator.pop(context);
   // Navigator.of(context).pushReplacement(
   //     MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
@@ -1069,7 +1153,7 @@ Future<void> replaceILM(context) async {
             pr.hide();
             // showActionAlertDialog(context,OlddeviceName,value);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => replaceilm()));
+                builder: (BuildContext context) => replaceccms()));
           } else {
             pr.hide();
             calltoast("Duplicate QR Code");
@@ -1148,7 +1232,7 @@ Future<Device?> ilm_main_fetchDeviceDetails(
   });
 }
 
-Future<void> replaceShortingCap(context) async {
+Future<void> removeCCMS(context) async {
   // SharedPreferences prefs = await SharedPreferences.getInstance();
   // String deviceID = prefs.getString('deviceId').toString();
   // String deviceName = prefs.getString('deviceName').toString();
@@ -1229,7 +1313,7 @@ Future<void> replaceShortingCap(context) async {
   //
   // Navigator.pop(context);
   Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+      MaterialPageRoute(builder: (BuildContext context) => replacementccms()));
   //             } else {
   //               calltoast("Device is not Found");
   //               Navigator.pop(context);

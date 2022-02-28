@@ -29,14 +29,14 @@ import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 
-class ccmscaminstall extends StatefulWidget {
-  const ccmscaminstall({Key? key}) : super(key: key);
+class gwcaminstall extends StatefulWidget {
+  const gwcaminstall({Key? key}) : super(key: key);
 
   @override
-  ccmscaminstallState createState() => ccmscaminstallState();
+  gwcaminstallState createState() => gwcaminstallState();
 }
 
-class ccmscaminstallState extends State<ccmscaminstall> {
+class gwcaminstallState extends State<gwcaminstall> {
   String DeviceName = "0";
   var imageFile;
   var accuvalue;
@@ -44,7 +44,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
-  String SelectedZone = "0";
   String FirmwareVersion = "0";
   double lattitude = 0;
   double longitude = 0;
@@ -62,13 +61,11 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
-    SelectedZone = prefs.getString("SelectedZone").toString();
     FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     setState(() {
       DeviceName = DeviceName;
       SelectedWard = SelectedWard;
-      SelectedZone = SelectedZone;
     });
   }
 
@@ -85,55 +82,46 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   Future<void> _listenLocation() async {
     _locationSubscription =
         locations.onLocationChanged.handleError((dynamic err) {
-          if (err is PlatformException) {
-            setState(() {
-              _error = err.code;
-            });
-          }
-          _locationSubscription?.cancel();
+      if (err is PlatformException) {
+        setState(() {
+          _error = err.code;
+        });
+      }
+      _locationSubscription?.cancel();
+      setState(() {
+        _locationSubscription = null;
+      });
+    }).listen((LocationData currentLocation) {
+      setState(() {
+        _error = null;
+        _location = currentLocation;
+        _getAddress(_location!.latitude, _location!.longitude).then((value) {
           setState(() {
-            _locationSubscription = null;
-          });
-        }).listen((LocationData currentLocation) {
-          setState(() {
-            _error = null;
-            _location = currentLocation;
-            _getAddress(_location!.latitude, _location!.longitude).then((
-                value) {
-              setState(() {
-                address = value;
-                if (_latt!.length <= 5) {
-                  _latt!.add(_location!.latitude!);
-                  lattitude = _location!.latitude!;
-                  longitude = _location!.longitude!;
-                  accuracy = _location!.accuracy!;
-                  // addresss = addresss;
-                } else {
-                  _locationSubscription?.cancel();
-                  accuvalue = accuracy.toString().split(".");
-                  addvalue = value.toString().split(",");
-                  callReplacementComplete(
-                      context, imageFile, DeviceName, SelectedWard);
-                }
-              });
-            });
+            address = value;
+            if (_latt!.length <= 5) {
+              _latt!.add(_location!.latitude!);
+              lattitude = _location!.latitude!;
+              longitude = _location!.longitude!;
+              accuracy = _location!.accuracy!;
+              // addresss = addresss;
+            } else {
+              _locationSubscription?.cancel();
+              accuvalue = accuracy.toString().split(".");
+              addvalue = value.toString().split(",");
+              callReplacementComplete(
+                  context, imageFile, DeviceName, SelectedWard);
+            }
           });
         });
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery
-        .of(context)
-        .size;
-    double width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    double height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    Size size = MediaQuery.of(context).size;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
 
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
@@ -173,13 +161,13 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                        decoration: BoxDecoration(color: Colors.white),
-                        width: 200,
-                        height: 200,
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.grey[800],
-                        )),
+                            decoration: BoxDecoration(color: Colors.white),
+                            width: 200,
+                            height: 200,
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.grey[800],
+                            )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -195,12 +183,12 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                              MaterialStateProperty.all(Colors.green),
+                                  MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ))),
+                                borderRadius: BorderRadius.circular(25.0),
+                              ))),
                           onPressed: () {
                             // Utility.progressDialog(context);
                             if (imageFile != null) {
@@ -210,7 +198,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                  "Invalid Image Capture, Please recapture and try installation",
+                                      "Invalid Image Capture, Please recapture and try installation",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -234,8 +222,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     });
   }
 
-  Future<void> callReplacementComplete(context, imageFile, DeviceName,
-      SelectedWard) async {
+  Future<void> callReplacementComplete(
+      context, imageFile, DeviceName, SelectedWard) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
     String SelectedRegion = prefs.getString('SelectedRegion').toString();
@@ -246,9 +234,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     var DevicemoveFolderName = "";
     var versionCompatability = false;
 
-    Utility
-        .isConnected()
-        .then((value) async {
+    Utility.isConnected().then((value) async {
       if (value) {
         // Utility.progressDialog(context);
         pr.show();
@@ -266,14 +252,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
               DeviceCredentials deviceCredentials = await tbClient
                   .getDeviceService()
                   .getDeviceCredentialsByDeviceId(
-                  response.id!.id.toString()) as DeviceCredentials;
+                      response.id!.id.toString()) as DeviceCredentials;
 
               if (deviceCredentials.credentialsId.length == 15) {
                 DBHelper dbHelper = DBHelper();
                 var regionid;
                 List<Region> regiondetails = await dbHelper
-                    .region_name_regionbasedDetails(SelectedRegion)
-                as List<Region>;
+                        .region_name_regionbasedDetails(SelectedRegion)
+                    as List<Region>;
                 if (regiondetails.length != "0") {
                   regionid = regiondetails.first.regionid;
                 }
@@ -296,9 +282,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                   List<AttributeKvEntry> faultresponser;
 
                   faultresponser = (await tbClient
-                      .getAttributeService()
-                      .getFirmAttributeKvEntries(regionid, myfirmList))
-                  as List<AttributeKvEntry>;
+                          .getAttributeService()
+                          .getFirmAttributeKvEntries(regionid, myfirmList))
+                      as List<AttributeKvEntry>;
 
                   //
                   // List<TsKvEntry> faultresponser;
@@ -309,7 +295,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
 
                   if (faultresponser.length != 0) {
                     var firmwaredetails =
-                    faultresponser.first.getValue().toString();
+                        faultresponser.first.getValue().toString();
                     final decoded = jsonDecode(firmwaredetails) as Map;
                     var firmware_versions = decoded['firmware_version'];
 
@@ -384,7 +370,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         var saveAttributes = await tbClient
                             .getAttributeService()
                             .saveDeviceAttributes(
-                            response.id!.id!, "SERVER_SCOPE", data);
+                                response.id!.id!, "SERVER_SCOPE", data);
 
                         List<EntityGroupId> currentdeviceresponse;
                         currentdeviceresponse = await tbClient
@@ -398,14 +384,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
 
                           if (firstdetails!.name.toString() != "All") {
                             DevicecurrentFolderName =
-                            currentdeviceresponse.first.id!;
+                                currentdeviceresponse.first.id!;
                           }
                           var seconddetails = await tbClient
                               .getEntityGroupService()
                               .getEntityGroup(currentdeviceresponse.last.id!);
                           if (seconddetails!.name.toString() != "All") {
                             DevicecurrentFolderName =
-                            currentdeviceresponse.last.id!;
+                                currentdeviceresponse.last.id!;
                           }
 
                           List<EntityGroupInfo> entitygroups;
@@ -415,60 +401,55 @@ class ccmscaminstallState extends State<ccmscaminstall> {
 
                           if (entitygroups != null) {
                             for (int i = 0; i < entitygroups.length; i++) {
-                              if (entitygroups
-                                  .elementAt(i)
-                                  .name ==
-                                  "CCMS- " + SelectedZone) {
+                              if (entitygroups.elementAt(i).name ==
+                                  ILMDeviceInstallationFolder) {
                                 DevicemoveFolderName = entitygroups
                                     .elementAt(i)
                                     .id!
                                     .id!
                                     .toString();
-                              } else {
-                                EntityGroup entityGroup = EntityGroup(
-                                    "CCMS- " + SelectedZone, EntityType.DEVICE);
-                                EntityGroupInfo groupCreation = (await tbClient
-                                    .getEntityGroupService()
-                                    .saveEntityGroup(
-                                    entityGroup));
-                                DevicemoveFolderName =
-                                    groupCreation.id!.id.toString();
                               }
                             }
 
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
+                            List<String> myList = [];
+                            myList.add(response.id!.id!);
 
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                              DevicecurrentFolderName, myList);
+                            var remove_response = tbClient
+                                .getEntityGroupService()
+                                .removeEntitiesFromEntityGroup(
+                                    DevicecurrentFolderName, myList);
 
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                              DevicemoveFolderName, myList);
+                            var add_response = tbClient
+                                .getEntityGroupService()
+                                .addEntitiesToEntityGroup(
+                                    DevicemoveFolderName, myList);
 
-                          // Need to add with Region Folder, Zone Folder and
-                          // Ward Folder as device verification, Need to update
+                            final bytes =
+                                File(imageFile!.path).readAsBytesSync();
+                            String img64 = base64Encode(bytes);
 
-                          final bytes =
-                          File(imageFile!.path).readAsBytesSync();
-                          String img64 = base64Encode(bytes);
-
-                          postRequest(context, img64, DeviceName);
-                          pr.hide();
+                            postRequest(context, img64, DeviceName);
+                            pr.hide();
+                          } else {
+                            // Navigator.pop(context);
+                            pr.hide();
+                            Fluttertoast.showToast(
+                                msg: "Unable to Find Folder Details",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.white,
+                                textColor: Colors.black,
+                                fontSize: 16.0);
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        dashboard_screen()));
+                          }
                         } else {
                           // Navigator.pop(context);
                           pr.hide();
-                          Fluttertoast.showToast(
-                              msg: "Unable to Find Folder Details",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.white,
-                              textColor: Colors.black,
-                              fontSize: 16.0);
+                          calltoast(deviceName);
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
@@ -478,41 +459,44 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         // Navigator.pop(context);
                         pr.hide();
                         calltoast(deviceName);
-                        Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    dashboard_screen()));
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                dashboard_screen()));
                       }
                     } else {
-                      // Navigator.pop(context);
                       pr.hide();
-                      calltoast(deviceName);
+                      Fluttertoast.showToast(
+                          msg:
+                          "Selected Device is not authorized to install in this Region",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.white,
+                          textColor: Colors.black,
+                          fontSize: 16.0);
+
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              dashboard_screen()));
+                          builder: (BuildContext context) => dashboard_screen()));
                     }
                   } else {
+                    // Navigator.pop(context);
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
-                        "Selected Device is not authorized to install in this Region",
+                            "Please wait to load lattitude, longitude Details to Install.",
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
                         backgroundColor: Colors.white,
                         textColor: Colors.black,
                         fontSize: 16.0);
-
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            dashboard_screen()));
                   }
                 } else {
                   // Navigator.pop(context);
                   pr.hide();
                   Fluttertoast.showToast(
                       msg:
-                      "Please wait to load lattitude, longitude Details to Install.",
+                          "Kindly Select the Region, Zone and Ward Details to Install.",
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.BOTTOM,
                       timeInSecForIosWeb: 1,
@@ -520,12 +504,26 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       textColor: Colors.black,
                       fontSize: 16.0);
                 }
+                // } else {
+                //   // Navigator.pop(context);
+                //   pr.hide();
+                //   Fluttertoast.showToast(
+                //       msg:
+                //       "Device Currently in Faulty State Unable to Install.",
+                //       toastLength: Toast.LENGTH_SHORT,
+                //       gravity: ToastGravity.BOTTOM,
+                //       timeInSecForIosWeb: 1,
+                //       backgroundColor: Colors.white,
+                //       textColor: Colors.black,
+                //       fontSize: 16.0);
+                //   Navigator.of(context).pushReplacement(MaterialPageRoute(
+                //       builder: (BuildContext context) => dashboard_screen()));
+                // }
               } else {
                 // Navigator.pop(context);
                 pr.hide();
                 Fluttertoast.showToast(
-                    msg:
-                    "Kindly Select the Region, Zone and Ward Details to Install.",
+                    msg: "Invalid Device Credentials",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -533,300 +531,264 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     textColor: Colors.black,
                     fontSize: 16.0);
               }
-              // } else {
-              //   // Navigator.pop(context);
-              //   pr.hide();
-              //   Fluttertoast.showToast(
-              //       msg:
-              //       "Device Currently in Faulty State Unable to Install.",
-              //       toastLength: Toast.LENGTH_SHORT,
-              //       gravity: ToastGravity.BOTTOM,
-              //       timeInSecForIosWeb: 1,
-              //       backgroundColor: Colors.white,
-              //       textColor: Colors.black,
-              //       fontSize: 16.0);
-              //   Navigator.of(context).pushReplacement(MaterialPageRoute(
-              //       builder: (BuildContext context) => dashboard_screen()));
-              // }
             } else {
               // Navigator.pop(context);
               pr.hide();
-              Fluttertoast.showToast(
-                  msg: "Invalid Device Credentials",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
+              calltoast(deviceName);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
             // Navigator.pop(context);
             pr.hide();
+            Fluttertoast.showToast(
+                msg:
+                    "Invalid Image Capture, Please recapture and try installation",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+        } catch (e) {
+          // Navigator.pop(context);
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              callReplacementComplete(
+                  context, imageFile, DeviceName, SelectedWard);
+            }
+          } else {
             calltoast(deviceName);
+            // Navigator.pop(context);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen()));
           }
-        } else {
-        // Navigator.pop(context);
-        pr.hide();
-        Fluttertoast.showToast(
-            msg:
-            "Invalid Image Capture, Please recapture and try installation",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-      }
-    } catch (e) {
-      // Navigator.pop(context);
-      pr.hide();
-      var message = toThingsboardError(e, context);
-      if (message == session_expired) {
-      var status = loginThingsboard.callThingsboardLogin(context);
-      if (status == true) {
-      callReplacementComplete(
-      context, imageFile, DeviceName, SelectedWard);
-      }
-      } else {
-      calltoast(deviceName);
-      // Navigator.pop(context);
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (BuildContext context) => dashboard_screen()));
-      }
-      }
-    }
         }
-
-  );
-}
-
-void showMyDialog(BuildContext context) {
-  double width = MediaQuery
-      .of(context)
-      .size
-      .width;
-  double height = MediaQuery
-      .of(context)
-      .size
-      .height;
-  showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-            content: Container(
-                height: height / 1.25,
-                child: Column(children: [
-                  Text(
-                    "LumiNode " + ' $DeviceName ',
-                    style: const TextStyle(
-                        fontSize: 20.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: thbDblue),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 10),
-                  Container(
-                    width: 250,
-                    height: 350,
-                    child: imageFile != null
-                        ? Image.file(File(imageFile.path))
-                        : Container(
-                        decoration: BoxDecoration(color: Colors.white),
-                        width: 200,
-                        height: 200,
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.grey[800],
-                        )),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    addvalue[0].toString() + "," + addvalue[1].toString(),
-                    style: const TextStyle(
-                        fontSize: 16.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                    textAlign: TextAlign.left,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'With ' + accuvalue[0].toString() + "m Accuracy",
-                    style: const TextStyle(
-                        fontSize: 16.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                    textAlign: TextAlign.left,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Installed Successfully",
-                    style: const TextStyle(
-                        fontSize: 22.0,
-                        fontFamily: "Montserrat",
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green),
-                    textAlign: TextAlign.left,
-                  ),
-                  SizedBox(height: 10),
-                ])));
-      });
-}
-
-void calltoast(String polenumber) {
-  Fluttertoast.showToast(
-      msg: device_toast_msg + polenumber + device_toast_notfound,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.white,
-      textColor: Colors.black,
-      fontSize: 16.0);
-}
-
-Future<LocationData?> _getLocation() async {
-  Location location = Location();
-  LocationData _locationData;
-  bool _serviceEnabled;
-  PermissionStatus _permissionGranted;
-
-  _serviceEnabled = await location.serviceEnabled();
-  if (!_serviceEnabled) {
-    _serviceEnabled = await location.requestService();
-    if (!_serviceEnabled) {
-      return null;
-    }
+      }
+    });
   }
 
-  _permissionGranted = await location.hasPermission();
-  if (_permissionGranted == PermissionStatus.denied) {
-    _permissionGranted = await location.requestPermission();
-    if (_permissionGranted != PermissionStatus.granted) {
-      return null;
-    }
+  void showMyDialog(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              content: Container(
+                  height: height / 1.25,
+                  child: Column(children: [
+                    Text(
+                      "LumiNode " + ' $DeviceName ',
+                      style: const TextStyle(
+                          fontSize: 20.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: thbDblue),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 250,
+                      height: 350,
+                      child: imageFile != null
+                          ? Image.file(File(imageFile.path))
+                          : Container(
+                              decoration: BoxDecoration(color: Colors.white),
+                              width: 200,
+                              height: 200,
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.grey[800],
+                              )),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      style: const TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'With ' + accuvalue[0].toString() + "m Accuracy",
+                      style: const TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Installed Successfully",
+                      style: const TextStyle(
+                          fontSize: 22.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                  ])));
+        });
   }
 
-  _locationData = await location.getLocation();
-
-  return _locationData;
-}
-
-Future<String> _getAddress(double? lat, double? lang) async {
-  if (lat == null || lang == null) return "";
-  final coordinates = new Coordinates(lat, lang);
-  List<Address> addresss = (await Geocoder.local
-      .findAddressesFromCoordinates(coordinates)) as List<Address>;
-  return "${addresss
-      .elementAt(1)
-      .addressLine}";
-}
-
-Future<http.Response> postRequest(context, imageFile, DeviceName) async {
-  var response;
-  try {
-    Uri myUri = Uri.parse(localAPICall);
-
-    Map data = {'img': imageFile, 'name': DeviceName};
-    var body = json.encode(data);
-
-    response = await http.post(myUri,
-        headers: {"Content-Type": "application/json"}, body: body);
-    print("${response.statusCode}");
-
-    if (response.statusCode.toString() == "200") {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
-      showMyDialog(context);
-    } else {}
-    return response;
-  } catch (e) {
+  void calltoast(String polenumber) {
     Fluttertoast.showToast(
-        msg: "Device Installation Image Upload Error",
+        msg: device_toast_msg + polenumber + device_toast_notfound,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.white,
         textColor: Colors.black,
         fontSize: 16.0);
-    return response;
+  }
+
+  Future<LocationData?> _getLocation() async {
+    Location location = Location();
+    LocationData _locationData;
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return null;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return null;
+      }
+    }
+
+    _locationData = await location.getLocation();
+
+    return _locationData;
+  }
+
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)) as List<Address>;
+    return "${addresss.elementAt(1).addressLine}";
+  }
+
+  Future<http.Response> postRequest(context, imageFile, DeviceName) async {
+    var response;
+    try {
+      Uri myUri = Uri.parse(localAPICall);
+
+      Map data = {'img': imageFile, 'name': DeviceName};
+      var body = json.encode(data);
+
+      response = await http.post(myUri,
+          headers: {"Content-Type": "application/json"}, body: body);
+      print("${response.statusCode}");
+
+      if (response.statusCode.toString() == "200") {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+        showMyDialog(context);
+      } else {}
+      return response;
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: "Device Installation Image Upload Error",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      return response;
+    }
+  }
+
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
   }
 }
-
-Future<ThingsboardError> toThingsboardError(error, context,
-    [StackTrace? stackTrace]) async {
-  ThingsboardError? tbError;
-  if (error.message == "Session expired!") {
-    var status = loginThingsboard.callThingsboardLogin(context);
-    if (status == true) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
-    }
-  } else {
-    if (error is DioError) {
-      if (error.response != null && error.response!.data != null) {
-        var data = error.response!.data;
-        if (data is ThingsboardError) {
-          tbError = data;
-        } else if (data is Map<String, dynamic>) {
-          tbError = ThingsboardError.fromJson(data);
-        } else if (data is String) {
-          try {
-            tbError = ThingsboardError.fromJson(jsonDecode(data));
-          } catch (_) {}
-        }
-      } else if (error.error != null) {
-        if (error.error is ThingsboardError) {
-          tbError = error.error;
-        } else if (error.error is SocketException) {
-          tbError = ThingsboardError(
-              error: error,
-              message: 'Unable to connect',
-              errorCode: ThingsBoardErrorCode.general);
-        } else {
-          tbError = ThingsboardError(
-              error: error,
-              message: error.error.toString(),
-              errorCode: ThingsBoardErrorCode.general);
-        }
-      }
-      if (tbError == null &&
-          error.response != null &&
-          error.response!.statusCode != null) {
-        var httpStatus = error.response!.statusCode!;
-        var message = (httpStatus.toString() +
-            ': ' +
-            (error.response!.statusMessage != null
-                ? error.response!.statusMessage!
-                : 'Unknown'));
-        tbError = ThingsboardError(
-            error: error,
-            message: message,
-            errorCode: httpStatusToThingsboardErrorCode(httpStatus),
-            status: httpStatus);
-      }
-    } else if (error is ThingsboardError) {
-      tbError = error;
-    }
-  }
-  tbError ??= ThingsboardError(
-      error: error,
-      message: error.toString(),
-      errorCode: ThingsBoardErrorCode.general);
-
-  var errorStackTrace;
-  if (tbError.error is Error) {
-    errorStackTrace = tbError.error.stackTrace;
-  }
-
-  tbError.stackTrace = stackTrace ??
-      tbError.getStackTrace() ??
-      errorStackTrace ??
-      StackTrace.current;
-
-  return tbError;
-}}

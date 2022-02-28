@@ -29,12 +29,32 @@ class AttributeService {
     return response.data!;
   }
 
+  Future<List<AttributeKvEntry>> getFirmAttributeKvEntries(
+      String entityId, List<String> keys,
+      {RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<List<dynamic>>(
+        '/api/plugins/telemetry/ASSET/$entityId/values/attributes',
+        queryParameters: {'keys': keys.join(',')},
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return RestJsonConverter.toAttributes(response.data);
+  }
+
   Future<List<AttributeKvEntry>> getAttributeKvEntries(
       EntityId entityId, List<String> keys,
       {RequestConfig? requestConfig}) async {
     var response = await _tbClient.get<List<dynamic>>(
         '/api/plugins/telemetry/${entityId.entityType.toShortString()}/${entityId.id}/values/attributes',
         queryParameters: {'keys': keys.join(',')},
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return RestJsonConverter.toAttributes(response.data);
+  }
+
+  Future<List<AttributeKvEntry>> getAssetAttributeKvEntries(
+      String entityId,
+      {RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<List<dynamic>>(
+        '/api/plugins/telemetry/ASSET}/${entityId}/values/attributes',
+        queryParameters: {'keys': "firmware_versions"},
         options: defaultHttpOptionsFromConfig(requestConfig));
     return RestJsonConverter.toAttributes(response.data);
   }
@@ -88,6 +108,18 @@ class AttributeService {
         queryParameters: {
           'keys': 'lmp',
           'useStrictDataTypes': true
+        },
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return RestJsonConverter.toTimeseries(response.data);
+  }
+
+  Future<List<TsKvEntry>> getFIRMselectedLatestTimeseries(
+      String entityId, String keys,
+      {RequestConfig? requestConfig}) async {
+    var response = await _tbClient.get<Map<String, dynamic>>(
+        '/api/plugins/telemetry/ASSET/$entityId/values/timeseries',
+        queryParameters: {
+          'keys': 'firmware_versions'
         },
         options: defaultHttpOptionsFromConfig(requestConfig));
     return RestJsonConverter.toTimeseries(response.data);

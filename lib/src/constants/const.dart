@@ -41,6 +41,7 @@ const sign_in = "Start Process";
 const qr_text = "SCAN QR CODE";
 
 const ILMDeviceInstallationFolder = "lumismartLights";
+// const ILMDeviceInstallationFolder = "smartLights";
 
 const ILMserviceFolderName = "forRepairILM";
 // const ILMserviceFolderName = "forServiceLuminodes";

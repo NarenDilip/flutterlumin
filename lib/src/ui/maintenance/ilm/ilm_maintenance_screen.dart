@@ -101,7 +101,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       if(location == "0"){
         location = location;
       }
-
     });
   }
 

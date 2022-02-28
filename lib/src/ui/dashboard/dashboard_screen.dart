@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/ilm/ilm_install_cam_screen.dart';
+import '../maintenance/ccms/ccms_maintenance_screen.dart';
 import '../map/map_view_screen.dart';
 
 class dashboard_screen extends StatefulWidget {
@@ -267,36 +268,19 @@ class dashboard_screenState extends State<dashboard_screen> {
               .getDeviceService()
               .getTenantDevice(deviceName) as Device;
           if (response != null) {
-            DeviceCredentials deviceCredentials = (await tbClient
-                    .getDeviceService()
-                    .getDeviceCredentialsByDeviceId(response.id!.id!))
-                as DeviceCredentials;
-            if (deviceCredentials.credentialsId.length == 16) {
-              if (response.type == ilm_deviceType) {
-                fetchSmartDeviceDetails(
-                    deviceName, response.id!.id.toString(), context);
-              } else if (response.type == ccms_deviceType) {
-                fetchCCMSDeviceDetails(
-                    deviceName, response.id!.id.toString(), context);
-              } else if (response.type == Gw_deviceType) {
-              } else {
-                pr.hide();
-                // Navigator.pop(context);
-                Fluttertoast.showToast(
-                    msg: "Device Details Not Found",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-              }
+            if (response.type == ilm_deviceType) {
+              fetchSmartDeviceDetails(
+                  deviceName, response.id!.id.toString(), context);
+            } else if (response.type == ccms_deviceType) {
+              fetchCCMSDeviceDetails(
+                  deviceName, response.id!.id.toString(), context);
+            } else if (response.type == Gw_deviceType) {
+              fetchGWDeviceDetails(
+                  deviceName, response.id!.id.toString(), context);
             } else {
-              // Navigator.pop(context);
               pr.hide();
               Fluttertoast.showToast(
-                  msg:
-                      "Device Credentials are invalid, Device not despatched properly",
+                  msg: "Device Details Not Found",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -308,16 +292,29 @@ class dashboard_screenState extends State<dashboard_screen> {
             // Navigator.pop(context);
             pr.hide();
             Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
+                msg:
+                    "Device Credentials are invalid, Device not despatched properly",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
                 backgroundColor: Colors.white,
                 textColor: Colors.black,
                 fontSize: 16.0);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
           }
+          // } else {
+          //   // Navigator.pop(context);
+          //   pr.hide();
+          //   Fluttertoast.showToast(
+          //       msg: device_toast_msg + deviceName + device_toast_notfound,
+          //       toastLength: Toast.LENGTH_SHORT,
+          //       gravity: ToastGravity.BOTTOM,
+          //       timeInSecForIosWeb: 1,
+          //       backgroundColor: Colors.white,
+          //       textColor: Colors.black,
+          //       fontSize: 16.0);
+          //   Navigator.of(context).pushReplacement(MaterialPageRoute(
+          //       builder: (BuildContext context) => dashboard_screen()));
+          // }
         } catch (e) {
           // Navigator.pop(context);
           pr.hide();
@@ -359,6 +356,7 @@ class dashboard_screenState extends State<dashboard_screen> {
         try {
           pr.show();
           Device response;
+          String? SelectedRegion;
           Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -382,14 +380,23 @@ class dashboard_screenState extends State<dashboard_screen> {
               as List<BaseAttributeKvEntry>;
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString(
-              'firmwareVersion', deviceresponser.first.kv.getValue().toString());
+          prefs.setString('firmwareVersion',
+              deviceresponser.first.kv.getValue().toString());
+          prefs.setString('deviceName', deviceName);
+          SelectedRegion = prefs.getString("SelectedRegion").toString();
 
           if (relationDetails.length.toString() == "0") {
-            var SelectedRegion = prefs.getString("SelectedRegion").toString();
-            if (SelectedRegion != "null") {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => ccmscaminstall()));
+            if (SelectedRegion.length.toString() != "0") {
+              // pr.hide();
+              if (context != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ccmscaminstall()),
+                );
+                // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                //     builder: (BuildContext context) => ccmscaminstall()));
+              }
             } else {
               // Navigator.pop(context);
               pr.hide();
@@ -403,10 +410,139 @@ class dashboard_screenState extends State<dashboard_screen> {
                   fontSize: 16.0);
               // refreshPage(context);
             }
-          } else {}
-          pr.hide();
+          } else {
+            // pr.hide();
+            // Navigator.pop(context);
+            if (context != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const CCMSMaintenanceScreen()),
+              );
+              // Navigator.of(context).pushReplacement(MaterialPageRoute(
+              //     builder: (BuildContext context) => CCMSMaintenanceScreen()));
+            }
+          }
+          // pr.hide();
         } catch (e) {
           pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              fetchDeviceDetails(deviceName, context);
+            }
+          } else {
+            // refreshPage(context);
+            Fluttertoast.showToast(
+                msg: device_toast_msg + deviceName + device_toast_notfound,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  Future<Device?> fetchGWDeviceDetails(
+      String deviceName, String string, BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        try {
+          pr.show();
+          Device response;
+          String? SelectedRegion;
+          Future<List<EntityGroupInfo>> deviceResponse;
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+
+          response = (await tbClient
+              .getDeviceService()
+              .getTenantDevice(deviceName)) as Device;
+
+          var relationDetails = await tbClient
+              .getEntityRelationService()
+              .findInfoByTo(response.id!);
+
+          List<String> myList = [];
+          myList.add("firmwareVersion");
+
+          List<BaseAttributeKvEntry> deviceresponser;
+
+          deviceresponser = (await tbClient
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myList))
+              as List<BaseAttributeKvEntry>;
+
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString('firmwareVersion',
+              deviceresponser.first.kv.getValue().toString());
+          prefs.setString('deviceName', deviceName);
+          SelectedRegion = prefs.getString("SelectedRegion").toString();
+
+          if (relationDetails.length.toString() == "0") {
+            if (SelectedRegion.length.toString() != "0") {
+              // pr.hide();
+              if (context != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ccmscaminstall()),
+                );
+                // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                //     builder: (BuildContext context) => ccmscaminstall()));
+              }
+            } else {
+              // Navigator.pop(context);
+              pr.hide();
+              Fluttertoast.showToast(
+                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
+              // refreshPage(context);
+            }
+          } else {
+            // pr.hide();
+            // Navigator.pop(context);
+            if (context != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const CCMSMaintenanceScreen()),
+              );
+              // Navigator.of(context).pushReplacement(MaterialPageRoute(
+              //     builder: (BuildContext context) => CCMSMaintenanceScreen()));
+            }
+          }
+          // pr.hide();
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              fetchDeviceDetails(deviceName, context);
+            }
+          } else {
+            // refreshPage(context);
+            Fluttertoast.showToast(
+                msg: device_toast_msg + deviceName + device_toast_notfound,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
         }
       }
     });
@@ -471,8 +607,8 @@ class dashboard_screenState extends State<dashboard_screen> {
               'devicetimeStamp', responser.first.lastUpdateTs.toString());
 
           List<String> myLister = [];
-          // myLister.add("landmark");
-          myLister.add("location");
+          myLister.add("landmark");
+          // myLister.add("location");
 
           List<AttributeKvEntry> responserse;
 
@@ -490,17 +626,17 @@ class dashboard_screenState extends State<dashboard_screen> {
             List<String> versionlist = [];
             versionlist.add("version");
 
-            List<AttributeKvEntry> version_responserse;
+            List<AttributeKvEntry> versionResponserse;
 
-            version_responserse = (await tbClient
+            versionResponserse = (await tbClient
                     .getAttributeService()
                     .getAttributeKvEntries(response.id!, versionlist))
                 as List<AttributeKvEntry>;
 
-            if (version_responserse.length == 0) {
+            if (versionResponserse.length == 0) {
               prefs.setString('version', "0");
             } else {
-              prefs.setString('version', version_responserse.first.getValue());
+              prefs.setString('version', versionResponserse.first.getValue());
             }
 
             if (relationDetails.length.toString() == "0") {
@@ -564,7 +700,14 @@ class dashboard_screenState extends State<dashboard_screen> {
           } else {
             // Navigator.pop(context);
             pr.hide();
-            calltoast("Device Details Not Found");
+            Fluttertoast.showToast(
+                msg: "Device Details Not Found, Please try again later.",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
 
             // refreshPage(context);
           }

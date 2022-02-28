@@ -205,9 +205,8 @@ class LoginForm extends StatelessWidget {
         tbClient.smart_init();
 
         DBHelper dbHelper = new DBHelper();
+
         // dbHelper.region_delete();
-
-
         // final jsonData = '{"region"}';
         // final parsedJson = jsonDecode(jsonData);
 

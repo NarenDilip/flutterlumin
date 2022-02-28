@@ -65,8 +65,8 @@ class _LocationWidgetState extends State<LocationWidget> {
   List<LatLng> _latLngListAll = [];
   var listAnswers = [];
   List<LatLng> _latLngListILM = [];
-  List<LatLng> _latLngList2 = [];
-  List<LatLng> _latLngList3 = [];
+  List<LatLng> _latLngListCCMS = [];
+  List<LatLng> _latLngListGW = [];
   List<Marker> _markers = [];
   List<CircleMarker> circleMarkers = [];
   late ProgressDialog pr;
@@ -134,11 +134,13 @@ class _LocationWidgetState extends State<LocationWidget> {
     List combinedData = [];
     if (data.isNotEmpty) {
       for (var i = 0; i < data.length - 1; i++) {
-        totalDistance += calculateDistance(data[i]["lat"], data[i]["lng"],
-            data[i + 1]["lat"], data[i + 1]["lng"]);
-        if (totalDistance <= 5) {
-          var distance = data[i + 1];
-          combinedData.add(distance);
+        if (data[i].toString().isNotEmpty) {
+          totalDistance += calculateDistance(data[i]["lat"], data[i]["lng"],
+              data[i + 1]["lat"], data[i + 1]["lng"]);
+          if (totalDistance <= 5) {
+            var distance = data[i + 1];
+            combinedData.add(distance);
+          }
         }
       }
     }
@@ -238,7 +240,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                     context);
                               },
                               child: Container(
-                                alignment: Alignment.center,
+                                  alignment: Alignment.center,
                                   height: 65,
                                   width: 150,
                                   child: Column(children: [
@@ -361,7 +363,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                     .toList();
                               }
                               if (current == 2) {
-                                _markers = _latLngList2
+                                _markers = _latLngListCCMS
                                     .map((point) => Marker(
                                           point: point,
                                           width: 60,
@@ -375,7 +377,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                     .toList();
                               }
                               if (current == 3) {
-                                _markers = _latLngList3
+                                _markers = _latLngListGW
                                     .map((point) => Marker(
                                           point: point,
                                           width: 60,
@@ -856,8 +858,15 @@ class _LocationWidgetState extends State<LocationWidget> {
                       // someMap= {sslat.toString(),relatedDevice.name.toString()};
 
                       setState(() {
+                        if (relatedDevice.type == "lumiNode") {
+                          _latLngListAll.add(LatLng(sslat, sslong));
+                        } else if (relatedDevice.type == "CCMS") {
+                          _latLngListCCMS.add(LatLng(sslat, sslong));
+                        } else if (relatedDevice.type == "gateway") {
+                          _latLngListGW.add(LatLng(sslat, sslong));
+                        }
+
                         _latLngListILM.add(LatLng(sslat, sslong));
-                        _latLngListAll.add(LatLng(sslat, sslong));
                         ssname = relatedDevice.name;
                       });
                     }

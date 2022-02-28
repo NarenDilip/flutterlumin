@@ -1,6 +1,7 @@
 
 // @dart=2.9
 import 'package:flutter/material.dart';
+import 'package:flutterlumin/src/geofence/ExampleApp.dart';
 import 'package:flutterlumin/src/ui/splash_screen.dart';
 import 'package:flutter/services.dart';
 
