@@ -30,7 +30,7 @@ import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 
 class gwcaminstall extends StatefulWidget {
-  const gwcaminstall({Key? key}) : super(key: key);
+  const gwcaminstall() : super();
 
   @override
   gwcaminstallState createState() => gwcaminstallState();
@@ -44,6 +44,7 @@ class gwcaminstallState extends State<gwcaminstall> {
   LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
+  String SelectedZone = "0";
   String FirmwareVersion = "0";
   double lattitude = 0;
   double longitude = 0;
@@ -61,11 +62,13 @@ class gwcaminstallState extends State<gwcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
+    SelectedZone = prefs.getString("SelectedZone").toString();
     FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     setState(() {
       DeviceName = DeviceName;
       SelectedWard = SelectedWard;
+      SelectedZone = SelectedZone;
     });
   }
 
@@ -98,19 +101,24 @@ class gwcaminstallState extends State<gwcaminstall> {
         _getAddress(_location!.latitude, _location!.longitude).then((value) {
           setState(() {
             address = value;
-            if (_latt!.length <= 5) {
-              _latt!.add(_location!.latitude!);
-              lattitude = _location!.latitude!;
-              longitude = _location!.longitude!;
-              accuracy = _location!.accuracy!;
-              // addresss = addresss;
-            } else {
+            // if (_latt!.length <= 5) {
+            _latt!.add(_location!.latitude!);
+            lattitude = _location!.latitude!;
+            longitude = _location!.longitude!;
+            accuracy = _location!.accuracy!;
+            // addresss = addresss;
+            // } else {
+            if (accuracy <= 7) {
               _locationSubscription?.cancel();
+              setState(() {
+                _locationSubscription = null;
+              });
               accuvalue = accuracy.toString().split(".");
               addvalue = value.toString().split(",");
               callReplacementComplete(
                   context, imageFile, DeviceName, SelectedWard);
             }
+            // }
           });
         });
       });
@@ -402,13 +410,32 @@ class gwcaminstallState extends State<gwcaminstall> {
                           if (entitygroups != null) {
                             for (int i = 0; i < entitygroups.length; i++) {
                               if (entitygroups.elementAt(i).name ==
-                                  ILMDeviceInstallationFolder) {
+                                  "Gateway- " + SelectedZone) {
                                 DevicemoveFolderName = entitygroups
                                     .elementAt(i)
                                     .id!
                                     .id!
                                     .toString();
                               }
+                            }
+
+                            if (DevicemoveFolderName.isEmpty) {
+                              Map<String, dynamic> type = {
+                                'name': "Gateway- " + SelectedZone,
+                                'type': 'DEVICE'
+                              };
+
+                              // EntityGroup entityGroup = EntityGroup.fromJson(type);
+
+                              EntityGroup entityGroup = EntityGroup(
+                                  "Gateway- " + SelectedZone,
+                                  EntityType.DEVICE);
+
+                              EntityGroupInfo groupCreation = await tbClient
+                                  .getEntityGroupService()
+                                  .saveEntityGroup(entityGroup);
+                              DevicemoveFolderName =
+                                  groupCreation.id!.id.toString();
                             }
 
                             List<String> myList = [];
@@ -423,6 +450,9 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 .getEntityGroupService()
                                 .addEntitiesToEntityGroup(
                                     DevicemoveFolderName, myList);
+
+                            // Need to add with Region Folder, Zone Folder and
+                            // Ward Folder as device verification, Need to update
 
                             final bytes =
                                 File(imageFile!.path).readAsBytesSync();
@@ -467,7 +497,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                          "Selected Device is not authorized to install in this Region",
+                              "Selected Device is not authorized to install in this Region",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -476,7 +506,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                           fontSize: 16.0);
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) => dashboard_screen()));
+                          builder: (BuildContext context) =>
+                              dashboard_screen()));
                     }
                   } else {
                     // Navigator.pop(context);
@@ -583,7 +614,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                   height: height / 1.25,
                   child: Column(children: [
                     Text(
-                      "LumiNode " + ' $DeviceName ',
+                      "Gateway " + ' $DeviceName ',
                       style: const TextStyle(
                           fontSize: 20.0,
                           fontFamily: "Montserrat",

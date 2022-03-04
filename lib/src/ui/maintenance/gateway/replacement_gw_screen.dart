@@ -20,7 +20,7 @@ import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
 class replacementgw extends StatefulWidget {
-  const replacementgw({Key? key}) : super(key: key);
+  const replacementgw() : super();
 
   @override
   replacementgwState createState() => replacementgwState();
@@ -211,7 +211,7 @@ class replacementgwState extends State<replacementgw> {
 
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+                  if (entitygroups.elementAt(i).name == GWserviceFolderName) {
                     DevicemoveFolderName =
                         entitygroups.elementAt(i).id!.id!.toString();
                   }

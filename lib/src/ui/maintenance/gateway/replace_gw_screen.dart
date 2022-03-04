@@ -21,7 +21,7 @@ import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
 class replacegw extends StatefulWidget {
-  const replacegw({Key? key}) : super(key: key);
+  const replacegw() : super();
 
   @override
   replacegwState createState() => replacegwState();
@@ -343,10 +343,10 @@ class replacegwState extends State<replacegw> {
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
             if (response.type == ilm_deviceType) {
-              ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
-                  response.id!.id.toString(), context, imageFile);
             } else if (response.type == ccms_deviceType) {
             } else if (response.type == Gw_deviceType) {
+              ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
+                  response.id!.id.toString(), context, imageFile);
             } else {
               pr.hide();
               calltoast("Device Details Not Found");
@@ -417,7 +417,7 @@ class replacegwState extends State<replacegw> {
 
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+                  if (entitygroups.elementAt(i).name == GWserviceFolderName) {
                     DevicemoveFolderName =
                         entitygroups.elementAt(i).id!.id!.toString();
                   }
@@ -448,7 +448,7 @@ class replacegwState extends State<replacegw> {
 
                   if (relationDetails != null) {
                     List<String> myList = [];
-                    myList.add("lampWatts");
+                    // myList.add("lampWatts");
                     myList.add("active");
 
                     List<BaseAttributeKvEntry> responser;
@@ -463,8 +463,8 @@ class replacegwState extends State<replacegw> {
                           await SharedPreferences.getInstance();
                       prefs.setString('deviceStatus',
                           responser.first.kv.getValue().toString());
-                      prefs.setString('deviceWatts',
-                          responser.last.kv.getValue().toString());
+                      // prefs.setString('deviceWatts',
+                      //     responser.last.kv.getValue().toString());
 
                       prefs.setString('deviceId', deviceid);
                       prefs.setString('deviceName', deviceName);

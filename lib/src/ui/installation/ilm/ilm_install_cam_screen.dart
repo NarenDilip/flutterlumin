@@ -22,6 +22,7 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
+
 import '../../../localdb/model/ward_model.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
@@ -29,7 +30,7 @@ import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 
 class ilmcaminstall extends StatefulWidget {
-  const ilmcaminstall({Key? key}) : super(key: key);
+  const ilmcaminstall() : super();
 
   @override
   ilmcaminstallState createState() => ilmcaminstallState();
@@ -77,6 +78,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   }
 
   Future<void> _listenLocation() async {
+    // pr.show();
     _locationSubscription =
         locations.onLocationChanged.handleError((dynamic err) {
       if (err is PlatformException) {
@@ -95,20 +97,18 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         _getAddress(_location!.latitude, _location!.longitude).then((value) {
           setState(() {
             address = value;
-            if (_latt!.length <= 5) {
-              _latt!.add(_location!.latitude!);
-              lattitude = _location!.latitude!;
-              longitude = _location!.longitude!;
-              accuracy = _location!.accuracy!;
-              // addresss = addresss;
-            } else {
+            _latt!.add(_location!.latitude!);
+            lattitude = _location!.latitude!;
+            longitude = _location!.longitude!;
+            accuracy = _location!.accuracy!;
+            if (accuracy <= 7) {
               _locationSubscription?.cancel();
-
+              setState(() {
+                _locationSubscription = null;
+              });
               accuvalue = accuracy.toString().split(".");
               addvalue = value.toString().split(",");
-
-              callReplacementComplete(
-                  context, imageFile, DeviceName, SelectedWard);
+              callILMInstallation(context, imageFile, DeviceName, SelectedWard);
             }
           });
         });
@@ -122,8 +122,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
 
-    pr = ProgressDialog(
-        context, type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
@@ -190,14 +190,14 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               ))),
                           onPressed: () {
                             // Utility.progressDialog(context);
-                            if(imageFile != null) {
+                            if (imageFile != null) {
                               pr.show();
                               _listenLocation();
-                            }else{
+                            } else {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                  "Invalid Image Capture, Please recapture and try installation",
+                                      "Invalid Image Capture, Please recapture and try installation",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -221,7 +221,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     });
   }
 
-  Future<void> callReplacementComplete(
+  Future<void> callILMInstallation(
       context, imageFile, DeviceName, SelectedWard) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
@@ -472,8 +472,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
-              callReplacementComplete(
-                  context, imageFile, DeviceName, SelectedWard);
+              callILMInstallation(context, imageFile, DeviceName, SelectedWard);
             }
           } else {
             calltoast(deviceName);
@@ -490,71 +489,69 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-            content: Container(
-              height: height/1.25,
-                child: Column(
-                    children: [
-                      Text(
-                        "LumiNode " + ' $DeviceName ',
-                        style: const TextStyle(
-                            fontSize: 20.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: thbDblue),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        width: 250,
-                        height: 350,
-                        child: imageFile != null
-                            ? Image.file(File(imageFile.path))
-                            : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                         addvalue[0].toString() +","+ addvalue[1].toString(),
-                        style: const TextStyle(
-                            fontSize: 16.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'With ' + accuvalue[0].toString() + "m Accuracy",
-                        style: const TextStyle(
-                            fontSize: 16.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "Installed Successfully",
-                        style: const TextStyle(
-                            fontSize: 22.0,
-                            fontFamily: "Montserrat",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green),
-                        textAlign: TextAlign.left,
-                      ),
-                      SizedBox(height: 10),
-                    ])));
-      }
-    );
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              content: Container(
+                  height: height / 1.25,
+                  child: Column(children: [
+                    Text(
+                      "LumiNode " + ' $DeviceName ',
+                      style: const TextStyle(
+                          fontSize: 20.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: thbDblue),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 250,
+                      height: 350,
+                      child: imageFile != null
+                          ? Image.file(File(imageFile.path))
+                          : Container(
+                              decoration: BoxDecoration(color: Colors.white),
+                              width: 200,
+                              height: 200,
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.grey[800],
+                              )),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      style: const TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'With ' + accuvalue[0].toString() + "m Accuracy",
+                      style: const TextStyle(
+                          fontSize: 16.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Installed Successfully",
+                      style: const TextStyle(
+                          fontSize: 22.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(height: 10),
+                  ])));
+        });
   }
 
   void calltoast(String polenumber) {
@@ -602,7 +599,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         .findAddressesFromCoordinates(coordinates)) as List<Address>;
     return "${addresss.elementAt(1).addressLine}";
   }
-
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;

@@ -21,7 +21,7 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'ilm_maintenance_screen.dart';
 
 class replacementilm extends StatefulWidget {
-  const replacementilm({Key? key}) : super(key: key);
+  const replacementilm() : super();
 
   @override
   replacementilmState createState() => replacementilmState();

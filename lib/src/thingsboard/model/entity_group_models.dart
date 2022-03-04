@@ -12,6 +12,7 @@ import 'id/role_id.dart';
 class EntityGroup extends AdditionalInfoBased<EntityGroupId>
     implements HasName, HasOwnerId {
   static final String GROUP_ALL_NAME = 'All';
+  static final String Type = 'DEVICE';
 
   static final String GROUP_EDGE_ALL_STARTS_WITH = '[Edge]';
   static final String GROUP_EDGE_ALL_ENDS_WITH = 'All';

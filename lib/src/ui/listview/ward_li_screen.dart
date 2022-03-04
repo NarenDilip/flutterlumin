@@ -38,9 +38,19 @@ class ward_li_screen_state extends State<ward_li_screen> {
   List<String>? _foundUsers = [];
   List<DeviceId>? relatedDevices = [];
   List<AssetId>? AssetDevices = [];
+
   List<DeviceId>? activeDevice = [];
   List<DeviceId>? nonactiveDevices = [];
   List<DeviceId>? ncDevices = [];
+
+  List<DeviceId>? ccms_activeDevice = [];
+  List<DeviceId>? ccms_nonactiveDevices = [];
+  List<DeviceId>? ccms_ncDevices = [];
+
+  List<DeviceId>? gw_activeDevice = [];
+  List<DeviceId>? gw_nonactiveDevices = [];
+  List<DeviceId>? gw_ncDevices = [];
+
   String selectedZone = "0";
   String selectedWard = "0";
   late ProgressDialog pr;
@@ -129,8 +139,12 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
           relatedDevices!.clear();
           AssetDevices!.clear();
+
           activeDevice!.clear();
           nonactiveDevices!.clear();
+
+          ccms_activeDevice!.clear();
+          ccms_nonactiveDevices!.clear();
 
           Asset response;
           response = await tbClient
@@ -176,10 +190,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   myList.add("active");
 
                   Device data_response;
-                  data_response = (await tbClient
-                          .getDeviceService()
-                          .getDevice(relatedDevices!.elementAt(k).id.toString()))
-                      as Device;
+                  data_response = (await tbClient.getDeviceService().getDevice(
+                      relatedDevices!.elementAt(k).id.toString())) as Device;
 
                   if (data_response.type == "lumiNode") {
                     List<AttributeKvEntry> responser;
@@ -194,15 +206,16 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       } else if (responser.first.getValue().toString() ==
                           "false") {
                         nonactiveDevices!.add(relatedDevices!.elementAt(k));
-                      }else{
+                      } else {
                         ncDevices!.add(relatedDevices!.elementAt(k));
                       }
                     }
 
-                    var totalval =
-                        activeDevice!.length + nonactiveDevices!.length + ncDevices!.length;
+                    var totalval = activeDevice!.length +
+                        nonactiveDevices!.length +
+                        ncDevices!.length;
                     var parttotalval =
-                        activeDevice!.length + nonactiveDevices!.length ;
+                        activeDevice!.length + nonactiveDevices!.length;
                     var ncdevices = parttotalval - totalval;
                     var noncomdevice = "";
                     if (ncdevices.toString().contains("-")) {
@@ -218,6 +231,90 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     sharedPreferences.setString(
                         'nonactiveCount', nonactiveDevices!.length.toString());
                     sharedPreferences.setString('ncCount', noncomdevice);
+                  } else if (data_response.type == "CCMS") {
+                    List<AttributeKvEntry> responser;
+                    responser = await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(
+                            relatedDevices!.elementAt(k), myList);
+
+                    if (responser != null) {
+                      if (responser.first.getValue().toString() == "true") {
+                        ccms_activeDevice!.add(relatedDevices!.elementAt(k));
+                      } else if (responser.first.getValue().toString() ==
+                          "false") {
+                        ccms_nonactiveDevices!
+                            .add(relatedDevices!.elementAt(k));
+                      } else {
+                        ccms_ncDevices!.add(relatedDevices!.elementAt(k));
+                      }
+                    }
+
+                    var ccms_totalval = ccms_activeDevice!.length +
+                        ccms_nonactiveDevices!.length +
+                        ccms_ncDevices!.length;
+                    var ccms_parttotalval = ccms_activeDevice!.length +
+                        ccms_nonactiveDevices!.length;
+                    var ccms_ncdevices = ccms_parttotalval - ccms_totalval;
+                    var ccms_noncomdevice = "";
+                    if (ccms_ncdevices.toString().contains("-")) {
+                      ccms_noncomdevice =
+                          ccms_ncdevices.toString().replaceAll("-", "");
+                    } else {
+                      ccms_noncomdevice = ccms_ncdevices.toString();
+                    }
+
+                    sharedPreferences.setString(
+                        'ccms_totalCount', ccms_totalval.toString());
+                    sharedPreferences.setString('ccms_activeCount',
+                        ccms_activeDevice!.length.toString());
+                    sharedPreferences.setString('ccms_nonactiveCount',
+                        ccms_nonactiveDevices!.length.toString());
+                    sharedPreferences.setString(
+                        'ccms_ncCount', ccms_noncomdevice);
+
+                  } else if (data_response.type == "Gateway") {
+                    List<AttributeKvEntry> responser;
+                    responser = await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(
+                        relatedDevices!.elementAt(k), myList);
+
+                    if (responser != null) {
+                      if (responser.first.getValue().toString() == "true") {
+                        gw_activeDevice!.add(relatedDevices!.elementAt(k));
+                      } else if (responser.first.getValue().toString() ==
+                          "false") {
+                        gw_nonactiveDevices!
+                            .add(relatedDevices!.elementAt(k));
+                      } else {
+                        gw_ncDevices!.add(relatedDevices!.elementAt(k));
+                      }
+                    }
+
+                    var gw_totalval = gw_activeDevice!.length +
+                        gw_nonactiveDevices!.length +
+                        gw_ncDevices!.length;
+                    var gw_parttotalval = gw_activeDevice!.length +
+                        gw_nonactiveDevices!.length;
+                    var gw_ncdevices = gw_parttotalval - gw_totalval;
+                    var gw_noncomdevice = "";
+                    if (gw_ncdevices.toString().contains("-")) {
+                      gw_noncomdevice =
+                          gw_ncdevices.toString().replaceAll("-", "");
+                    } else {
+                      gw_noncomdevice = gw_ncdevices.toString();
+                    }
+
+                    sharedPreferences.setString(
+                        'gw_totalCount', gw_totalval.toString());
+                    sharedPreferences.setString('gw_activeCount',
+                        gw_activeDevice!.length.toString());
+                    sharedPreferences.setString('gw_nonactiveCount',
+                        gw_nonactiveDevices!.length.toString());
+                    sharedPreferences.setString(
+                        'gw_ncCount', gw_noncomdevice);
+
                   }
                 }
 

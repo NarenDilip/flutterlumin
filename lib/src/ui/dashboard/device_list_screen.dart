@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -10,6 +11,7 @@ import 'package:flutterlumin/src/models/devicelistrequester.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
@@ -17,6 +19,7 @@ import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart'
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../localdb/db_helper.dart';
@@ -46,6 +49,19 @@ class device_list_screen_state extends State<device_list_screen> {
   final TextEditingController _emailController =
       TextEditingController(text: "");
   String Maintenance = "true";
+
+  LocationData? currentLocation;
+  String? _error;
+  double lattitude = 0;
+  double longitude = 0;
+  double accuracy = 0;
+  String address = "";
+  var accuvalue;
+  var addvalue;
+  List<double>? _latt = [];
+  final Location locations = Location();
+  LocationData? _location;
+  StreamSubscription<LocationData>? _locationSubscription;
 
   final user = DeviceRequester(
     ilmnumber: "",
@@ -87,6 +103,33 @@ class device_list_screen_state extends State<device_list_screen> {
     super.initState();
     SelectedRegion = "";
     getSharedPrefs();
+    _listenLocation();
+  }
+
+  Future<void> _listenLocation() async {
+    // pr.show();
+    _locationSubscription =
+        locations.onLocationChanged.handleError((dynamic err) {
+          if (err is PlatformException) {
+            setState(() {
+              _error = err.code;
+            });
+          }
+          _locationSubscription?.cancel();
+          setState(() {
+            _locationSubscription = null;
+          });
+        }).listen((LocationData currentLocation) {
+          setState(() async {
+            _error = null;
+            _location = currentLocation;
+            _latt!.add(_location!.latitude!);
+            lattitude = _location!.latitude!;
+            longitude = _location!.longitude!;
+            accuracy = _location!.accuracy!;
+            accuvalue = accuracy.toString().split(".");
+          });
+        });
   }
 
   void _toggle() {
@@ -203,7 +246,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                               MaterialPageRoute(
                                                   builder: (BuildContext
                                                   context) =>
-                                                      ward_li_screen()));
+                                                      region_list_screen()));
                                           setState(() {});
                                         },
                                         child: Container(

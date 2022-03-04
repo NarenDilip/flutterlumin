@@ -21,7 +21,7 @@ import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
 class replaceccms extends StatefulWidget {
-  const replaceccms({Key? key}) : super(key: key);
+  const replaceccms() : super();
 
   @override
   replaceccmsState createState() => replaceccmsState();
@@ -343,9 +343,10 @@ class replaceccmsState extends State<replaceccms> {
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
             if (response.type == ilm_deviceType) {
+
+            } else if (response.type == ccms_deviceType) {
               ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
                   response.id!.id.toString(), context, imageFile);
-            } else if (response.type == ccms_deviceType) {
             } else if (response.type == Gw_deviceType) {
             } else {
               pr.hide();
@@ -417,7 +418,7 @@ class replaceccmsState extends State<replaceccms> {
 
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+                  if (entitygroups.elementAt(i).name == CCMSserviceFolderName) {
                     DevicemoveFolderName =
                         entitygroups.elementAt(i).id!.id!.toString();
                   }

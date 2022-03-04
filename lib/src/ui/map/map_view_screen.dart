@@ -85,12 +85,12 @@ class map_view_screen_state extends State<map_view_screen> {
             resizeToAvoidBottomInset: false,
             extendBody: true,
             body: Container(
-                color: darkgreen,
+                color: thbDblue,
                 child: Column(children: [
                   Container(
                     height: 100,
                     decoration: const BoxDecoration(
-                        color: darkgreen,
+                        color: thbDblue,
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(0.0),
                             topRight: Radius.circular(0.0),
@@ -164,7 +164,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                     setState(() {});
                                                   },
                                                   child: Container(
-                                                    color: darkgreen,
+                                                    color: thbDblue,
                                                     width: 120.0,
                                                     height: 50.0,
                                                     child: Center(
@@ -203,7 +203,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                     setState(() {});
                                                   },
                                                   child: Container(
-                                                    color: darkgreen,
+                                                    color: thbDblue,
                                                     width: 120.0,
                                                     height: 50.0,
                                                     child: Center(
@@ -242,7 +242,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                     setState(() {});
                                                   },
                                                   child: Container(
-                                                    color: darkgreen,
+                                                    color: thbDblue,
                                                     width: 120.0,
                                                     height: 50.0,
                                                     child: Center(

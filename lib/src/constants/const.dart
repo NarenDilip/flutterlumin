@@ -46,6 +46,12 @@ const ILMDeviceInstallationFolder = "lumismartLights";
 const ILMserviceFolderName = "forRepairILM";
 // const ILMserviceFolderName = "forServiceLuminodes";
 
+const CCMSserviceFolderName = "forRepairCCMS";
+// const CCMSserviceFolderName = "forServiceCCMS";
+
+const GWserviceFolderName = "forRepairGateway";
+// const CCMSserviceFolderName = "forServiceCCMS";
+
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "CCMS";
 const Gw_deviceType = "Gateway";

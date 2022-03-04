@@ -17,13 +17,13 @@ class ExampleApp extends StatefulWidget {
 class _ExampleAppState extends State<ExampleApp> {
   final _streamController = StreamController<PolyGeofence>();
 
-  final List<LatLng> _areaGreen = [
-    const LatLng(11.140737304684361,76.94101095199585),
-    const LatLng(11.140737304684361,76.94142937660217),
-    const LatLng(11.140889941168785,76.94142937660217),
-    const LatLng(11.140889941168785,76.94101095199585),
-    const LatLng(11.140737304684361,76.94101095199585)
-  ];
+  // final List<LatLng> _areaGreen = [
+  //   const LatLng(11.140737304684361,76.94101095199585),
+  //   const LatLng(11.140737304684361,76.94142937660217),
+  //   const LatLng(11.140889941168785,76.94142937660217),
+  //   const LatLng(11.140889941168785,76.94101095199585),
+  //   const LatLng(11.140737304684361,76.94101095199585)
+  // ];
 
   // Create a [PolyGeofenceService] instance and set options.
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
@@ -64,9 +64,12 @@ class _ExampleAppState extends State<ExampleApp> {
   void _onLocationChanged(Location location) {
     print('location: ${location.toJson()}');
 
-    var insideArea = _checkIfValidMarker(
-        LatLng(location.latitude, location.longitude), _areaGreen);
-    print('location check: ${insideArea}');
+    for(int i=0;i<_polyGeofenceList[0].polygon.length;i++) {
+      var insideArea = _checkIfValidMarker(
+          LatLng(location.latitude, location.longitude),
+          _polyGeofenceList[i].polygon);
+      print('location check: ${insideArea}');
+    }
   }
 
   // This function is to be called when a location services status change occurs
