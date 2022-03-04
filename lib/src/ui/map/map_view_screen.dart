@@ -85,12 +85,12 @@ class map_view_screen_state extends State<map_view_screen> {
             resizeToAvoidBottomInset: false,
             extendBody: true,
             body: Container(
-                color: thbDblue,
+                color: darkgreen,
                 child: Column(children: [
                   Container(
                     height: 100,
                     decoration: const BoxDecoration(
-                        color: thbDblue,
+                        color: darkgreen,
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(0.0),
                             topRight: Radius.circular(0.0),
@@ -101,12 +101,11 @@ class map_view_screen_state extends State<map_view_screen> {
                         Container(
                           alignment: Alignment.center,
                           padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: Text('Map view',
+                          child: Text('Map View',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                   fontSize: 25.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "Aqua",
                                   color: Colors.white)),
                         ),
                         Positioned(
@@ -161,11 +160,11 @@ class map_view_screen_state extends State<map_view_screen> {
                                                         MaterialPageRoute(
                                                             builder: (BuildContext
                                                                     context) =>
-                                                                ward_li_screen()));
+                                                                region_list_screen()));
                                                     setState(() {});
                                                   },
                                                   child: Container(
-                                                    color: thbDblue,
+                                                    color: darkgreen,
                                                     width: 120.0,
                                                     height: 50.0,
                                                     child: Center(
@@ -174,7 +173,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                           style: const TextStyle(
                                                               fontSize: 16.0,
                                                               fontFamily:
-                                                                  "Montserrat",
+                                                                  "Aqua",
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
@@ -204,7 +203,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                     setState(() {});
                                                   },
                                                   child: Container(
-                                                    color: thbDblue,
+                                                    color: darkgreen,
                                                     width: 120.0,
                                                     height: 50.0,
                                                     child: Center(
@@ -213,7 +212,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                           style: const TextStyle(
                                                               fontSize: 16.0,
                                                               fontFamily:
-                                                                  "Montserrat",
+                                                                  "Aqua",
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
@@ -243,7 +242,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                     setState(() {});
                                                   },
                                                   child: Container(
-                                                    color: thbDblue,
+                                                    color: darkgreen,
                                                     width: 120.0,
                                                     height: 50.0,
                                                     child: Center(
@@ -252,7 +251,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                           style: const TextStyle(
                                                               fontSize: 16.0,
                                                               fontFamily:
-                                                                  "Montserrat",
+                                                                  "Aqua",
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
@@ -321,17 +320,34 @@ class map_view_screen_state extends State<map_view_screen> {
     final result = await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text("Luminator"),
-        content: Text("Are you sure you want to Logout?"),
+        title: Text("Luminator",
+            style: const TextStyle(
+                fontSize: 25.0,
+                fontFamily: "Aqua",
+                fontWeight: FontWeight.bold,
+                color: darkgreen)),
+        content: Text("Are you sure you want to Logout?",
+            style: const TextStyle(
+                fontSize: 18.0,
+                fontFamily: "Montserrat",
+                fontWeight: FontWeight.bold,
+                color: Colors.black)),
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
             },
-            child: Text("NO"),
+            child: Text("NO",
+                style: const TextStyle(
+                    fontSize: 18.0,
+                    fontFamily: "Aqua",
+                    color: darkgreen)),
           ),
           TextButton(
-            child: Text('YES', style: TextStyle(color: Colors.red)),
+            child: Text('YES', style: TextStyle(color: Colors.red,
+              fontSize: 18.0,
+              fontFamily: "Aqua",
+            )),
             onPressed: () {
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
             },

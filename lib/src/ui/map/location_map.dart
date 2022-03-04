@@ -52,7 +52,7 @@ class _LocationWidgetState extends State<LocationWidget> {
   var addvalue;
   String? _error;
   MapController _mapController = MapController();
-  double _zoom = 12;
+  double _zoom = 10;
   late int current;
   late double marker;
   LocationData? currentLocation;
@@ -69,11 +69,14 @@ class _LocationWidgetState extends State<LocationWidget> {
   List<CircleMarker> circleMarkers = [];
   late ProgressDialog pr;
 
+  get loginThingsboard => null;
+
   @override
   void initState() {
     super.initState();
-    current = widget.initialLabel;
+    getCurrentLocation();
     _listenLocation();
+    current = widget.initialLabel;
     callWatcher(context);
   }
 
@@ -114,7 +117,7 @@ class _LocationWidgetState extends State<LocationWidget> {
     });
   }
 
-  distance() {
+ Future<void> distance() async{
     double calculateDistance(lat1, lon1, lat2, lon2) {
       var p = 0.017453292519943295;
       var c = cos;
@@ -178,269 +181,349 @@ class _LocationWidgetState extends State<LocationWidget> {
       ];
 
     return Scaffold(
-        backgroundColor: Colors.grey,
-        body: Stack(children: <Widget>[
-          if (_location != null)
-            FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                // swPanBoundary: LatLng(13, 77.5),
-                // nePanBoundary: LatLng(13.07001, 77.58),
-                // center: _latLngList[0],
-                // bounds: LatLngBounds.fromPoints(_latLngList),
-                zoom: _zoom,
-                center: LatLng(_location!.latitude, _location!.longitude),
-                interactiveFlags: InteractiveFlag.pinchZoom |
-                    InteractiveFlag.doubleTapZoom |
-                    InteractiveFlag.drag,
-                plugins: [
-                  MarkerClusterPlugin(),
-                ],
-                onTap: (_) => _popupController.hidePopup(),
-              ),
-              layers: [
-                TileLayerOptions(
-                  minZoom: 2,
-                  maxZoom: 18,
-                  backgroundColor: Colors.black,
-                  // errorImage: ,
-                  urlTemplate:
-                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  subdomains: ['a', 'b', 'c'],
-                ),
-                CircleLayerOptions(circles: circleMarkers),
-                MarkerClusterLayerOptions(
-                  maxClusterRadius: 190,
-                  disableClusteringAtZoom: 16,
-                  size: const Size(50, 50),
-                  fitBoundsOptions: const FitBoundsOptions(
-                    padding: EdgeInsets.all(50),
-                  ),
-                  markers: _markers,
-                  polygonOptions: const PolygonOptions(
-                      borderColor: Colors.blueAccent,
-                      color: Colors.black12,
-                      borderStrokeWidth: 3),
-                  popupOptions: PopupOptions(
-                      popupSnap: PopupSnap.top,
-                      popupController: _popupController,
-                      popupBuilder: (_, marker) => Container(
-                          padding: const EdgeInsets.all(5),
-                          color: Colors.white,
-                          child: GestureDetector(
-                              onTap: () {
-                                popupOnClick(
-                                    listAnswers[listAnswers.indexWhere((pair) =>
-                                            pair['Key'] ==
-                                            marker.point.latitude
-                                                .toString())]['value']
-                                        .toString(),
-                                    context);
-                              },
-                              child: Container(
-                                  alignment: Alignment.center,
-                                  height: 65,
-                                  width: 150,
-                                  child: Column(children: [
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text("Lattitude : "),
-                                          Text(
-                                            marker.point.latitude.toString(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ]),
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text("Longitude : "),
-                                          Text(
-                                            marker.point.longitude.toString(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ]),
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text("name : "),
-                                          Text(
-                                              listAnswers[listAnswers
-                                                          .indexWhere((pair) =>
-                                                              pair['Key'] ==
-                                                              marker
-                                                                  .point.latitude
-                                                                  .toString())]
-                                                      ['value']
-                                                  .toString(),
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                              )),
-                                        ]),
-                                  ]))))),
-                  builder: (context, markers) {
-                    return Container(
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                          color: Colors.orange, shape: BoxShape.circle),
-                      child: Text('${markers.length}'),
-                    );
-                  },
-                ),
+      backgroundColor: Colors.grey,
+      body: Stack(children: <Widget>[
+        if (_location != null)
+          FlutterMap(
+            options: MapOptions(
+              zoom: _zoom,
+              center: LatLng(_location!.latitude, _location!.longitude),
+              interactiveFlags: InteractiveFlag.pinchZoom |
+                  InteractiveFlag.doubleTapZoom |
+                  InteractiveFlag.drag,
+              plugins: [
+                MarkerClusterPlugin(),
               ],
+              onTap: (_) => _popupController.hidePopup(),
             ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10, right: 15.0),
-            child: Align(
-              alignment: Alignment.topRight,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  height: 30,
+            mapController: _mapController,
+            layers: [
+              TileLayerOptions(
+                minZoom: 2,
+                maxZoom: 18,
+                backgroundColor: Colors.black,
+                // errorImage: ,
+                urlTemplate:
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains: ['a', 'b', 'c'],
+              ),
+              CircleLayerOptions(circles: circleMarkers),
+              MarkerClusterLayerOptions(
+                maxClusterRadius: 190,
+                disableClusteringAtZoom: 16,
+                size: const Size(50, 50),
+                fitBoundsOptions: const FitBoundsOptions(
+                  padding: EdgeInsets.all(50),
+                ),
+                markers: _markers,
+                polygonOptions: const PolygonOptions(
+                    borderColor: Colors.blueAccent,
+                    color: Colors.black12,
+                    borderStrokeWidth: 3),
+                popupOptions: PopupOptions(
+                    popupSnap: PopupSnap.top,
+                    popupController: _popupController,
+                    popupBuilder: (_, marker) => Container(
+                        padding: const EdgeInsets.all(5),
+                        color: Colors.white,
+                        child: GestureDetector(
+                            onTap: () {
+                              popupOnClick(
+                                  listAnswers[listAnswers.indexWhere((pair) =>
+                                              pair['Key'] ==
+                                              marker.point.latitude.toString())]
+                                          ['value']
+                                      .toString(),
+                                  context);
+                            },
+                            child: Container(
+                                alignment: Alignment.center,
+                                height: 65,
+                                width: 150,
+                                child: Column(children: [
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text("Lattitude : "),
+                                        Text(
+                                          marker.point.latitude.toString(),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ]),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text("Longitude : "),
+                                        Text(
+                                          marker.point.longitude.toString(),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ]),
+                                  Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text("Name : "),
+                                        Text(
+                                            listAnswers[listAnswers.indexWhere(
+                                                        (pair) =>
+                                                            pair['Key'] ==
+                                                            marker
+                                                                .point.latitude
+                                                                .toString())]
+                                                    ['value']
+                                                .toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            )),
+                                      ]),
+                                ]))))),
+                builder: (context, markers) {
+                  return Container(
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                        color: Colors.orange, shape: BoxShape.circle),
+                    child: Text('${markers.length}'),
+                  );
+                },
+              ),
+            ],
+          ),
+        Padding(
+          padding: const EdgeInsets.only(right: 13, bottom: 40),
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: GestureDetector(
+              onTap: () {
+                getCurrentLocation();
+              },
+              child: Container(
+                height: 55,
+                width: 55,
+                //margin: EdgeInsets.all(10.0),
+                decoration: const BoxDecoration(
+                  color: darkgreen,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.my_location,
                   color: Colors.white,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: List.generate(
-                        ['All', 'ILM', 'CCMS', 'GW'].length * 2 - 1, (index) {
-                      final active = index ~/ 2 == current;
-                      final textColor = active ? Colors.black : Colors.black;
-                      final bgColor = active ? thbDblue : Colors.transparent;
-                      if (index % 2 == 1) {
-                        final activeDivider =
-                            active || index ~/ 2 == current - 1;
-                        return Container(
-                          width: 1,
-                          color: activeDivider ? lightorange : Colors.white30,
-                          margin: EdgeInsets.symmetric(
-                              vertical: activeDivider ? 0 : 8),
-                        );
-                      } else {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              current = index ~/ 2;
-                              if (widget.onToggle != null) {
-                                widget.onToggle(index);
-                              }
-                              if (current == 0) {
-                                _markers = _latLngListAll
-                                    .map((point) => Marker(
-                                          point: point,
-                                          width: 60,
-                                          height: 60,
-                                          builder: (context) => const Icon(
-                                            Icons.location_pin,
-                                            size: 60,
-                                            color: Colors.blueAccent,
-                                          ),
-                                        ))
-                                    .toList();
-                              }
-                              if (current == 1) {
-                                _markers = _latLngListILM
-                                    .map((point) => Marker(
-                                          point: point,
-                                          width: 60,
-                                          height: 60,
-                                          builder: (context) => const Icon(
-                                            Icons.location_pin,
-                                            size: 60,
-                                            color: Colors.red,
-                                          ),
-                                        ))
-                                    .toList();
-                              }
-                              if (current == 2) {
-                                _markers = _latLngListCCMS
-                                    .map((point) => Marker(
-                                          point: point,
-                                          width: 60,
-                                          height: 60,
-                                          builder: (context) => const Icon(
-                                            Icons.location_pin,
-                                            size: 60,
-                                            color: Colors.green,
-                                          ),
-                                        ))
-                                    .toList();
-                              }
-                              if (current == 3) {
-                                _markers = _latLngListGW
-                                    .map((point) => Marker(
-                                          point: point,
-                                          width: 60,
-                                          height: 60,
-                                          builder: (context) => const Icon(
-                                            Icons.location_pin,
-                                            size: 60,
-                                            color: Colors.purple,
-                                          ),
-                                        ))
-                                    .toList();
-                              }
-                            });
-                          },
-                          child: Container(
-                            constraints: const BoxConstraints(minWidth: 40),
-                            alignment: Alignment.center,
-                            color: bgColor,
-                            child: Text(
-                                ['All', 'ILM', 'CCMS', 'GW'][index ~/ 2],
-                                style: TextStyle(color: textColor)),
-                          ),
-                        );
-                      }
-                    }),
-                  ),
                 ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 13, bottom: 40),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _markers = [LatLng(lattitude, longitude)]
-                        .map((point) => Marker(
-                              point: point,
-                              width: 60,
-                              height: 60,
-                              builder: (context) => Icon(
-                                Icons.location_pin,
-                                size: 60,
-                                color: Colors.cyan,
-                              ),
-                            ))
-                        .toList();
-                  });
-                },
-                child: Container(
-                  height: 55,
-                  width: 55,
-                  //margin: EdgeInsets.all(10.0),
-                  decoration: const BoxDecoration(
-                    color: thbDblue,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.my_location),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 10, right: 15.0),
+          child: Align(
+            alignment: Alignment.topRight,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                height: 30,
+                color: Colors.white,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                      ['All', 'ILM', 'CCMS', 'GW'].length * 2 - 1, (index) {
+                    final active = index ~/ 2 == current;
+                    final textColor = active ? Colors.white : Colors.black;
+                    final bgColor = active ? darkgreen : Colors.transparent;
+                    if (index % 2 == 1) {
+                      final activeDivider = active || index ~/ 2 == current - 1;
+                      return Container(
+                        width: 1,
+                        color: activeDivider ? lightorange : Colors.white30,
+                        margin: EdgeInsets.symmetric(
+                            vertical: activeDivider ? 0 : 8),
+                      );
+                    } else {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            current = index ~/ 2;
+                            if (widget.onToggle != null) {
+                              widget.onToggle(index);
+                            }
+                            if (current == 0) {
+                              var _markers_1 = _latLngListILM
+                                  .map((point) => Marker(
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.red,
+                                        ),
+                                      ))
+                                  .toList();
+                              var _markers_2 = _latLngListCCMS
+                                  .map((point) => Marker(
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.green,
+                                        ),
+                                      ))
+                                  .toList();
+                              var _markers_3 = _latLngListGW
+                                  .map((point) => Marker(
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.purple,
+                                        ),
+                                      ))
+                                  .toList();
+                              _markers = _markers_1 + _markers_2 + _markers_3;
+                            }
+                            if (current == 1) {
+                              _markers = _latLngListILM
+                                  .map((point) => Marker(
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.red,
+                                        ),
+                                      ))
+                                  .toList();
+                            }
+                            if (current == 2) {
+                              _markers = _latLngListCCMS
+                                  .map((point) => Marker(
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.green,
+                                        ),
+                                      ))
+                                  .toList();
+                            }
+                            if (current == 3) {
+                              _markers = _latLngListGW
+                                  .map((point) => Marker(
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.purple,
+                                        ),
+                                      ))
+                                  .toList();
+                            }
+                          });
+                        },
+                        child: Container(
+                          constraints: const BoxConstraints(minWidth: 40),
+                          alignment: Alignment.center,
+                          color: bgColor,
+                          child: Text(['All', 'ILM', 'CCMS', 'GW'][index ~/ 2],
+                              style: TextStyle(
+                                  color: textColor, fontFamily: "Aqua")),
+                        ),
+                      );
+                    }
+                  }),
                 ),
               ),
             ),
-          )
-        ]));
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 13, bottom: 40),
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: GestureDetector(
+              onTap: () {
+                getCurrentLocation();
+              },
+              child: Container(
+                height: 55,
+                width: 55,
+                //margin: EdgeInsets.all(10.0),
+                decoration: const BoxDecoration(
+                  color: darkgreen,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.my_location,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        )
+      ]),
+    );
+  }
+
+  getCurrentLocation() async {
+    Location location = new Location();
+
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+    LocationData _locationData;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+
+    setState(() {
+      //_center = LatLng(_locationData.latitude, _locationData.longitude);
+      _mapController.move(
+          LatLng(_locationData.latitude, _locationData.longitude), 10.0);
+
+      _markers = [LatLng(_locationData.latitude, _locationData.longitude)]
+          .map((point) => Marker(
+                point: point,
+                width: 60,
+                height: 60,
+                builder: (context) => Icon(
+                  Icons.location_pin,
+                  size: 60,
+                  color: Colors.cyan,
+                ),
+              ))
+          .toList();
+    });
   }
 
   Future<void> popupOnClick(String string, BuildContext context) async {
@@ -857,31 +940,54 @@ class _LocationWidgetState extends State<LocationWidget> {
 
                       setState(() {
                         if (relatedDevice.type == "lumiNode") {
-                          _latLngListAll.add(LatLng(sslat, sslong));
+                          _latLngListILM.add(LatLng(sslat, sslong));
                         } else if (relatedDevice.type == "CCMS") {
                           _latLngListCCMS.add(LatLng(sslat, sslong));
-                        } else if (relatedDevice.type == "gateway") {
+                        } else {
                           _latLngListGW.add(LatLng(sslat, sslong));
                         }
 
-                        _latLngListILM.add(LatLng(sslat, sslong));
                         ssname = relatedDevice.name;
                       });
                     }
                   }
-                  _markers = _latLngListAll
+                  var _markers_1 = _latLngListILM
                       .map((point) => Marker(
                             point: point,
-                            width: 45,
-                            height: 45,
-                            anchorPos: AnchorPos.align(AnchorAlign.top),
+                            width: 60,
+                            height: 60,
                             builder: (context) => const Icon(
-                              Icons.place,
-                              size: 45,
+                              Icons.location_pin,
+                              size: 60,
+                              color: Colors.red,
+                            ),
+                          ))
+                      .toList();
+                  var _markers_2 = _latLngListCCMS
+                      .map((point) => Marker(
+                            point: point,
+                            width: 60,
+                            height: 60,
+                            builder: (context) => const Icon(
+                              Icons.location_pin,
+                              size: 60,
                               color: Colors.green,
                             ),
                           ))
                       .toList();
+                  var _markers_3 = _latLngListGW
+                      .map((point) => Marker(
+                            point: point,
+                            width: 60,
+                            height: 60,
+                            builder: (context) => const Icon(
+                              Icons.location_pin,
+                              size: 60,
+                              color: Colors.purple,
+                            ),
+                          ))
+                      .toList();
+                  _markers = _markers_1 + _markers_2 + _markers_3;
 
                   distance();
                 } else {}
