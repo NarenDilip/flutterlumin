@@ -17,7 +17,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,6 +28,10 @@ import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
+
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class gwcaminstall extends StatefulWidget {
   const gwcaminstall() : super();
@@ -41,7 +45,7 @@ class gwcaminstallState extends State<gwcaminstall> {
   var imageFile;
   var accuvalue;
   var addvalue;
-  LocationData? currentLocation;
+  // LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
   String SelectedZone = "0";
@@ -54,9 +58,129 @@ class gwcaminstallState extends State<gwcaminstall> {
   late ProgressDialog pr;
   List<double>? _latt = [];
 
-  final Location locations = Location();
-  LocationData? _location;
-  StreamSubscription<LocationData>? _locationSubscription;
+  String Lattitude = "0";
+  String Longitude = "0";
+  late bool visibility = true;
+  late bool viewvisibility = true;
+
+  final _streamController = StreamController<PolyGeofence>();
+
+  // final Location locations = Location();
+  // LocationData? _location;
+  // StreamSubscription<LocationData>? _locationSubscription;
+
+  final _polyGeofenceService = PolyGeofenceService.instance.setup(
+      interval: 5000,
+      accuracy: 100,
+      loiteringDelayMs: 60000,
+      statusChangeDelayMs: 10000,
+      allowMockLocations: false,
+      printDevLog: false);
+
+  // Create a [PolyGeofence] list.
+  final _polyGeofenceList = <PolyGeofence>[
+    PolyGeofence(
+      id: 'Office_Address',
+      data: {
+        'address': 'Coimbatore',
+        'about': 'Schnell Energy Equipments,Coimbatore.',
+      },
+      polygon: <LatLng>[
+        const LatLng(11.140339923116493, 76.94095999002457),
+      ],
+    ),
+  ];
+
+  // This function is to be called when the geofence status is changed.
+  Future<void> _onPolyGeofenceStatusChanged(PolyGeofence polyGeofence,
+      PolyGeofenceStatus polyGeofenceStatus, Location location) async {
+    print('polyGeofence: ${polyGeofence.toJson()}');
+    print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
+    _streamController.sink.add(polyGeofence);
+  }
+
+  // Future<String> getJson() {
+  //   return rootBundle.loadString('geofence.json');
+  // }
+
+  // This function is to be called when the location has changed.
+  Future<void> _onLocationChanged(Location location) async {
+    print('location: ${location.toJson()}');
+    accuracy = location!.accuracy!;
+    Lattitude = location!.latitude!.toString();
+    Longitude = location!.longitude!.toString();
+    var insideArea;
+    if (accuracy <= 5) {
+      for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+        insideArea = _checkIfValidMarker(
+            LatLng(location.latitude, location.longitude),
+            _polyGeofenceList[0].polygon);
+        print('location check: ${insideArea}');
+        visibility = true;
+        _polyGeofenceService.stop();
+      }
+    } else {
+      visibility = false;
+      Fluttertoast.showToast(
+          msg:
+          "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+              insideArea!.toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    }
+  }
+
+  Future<void> callPolygons() async {}
+
+  // This function is to be called when a location services status change occurs
+  // since the service was started.
+  void _onLocationServicesStatusChanged(bool status) {
+    print('isLocationServicesEnabled: $status');
+  }
+
+  // This function is used to handle errors that occur in the service.
+  void _onError(error) {
+    final errorCode = getErrorCodesFromError(error);
+    if (errorCode == null) {
+      print('Undefined error: $error');
+      return;
+    }
+    print('ErrorCode: $errorCode');
+  }
+
+  bool _checkIfValidMarker(LatLng tap, List<LatLng> vertices) {
+    int intersectCount = 0;
+    for (int j = 0; j < vertices.length - 1; j++) {
+      if (rayCastIntersect(tap, vertices[j], vertices[j + 1])) {
+        intersectCount++;
+      }
+    }
+    return ((intersectCount % 2) == 1); // odd = inside, even = outside;
+  }
+
+  bool rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
+    double aY = vertA.latitude;
+    double bY = vertB.latitude;
+    double aX = vertA.longitude;
+    double bX = vertB.longitude;
+    double pY = tap.latitude;
+    double pX = tap.longitude;
+
+    if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
+      return false; // a and b can't both be above or below pt.y, and a or
+      // b must be east of pt.x
+    }
+    return true;
+  }
+
+
+  // final Location locations = Location();
+  // LocationData? _location;
+  // StreamSubscription<LocationData>? _locationSubscription;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -82,48 +206,48 @@ class gwcaminstallState extends State<gwcaminstall> {
     getSharedPrefs();
   }
 
-  Future<void> _listenLocation() async {
-    _locationSubscription =
-        locations.onLocationChanged.handleError((dynamic err) {
-      if (err is PlatformException) {
-        setState(() {
-          _error = err.code;
-        });
-      }
-      _locationSubscription?.cancel();
-      setState(() {
-        _locationSubscription = null;
-      });
-    }).listen((LocationData currentLocation) {
-      setState(() {
-        _error = null;
-        _location = currentLocation;
-        _getAddress(_location!.latitude, _location!.longitude).then((value) {
-          setState(() {
-            address = value;
-            // if (_latt!.length <= 5) {
-            _latt!.add(_location!.latitude!);
-            lattitude = _location!.latitude!;
-            longitude = _location!.longitude!;
-            accuracy = _location!.accuracy!;
-            // addresss = addresss;
-            // } else {
-            if (accuracy <= 7) {
-              _locationSubscription?.cancel();
-              setState(() {
-                _locationSubscription = null;
-              });
-              accuvalue = accuracy.toString().split(".");
-              addvalue = value.toString().split(",");
-              callReplacementComplete(
-                  context, imageFile, DeviceName, SelectedWard);
-            }
-            // }
-          });
-        });
-      });
-    });
-  }
+  // Future<void> _listenLocation() async {
+  //   _locationSubscription =
+  //       locations.onLocationChanged.handleError((dynamic err) {
+  //     if (err is PlatformException) {
+  //       setState(() {
+  //         _error = err.code;
+  //       });
+  //     }
+  //     _locationSubscription?.cancel();
+  //     setState(() {
+  //       _locationSubscription = null;
+  //     });
+  //   }).listen((LocationData currentLocation) {
+  //     setState(() {
+  //       _error = null;
+  //       _location = currentLocation;
+  //       _getAddress(_location!.latitude, _location!.longitude).then((value) {
+  //         setState(() {
+  //           address = value;
+  //           // if (_latt!.length <= 5) {
+  //           _latt!.add(_location!.latitude!);
+  //           lattitude = _location!.latitude!;
+  //           longitude = _location!.longitude!;
+  //           accuracy = _location!.accuracy!;
+  //           // addresss = addresss;
+  //           // } else {
+  //           if (accuracy <= 7) {
+  //             _locationSubscription?.cancel();
+  //             setState(() {
+  //               _locationSubscription = null;
+  //             });
+  //             accuvalue = accuracy.toString().split(".");
+  //             addvalue = value.toString().split(",");
+  //             callReplacementComplete(
+  //                 context, imageFile, DeviceName, SelectedWard);
+  //           }
+  //           // }
+  //         });
+  //       });
+  //     });
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +325,26 @@ class gwcaminstallState extends State<gwcaminstall> {
                             // Utility.progressDialog(context);
                             if (imageFile != null) {
                               pr.show();
-                              _listenLocation();
+                              // _listenLocation();
+
+                              WidgetsBinding.instance
+                                  ?.addPostFrameCallback((_) {
+                                _polyGeofenceService.start();
+                                _polyGeofenceService
+                                    .addPolyGeofenceStatusChangeListener(
+                                    _onPolyGeofenceStatusChanged);
+                                _polyGeofenceService.addLocationChangeListener(
+                                    _onLocationChanged);
+                                _polyGeofenceService
+                                    .addLocationServicesStatusChangeListener(
+                                    _onLocationServicesStatusChanged);
+                                _polyGeofenceService
+                                    .addStreamErrorListener(_onError);
+                                _polyGeofenceService
+                                    .start(_polyGeofenceList)
+                                    .catchError(_onError);
+                              });
+
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
@@ -683,40 +826,40 @@ class gwcaminstallState extends State<gwcaminstall> {
         fontSize: 16.0);
   }
 
-  Future<LocationData?> _getLocation() async {
-    Location location = Location();
-    LocationData _locationData;
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return null;
-      }
-    }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return null;
-      }
-    }
-
-    _locationData = await location.getLocation();
-
-    return _locationData;
-  }
-
-  Future<String> _getAddress(double? lat, double? lang) async {
-    if (lat == null || lang == null) return "";
-    final coordinates = new Coordinates(lat, lang);
-    List<Address> addresss = (await Geocoder.local
-        .findAddressesFromCoordinates(coordinates)) as List<Address>;
-    return "${addresss.elementAt(1).addressLine}";
-  }
+  // Future<LocationData?> _getLocation() async {
+  //   Location location = Location();
+  //   LocationData _locationData;
+  //   bool _serviceEnabled;
+  //   PermissionStatus _permissionGranted;
+  //
+  //   _serviceEnabled = await location.serviceEnabled();
+  //   if (!_serviceEnabled) {
+  //     _serviceEnabled = await location.requestService();
+  //     if (!_serviceEnabled) {
+  //       return null;
+  //     }
+  //   }
+  //
+  //   _permissionGranted = await location.hasPermission();
+  //   if (_permissionGranted == PermissionStatus.denied) {
+  //     _permissionGranted = await location.requestPermission();
+  //     if (_permissionGranted != PermissionStatus.granted) {
+  //       return null;
+  //     }
+  //   }
+  //
+  //   _locationData = await location.getLocation();
+  //
+  //   return _locationData;
+  // }
+  //
+  // Future<String> _getAddress(double? lat, double? lang) async {
+  //   if (lat == null || lang == null) return "";
+  //   final coordinates = new Coordinates(lat, lang);
+  //   List<Address> addresss = (await Geocoder.local
+  //       .findAddressesFromCoordinates(coordinates)) as List<Address>;
+  //   return "${addresss.elementAt(1).addressLine}";
+  // }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;

@@ -114,25 +114,25 @@ class device_count_screen_state extends State<device_count_screen> {
     // var my_data = json.decode(await getJson());
     // my_data.toString();
 
-    // for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-    //
-    //   var insideArea = _checkIfValidMarker(
-    //       LatLng(location.latitude, location.longitude),
-    //       _polyGeofenceList[0].polygon);
-    //   print('location check: ${insideArea}');
-    //
-    //   Fluttertoast.showToast(
-    //       msg: "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " + insideArea!.toString(),
-    //       toastLength: Toast.LENGTH_SHORT,
-    //       gravity: ToastGravity.BOTTOM,
-    //       timeInSecForIosWeb: 1,
-    //       backgroundColor: Colors.white,
-    //       textColor: Colors.black,
-    //       fontSize: 16.0);
-    // }
-  }
+    for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
 
-  Future<void> callPolygons() async {}
+      var insideArea = _checkIfValidMarker(
+          LatLng(location.latitude, location.longitude),
+          _polyGeofenceList[0].polygon);
+      print('location check: ${insideArea}');
+
+      Fluttertoast.showToast(
+          msg: "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " + insideArea!.toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+
+      _polyGeofenceService.stop();
+    }
+  }
 
   // This function is to be called when a location services status change occurs
   // since the service was started.

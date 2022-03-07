@@ -25,7 +25,7 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:location/location.dart';
+// import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,6 +33,10 @@ import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../utils/toogle_button.dart';
 import '../../splash_screen.dart';
+
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen() : super();
@@ -64,7 +68,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   late bool visibility = true;
   late bool viewvisibility = true;
 
-  LocationData? currentLocation;
+  // LocationData? currentLocation;
   String? _error;
   double lattitude = 0;
   double longitude = 0;
@@ -73,9 +77,132 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   var accuvalue;
   var addvalue;
   List<double>? _latt = [];
-  final Location locations = Location();
-  LocationData? _location;
-  StreamSubscription<LocationData>? _locationSubscription;
+  final _streamController = StreamController<PolyGeofence>();
+  // final Location locations = Location();
+  // LocationData? _location;
+  // StreamSubscription<LocationData>? _locationSubscription;
+
+  final _polyGeofenceService = PolyGeofenceService.instance.setup(
+      interval: 5000,
+      accuracy: 100,
+      loiteringDelayMs: 60000,
+      statusChangeDelayMs: 10000,
+      allowMockLocations: false,
+      printDevLog: false);
+
+  // Create a [PolyGeofence] list.
+  final _polyGeofenceList = <PolyGeofence>[
+    PolyGeofence(
+      id: 'Office_Address',
+      data: {
+        'address': 'Coimbatore',
+        'about': 'Schnell Energy Equipments,Coimbatore.',
+      },
+      polygon: <LatLng>[
+        const LatLng(11.140339923116493, 76.94095999002457),
+      ],
+    ),
+  ];
+
+  // This function is to be called when the geofence status is changed.
+  Future<void> _onPolyGeofenceStatusChanged(PolyGeofence polyGeofence,
+      PolyGeofenceStatus polyGeofenceStatus, Location location) async {
+    print('polyGeofence: ${polyGeofence.toJson()}');
+    print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
+    _streamController.sink.add(polyGeofence);
+  }
+
+  // Future<String> getJson() {
+  //   return rootBundle.loadString('geofence.json');
+  // }
+
+  // This function is to be called when the location has changed.
+  Future<void> _onLocationChanged(Location location) async {
+    print('location: ${location.toJson()}');
+    accuracy = location!.accuracy!;
+    var insideArea;
+    if (accuracy <= 5) {
+      for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+        insideArea = _checkIfValidMarker(
+            LatLng(location.latitude, location.longitude),
+            _polyGeofenceList[0].polygon);
+        print('location check: ${insideArea}');
+
+
+
+        Geolocator geolocator = new Geolocator();
+        var difference = await geolocator.distanceBetween(
+            double.parse(Lattitude),
+            double.parse(Longitude),
+            location!.latitude!,
+            location!.longitude!);
+
+        if (difference <= 5.0) {
+          visibility = true;
+          _polyGeofenceService.stop();
+        } else {
+          visibility = false;
+        }
+      }
+    } else {
+      visibility = false;
+
+      Fluttertoast.showToast(
+          msg:
+          "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+              insideArea!.toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+
+    }
+  }
+
+  Future<void> callPolygons() async {}
+
+  // This function is to be called when a location services status change occurs
+  // since the service was started.
+  void _onLocationServicesStatusChanged(bool status) {
+    print('isLocationServicesEnabled: $status');
+  }
+
+  // This function is used to handle errors that occur in the service.
+  void _onError(error) {
+    final errorCode = getErrorCodesFromError(error);
+    if (errorCode == null) {
+      print('Undefined error: $error');
+      return;
+    }
+    print('ErrorCode: $errorCode');
+  }
+
+  bool _checkIfValidMarker(LatLng tap, List<LatLng> vertices) {
+    int intersectCount = 0;
+    for (int j = 0; j < vertices.length - 1; j++) {
+      if (rayCastIntersect(tap, vertices[j], vertices[j + 1])) {
+        intersectCount++;
+      }
+    }
+    return ((intersectCount % 2) == 1); // odd = inside, even = outside;
+  }
+
+  bool rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
+    double aY = vertA.latitude;
+    double bY = vertB.latitude;
+    double aX = vertA.longitude;
+    double bX = vertB.longitude;
+    double pY = tap.latitude;
+    double pX = tap.longitude;
+
+    if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
+      return false; // a and b can't both be above or below pt.y, and a or
+      // b must be east of pt.x
+    }
+    return true;
+  }
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -139,55 +266,65 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     DeviceName = "";
     DeviceStatus = "";
     getSharedPrefs();
-    _listenLocation();
-  }
-
-  Future<void> _listenLocation() async {
-    // pr.show();
-    _locationSubscription =
-        locations.onLocationChanged.handleError((dynamic err) {
-      if (err is PlatformException) {
-        setState(() {
-          _error = err.code;
-        });
-      }
-      _locationSubscription?.cancel();
-      setState(() {
-        _locationSubscription = null;
-      });
-    }).listen((LocationData currentLocation) {
-      setState(() async {
-        _error = null;
-        _location = currentLocation;
-        _latt!.add(_location!.latitude!);
-        lattitude = _location!.latitude!;
-        longitude = _location!.longitude!;
-        accuracy = _location!.accuracy!;
-
-        // if (accuracy <= 7) {
-        //   _locationSubscription?.cancel();
-          setState(() {
-            viewvisibility = false;
-            // _locationSubscription = null;
-          });
-          accuvalue = accuracy.toString().split(".");
-          // distanceCalculation(context);
-
-          Geolocator geolocator = new Geolocator();
-          var difference = await geolocator.distanceBetween(
-              double.parse(Lattitude),
-              double.parse(Longitude),
-              _location!.latitude!,
-              _location!.longitude!);
-          if (difference <= 5.0) {
-            visibility = true;
-          } else {
-            visibility = false;
-          }
-        // }
-      });
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
     });
+    // _listenLocation();
   }
+
+  // Future<void> _listenLocation() async {
+  //   // pr.show();
+  //   _locationSubscription =
+  //       locations.onLocationChanged.handleError((dynamic err) {
+  //     if (err is PlatformException) {
+  //       setState(() {
+  //         _error = err.code;
+  //       });
+  //     }
+  //     _locationSubscription?.cancel();
+  //     setState(() {
+  //       _locationSubscription = null;
+  //     });
+  //   }).listen((LocationData currentLocation) {
+  //     setState(() async {
+  //       _error = null;
+  //       _location = currentLocation;
+  //       _latt!.add(_location!.latitude!);
+  //       lattitude = _location!.latitude!;
+  //       longitude = _location!.longitude!;
+  //       accuracy = _location!.accuracy!;
+  //
+  //       // if (accuracy <= 7) {
+  //       //   _locationSubscription?.cancel();
+  //         setState(() {
+  //           viewvisibility = false;
+  //           // _locationSubscription = null;
+  //         });
+  //         accuvalue = accuracy.toString().split(".");
+  //         // distanceCalculation(context);
+  //
+  //         Geolocator geolocator = new Geolocator();
+  //         var difference = await geolocator.distanceBetween(
+  //             double.parse(Lattitude),
+  //             double.parse(Longitude),
+  //             _location!.latitude!,
+  //             _location!.longitude!);
+  //         if (difference <= 5.0) {
+  //           visibility = true;
+  //         } else {
+  //           visibility = false;
+  //         }
+  //       // }
+  //     });
+  //   });
+  // }
 
 
   void toggle() {
