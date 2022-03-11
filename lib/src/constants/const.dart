@@ -23,6 +23,11 @@ const liblue = Color(0xff65f2f9 );
 const thbblue = Color(0xff00696e);
 const thbDblue = Color(0xff2F96BF);
 const darkgreen = Color(0xff146e00);
+const lightGrey = Color(0xffE8E8E8);
+const lightRed = Color(0xffFDEBEA);
+const lightRedColor = Color(0xffE1797A);
+const lightBlueColor = Color(0xff87CEEB);
+const lightGreenColor = Color(0xff9FE2BF);
 
 const splashscreen_text = "LUMINATOR";
 

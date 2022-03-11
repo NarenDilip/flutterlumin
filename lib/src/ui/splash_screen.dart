@@ -4,14 +4,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/localdb/db_helper.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard_view.dart';
+import 'package:flutterlumin/src/presentation/views/login_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
-import 'package:flutterlumin/src/ui/installation/ilm/ilm_installation_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
+import 'package:flutterlumin/src/ui/login/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'login/login_screen.dart';
 
 class splash_screen extends StatefulWidget {
   @override
@@ -40,7 +38,8 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                  return login_screen();
+                 return DashboardView(key: UniqueKey(),);
+                  //return login_screen();
                 } else {
                   return dashboard_screen();
                 }
