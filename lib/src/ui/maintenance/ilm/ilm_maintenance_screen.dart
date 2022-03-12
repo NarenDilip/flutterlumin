@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,17 +13,20 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/replacement_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/replacement_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
+
 // import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,10 +35,6 @@ import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../utils/toogle_button.dart';
 import '../../splash_screen.dart';
-
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen() : super();
@@ -59,6 +57,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String SelectedZone = "0";
   String SelectedWard = "0";
   String faultyStatus = "0";
+  String geoFence = "false";
   String timevalue = "0";
   String location = "0";
   String version = "0";
@@ -78,6 +77,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   var addvalue;
   List<double>? _latt = [];
   final _streamController = StreamController<PolyGeofence>();
+
   // final Location locations = Location();
   // LocationData? _location;
   // StreamSubscription<LocationData>? _locationSubscription;
@@ -121,44 +121,69 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     print('location: ${location.toJson()}');
     accuracy = location!.accuracy!;
     var insideArea;
-    if (accuracy <= 5) {
-      for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-        insideArea = _checkIfValidMarker(
-            LatLng(location.latitude, location.longitude),
-            _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
+    if (accuracy <= 7) {
+      if (geoFence == "true") {
+        for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+          insideArea = _checkIfValidMarker(
+              LatLng(location.latitude, location.longitude),
+              _polyGeofenceList[0].polygon);
+          print('location check: ${insideArea}');
 
+          Geolocator geolocator = new Geolocator();
+          var difference = await geolocator.distanceBetween(
+              double.parse(Lattitude),
+              double.parse(Longitude),
+              location!.latitude!,
+              location!.longitude!);
 
-
-        Geolocator geolocator = new Geolocator();
-        var difference = await geolocator.distanceBetween(
-            double.parse(Lattitude),
-            double.parse(Longitude),
-            location!.latitude!,
-            location!.longitude!);
-
-        if (difference <= 5.0) {
-          visibility = true;
-          _polyGeofenceService.stop();
-        } else {
-          visibility = false;
+          if (difference <= 5.0) {
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+            callPolygonStop();
+          } else {
+            setState(() {
+              visibility = false;
+              viewvisibility = true;
+            });
+          }
         }
+      } else {
+        setState(() {
+          visibility = true;
+          viewvisibility = false;
+        });
+        callPolygonStop();
       }
     } else {
-      visibility = false;
+      setState(() {
+        visibility = false;
+        viewvisibility = true;
+      });
 
       Fluttertoast.showToast(
-          msg:
-          "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-              insideArea!.toString(),
+          msg: "Fetching Device Location Accuracy Please wait for Some time" +
+              "Acccuracy Level-->" +
+              accuracy.toString(),
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
           backgroundColor: Colors.white,
           textColor: Colors.black,
           fontSize: 16.0);
-
     }
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
   }
 
   Future<void> callPolygons() async {}
@@ -216,6 +241,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     location = prefs.getString("location").toString();
     version = prefs.getString("version").toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
+    geoFence = prefs.getString('geoFence').toString();
 
     Lattitude = prefs.getString('deviceLatitude').toString();
     Longitude = prefs.getString('deviceLongitude').toString();
@@ -266,17 +292,66 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     DeviceName = "";
     DeviceStatus = "";
     getSharedPrefs();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _polyGeofenceService.start();
-      _polyGeofenceService
-          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
-      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
-      _polyGeofenceService.addLocationServicesStatusChangeListener(
-          _onLocationServicesStatusChanged);
-      _polyGeofenceService.addStreamErrorListener(_onError);
-      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
-    });
+    CallGeoFenceListener(context);
+    // visibility = true;
     // _listenLocation();
+  }
+
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var geoFence = prefs.getString('geoFence').toString();
+      if (geoFence == "true") {
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          _polyGeofenceService.start();
+          _polyGeofenceService.addPolyGeofenceStatusChangeListener(
+              _onPolyGeofenceStatusChanged);
+          _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+          _polyGeofenceService.addLocationServicesStatusChangeListener(
+              _onLocationServicesStatusChanged);
+          _polyGeofenceService.addStreamErrorListener(_onError);
+          _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+        });
+        CallCoordinates(context);
+        setState(() {
+          visibility = true;
+        });
+
+      } else {
+        visibility = true;
+        viewvisibility = false;
+        Fluttertoast.showToast(
+            msg: "GeoFence Availability is not found with this Ward",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+    } catch (e) {}
+  }
+
+  Future<void> CallCoordinates(context) async {
+    try {
+      _polyGeofenceList[0].polygon.clear();
+      String data = await DefaultAssetBundle.of(context)
+          .loadString("assets/json/geofence.json");
+      final jsonResult = jsonDecode(data); //latest Dart
+      var coordinateCount =
+          jsonResult['features'][0]['geometry']['coordinates'][0].length;
+      var details;
+      for (int i = 0; i < coordinateCount; i++) {
+        var latter =
+            jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+        var rlonger =
+            jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+        // polygonad(LatLng(latter,rlonger));
+        _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+        // details[new LatLng(latter,rlonger)];
+      }
+    } catch (e) {}
   }
 
   // Future<void> _listenLocation() async {
@@ -325,7 +400,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   //     });
   //   });
   // }
-
 
   void toggle() {
     setState(() => _isOn = !_isOn);
@@ -895,7 +969,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             child: AlertDialog(
               elevation: 10,
               title: const Text('Luminator Location Alert'),
-              content: const Text('Your are not in the Nearest Range to Controll or Access the Device'),
+              content: const Text(
+                  'Your are not in the Nearest Range to Controll or Access the Device'),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -1273,50 +1348,61 @@ Future<void> replaceILM(context) async {
   Utility.isConnected().then((value) async {
     if (value) {
       late ProgressDialog pr;
-      pr = ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
-        messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
-      );
-      pr.show();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String OlddeviceID = prefs.getString('deviceId').toString();
-      String OlddeviceName = prefs.getString('deviceName').toString();
+      try {
+        pr = ProgressDialog(context,
+            type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white,
+              fontFamily: "Montserrat",
+              fontSize: 19.0,
+              fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(
+              backgroundColor: Colors.lightBlueAccent,
+              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
 
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-          (route) => true).then((value) async {
-        if (value != null) {
-          if (OlddeviceName.toString() != value.toString()) {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            prefs.setString('newDevicename', value);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String OlddeviceID = prefs.getString('deviceId').toString();
+        String OlddeviceName = prefs.getString('deviceName').toString();
 
-            pr.hide();
-            // showActionAlertDialog(context,OlddeviceName,value);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => replaceilm()));
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
+            (route) => true).then((value) async {
+          if (value != null) {
+            if (OlddeviceName.toString() != value.toString()) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('newDevicename', value);
+
+              pr.hide();
+              // showActionAlertDialog(context,OlddeviceName,value);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => replaceilm()));
+            } else {
+              pr.hide();
+              calltoast("Duplicate QR Code");
+            }
           } else {
             pr.hide();
-            calltoast("Duplicate QR Code");
+            calltoast("Invalid QR Code");
           }
+        });
+      } catch (e) {
+        pr.hide();
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
         } else {
-          pr.hide();
-          calltoast("Invalid QR Code");
+          calltoast("Device Replacement Issue");
         }
-      });
+      }
     } else {
       calltoast(no_network);
     }

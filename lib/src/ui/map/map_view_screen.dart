@@ -4,14 +4,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/ui/chevron/chevron.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
-import 'package:flutterlumin/src/ui/map/location_map.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+
 import 'package:flutterlumin/src/ui/point/edge.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'location_map.dart';
 
 class map_view_screen extends StatefulWidget {
   @override
@@ -139,6 +140,11 @@ class map_view_screen_state extends State<map_view_screen> {
                               Column(mainAxisSize: MainAxisSize.min, children: <
                                   Widget>[
                             SizedBox(height: 5),
+                          new Wrap(
+                              spacing: 8.0, // gap between adjacent chips
+                              runSpacing: 4.0, // gap between lines
+                              direction: Axis.horizontal, // main axis (rows or columns)
+                              children: <Widget>[
                             Container(
                                 child: Padding(
                                     padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
@@ -165,13 +171,11 @@ class map_view_screen_state extends State<map_view_screen> {
                                                   },
                                                   child: Container(
                                                     color: thbDblue,
-                                                    width: 120.0,
-                                                    height: 50.0,
+                                                    height: 40.0,
                                                     child: Center(
-                                                      child: Text(
-                                                          '$SelectedRegion',
+                                                        child: Text("  "+'$SelectedRegion'+"      ",
                                                           style: const TextStyle(
-                                                              fontSize: 16.0,
+                                                              fontSize: 14.0,
                                                               fontFamily:
                                                                   "Aqua",
                                                               fontWeight:
@@ -204,13 +208,11 @@ class map_view_screen_state extends State<map_view_screen> {
                                                   },
                                                   child: Container(
                                                     color: thbDblue,
-                                                    width: 120.0,
-                                                    height: 50.0,
+                                                    height: 40.0,
                                                     child: Center(
-                                                      child: Text(
-                                                          '$SelectedZone',
+                                                      child: Text("  "+'$SelectedZone'+"      ",
                                                           style: const TextStyle(
-                                                              fontSize: 16.0,
+                                                              fontSize: 14.0,
                                                               fontFamily:
                                                                   "Aqua",
                                                               fontWeight:
@@ -243,13 +245,11 @@ class map_view_screen_state extends State<map_view_screen> {
                                                   },
                                                   child: Container(
                                                     color: thbDblue,
-                                                    width: 120.0,
-                                                    height: 50.0,
+                                                    height: 40.0,
                                                     child: Center(
-                                                      child: Text(
-                                                          '$SelectedWard',
+                                                      child: Text("  "+'$SelectedWard'+"      ",
                                                           style: const TextStyle(
-                                                              fontSize: 16.0,
+                                                              fontSize: 14.0,
                                                               fontFamily:
                                                                   "Aqua",
                                                               fontWeight:
@@ -295,7 +295,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                           //       //             ward_li_screen()));
                                           //       setState(() {});
                                           //     })
-                                        ]))),
+                                        ]))),]),
                             SizedBox(
                               height: 5,
                             ),

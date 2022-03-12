@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/entity_group_id.dart';
@@ -15,6 +17,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../../../localdb/db_helper.dart';
+import '../../../localdb/model/region_model.dart';
+import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
@@ -175,6 +180,10 @@ class replacementilmState extends State<replacementilm> {
     String deviceName = prefs.getString('deviceName').toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
 
+    String SelectedRegion = prefs.getString('SelectedRegion').toString();
+    String FirmwareVersion = prefs.getString("firmwareVersion").toString();
+
+    var versionCompatability = false;
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
 
@@ -193,98 +202,154 @@ class replacementilmState extends State<replacementilm> {
 
           if (imageFile != null) {
             if (response != null) {
-              if (faultyStatus == "2") {
-                Map data = {'faulty': "true"};
-                var saveAttributes = await tbClient
-                    .getAttributeService()
-                    .saveDeviceAttributes(
-                        response.id!.id!, "SERVER_SCOPE", data);
+              DBHelper dbHelper = DBHelper();
+              var regionid;
+              List<Region> regiondetails =
+                  await dbHelper.region_name_regionbasedDetails(SelectedRegion)
+                      as List<Region>;
+              if (regiondetails.length != "0") {
+                regionid = regiondetails.first.regionid;
               }
 
-              var relationDetails = await tbClient
-                  .getEntityRelationService()
-                  .findInfoByTo(response.id!);
+              try {
+                List<String> myfirmList = [];
+                myfirmList.add("firmware_versions");
 
-              List<EntityGroupInfo> entitygroups;
-              entitygroups = await tbClient
-                  .getEntityGroupService()
-                  .getEntityGroupsByFolderType();
+                List<AttributeKvEntry> faultresponser;
 
-              if (entitygroups != null) {
-                for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-                    DevicemoveFolderName =
-                        entitygroups.elementAt(i).id!.id!.toString();
+                faultresponser = (await tbClient
+                        .getAttributeService()
+                        .getFirmAttributeKvEntries(regionid, myfirmList))
+                    as List<AttributeKvEntry>;
+
+                if (faultresponser.length != 0) {
+                  var firmwaredetails =
+                      faultresponser.first.getValue().toString();
+                  final decoded = jsonDecode(firmwaredetails) as Map;
+                  var firmware_versions = decoded['firmware_version'];
+
+                  if (firmware_versions.toString().contains(FirmwareVersion)) {
+                    versionCompatability = true;
+                  } else {
+                    versionCompatability = false;
                   }
                 }
+              } catch (e) {
+                var message = toThingsboardError(e, context);
+              }
 
-                List<EntityGroupId> currentdeviceresponse;
-                currentdeviceresponse = await tbClient
+              if (versionCompatability == true) {
+                if (faultyStatus == "2") {
+                  Map data = {'faulty': "true"};
+                  var saveAttributes = await tbClient
+                      .getAttributeService()
+                      .saveDeviceAttributes(
+                          response.id!.id!, "SERVER_SCOPE", data);
+                }
+
+                var relationDetails = await tbClient
+                    .getEntityRelationService()
+                    .findInfoByTo(response.id!);
+
+                List<EntityGroupInfo> entitygroups;
+                entitygroups = await tbClient
                     .getEntityGroupService()
-                    .getEntityGroupsForFolderEntity(response.id!.id!);
+                    .getEntityGroupsByFolderType();
 
-                if (currentdeviceresponse != null) {
-                  if (currentdeviceresponse.last.id.toString().isNotEmpty) {
-                    var firstdetails = await tbClient
-                        .getEntityGroupService()
-                        .getEntityGroup(currentdeviceresponse.first.id!);
-                    if (firstdetails!.name.toString() != "All") {
-                      DevicecurrentFolderName = currentdeviceresponse.first.id!;
+                if (entitygroups != null) {
+                  for (int i = 0; i < entitygroups.length; i++) {
+                    if (entitygroups.elementAt(i).name ==
+                        ILMserviceFolderName) {
+                      DevicemoveFolderName =
+                          entitygroups.elementAt(i).id!.id!.toString();
                     }
-                    var seconddetails = await tbClient
-                        .getEntityGroupService()
-                        .getEntityGroup(currentdeviceresponse.last.id!);
-                    if (seconddetails!.name.toString() != "All") {
-                      DevicecurrentFolderName = currentdeviceresponse.last.id!;
+                  }
+
+                  List<EntityGroupId> currentdeviceresponse;
+                  currentdeviceresponse = await tbClient
+                      .getEntityGroupService()
+                      .getEntityGroupsForFolderEntity(response.id!.id!);
+
+                  if (currentdeviceresponse != null) {
+                    if (currentdeviceresponse.last.id.toString().isNotEmpty) {
+                      var firstdetails = await tbClient
+                          .getEntityGroupService()
+                          .getEntityGroup(currentdeviceresponse.first.id!);
+                      if (firstdetails!.name.toString() != "All") {
+                        DevicecurrentFolderName =
+                            currentdeviceresponse.first.id!;
+                      }
+                      var seconddetails = await tbClient
+                          .getEntityGroupService()
+                          .getEntityGroup(currentdeviceresponse.last.id!);
+                      if (seconddetails!.name.toString() != "All") {
+                        DevicecurrentFolderName =
+                            currentdeviceresponse.last.id!;
+                      }
+
+                      var relation_response = await tbClient
+                          .getEntityRelationService()
+                          .deleteDeviceRelation(
+                              relationDetails.elementAt(0).from.id!,
+                              response.id!.id!);
+
+                      // DevicecurrentFolderName =
+                      //     currentdeviceresponse.last.id.toString();
+
+                      List<String> myList = [];
+                      myList.add(response.id!.id!);
+
+                      try {
+                        var remove_response = await tbClient
+                            .getEntityGroupService()
+                            .removeEntitiesFromEntityGroup(
+                                DevicecurrentFolderName, myList);
+                      } catch (e) {}
+                      try {
+                        var add_response = await tbClient
+                            .getEntityGroupService()
+                            .addEntitiesToEntityGroup(
+                                DevicemoveFolderName, myList);
+                      } catch (e) {}
+
+                      final bytes = File(imageFile!.path).readAsBytesSync();
+                      String img64 = base64Encode(bytes);
+
+                      postRequest(context, img64, DeviceName);
+                      pr.hide();
+                    } else {
+                      pr.hide();
+                      calltoast("Device is not Found");
+
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              dashboard_screen()));
                     }
-
-                    var relation_response = await tbClient
-                        .getEntityRelationService()
-                        .deleteDeviceRelation(
-                            relationDetails.elementAt(0).from.id!,
-                            response.id!.id!);
-
-                    // DevicecurrentFolderName =
-                    //     currentdeviceresponse.last.id.toString();
-
-                    List<String> myList = [];
-                    myList.add(response.id!.id!);
-
-                    try {
-                      var remove_response = await tbClient
-                          .getEntityGroupService()
-                          .removeEntitiesFromEntityGroup(
-                              DevicecurrentFolderName, myList);
-                    } catch (e) {}
-                    try {
-                      var add_response = await tbClient
-                          .getEntityGroupService()
-                          .addEntitiesToEntityGroup(
-                              DevicemoveFolderName, myList);
-                    } catch (e) {}
-
-                    final bytes = File(imageFile!.path).readAsBytesSync();
-                    String img64 = base64Encode(bytes);
-
-                    postRequest(context, img64, DeviceName);
-                    pr.hide();
                   } else {
                     pr.hide();
-                    calltoast("Device is not Found");
+                    calltoast("Device EntityGroup Not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
                   pr.hide();
-                  calltoast("Device EntityGroup Not Found");
+                  calltoast(deviceName);
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
                 pr.hide();
-                calltoast(deviceName);
+                Fluttertoast.showToast(
+                    msg:
+                        "Selected Device is not authorized to Replace the selected in this Region",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
+                    fontSize: 16.0);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
@@ -378,4 +443,79 @@ class replacementilmState extends State<replacementilm> {
       return response;
     }
   }
+
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
+  }
+
 }

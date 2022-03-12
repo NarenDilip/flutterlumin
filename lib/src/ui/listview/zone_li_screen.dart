@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -247,7 +248,10 @@ class zone_li_screen_state extends State<zone_li_screen> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString("SelectedZone", selectedZone);
 
+          var regionname = selectedZone.split("-");
+
           DBHelper dbHelper = new DBHelper();
+          dbHelper.ward_delete(regionname[0].toString());
           List<Ward> ward =
               await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
           if (ward.isEmpty) {
@@ -277,7 +281,10 @@ class zone_li_screen_state extends State<zone_li_screen> {
                   if (asset.name != null) {
                     var regionname = selectedZone.split("-");
 
-                    Ward ward = Ward(j, asset.id!.id, asset.name, selectedZone,
+                    var rng = new Random();
+                    var code = rng.nextInt(900000) + 100000;
+
+                    Ward ward = Ward(j+code+0, asset.id!.id, asset.name, selectedZone,
                         regionname[0].toString());
 
                     dbHelper.ward_add(ward);

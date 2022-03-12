@@ -17,6 +17,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+
 // import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,7 +45,8 @@ class gwcaminstallState extends State<gwcaminstall> {
   String DeviceName = "0";
   var imageFile;
   var accuvalue;
-  var addvalue;
+  // var addvalue;
+
   // LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
@@ -53,9 +55,11 @@ class gwcaminstallState extends State<gwcaminstall> {
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
-  String addresss = "0";
+
+  // String addresss = "0";
   String? _error;
   late ProgressDialog pr;
+  String geoFence = "false";
   List<double>? _latt = [];
 
   String Lattitude = "0";
@@ -109,22 +113,54 @@ class gwcaminstallState extends State<gwcaminstall> {
     accuracy = location!.accuracy!;
     Lattitude = location!.latitude!.toString();
     Longitude = location!.longitude!.toString();
+    accuvalue = accuracy.toString().split(".");
+
     var insideArea;
-    if (accuracy <= 5) {
-      for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-        insideArea = _checkIfValidMarker(
-            LatLng(location.latitude, location.longitude),
-            _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
-        visibility = true;
-        _polyGeofenceService.stop();
+    if (accuracy <= 7) {
+      _getAddress(location!.latitude, location!.longitude).then((value) {
+        setState(() {
+          address = value;
+        });
+      });
+      if (geoFence == true) {
+        for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+          insideArea = _checkIfValidMarker(
+              LatLng(location.latitude, location.longitude),
+              _polyGeofenceList[0].polygon);
+          if (insideArea == true) {
+            setState(() {
+              visibility = true;
+            });
+            callPolygonStop();
+          } else {
+            setState(() {
+              visibility = false;
+            });
+            Fluttertoast.showToast(
+                msg:
+                    "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+        }
+      } else {
+        setState(() {
+          visibility = true;
+        });
+        callPolygonStop();
       }
     } else {
-      visibility = false;
+      setState(() {
+        visibility = false;
+      });
       Fluttertoast.showToast(
           msg:
-          "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-              insideArea!.toString(),
+              "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+                  insideArea!.toString(),
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -132,6 +168,17 @@ class gwcaminstallState extends State<gwcaminstall> {
           textColor: Colors.black,
           fontSize: 16.0);
     }
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
   }
 
   Future<void> callPolygons() async {}
@@ -177,7 +224,6 @@ class gwcaminstallState extends State<gwcaminstall> {
     return true;
   }
 
-
   // final Location locations = Location();
   // LocationData? _location;
   // StreamSubscription<LocationData>? _locationSubscription;
@@ -188,6 +234,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
     FirmwareVersion = prefs.getString("firmwareVersion").toString();
+    geoFence = prefs.getString('geoFence').toString();
 
     setState(() {
       DeviceName = DeviceName;
@@ -204,6 +251,50 @@ class gwcaminstallState extends State<gwcaminstall> {
     SelectedWard = "";
     _openCamera(context);
     getSharedPrefs();
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+    });
+
+    if (geoFence == true) {
+      CallCoordinates(context);
+    } else {
+      Fluttertoast.showToast(
+          msg: "GeoFence Availability is not found with this Ward",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      _polyGeofenceService.stop();
+    }
+  }
+
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      // polygonad(LatLng(latter,rlonger));
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+      // details[new LatLng(latter,rlonger)];
+    }
   }
 
   // Future<void> _listenLocation() async {
@@ -326,25 +417,12 @@ class gwcaminstallState extends State<gwcaminstall> {
                             if (imageFile != null) {
                               pr.show();
                               // _listenLocation();
-
-                              WidgetsBinding.instance
-                                  ?.addPostFrameCallback((_) {
-                                _polyGeofenceService.start();
-                                _polyGeofenceService
-                                    .addPolyGeofenceStatusChangeListener(
-                                    _onPolyGeofenceStatusChanged);
-                                _polyGeofenceService.addLocationChangeListener(
-                                    _onLocationChanged);
-                                _polyGeofenceService
-                                    .addLocationServicesStatusChangeListener(
-                                    _onLocationServicesStatusChanged);
-                                _polyGeofenceService
-                                    .addStreamErrorListener(_onError);
-                                _polyGeofenceService
-                                    .start(_polyGeofenceList)
-                                    .catchError(_onError);
-                              });
-
+                              if (geoFence == true) {
+                                CallGeoFenceListener(context);
+                              } else {
+                                callReplacementComplete(context, imageFile,
+                                    DeviceName, SelectedWard);
+                              }
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
@@ -371,6 +449,34 @@ class gwcaminstallState extends State<gwcaminstall> {
     setState(() {
       imageFile = pickedFile;
     });
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var geoFence = prefs.getString('geoFence').toString();
+    if (geoFence == "true") {
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
+        _polyGeofenceService.start();
+        _polyGeofenceService
+            .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+        _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+        _polyGeofenceService.addLocationServicesStatusChangeListener(
+            _onLocationServicesStatusChanged);
+        _polyGeofenceService.addStreamErrorListener(_onError);
+        _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+      });
+    } else {
+      visibility = false;
+      Fluttertoast.showToast(
+          msg: "GeoFence Availability is not found with this Ward",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      callReplacementComplete(context, imageFile, DeviceName, SelectedWard);
+    }
   }
 
   Future<void> callReplacementComplete(
@@ -409,8 +515,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                 DBHelper dbHelper = DBHelper();
                 var regionid;
                 List<Region> regiondetails = await dbHelper
-                        .region_name_regionbasedDetails(SelectedRegion)
-                    as List<Region>;
+                    .region_name_regionbasedDetails(SelectedRegion);
                 if (regiondetails.length != "0") {
                   regionid = regiondetails.first.regionid;
                 }
@@ -433,9 +538,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                   List<AttributeKvEntry> faultresponser;
 
                   faultresponser = (await tbClient
-                          .getAttributeService()
-                          .getFirmAttributeKvEntries(regionid, myfirmList))
-                      as List<AttributeKvEntry>;
+                      .getAttributeService()
+                      .getFirmAttributeKvEntries(regionid, myfirmList));
 
                   //
                   // List<TsKvEntry> faultresponser;
@@ -487,8 +591,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                   if (lattitude.toString() != null) {
                     if (versionCompatability == true) {
                       DBHelper dbHelper = DBHelper();
-                      List<Ward> warddetails = await dbHelper
-                          .ward_basedDetails(SelectedWard) as List<Ward>;
+                      List<Ward> warddetails =
+                          await dbHelper.ward_basedDetails(SelectedWard);
                       if (warddetails.length != "0") {
                         warddetails.first.wardid;
 
@@ -512,7 +616,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                             .saveRelation(entityRelation);
 
                         Map data = {
-                          'landmark': addresss,
+                          'landmark': address,
                           'lattitude': lattitude.toString(),
                           'longitude': longitude.toString(),
                           'accuracy': accuracy.toString()
@@ -782,7 +886,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      address.toString(),
                       style: const TextStyle(
                           fontSize: 16.0,
                           fontFamily: "Montserrat",
@@ -853,13 +957,16 @@ class gwcaminstallState extends State<gwcaminstall> {
   //   return _locationData;
   // }
   //
-  // Future<String> _getAddress(double? lat, double? lang) async {
-  //   if (lat == null || lang == null) return "";
-  //   final coordinates = new Coordinates(lat, lang);
-  //   List<Address> addresss = (await Geocoder.local
-  //       .findAddressesFromCoordinates(coordinates)) as List<Address>;
-  //   return "${addresss.elementAt(1).addressLine}";
-  // }
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)) as List<Address>;
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;

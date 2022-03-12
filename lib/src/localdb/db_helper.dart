@@ -229,6 +229,21 @@ class DBHelper {
     return ward;
   }
 
+  Future<List<Ward>> ward_regionbasedDetails(String? selectedZone) async {
+    var dbClient = await db;
+    List<Map> maps = await dbClient
+        .query('ward',
+      where: 'regionsinfo = ?',
+      whereArgs: [selectedZone],);
+    List<Ward> ward = [];
+    if (maps.length > 0) {
+      for (int i = 0; i < maps.length; i++) {
+        ward.add(Ward.fromMap(maps[i] as dynamic));
+      }
+    }
+    return ward;
+  }
+
   Future<List<Region>> getDetails() async {
     var dbClient = await db;
     List<Map> maps = await dbClient

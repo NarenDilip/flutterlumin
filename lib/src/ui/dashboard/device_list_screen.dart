@@ -24,7 +24,10 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../localdb/db_helper.dart';
 import '../../localdb/model/region_model.dart';
+import '../installation/ccms/ccms_install_cam_screen.dart';
+import '../installation/gateway/gateway_install_cam_screen.dart';
 import '../installation/ilm/ilm_install_cam_screen.dart';
+import '../maintenance/ccms/ccms_maintenance_screen.dart';
 import '../splash_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -37,17 +40,20 @@ class device_list_screen extends StatefulWidget {
 
 class device_list_screen_state extends State<device_list_screen> {
   List<String>? _foundUsers = [];
+  List<String>? _gwfoundUsers = [];
+  List<String>? _ccmsfoundUsers = [];
+
   List<String>? _relationdevices = [];
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
   bool _visible = true;
   bool _ilmvisible = true;
+  bool _gwvisible = true;
+  bool _ccmsvisible = true;
   bool _obscureText = true;
   String searchNumber = "0";
   late ProgressDialog pr;
-  final TextEditingController _emailController =
-      TextEditingController(text: "");
   String Maintenance = "true";
 
   LocationData? currentLocation;
@@ -67,6 +73,7 @@ class device_list_screen_state extends State<device_list_screen> {
     ilmnumber: "",
     ccmsnumber: "",
     polenumber: "",
+    gatewaynumber: "",
   );
 
   Future<Null> getSharedPrefs() async {
@@ -103,33 +110,7 @@ class device_list_screen_state extends State<device_list_screen> {
     super.initState();
     SelectedRegion = "";
     getSharedPrefs();
-    _listenLocation();
-  }
-
-  Future<void> _listenLocation() async {
-    // pr.show();
-    _locationSubscription =
-        locations.onLocationChanged.handleError((dynamic err) {
-          if (err is PlatformException) {
-            setState(() {
-              _error = err.code;
-            });
-          }
-          _locationSubscription?.cancel();
-          setState(() {
-            _locationSubscription = null;
-          });
-        }).listen((LocationData currentLocation) {
-          setState(() async {
-            _error = null;
-            _location = currentLocation;
-            _latt!.add(_location!.latitude!);
-            lattitude = _location!.latitude!;
-            longitude = _location!.longitude!;
-            accuracy = _location!.accuracy!;
-            accuvalue = accuracy.toString().split(".");
-          });
-        });
+    // _listenLocation();
   }
 
   void _toggle() {
@@ -141,6 +122,18 @@ class device_list_screen_state extends State<device_list_screen> {
   void _vtoggle() {
     setState(() {
       _ilmvisible = !_ilmvisible;
+    });
+  }
+
+  void _gwtoggle() {
+    setState(() {
+      _gwvisible = !_gwvisible;
+    });
+  }
+
+  void _ccmstoggle() {
+    setState(() {
+      _ccmsvisible = !_ccmsvisible;
     });
   }
 
@@ -227,131 +220,132 @@ class device_list_screen_state extends State<device_list_screen> {
                         padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                         children: <Widget>[
                           SizedBox(height: 5),
-                          Container(
-                            height: 55,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Padding(
-                                    padding:
-                                    EdgeInsets.only(left: 5.0),
-                                    child: Point(
-                                      triangleHeight: 25.0,
-
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (BuildContext
-                                                  context) =>
-                                                      region_list_screen()));
-                                          setState(() {});
-                                        },
-                                        child: Container(
-                                          color: thbDblue,
-                                          width: 120.0,
-                                          height: 50.0,
-                                          child: Center(
-                                            child: Text(
-                                                '$SelectedRegion',
-                                                style: const TextStyle(
-                                                    fontSize: 16.0,
-                                                    fontFamily:
-                                                    "Montserrat",
-                                                    fontWeight:
-                                                    FontWeight
-                                                        .bold,
-                                                    color: Colors
-                                                        .white)),
+                          Wrap(
+                              spacing: 8.0,
+                              // gap between adjacent chips
+                              runSpacing: 4.0,
+                              // gap between lines
+                              direction: Axis.horizontal,
+                              // main axis (rows or columns)
+                              children: <Widget>[
+                                Container(
+                                  height: 55,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(left: 5.0),
+                                          child: Point(
+                                            triangleHeight: 25.0,
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            region_list_screen()));
+                                                setState(() {});
+                                              },
+                                              child: Container(
+                                                color: thbDblue,
+                                                height: 40.0,
+                                                child: Center(
+                                                  child: Text(
+                                                      "  " +
+                                                          '$SelectedRegion' +
+                                                          "      ",
+                                                      style: const TextStyle(
+                                                          fontSize: 16.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white)),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Padding(
-                                    padding:
-                                    EdgeInsets.only(left: 5.0),
-                                    child: Point(
-                                      triangleHeight: 25.0,
-
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (BuildContext
-                                                  context) =>
-                                                      zone_li_screen()));
-                                          setState(() {});
-                                        },
-                                        child: Container(
-                                          color: thbDblue,
-                                          width: 120.0,
-                                          height: 50.0,
-                                          child: Center(
-                                            child: Text(
-                                                '$SelectedZone',
-                                                style: const TextStyle(
-                                                    fontSize: 16.0,
-                                                    fontFamily:
-                                                    "Montserrat",
-                                                    fontWeight:
-                                                    FontWeight
-                                                        .bold,
-                                                    color: Colors
-                                                        .white)),
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(left: 5.0),
+                                          child: Point(
+                                            triangleHeight: 25.0,
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            zone_li_screen()));
+                                                setState(() {});
+                                              },
+                                              child: Container(
+                                                color: thbDblue,
+                                                height: 40.0,
+                                                child: Center(
+                                                  child: Text(
+                                                      "  " +
+                                                          '$SelectedZone' +
+                                                          "      ",
+                                                      style: const TextStyle(
+                                                          fontSize: 16.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white)),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Padding(
-                                    padding:
-                                    EdgeInsets.only(left: 5.0),
-                                    child: Point(
-                                      triangleHeight: 25.0,
-
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (BuildContext
-                                                  context) =>
-                                                      ward_li_screen()));
-                                          setState(() {});
-                                        },
-                                        child: Container(
-                                          color: thbDblue,
-                                          width: 120.0,
-                                          height: 50.0,
-                                          child: Center(
-                                            child: Text(
-                                                '$SelectedWard',
-                                                style: const TextStyle(
-                                                    fontSize: 16.0,
-                                                    fontFamily:
-                                                    "Montserrat",
-                                                    fontWeight:
-                                                    FontWeight
-                                                        .bold,
-                                                    color: Colors
-                                                        .white)),
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(left: 5.0),
+                                          child: Point(
+                                            triangleHeight: 25.0,
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (BuildContext
+                                                                context) =>
+                                                            ward_li_screen()));
+                                                setState(() {});
+                                              },
+                                              child: Container(
+                                                color: thbDblue,
+                                                height: 40.0,
+                                                child: Center(
+                                                  child: Text(
+                                                      "  " +
+                                                          '$SelectedWard' +
+                                                          "      ",
+                                                      style: const TextStyle(
+                                                          fontSize: 16.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white)),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              ]),
                           const SizedBox(
                             height: 30,
                           ),
@@ -528,11 +522,14 @@ class device_list_screen_state extends State<device_list_screen> {
                                                     FocusScope.of(context)
                                                         .requestFocus(
                                                             FocusNode());
-                                                    callccmsbasedILMDeviceListFinder(
+                                                    callCcmsDeviceListFinder(
                                                         user.ccmsnumber,
-                                                        _relationdevices,
-                                                        _foundUsers,
                                                         context);
+                                                    // callccmsbasedILMDeviceListFinder(
+                                                    //     user.ccmsnumber,
+                                                    //     _relationdevices,
+                                                    //     _foundUsers,
+                                                    //     context);
                                                   } else {
                                                     Fluttertoast.showToast(
                                                         msg:
@@ -561,7 +558,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                               user.ccmsnumber =
                                                   value.toUpperCase();
                                               setState(() {
-                                                _foundUsers!.clear();
+                                                _ccmsfoundUsers!.clear();
                                               });
                                             }))
                                   ]),
@@ -643,8 +640,87 @@ class device_list_screen_state extends State<device_list_screen> {
                                             }))
                                   ]),
                                   const SizedBox(
-                                    height: 10,
+                                    height: 5,
                                   ),
+                                  Row(children: [
+                                    Flexible(
+                                        child: TextFormField(
+                                            autofocus: false,
+                                            keyboardType: TextInputType.text,
+                                            style: TextStyle(
+                                                fontSize: 18.0,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              hintText: 'Gateway Number',
+                                              fillColor: Colors.white,
+                                              contentPadding:
+                                                  EdgeInsets.fromLTRB(
+                                                      10, 0, 0, 0),
+                                              border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                  borderSide: BorderSide(
+                                                      color: Colors.white)),
+                                              enabledBorder:
+                                                  const OutlineInputBorder(
+                                                // width: 0.0 produces a thin "hairline" border
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(20.0)),
+                                                borderSide:
+                                                    BorderSide(color: thbDblue),
+                                                //borderSide: const BorderSide(),
+                                              ),
+                                              suffixIcon: GestureDetector(
+                                                onTap: () {
+                                                  if (user.gatewaynumber
+                                                      .isNotEmpty) {
+                                                    FocusScope.of(context)
+                                                        .requestFocus(
+                                                            FocusNode());
+                                                    callgwDeviceListFinder(
+                                                        user.gatewaynumber,
+                                                        context);
+                                                    // callpolebasedILMDeviceListFinder(
+                                                    //     user.gatewaynumber,
+                                                    //     _relationdevices,
+                                                    //     _gwfoundUsers,
+                                                    //     context);
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        msg:
+                                                            "Please Enter Device",
+                                                        toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                        gravity:
+                                                            ToastGravity.BOTTOM,
+                                                        timeInSecForIosWeb: 1);
+                                                  }
+                                                },
+                                                child: Icon(
+                                                  _obscureText
+                                                      ? Icons.search
+                                                      : Icons.search,
+                                                  semanticLabel: _obscureText
+                                                      ? 'show password'
+                                                      : 'hide password',
+                                                ),
+                                              ),
+                                            ),
+                                            onSaved: (value) =>
+                                                user.gatewaynumber =
+                                                    value!.toUpperCase(),
+                                            onChanged: (String value) {
+                                              user.gatewaynumber =
+                                                  value.toUpperCase();
+                                              setState(() {
+                                                _gwfoundUsers!.clear();
+                                              });
+                                            }))
+                                  ])
                                 ],
                               ),
                             ),
@@ -720,7 +796,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                             15, 1, 10, 0),
                                         child: ListTile(
                                           onTap: () {
-                                            fetchDeviceDetails(
+                                            fetchGWDeviceDetails(
                                                 _foundUsers!
                                                     .elementAt(index)
                                                     .toString(),
@@ -728,6 +804,200 @@ class device_list_screen_state extends State<device_list_screen> {
                                           },
                                           title: Text(
                                               _foundUsers!.elementAt(index),
+                                              style: const TextStyle(
+                                                  fontSize: 22.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black)),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.white,
+                                      child: Column(children: [
+                                        // SizedBox(
+                                        //   height: 10,
+                                        // ),
+                                        // Text(
+                                        //   'No results found',
+                                        //   textAlign: TextAlign.center,
+                                        //   style: const TextStyle(
+                                        //       fontSize: 18.0,
+                                        //       fontFamily: "Montserrat",
+                                        //       fontWeight: FontWeight.normal,
+                                        //       color: Colors.black),
+                                        // )
+                                      ])),
+                            ),
+                            visible: _ilmvisible,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                              decoration: BoxDecoration(
+                                  color: thbDblue,
+                                  borderRadius: BorderRadius.circular(0)),
+                              child: Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _ccmstoggle();
+                                      });
+                                    },
+                                    child: Container(
+                                        child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 12),
+                                                child: Text('CCMS Devices',
+                                                    style: TextStyle(
+                                                        fontSize: 18.0,
+                                                        fontFamily:
+                                                            "Montserrat",
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white)))),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: Icon(
+                                                Icons.arrow_drop_down,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ),
+                                ],
+                              )),
+                          Visibility(
+                            child: Container(
+                              color: thbDblue,
+                              child: _ccmsfoundUsers!.isNotEmpty
+                                  ? ListView.builder(
+                                      primary: false,
+                                      scrollDirection: Axis.vertical,
+                                      shrinkWrap: true,
+                                      itemCount: _ccmsfoundUsers!.length,
+                                      itemBuilder: (context, index) => Card(
+                                        key: ValueKey(_ccmsfoundUsers),
+                                        color: Colors.white,
+                                        margin: const EdgeInsets.fromLTRB(
+                                            15, 1, 10, 0),
+                                        child: ListTile(
+                                          onTap: () {
+                                            fetchGWDeviceDetails(
+                                                _ccmsfoundUsers!
+                                                    .elementAt(index)
+                                                    .toString(),
+                                                context);
+                                          },
+                                          title: Text(
+                                              _ccmsfoundUsers!.elementAt(index),
+                                              style: const TextStyle(
+                                                  fontSize: 22.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black)),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.white,
+                                      child: Column(children: [
+                                        // SizedBox(
+                                        //   height: 10,
+                                        // ),
+                                        // Text(
+                                        //   'No results found',
+                                        //   textAlign: TextAlign.center,
+                                        //   style: const TextStyle(
+                                        //       fontSize: 18.0,
+                                        //       fontFamily: "Montserrat",
+                                        //       fontWeight: FontWeight.normal,
+                                        //       color: Colors.black),
+                                        // )
+                                      ])),
+                            ),
+                            visible: _ccmsvisible,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                              decoration: BoxDecoration(
+                                  color: thbDblue,
+                                  borderRadius: BorderRadius.circular(0)),
+                              child: Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _gwtoggle();
+                                      });
+                                    },
+                                    child: Container(
+                                        child: Row(
+                                      children: [
+                                        Expanded(
+                                            child: Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 12),
+                                                child: Text('Gateway Devices',
+                                                    style: TextStyle(
+                                                        fontSize: 18.0,
+                                                        fontFamily:
+                                                            "Montserrat",
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white)))),
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Padding(
+                                              padding: EdgeInsets.all(12),
+                                              child: Icon(
+                                                Icons.arrow_drop_down,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ),
+                                ],
+                              )),
+                          Visibility(
+                            child: Container(
+                              color: thbDblue,
+                              child: _gwfoundUsers!.isNotEmpty
+                                  ? ListView.builder(
+                                      primary: false,
+                                      scrollDirection: Axis.vertical,
+                                      shrinkWrap: true,
+                                      itemCount: _gwfoundUsers!.length,
+                                      itemBuilder: (context, index) => Card(
+                                        key: ValueKey(_gwfoundUsers),
+                                        color: Colors.white,
+                                        margin: const EdgeInsets.fromLTRB(
+                                            15, 1, 10, 0),
+                                        child: ListTile(
+                                          onTap: () {
+                                            fetchGWDeviceDetails(
+                                                _gwfoundUsers!
+                                                    .elementAt(index)
+                                                    .toString(),
+                                                context);
+                                          },
+                                          title: Text(
+                                              _gwfoundUsers!.elementAt(index),
                                               style: const TextStyle(
                                                   fontSize: 22.0,
                                                   fontFamily: "Montserrat",
@@ -753,12 +1023,73 @@ class device_list_screen_state extends State<device_list_screen> {
                                         )
                                       ])),
                             ),
-                            visible: _ilmvisible,
+                            visible: _gwvisible,
+                          ),
+                          const SizedBox(
+                            height: 10,
                           ),
                         ],
                       )))
             ])));
   }
+
+  // Future<void> callCCMSDeviceListFinder(
+  //     String selectedNumber, BuildContext context) async {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       pr.show();
+  //       try {
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //
+  //         String searchnumber = user.ilmnumber.replaceAll(" ", "");
+  //
+  //         PageLink pageLink = new PageLink(100);
+  //         pageLink.page = 0;
+  //         pageLink.pageSize = 100;
+  //         pageLink.textSearch = searchnumber;
+  //
+  //         PageData<Device> devicelist_response;
+  //         devicelist_response = (await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevices(pageLink));
+  //
+  //         if (devicelist_response != null) {
+  //           if (devicelist_response.totalElements != 0) {
+  //             for (int i = 0; i < devicelist_response.data.length; i++) {
+  //               String name =
+  //                   devicelist_response.data.elementAt(i).name.toString();
+  //               _foundUsers!.add(name);
+  //             }
+  //           }
+  //
+  //           setState(() {
+  //             _foundUsers = _foundUsers;
+  //           });
+  //           pr.hide();
+  //         } else {
+  //           pr.hide();
+  //           calltoast(searchNumber);
+  //         }
+  //       } catch (e) {
+  //         pr.hide();
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             callpolebasedILMDeviceListFinder(
+  //                 user.ilmnumber, _relationdevices, _foundUsers, context);
+  //           }
+  //         } else {
+  //           calltoast(searchNumber);
+  //           // Navigator.pop(context);
+  //         }
+  //       }
+  //     } else {
+  //       calltoast(no_network);
+  //     }
+  //   });
+  // }
 
   Future<void> callILMDeviceListFinder(
       String selectedNumber, BuildContext context) async {
@@ -777,9 +1108,8 @@ class device_list_screen_state extends State<device_list_screen> {
           pageLink.textSearch = searchnumber;
 
           PageData<Device> devicelist_response;
-          devicelist_response = (await tbClient
-              .getDeviceService()
-              .getTenantDevices(pageLink)) as PageData<Device>;
+          devicelist_response =
+              (await tbClient.getDeviceService().getTenantDevices(pageLink));
 
           if (devicelist_response != null) {
             if (devicelist_response.totalElements != 0) {
@@ -806,6 +1136,117 @@ class device_list_screen_state extends State<device_list_screen> {
             if (status == true) {
               callpolebasedILMDeviceListFinder(
                   user.ilmnumber, _relationdevices, _foundUsers, context);
+            }
+          } else {
+            calltoast(searchNumber);
+            // Navigator.pop(context);
+          }
+        }
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
+
+  Future<void> callCcmsDeviceListFinder(
+      String selectedNumber, BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        pr.show();
+        try {
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+
+          String searchnumber = user.ccmsnumber.replaceAll(" ", "");
+
+          PageLink pageLink = new PageLink(100);
+          pageLink.page = 0;
+          pageLink.pageSize = 100;
+          pageLink.textSearch = searchnumber;
+
+          PageData<Device> devicelist_response;
+          devicelist_response = (await tbClient
+              .getDeviceService()
+              .getccmsTenantDevices(pageLink));
+
+          if (devicelist_response != null) {
+            if (devicelist_response.totalElements != 0) {
+              for (int i = 0; i < devicelist_response.data.length; i++) {
+                String name =
+                    devicelist_response.data.elementAt(i).name.toString();
+                _ccmsfoundUsers!.add(name);
+              }
+            }
+
+            setState(() {
+              _ccmsfoundUsers = _ccmsfoundUsers;
+            });
+            pr.hide();
+          } else {
+            pr.hide();
+            calltoast(searchNumber);
+          }
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {}
+          } else {
+            calltoast(searchNumber);
+          }
+        }
+      } else {
+        calltoast(no_network);
+      }
+    });
+  }
+
+  Future<void> callgwDeviceListFinder(
+      String selectedNumber, BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        pr.show();
+        try {
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+
+          String searchnumber = user.gatewaynumber.replaceAll(" ", "");
+
+          PageLink pageLink = new PageLink(100);
+          pageLink.page = 0;
+          pageLink.pageSize = 100;
+          pageLink.textSearch = searchnumber;
+
+          PageData<Device> devicelist_response;
+          devicelist_response = (await tbClient
+              .getDeviceService()
+              .getgwTenantDevices(pageLink)) as PageData<Device>;
+
+          if (devicelist_response != null) {
+            if (devicelist_response.totalElements != 0) {
+              for (int i = 0; i < devicelist_response.data.length; i++) {
+                String name =
+                    devicelist_response.data.elementAt(i).name.toString();
+                _gwfoundUsers!.add(name);
+              }
+            }
+
+            setState(() {
+              _gwfoundUsers = _gwfoundUsers;
+            });
+            pr.hide();
+          } else {
+            pr.hide();
+            calltoast(searchNumber);
+          }
+        } catch (e) {
+          pr.hide();
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              callgwDeviceListFinder(selectedNumber, context);
             }
           } else {
             calltoast(searchNumber);
@@ -895,269 +1336,476 @@ class device_list_screen_state extends State<device_list_screen> {
     });
   }
 
-  void callccmsbasedILMDeviceListFinder(
-      String searchnumber,
-      List<String>? _relationdevices,
-      List<String>? _foundUsers,
-      BuildContext context) {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        pr.show();
-        try {
-          _relationdevices!.clear();
-          _foundUsers!.clear();
+  // void callccmsbasedILMDeviceListFinder(
+  //     String searchnumber,
+  //     List<String>? _relationdevices,
+  //     List<String>? _foundUsers,
+  //     BuildContext context) {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       pr.show();
+  //       try {
+  //         _relationdevices!.clear();
+  //         _foundUsers!.clear();
+  //
+  //         String ccmsnumber = searchnumber.replaceAll(" ", "");
+  //
+  //         Device response;
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //         response = await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevice(ccmsnumber) as Device;
+  //
+  //         if (response != null) {
+  //           List<EntityRelation> relationresponse;
+  //           relationresponse = await tbClient
+  //               .getEntityRelationService()
+  //               .findByFrom(response.id!);
+  //           if (relationresponse != null) {
+  //             for (int i = 0; i < relationresponse.length; i++) {
+  //               _relationdevices
+  //                   .add(relationresponse.elementAt(i).to.id.toString());
+  //             }
+  //             Device Devrelationresponse;
+  //             for (int i = 0; i < _relationdevices.length; i++) {
+  //               Devrelationresponse = await tbClient
+  //                       .getDeviceService()
+  //                       .getDevice(_relationdevices.elementAt(i).toString())
+  //                   as Device;
+  //               if (Devrelationresponse != null) {
+  //                 if (Devrelationresponse.type == "lumiNode") {
+  //                   _foundUsers!.add(Devrelationresponse.name);
+  //                 } else {}
+  //               } else {
+  //                 pr.hide();
+  //                 calltoast(ccmsnumber);
+  //               }
+  //             }
+  //             setState(() {
+  //               _foundUsers = _foundUsers;
+  //             });
+  //             pr.hide();
+  //           } else {
+  //             pr.hide();
+  //             calltoast(ccmsnumber);
+  //           }
+  //         } else {
+  //           pr.hide();
+  //           calltoast(ccmsnumber);
+  //         }
+  //       } catch (e) {
+  //         pr.hide();
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             callccmsbasedILMDeviceListFinder(
+  //                 user.ccmsnumber, _relationdevices, _foundUsers, context);
+  //           }
+  //         } else {
+  //           calltoast(searchnumber);
+  //         }
+  //       }
+  //     } else {
+  //       calltoast(no_network);
+  //     }
+  //   });
+  // }
 
-          String ccmsnumber = searchnumber.replaceAll(" ", "");
+  // @override
+  // Future<Device?> fetchDeviceDetails(
+  //     String deviceName, BuildContext context) async {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       pr.show();
+  //       try {
+  //         Device response;
+  //         Future<List<EntityGroupInfo>> deviceResponse;
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //         response = await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevice(deviceName) as Device;
+  //         if (response.name.isNotEmpty) {
+  //           fetchGWDeviceDetails(
+  //               deviceName, context);
+  //         } else {
+  //           calltoast("Device Details Not Found");
+  //           pr.hide();
+  //         }
+  //       } catch (e) {
+  //         pr.hide();
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             fetchDeviceDetails(deviceName, context);
+  //           }
+  //         } else {
+  //           calltoast(deviceName);
+  //         }
+  //       }
+  //     } else {
+  //       calltoast(no_network);
+  //     }
+  //   });
+  // }
 
-          Device response;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-          response = await tbClient
-              .getDeviceService()
-              .getTenantDevice(ccmsnumber) as Device;
-
-          if (response != null) {
-            List<EntityRelation> relationresponse;
-            relationresponse = await tbClient
-                .getEntityRelationService()
-                .findByFrom(response.id!);
-            if (relationresponse != null) {
-              for (int i = 0; i < relationresponse.length; i++) {
-                _relationdevices
-                    .add(relationresponse.elementAt(i).to.id.toString());
-              }
-              Device Devrelationresponse;
-              for (int i = 0; i < _relationdevices.length; i++) {
-                Devrelationresponse = await tbClient
-                        .getDeviceService()
-                        .getDevice(_relationdevices.elementAt(i).toString())
-                    as Device;
-                if (Devrelationresponse != null) {
-                  if (Devrelationresponse.type == "lumiNode") {
-                    _foundUsers!.add(Devrelationresponse.name);
-                  } else {}
-                } else {
-                  pr.hide();
-                  calltoast(ccmsnumber);
-                }
-              }
-              setState(() {
-                _foundUsers = _foundUsers;
-              });
-              pr.hide();
-            } else {
-              pr.hide();
-              calltoast(ccmsnumber);
-            }
-          } else {
-            pr.hide();
-            calltoast(ccmsnumber);
-          }
-        } catch (e) {
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              callccmsbasedILMDeviceListFinder(
-                  user.ccmsnumber, _relationdevices, _foundUsers, context);
-            }
-          } else {
-            calltoast(searchnumber);
-          }
-        }
-      } else {
-        calltoast(no_network);
-      }
-    });
-  }
+  // @override
+  // Future<Device?> fetchSmartDeviceDetails(
+  //     String deviceName, String deviceid, BuildContext context) async {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       pr.show();
+  //       try {
+  //         Device response;
+  //         Future<List<EntityGroupInfo>> deviceResponse;
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //
+  //         response = (await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevice(deviceName)) as Device;
+  //         if (response != null) {
+  //           var relationDetails = await tbClient
+  //               .getEntityRelationService()
+  //               .findInfoByTo(response.id!);
+  //
+  //           if (relationDetails != null) {
+  //             List<String> myList = [];
+  //             myList.add("lampWatts");
+  //             myList.add("active");
+  //             List<BaseAttributeKvEntry> responser;
+  //
+  //             responser = (await tbClient
+  //                     .getAttributeService()
+  //                     .getAttributeKvEntries(response.id!, myList))
+  //                 as List<BaseAttributeKvEntry>;
+  //
+  //             if (responser != null) {
+  //               SharedPreferences prefs = await SharedPreferences.getInstance();
+  //
+  //               prefs.setString(
+  //                   'deviceStatus', responser.first.kv.getValue().toString());
+  //               prefs.setString(
+  //                   'deviceWatts', responser.last.kv.getValue().toString());
+  //               prefs.setString(
+  //                   'devicetimeStamp', responser.first.lastUpdateTs.toString());
+  //
+  //               prefs.setString('deviceId', deviceid);
+  //               prefs.setString('deviceName', deviceName);
+  //
+  //               if (relationDetails.length.toString() == "0") {
+  //                 SharedPreferences prefs =
+  //                     await SharedPreferences.getInstance();
+  //                 var SelectedRegion =
+  //                     prefs.getString("SelectedRegion").toString();
+  //                 if (SelectedRegion != "null") {
+  //                   List<String> myList = [];
+  //                   myList.add("faulty");
+  //                   List<AttributeKvEntry> responser;
+  //
+  //                   responser = (await tbClient
+  //                           .getAttributeService()
+  //                           .getAttributeKvEntries(response.id!, myList))
+  //                       as List<AttributeKvEntry>;
+  //
+  //                   var faultyDetails = false;
+  //                   if (responser.length == 0) {
+  //                     faultyDetails = false;
+  //                   } else {
+  //                     faultyDetails = responser.first.getValue();
+  //                   }
+  //
+  //                   if (faultyDetails == false) {
+  //                     if (response.type == ilm_deviceType) {
+  //                       Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //                           builder: (BuildContext context) =>
+  //                               ilmcaminstall()));
+  //                     }
+  //                   } else {
+  //                     pr.hide();
+  //                     Scaffold.of(context).openEndDrawer();
+  //                     Fluttertoast.showToast(
+  //                         msg:
+  //                             "Device Currently in Faulty State Unable to Install.",
+  //                         toastLength: Toast.LENGTH_SHORT,
+  //                         gravity: ToastGravity.BOTTOM,
+  //                         timeInSecForIosWeb: 1,
+  //                         backgroundColor: Colors.white,
+  //                         textColor: Colors.black,
+  //                         fontSize: 16.0);
+  //
+  //                     // Navigator.of(context).pushNamed('/device_list_screen');
+  //
+  //                   }
+  //                 } else {
+  //                   pr.hide();
+  //                   Scaffold.of(context).openEndDrawer();
+  //                   Fluttertoast.showToast(
+  //                       msg:
+  //                           "Kindly Choose your Region, Zone and Ward to Install",
+  //                       toastLength: Toast.LENGTH_SHORT,
+  //                       gravity: ToastGravity.BOTTOM,
+  //                       timeInSecForIosWeb: 1,
+  //                       backgroundColor: Colors.white,
+  //                       textColor: Colors.black,
+  //                       fontSize: 16.0);
+  //                 }
+  //
+  //                 // Navigator.pop(context);
+  //                 // Navigator.of(context).push(MaterialPageRoute(
+  //                 //     builder: (BuildContext context) =>
+  //                 //         ilm_installation_screen()));
+  //               } else {
+  //                 List<String> myList = [];
+  //                 myList.add("landmark");
+  //
+  //                 List<AttributeKvEntry> responser;
+  //
+  //                 responser = (await tbClient
+  //                         .getAttributeService()
+  //                         .getAttributeKvEntries(response.id!, myList))
+  //                     as List<AttributeKvEntry>;
+  //
+  //                 if (responser != null) {
+  //                   SharedPreferences prefs =
+  //                       await SharedPreferences.getInstance();
+  //                   prefs.setString(
+  //                       'location', responser.first.getValue().toString());
+  //                 } else {
+  //                   SharedPreferences prefs =
+  //                       await SharedPreferences.getInstance();
+  //                   prefs.setString('location', "-");
+  //                 }
+  //
+  //                 pr.hide();
+  //                 Navigator.of(context).push(MaterialPageRoute(
+  //                     builder: (BuildContext context) => MaintenanceScreen()));
+  //               }
+  //             } else {
+  //               pr.hide();
+  //               calltoast(deviceName);
+  //             }
+  //           } else {
+  //             pr.hide();
+  //             calltoast(deviceName);
+  //           }
+  //         } else {
+  //           pr.hide();
+  //           calltoast(deviceName);
+  //         }
+  //       } catch (e) {
+  //         pr.hide();
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             fetchDeviceDetails(deviceName, context);
+  //           }
+  //         } else {
+  //           calltoast(deviceName);
+  //         }
+  //       }
+  //     } else {
+  //       calltoast(no_network);
+  //     }
+  //   });
+  // }
 
   @override
-  Future<Device?> fetchDeviceDetails(
+  Future<Device?> fetchGWDeviceDetails(
       String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
+      var gofenceValidation = false;
       if (value) {
-        pr.show();
         try {
+          pr.show();
           Device response;
-          Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-          response = await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName) as Device;
-          if (response.name.isNotEmpty) {
-            if (response.type == ilm_deviceType) {
-              fetchSmartDeviceDetails(
-                  deviceName, response.id!.id.toString(), context);
-            } else if (response.type == ccms_deviceType) {
-            } else if (response.type == Gw_deviceType) {
-            } else {
-              calltoast("Device Details Not Found");
-              pr.hide();
-            }
-          } else {
-            pr.hide();
-            calltoast(deviceName);
-          }
-        } catch (e) {
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              fetchDeviceDetails(deviceName, context);
-            }
-          } else {
-            calltoast(deviceName);
-          }
-        }
-      } else {
-        calltoast(no_network);
-      }
-    });
-  }
-
-  @override
-  Future<Device?> fetchSmartDeviceDetails(
-      String deviceName, String deviceid, BuildContext context) async {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        pr.show();
-        try {
-          Device response;
-          Future<List<EntityGroupInfo>> deviceResponse;
+          String? SelectedRegion;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
 
           response = (await tbClient
               .getDeviceService()
               .getTenantDevice(deviceName)) as Device;
-          if (response != null) {
-            var relationDetails = await tbClient
-                .getEntityRelationService()
-                .findInfoByTo(response.id!);
 
-            if (relationDetails != null) {
+          if (response.toString().isNotEmpty) {
+            List<String> myLists = [];
+            myLists.add("firmware_versions");
+
+            List<AttributeKvEntry> deviceresponser;
+
+            deviceresponser = (await tbClient
+                .getAttributeService()
+                .getAttributeKvEntries(response.id!, myLists));
+
+            if (deviceresponser.isNotEmpty) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('firmwareVersion',
+                  deviceresponser.first.getValue().toString());
+              prefs.setString('deviceName', deviceName);
+              SelectedRegion = prefs.getString("SelectedRegion").toString();
+
+              List<String> firstmyList = [];
+              firstmyList.add("lmp");
+
+              try {
+                List<TsKvEntry> faultresponser;
+                faultresponser = await tbClient
+                    .getAttributeService()
+                    .getselectedLatestTimeseries(response.id!.id!, "lmp");
+                if (faultresponser.isNotEmpty) {
+                  prefs.setString('faultyStatus',
+                      faultresponser.first.getValue().toString());
+                }
+              } catch (e) {
+                var message = toThingsboardError(e, context);
+              }
+
               List<String> myList = [];
-              myList.add("lampWatts");
               myList.add("active");
-              List<BaseAttributeKvEntry> responser;
+
+              List<AttributeKvEntry> responser;
 
               responser = (await tbClient
-                      .getAttributeService()
-                      .getAttributeKvEntries(response.id!, myList))
-                  as List<BaseAttributeKvEntry>;
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myList));
 
-              if (responser != null) {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-
+              if (responser.isNotEmpty) {
                 prefs.setString(
-                    'deviceStatus', responser.first.kv.getValue().toString());
-                prefs.setString(
-                    'deviceWatts', responser.last.kv.getValue().toString());
-                prefs.setString(
-                    'devicetimeStamp', responser.first.lastUpdateTs.toString());
+                    'deviceStatus', responser.first.getValue().toString());
+                prefs.setString('devicetimeStamp',
+                    responser.elementAt(0).getLastUpdateTs().toString());
 
-                prefs.setString('deviceId', deviceid);
-                prefs.setString('deviceName', deviceName);
+                List<String> myLister = [];
+                // myLister.add("landmark");
+                myLister.add("location");
 
-                if (relationDetails.length.toString() == "0") {
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  var SelectedRegion =
-                      prefs.getString("SelectedRegion").toString();
-                  if (SelectedRegion != "null") {
-                    List<String> myList = [];
-                    myList.add("faulty");
-                    List<AttributeKvEntry> responser;
+                List<AttributeKvEntry> responserse;
 
-                    responser = (await tbClient
-                            .getAttributeService()
-                            .getAttributeKvEntries(response.id!, myList))
-                        as List<AttributeKvEntry>;
+                responserse = (await tbClient
+                    .getAttributeService()
+                    .getAttributeKvEntries(response.id!, myLister));
 
-                    var faultyDetails = false;
-                    if (responser.length == 0) {
-                      faultyDetails = false;
-                    } else {
-                      faultyDetails = responser.first.getValue();
+                if (responserse.isNotEmpty) {
+                  prefs.setString(
+                      'location', responserse.first.getValue().toString());
+                  prefs.setString('deviceId', response.id!.toString());
+                  prefs.setString('deviceName', deviceName);
+
+                  var SelectedWard = prefs.getString("SelectedWard").toString();
+                  DBHelper dbHelper = new DBHelper();
+                  var wardDetails =
+                      await dbHelper.ward_basedDetails(SelectedWard);
+                  if (wardDetails.isNotEmpty) {
+                    wardDetails.first.wardid;
+
+                    List<String> wardist = [];
+                    myList.add("geofence");
+
+                    var wardresponser = await tbClient
+                        .getAttributeService()
+                        .getFirmAttributeKvEntries(
+                            wardDetails.first.wardid!, wardist);
+
+                    if (wardresponser.isNotEmpty) {
+                      if (wardresponser.first.getValue() == "true") {
+                        gofenceValidation = true;
+                        prefs.setString('geoFence', "true");
+                      } else {
+                        gofenceValidation = false;
+                        prefs.setString('geoFence', "false");
+                      }
                     }
+                  }
 
-                    if (faultyDetails == false) {
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) => ilmcaminstall()));
-                    } else {
+                  var relationDetails = await tbClient
+                      .getEntityRelationService()
+                      .findInfoByTo(response.id!);
+
+                  if (relationDetails.length.toString() == "0") {
+                    if (SelectedRegion.length.toString() != "0") {
                       pr.hide();
-                      Scaffold.of(context).openEndDrawer();
+                      if (response.type == ilm_deviceType) {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const ilmcaminstall()));
+                      } else if (response.type == ccms_deviceType) {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const ccmscaminstall()));
+                      } else if (response.type == Gw_deviceType) {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const gwcaminstall()));
+                      }
+                    } else {
+                      // Navigator.pop(context);
+                      pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                              "Device Currently in Faulty State Unable to Install.",
+                              "Kindly Choose your Region, Zone and Ward to Install",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
                           backgroundColor: Colors.white,
                           textColor: Colors.black,
                           fontSize: 16.0);
-
-                      // Navigator.of(context).pushNamed('/device_list_screen');
-
+                      // refreshPage(context);
                     }
                   } else {
+                    List<String> myList = [];
+                    myList.add("lattitude");
+                    myList.add("longitude");
+
+                    List<BaseAttributeKvEntry> responser;
+
+                    responser = (await tbClient
+                            .getAttributeService()
+                            .getAttributeKvEntries(response.id!, myList))
+                        as List<BaseAttributeKvEntry>;
+
+                    prefs.setString('deviceLatitude',
+                        responser.first.kv.getValue().toString());
+                    prefs.setString('deviceLongitude',
+                        responser.last.kv.getValue().toString());
+
                     pr.hide();
-                    Scaffold.of(context).openEndDrawer();
-                    Fluttertoast.showToast(
-                        msg:
-                            "Kindly Choose your Region, Zone and Ward to Install",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.white,
-                        textColor: Colors.black,
-                        fontSize: 16.0);
+                    if (response.type == ilm_deviceType) {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              const MaintenanceScreen()));
+                    } else if (response.type == ccms_deviceType) {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              const CCMSMaintenanceScreen()));
+                    } else if (response.type == Gw_deviceType) {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              const MaintenanceScreen()));
+                    }
                   }
-
-                  // Navigator.pop(context);
-                  // Navigator.of(context).push(MaterialPageRoute(
-                  //     builder: (BuildContext context) =>
-                  //         ilm_installation_screen()));
                 } else {
-                  List<String> myList = [];
-                  myList.add("landmark");
-
-                  List<AttributeKvEntry> responser;
-
-                  responser = (await tbClient
-                          .getAttributeService()
-                          .getAttributeKvEntries(response.id!, myList))
-                      as List<AttributeKvEntry>;
-
-                  if (responser != null) {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    prefs.setString(
-                        'location', responser.first.getValue().toString());
-                  } else {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    prefs.setString('location', "-");
-                  }
-
                   pr.hide();
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => MaintenanceScreen()));
+                  refreshPage(context);
+                  //"" No landmark attribute found
                 }
               } else {
                 pr.hide();
-                calltoast(deviceName);
+                refreshPage(context);
+                //"" No Active attribute found
               }
             } else {
               pr.hide();
-              calltoast(deviceName);
+              refreshPage(context);
+              //"" No Firmware Device Found
             }
           } else {
             pr.hide();
-            calltoast(deviceName);
+            refreshPage(context);
+            //"" No Device Found
           }
         } catch (e) {
           pr.hide();
@@ -1165,16 +1813,27 @@ class device_list_screen_state extends State<device_list_screen> {
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
-              fetchDeviceDetails(deviceName, context);
+              fetchGWDeviceDetails(deviceName, context);
             }
           } else {
-            calltoast(deviceName);
+            refreshPage(context);
+            Fluttertoast.showToast(
+                msg: device_toast_msg + deviceName + device_toast_notfound,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
         }
-      } else {
-        calltoast(no_network);
       }
     });
+  }
+
+  void refreshPage(context) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (BuildContext context) => dashboard_screen()));
   }
 
   void calltoast(String polenumber) {

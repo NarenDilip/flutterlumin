@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 
+import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
@@ -44,7 +45,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   String DeviceName = "0";
   var imageFile;
   var accuvalue;
-  var addvalue;
+
+  // var addvalue;
 
   // LocationData? currentLocation;
   String address = "";
@@ -52,12 +54,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
-  String addresss = "0";
+  // String addresss = "0";
   String? _error;
   late ProgressDialog pr;
   List<double>? _latt = [];
   String Lattitude = "0";
   String Longitude = "0";
+  String geoFence = "false";
   late bool visibility = true;
   late bool viewvisibility = true;
 
@@ -104,26 +107,59 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
-    Lattitude = location!.latitude!.toString();
-    Longitude = location!.longitude!.toString();
+    accuracy = location.accuracy;
+    Lattitude = location.latitude.toString();
+    Longitude = location.longitude.toString();
+    accuvalue = accuracy.toString().split(".");
     var insideArea;
-    if (accuracy <= 5) {
-      for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-        insideArea = _checkIfValidMarker(
-            LatLng(location.latitude, location.longitude),
-            _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
-
-        visibility = true;
-        _polyGeofenceService.stop();
+    if (accuracy <= 7) {
+      _getAddress(location!.latitude, location!.longitude).then((value) {
+        setState(() {
+          address = value;
+        });
+      });
+      if (geoFence == true) {
+        for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+          insideArea = _checkIfValidMarker(
+              LatLng(location.latitude, location.longitude),
+              _polyGeofenceList[0].polygon);
+          if (insideArea == true) {
+            print('location check: ${insideArea}');
+            setState(() {
+              visibility = true;
+            });
+            callPolygonStop();
+          } else {
+            setState(() {
+              visibility = false;
+            });
+            Fluttertoast.showToast(
+                msg:
+                    "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+                        insideArea!.toString(),
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+        }
+      } else {
+        setState(() {
+          visibility = true;
+        });
+        callPolygonStop();
+        // callILMInstallation(context, imageFile, DeviceName, SelectedWard);
       }
     } else {
-      visibility = false;
+      setState(() {
+        visibility = false;
+      });
       Fluttertoast.showToast(
-          msg:
-              "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                  insideArea!.toString(),
+          msg: "Fetching Device Location Accuracy Please wait for Some time" +
+              "Acccuracy Level-->" +
+              accuracy.toString(),
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -180,7 +216,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
-
+    geoFence = prefs.getString('geoFence').toString();
     setState(() {
       DeviceName = DeviceName;
       SelectedWard = SelectedWard;
@@ -195,6 +231,49 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     SelectedWard = "";
     _openCamera(context);
     getSharedPrefs();
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+    });
+
+    if (geoFence == true) {
+      CallCoordinates(context);
+    } else {
+      Fluttertoast.showToast(
+          msg: "GeoFence Availability is not found with this Ward",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    }
+  }
+
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      // polygonad(LatLng(latter,rlonger));
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+      // details[new LatLng(latter,rlonger)];
+    }
   }
 
   // Future<void> _listenLocation() async {
@@ -289,60 +368,51 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                             )),
                   ),
                   SizedBox(height: 10),
-                  Container(
-                      width: double.infinity,
-                      child: TextButton(
-                          child: Text("Complete Installation",
-                              style: const TextStyle(
-                                  fontSize: 18.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
-                          style: ButtonStyle(
-                              padding: MaterialStateProperty.all<EdgeInsets>(
-                                  EdgeInsets.all(20)),
-                              backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
-                              shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
-                          onPressed: () {
-                            // Utility.progressDialog(context);
-                            if (imageFile != null) {
-                              pr.show();
-
-                              WidgetsBinding.instance
-                                  ?.addPostFrameCallback((_) {
-                                _polyGeofenceService.start();
-                                _polyGeofenceService
-                                    .addPolyGeofenceStatusChangeListener(
-                                        _onPolyGeofenceStatusChanged);
-                                _polyGeofenceService.addLocationChangeListener(
-                                    _onLocationChanged);
-                                _polyGeofenceService
-                                    .addLocationServicesStatusChangeListener(
-                                        _onLocationServicesStatusChanged);
-                                _polyGeofenceService
-                                    .addStreamErrorListener(_onError);
-                                _polyGeofenceService
-                                    .start(_polyGeofenceList)
-                                    .catchError(_onError);
-                              });
-                            } else {
-                              pr.hide();
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "Invalid Image Capture, Please recapture and try installation",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.white,
-                                  textColor: Colors.black,
-                                  fontSize: 16.0);
-                            }
-                          }))
+                  Visibility(
+                      visible: visibility,
+                      child: Container(
+                          width: double.infinity,
+                          child: TextButton(
+                              child: Text("Complete Installation",
+                                  style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              style: ButtonStyle(
+                                  padding:
+                                      MaterialStateProperty.all<EdgeInsets>(
+                                          EdgeInsets.all(20)),
+                                  backgroundColor:
+                                      MaterialStateProperty.all(Colors.green),
+                                  shape: MaterialStateProperty.all<
+                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
+                              onPressed: () {
+                                // Utility.progressDialog(context);
+                                if (imageFile != null) {
+                                  pr.show();
+                                  if (geoFence == false) {
+                                    callILMInstallation(context, imageFile,
+                                        DeviceName, SelectedWard);
+                                  } else {
+                                    CallGeoFenceListener(context);
+                                  }
+                                } else {
+                                  pr.hide();
+                                  Fluttertoast.showToast(
+                                      msg:
+                                          "Invalid Image Capture, Please recapture and try installation",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.white,
+                                      textColor: Colors.black,
+                                      fontSize: 16.0);
+                                }
+                              })))
                 ]))));
   }
 
@@ -358,14 +428,46 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     });
   }
 
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var geoFence = prefs.getString('geoFence').toString();
+    if (geoFence == "true") {
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
+        _polyGeofenceService.start();
+        _polyGeofenceService
+            .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+        _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+        _polyGeofenceService.addLocationServicesStatusChangeListener(
+            _onLocationServicesStatusChanged);
+        _polyGeofenceService.addStreamErrorListener(_onError);
+        _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+      });
+    } else {
+      visibility = false;
+      Fluttertoast.showToast(
+          msg: "GeoFence Availability is not found with this Ward",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      callILMInstallation(context, imageFile, DeviceName, SelectedWard);
+    }
+  }
+
   Future<void> callILMInstallation(
       context, imageFile, DeviceName, SelectedWard) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
     String deviceName = prefs.getString('deviceName').toString();
+    String SelectedRegion = prefs.getString('SelectedRegion').toString();
+    String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
+
+    var versionCompatability = false;
 
     Utility.isConnected().then((value) async {
       if (value) {
@@ -379,139 +481,185 @@ class ilmcaminstallState extends State<ilmcaminstall> {
           response = (await tbClient
               .getDeviceService()
               .getTenantDevice(deviceName)) as Device;
-
           if (imageFile != null) {
             if (response != null) {
               DeviceCredentials deviceCredentials = await tbClient
                   .getDeviceService()
                   .getDeviceCredentialsByDeviceId(
                       response.id!.id.toString()) as DeviceCredentials;
+
               if (deviceCredentials.credentialsId.length == 16) {
                 List<String> myList = [];
                 myList.add("faulty");
                 List<AttributeKvEntry> responser;
 
                 responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<AttributeKvEntry>;
+                    .getAttributeService()
+                    .getAttributeKvEntries(response.id!, myList));
 
                 var faultyDetails = false;
-                if (responser.length == 0) {
+                if (responser.isEmpty) {
                   faultyDetails = false;
                 } else {
                   faultyDetails = responser.first.getValue();
                 }
 
+                DBHelper dbHelper = DBHelper();
+                var regionid;
+                List<Region> regiondetails = await dbHelper
+                    .region_name_regionbasedDetails(SelectedRegion);
+                if (regiondetails.length != "0") {
+                  regionid = regiondetails.first.regionid;
+                }
+
+                try {
+                  List<String> myfirmList = [];
+                  myfirmList.add("firmware_versions");
+
+                  List<AttributeKvEntry> faultresponser;
+
+                  faultresponser = (await tbClient
+                      .getAttributeService()
+                      .getFirmAttributeKvEntries(regionid, myfirmList));
+
+                  if (faultresponser.length != 0) {
+                    var firmwaredetails =
+                        faultresponser.first.getValue().toString();
+                    final decoded = jsonDecode(firmwaredetails) as Map;
+                    var firmware_versions = decoded['firmware_version'];
+
+                    if (firmware_versions
+                        .toString()
+                        .contains(FirmwareVersion)) {
+                      versionCompatability = true;
+                    } else {
+                      versionCompatability = false;
+                    }
+                  }
+                } catch (e) {
+                  var message = toThingsboardError(e, context);
+                }
+
                 if (faultyDetails == false) {
                   if (SelectedWard != "Ward") {
                     if (lattitude.toString() != null) {
-                      DBHelper dbHelper = DBHelper();
-                      List<Ward> warddetails = await dbHelper
-                          .ward_basedDetails(SelectedWard) as List<Ward>;
-                      if (warddetails.length != "0") {
-                        warddetails.first.wardid;
+                      if (versionCompatability == true) {
+                        DBHelper dbHelper = DBHelper();
+                        List<Ward> warddetails =
+                            await dbHelper.ward_basedDetails(SelectedWard);
+                        if (warddetails.length != "0") {
+                          warddetails.first.wardid;
 
-                        Map<String, dynamic> fromId = {
-                          'entityType': 'ASSET',
-                          'id': warddetails.first.wardid
-                        };
-                        Map<String, dynamic> toId = {
-                          'entityType': 'DEVICE',
-                          'id': response.id!.id
-                        };
+                          Map<String, dynamic> fromId = {
+                            'entityType': 'ASSET',
+                            'id': warddetails.first.wardid
+                          };
+                          Map<String, dynamic> toId = {
+                            'entityType': 'DEVICE',
+                            'id': response.id!.id
+                          };
 
-                        EntityRelation entityRelation = EntityRelation(
-                            from: EntityId.fromJson(fromId),
-                            to: EntityId.fromJson(toId),
-                            type: "Contains",
-                            typeGroup: RelationTypeGroup.COMMON);
+                          EntityRelation entityRelation = EntityRelation(
+                              from: EntityId.fromJson(fromId),
+                              to: EntityId.fromJson(toId),
+                              type: "Contains",
+                              typeGroup: RelationTypeGroup.COMMON);
 
-                        Future<EntityRelation> entityRelations = tbClient
-                            .getEntityRelationService()
-                            .saveRelation(entityRelation);
+                          Future<EntityRelation> entityRelations = tbClient
+                              .getEntityRelationService()
+                              .saveRelation(entityRelation);
 
-                        Map data = {
-                          'landmark': addresss,
-                          'lattitude': lattitude.toString(),
-                          'longitude': longitude.toString(),
-                          'accuracy': accuracy.toString()
-                        };
+                          Map data = {
+                            'landmark': address,
+                            'lattitude': lattitude.toString(),
+                            'longitude': longitude.toString(),
+                            'accuracy': accuracy.toString()
+                          };
 
-                        var saveAttributes = await tbClient
-                            .getAttributeService()
-                            .saveDeviceAttributes(
-                                response.id!.id!, "SERVER_SCOPE", data);
+                          var saveAttributes = await tbClient
+                              .getAttributeService()
+                              .saveDeviceAttributes(
+                                  response.id!.id!, "SERVER_SCOPE", data);
 
-                        List<EntityGroupId> currentdeviceresponse;
-                        currentdeviceresponse = await tbClient
-                            .getEntityGroupService()
-                            .getEntityGroupsForFolderEntity(response.id!.id!);
-
-                        if (currentdeviceresponse != null) {
-                          var firstdetails = await tbClient
+                          List<EntityGroupId> currentdeviceresponse;
+                          currentdeviceresponse = await tbClient
                               .getEntityGroupService()
-                              .getEntityGroup(currentdeviceresponse.first.id!);
+                              .getEntityGroupsForFolderEntity(response.id!.id!);
 
-                          if (firstdetails!.name.toString() != "All") {
-                            DevicecurrentFolderName =
-                                currentdeviceresponse.first.id!;
-                          }
-                          var seconddetails = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroup(currentdeviceresponse.last.id!);
-                          if (seconddetails!.name.toString() != "All") {
-                            DevicecurrentFolderName =
-                                currentdeviceresponse.last.id!;
-                          }
+                          if (currentdeviceresponse != null) {
+                            var firstdetails = await tbClient
+                                .getEntityGroupService()
+                                .getEntityGroup(
+                                    currentdeviceresponse.first.id!);
 
-                          List<EntityGroupInfo> entitygroups;
-                          entitygroups = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroupsByFolderType();
-
-                          if (entitygroups != null) {
-                            for (int i = 0; i < entitygroups.length; i++) {
-                              if (entitygroups.elementAt(i).name ==
-                                  ILMDeviceInstallationFolder) {
-                                DevicemoveFolderName = entitygroups
-                                    .elementAt(i)
-                                    .id!
-                                    .id!
-                                    .toString();
-                              }
+                            if (firstdetails!.name.toString() != "All") {
+                              DevicecurrentFolderName =
+                                  currentdeviceresponse.first.id!;
+                            }
+                            var seconddetails = await tbClient
+                                .getEntityGroupService()
+                                .getEntityGroup(currentdeviceresponse.last.id!);
+                            if (seconddetails!.name.toString() != "All") {
+                              DevicecurrentFolderName =
+                                  currentdeviceresponse.last.id!;
                             }
 
-                            List<String> myList = [];
-                            myList.add(response.id!.id!);
-
-                            var remove_response = tbClient
+                            List<EntityGroupInfo> entitygroups;
+                            entitygroups = await tbClient
                                 .getEntityGroupService()
-                                .removeEntitiesFromEntityGroup(
-                                    DevicecurrentFolderName, myList);
+                                .getEntityGroupsByFolderType();
 
-                            var add_response = tbClient
-                                .getEntityGroupService()
-                                .addEntitiesToEntityGroup(
-                                    DevicemoveFolderName, myList);
+                            if (entitygroups != null) {
+                              for (int i = 0; i < entitygroups.length; i++) {
+                                if (entitygroups.elementAt(i).name ==
+                                    ILMDeviceInstallationFolder) {
+                                  DevicemoveFolderName = entitygroups
+                                      .elementAt(i)
+                                      .id!
+                                      .id!
+                                      .toString();
+                                }
+                              }
 
-                            final bytes =
-                                File(imageFile!.path).readAsBytesSync();
-                            String img64 = base64Encode(bytes);
+                              List<String> myList = [];
+                              myList.add(response.id!.id!);
 
-                            postRequest(context, img64, DeviceName);
-                            pr.hide();
+                              var remove_response = tbClient
+                                  .getEntityGroupService()
+                                  .removeEntitiesFromEntityGroup(
+                                      DevicecurrentFolderName, myList);
+
+                              var add_response = tbClient
+                                  .getEntityGroupService()
+                                  .addEntitiesToEntityGroup(
+                                      DevicemoveFolderName, myList);
+
+                              final bytes =
+                                  File(imageFile!.path).readAsBytesSync();
+                              String img64 = base64Encode(bytes);
+
+                              postRequest(context, img64, DeviceName);
+                              pr.hide();
+                            } else {
+                              // Navigator.pop(context);
+                              pr.hide();
+                              Fluttertoast.showToast(
+                                  msg: "Unable to Find Folder Details",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.white,
+                                  textColor: Colors.black,
+                                  fontSize: 16.0);
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          dashboard_screen()));
+                            }
                           } else {
                             // Navigator.pop(context);
                             pr.hide();
-                            Fluttertoast.showToast(
-                                msg: "Unable to Find Folder Details",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.white,
-                                textColor: Colors.black,
-                                fontSize: 16.0);
+                            calltoast(deviceName);
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
@@ -527,9 +675,17 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                       dashboard_screen()));
                         }
                       } else {
-                        // Navigator.pop(context);
                         pr.hide();
-                        calltoast(deviceName);
+                        Fluttertoast.showToast(
+                            msg:
+                                "Selected Device is not authorized to install in this Region",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.white,
+                            textColor: Colors.black,
+                            fontSize: 16.0);
+
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                             builder: (BuildContext context) =>
                                 dashboard_screen()));
@@ -630,7 +786,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         builder: (BuildContext context) {
           return AlertDialog(
               content: Container(
-                  height: height / 1.25,
+                  height: height / 1.35,
                   child: Column(children: [
                     Text(
                       "LumiNode " + ' $DeviceName ',
@@ -658,7 +814,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      address.toString(),
                       style: const TextStyle(
                           fontSize: 16.0,
                           fontFamily: "Montserrat",
@@ -729,13 +885,16 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   //   return _locationData;
   // }
 
-  // Future<String> _getAddress(double? lat, double? lang) async {
-  //   if (lat == null || lang == null) return "";
-  //   final coordinates = new Coordinates(lat, lang);
-  //   List<Address> addresss = (await Geocoder.local
-  //       .findAddressesFromCoordinates(coordinates)) as List<Address>;
-  //   return "${addresss.elementAt(1).addressLine}";
-  // }
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)) as List<Address>;
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
@@ -840,5 +999,16 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         StackTrace.current;
 
     return tbError;
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
   }
 }

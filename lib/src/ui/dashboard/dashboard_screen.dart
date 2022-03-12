@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
@@ -226,9 +227,7 @@ class dashboard_screenState extends State<dashboard_screen> {
             (route) => true).then((value) async {
           if (value != null) {
             // if (value.toString().length == 6) {
-            late Future<Device?> entityFuture;
-            // Utility.progressDialog(context);
-            entityFuture = fetchDeviceDetails(value, context);
+            fetchGWDeviceDetails(value, context);
           } else {
             Fluttertoast.showToast(
                 msg: "No QRs Found",
@@ -253,588 +252,256 @@ class dashboard_screenState extends State<dashboard_screen> {
     });
   }
 
-// Fetching the device details from smart server
-  @override
-  Future<Device?> fetchDeviceDetails(
-      String deviceName, BuildContext context) async {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        try {
-          // Utility.progressDialog(context);
-          pr.show();
-          Device response;
-          Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-          response = await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName) as Device;
-          if (response != null) {
-            if (response.type == ilm_deviceType) {
-              fetchSmartDeviceDetails(
-                  deviceName, response.id!.id.toString(), context);
-            } else if (response.type == ccms_deviceType) {
-              fetchCCMSDeviceDetails(
-                  deviceName, response.id!.id.toString(), context);
-            } else if (response.type == Gw_deviceType) {
-              fetchGWDeviceDetails(
-                  deviceName, response.id!.id.toString(), context);
-            } else {
-              pr.hide();
-              Fluttertoast.showToast(
-                  msg: "Device Details Not Found",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
-            }
-          // } else {
-          //   // Navigator.pop(context);
-          //   pr.hide();
-          //   Fluttertoast.showToast(
-          //       msg:
-          //           "Device Credentials are invalid, Device not despatched properly",
-          //       toastLength: Toast.LENGTH_SHORT,
-          //       gravity: ToastGravity.BOTTOM,
-          //       timeInSecForIosWeb: 1,
-          //       backgroundColor: Colors.white,
-          //       textColor: Colors.black,
-          //       fontSize: 16.0);
-          // }
-          } else {
-            // Navigator.pop(context);
-            pr.hide();
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
-          }
-        } catch (e) {
-          // Navigator.pop(context);
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              fetchDeviceDetails(deviceName, context);
-            }
-          } else {
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
-        }
-      } else {
-        Fluttertoast.showToast(
-            msg: no_network,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-      }
-    });
-  }
-
-  @override
-  Future<Device?> fetchCCMSDeviceDetails(
-      String deviceName, String string, BuildContext context) async {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        try {
-          pr.show();
-          Device response;
-          String? SelectedRegion;
-          Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
-
-          var relationDetails = await tbClient
-              .getEntityRelationService()
-              .findInfoByTo(response.id!);
-
-          List<String> myLists = [];
-          myLists.add("firmwareVersion");
-
-          List<BaseAttributeKvEntry> deviceresponser;
-
-          deviceresponser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLists))
-              as List<BaseAttributeKvEntry>;
-
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('firmwareVersion',
-              deviceresponser.first.kv.getValue().toString());
-          prefs.setString('deviceName', deviceName);
-          SelectedRegion = prefs.getString("SelectedRegion").toString();
-
-          List<String> firstmyList = [];
-          firstmyList.add("lmp");
-
-          try {
-            List<TsKvEntry> faultresponser;
-            faultresponser = await tbClient
-                    .getAttributeService()
-                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
-                as List<TsKvEntry>;
-            if (faultresponser.length != 0) {
-              prefs.setString(
-                  'faultyStatus', faultresponser.first.getValue().toString());
-            }
-          } catch (e) {
-            var message = toThingsboardError(e, context);
-          }
-
-          List<String> myList = [];
-          myList.add("active");
-
-          List<BaseAttributeKvEntry> responser;
-
-          responser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myList))
-              as List<BaseAttributeKvEntry>;
-
-          prefs.setString(
-              'deviceStatus', responser.first.kv.getValue().toString());
-          prefs.setString(
-              'devicetimeStamp', responser.first.lastUpdateTs.toString());
-
-          List<String> myLister = [];
-          myLister.add("landmark");
-          // myLister.add("location");
-
-          List<AttributeKvEntry> responserse;
-
-          responserse = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLister))
-              as List<AttributeKvEntry>;
-
-          if (responserse.length != "0") {
-            prefs.setString(
-                'location', responserse.first.getValue().toString());
-            prefs.setString('deviceId', response.id!.toString());
-            prefs.setString('deviceName', deviceName);
-          }
-
-          if (relationDetails.length.toString() == "0") {
-            if (SelectedRegion.length.toString() != "0") {
-              // pr.hide();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ccmscaminstall()),
-              );
-            } else {
-              // Navigator.pop(context);
-              pr.hide();
-              Fluttertoast.showToast(
-                  msg: "Kindly Choose your Region, Zone and Ward to Install",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
-              // refreshPage(context);
-            }
-          } else {
-            // pr.hide();
-            // Navigator.pop(context);
-            if (context != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const CCMSMaintenanceScreen()),
-              );
-              // Navigator.of(context).pushReplacement(MaterialPageRoute(
-              //     builder: (BuildContext context) => CCMSMaintenanceScreen()));
-            }
-          }
-          // pr.hide();
-        } catch (e) {
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              fetchDeviceDetails(deviceName, context);
-            }
-          } else {
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-            refreshPage(context);
-          }
-        }
-      }
-    });
-  }
-
   @override
   Future<Device?> fetchGWDeviceDetails(
-      String deviceName, String string, BuildContext context) async {
+      String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
+      var gofenceValidation = false;
       if (value) {
         try {
           pr.show();
           Device response;
           String? SelectedRegion;
-          Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
-
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
-
-          var relationDetails = await tbClient
-              .getEntityRelationService()
-              .findInfoByTo(response.id!);
-
-          List<String> myLists = [];
-          myLists.add("firmwareVersion");
-
-          List<AttributeKvEntry> deviceresponser;
-
-          deviceresponser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLists))
-              as List<AttributeKvEntry>;
-
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString(
-              'firmwareVersion', deviceresponser.first.getValue().toString());
-          prefs.setString('deviceName', deviceName);
           SelectedRegion = prefs.getString("SelectedRegion").toString();
+          if (SelectedRegion.toString() != "Region") {
+            response = (await tbClient
+                .getDeviceService()
+                .getTenantDevice(deviceName)) as Device;
 
-          List<String> firstmyList = [];
-          firstmyList.add("lmp");
+            if (response.toString().isNotEmpty) {
+              List<String> myLists = [];
+              myLists.add("firmware_versions");
 
-          try {
-            List<TsKvEntry> faultresponser;
-            faultresponser = await tbClient
-                    .getAttributeService()
-                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
-                as List<TsKvEntry>;
-            if (faultresponser.length != 0) {
-              prefs.setString(
-                  'faultyStatus', faultresponser.first.getValue().toString());
-            }
-          } catch (e) {
-            var message = toThingsboardError(e, context);
-          }
+              List<AttributeKvEntry> deviceresponser;
 
-          List<String> myList = [];
-          myList.add("active");
-
-          List<AttributeKvEntry> responser;
-
-          responser = (await tbClient
+              deviceresponser = (await tbClient
                   .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myList))
-              as List<AttributeKvEntry>;
+                  .getAttributeKvEntries(response.id!, myLists));
 
-          prefs.setString(
-              'deviceStatus', responser.first.getValue().toString());
-          prefs.setString('devicetimeStamp',
-              responser.elementAt(0).getLastUpdateTs().toString());
+              if (deviceresponser.isNotEmpty) {
+                prefs.setString('firmwareVersion',
+                    deviceresponser.first.getValue().toString());
+                prefs.setString('deviceName', deviceName);
 
-          List<String> myLister = [];
-          myLister.add("landmark");
-          // myLister.add("location");
+                List<String> firstmyList = [];
+                firstmyList.add("lmp");
 
-          List<AttributeKvEntry> responserse;
+                try {
+                  List<TsKvEntry> faultresponser;
+                  faultresponser = await tbClient
+                      .getAttributeService()
+                      .getselectedLatestTimeseries(response.id!.id!, "lmp");
+                  if (faultresponser.isNotEmpty) {
+                    prefs.setString('faultyStatus',
+                        faultresponser.first.getValue().toString());
+                  }
+                } catch (e) {
+                  var message = toThingsboardError(e, context);
+                }
 
-          responserse = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLister))
-              as List<AttributeKvEntry>;
-
-          if (responserse.length != "0") {
-            prefs.setString(
-                'location', responserse.first.getValue().toString());
-            prefs.setString('deviceId', response.id!.toString());
-            prefs.setString('deviceName', deviceName);
-          }
-
-          if (relationDetails.length.toString() == "0") {
-            if (SelectedRegion.length.toString() != "0") {
-              // pr.hide();
-              // if (context != null) {
-              //   Navigator.push(
-              //     context,
-              //     MaterialPageRoute(builder: (context) => const gwcaminstall()),
-              //   );
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => gwcaminstall()));
-              // }
-            } else {
-              // Navigator.pop(context);
-              pr.hide();
-              Fluttertoast.showToast(
-                  msg: "Kindly Choose your Region, Zone and Ward to Install",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
-              // refreshPage(context);
-            }
-          } else {
-            // pr.hide();
-            // Navigator.pop(context);
-            // if (context != null) {
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => const GWMaintenanceScreen()),
-            //   );
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => GWMaintenanceScreen()));
-            // }
-          }
-          // pr.hide();
-        } catch (e) {
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              fetchDeviceDetails(deviceName, context);
-            }
-          } else {
-            refreshPage(context);
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
-        }
-      }
-    });
-  }
-
-  @override
-  Future<Device?> fetchSmartDeviceDetails(
-      String deviceName, String deviceid, BuildContext context) async {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        try {
-          // Utility.progressDialog(context);
-          pr.show();
-          Device response;
-          Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
-
-          var relationDetails = await tbClient
-              .getEntityRelationService()
-              .findInfoByTo(response.id!);
-
-          List<String> firstmyList = [];
-          firstmyList.add("lmp");
-
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-
-          try {
-            List<TsKvEntry> faultresponser;
-            faultresponser = await tbClient
-                    .getAttributeService()
-                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
-                as List<TsKvEntry>;
-            if (faultresponser.length != 0) {
-              prefs.setString(
-                  'faultyStatus', faultresponser.first.getValue().toString());
-            }
-          } catch (e) {
-            var message = toThingsboardError(e, context);
-          }
-
-          List<String> myList = [];
-          myList.add("lampWatts");
-          myList.add("active");
-
-          List<BaseAttributeKvEntry> responser;
-
-          responser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myList))
-              as List<BaseAttributeKvEntry>;
-
-          prefs.setString(
-              'deviceStatus', responser.first.kv.getValue().toString());
-          prefs.setString(
-              'deviceWatts', responser.last.kv.getValue().toString());
-          prefs.setString(
-              'devicetimeStamp', responser.first.lastUpdateTs.toString());
-
-          List<String> myLister = [];
-          myLister.add("landmark");
-          // myLister.add("location");
-
-          List<AttributeKvEntry> responserse;
-
-          responserse = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLister))
-              as List<AttributeKvEntry>;
-
-          if (responserse.length != "0") {
-            prefs.setString(
-                'location', responserse.first.getValue().toString());
-            prefs.setString('deviceId', deviceid);
-            prefs.setString('deviceName', deviceName);
-
-            List<String> versionlist = [];
-            versionlist.add("version");
-
-            List<AttributeKvEntry> versionResponserse;
-
-            versionResponserse = (await tbClient
-                    .getAttributeService()
-                    .getAttributeKvEntries(response.id!, versionlist))
-                as List<AttributeKvEntry>;
-
-            if (versionResponserse.length == 0) {
-              prefs.setString('version', "0");
-            } else {
-              prefs.setString('version', versionResponserse.first.getValue());
-            }
-
-            if (relationDetails.length.toString() == "0") {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              var SelectedRegion = prefs.getString("SelectedRegion").toString();
-              if (SelectedRegion != "null") {
                 List<String> myList = [];
-                myList.add("faulty");
+                myList.add("active");
+
                 List<AttributeKvEntry> responser;
 
                 responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<AttributeKvEntry>;
+                    .getAttributeService()
+                    .getAttributeKvEntries(response.id!, myList));
 
-                var faultyDetails = false;
-                if (responser.length == 0) {
-                  faultyDetails = false;
+                if (responser.isNotEmpty) {
+                  prefs.setString(
+                      'deviceStatus', responser.first.getValue().toString());
+                  prefs.setString('devicetimeStamp',
+                      responser.elementAt(0).getLastUpdateTs().toString());
+
+                  List<String> myLister = [];
+                  myLister.add("landmark");
+                  // myLister.add("location");
+
+                  List<AttributeKvEntry> responserse;
+
+                  responserse = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myLister));
+
+                  if (responserse.isNotEmpty) {
+                    prefs.setString(
+                        'location', responserse.first.getValue().toString());
+                    prefs.setString('deviceId', response.id!.toString());
+                    prefs.setString('deviceName', deviceName);
+
+                    var SelectedWard =
+                        prefs.getString("SelectedWard").toString();
+                    DBHelper dbHelper = new DBHelper();
+                    var wardDetails =
+                        await dbHelper.ward_basedDetails(SelectedWard);
+                    if (wardDetails.isNotEmpty) {
+                      wardDetails.first.wardid;
+
+                      List<String> wardist = [];
+                      myList.add("geofence");
+
+                      var wardresponser = await tbClient
+                          .getAttributeService()
+                          .getFirmAttributeKvEntries(
+                              wardDetails.first.wardid!, wardist);
+
+                      if (wardresponser.isNotEmpty) {
+                        if (wardresponser.first.getValue() == "true") {
+                          gofenceValidation = true;
+                          prefs.setString('geoFence', "true");
+                        } else {
+                          gofenceValidation = false;
+                          prefs.setString('geoFence', "false");
+                        }
+                      }
+                    }
+
+                    var relationDetails = await tbClient
+                        .getEntityRelationService()
+                        .findInfoByTo(response.id!);
+
+                    if (relationDetails.length.toString() == "0") {
+                      if (SelectedRegion.length.toString() != "0") {
+                        pr.hide();
+                        if (response.type == ilm_deviceType) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ilmcaminstall()),
+                          );
+
+                          // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          //     builder: (BuildContext context) =>
+                          //         const ilmcaminstall()));
+                        } else if (response.type == ccms_deviceType) {
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const ccmscaminstall()),
+                          );
+
+                          // Navigator.of(context).pushReplacement(
+                          //     MaterialPageRoute(
+                          //         builder: (BuildContext context) =>
+                          //             const ccmscaminstall()));
+                        } else if (response.type == Gw_deviceType) {
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const gwcaminstall()),
+                          );
+
+                          // Navigator.of(context).pushReplacement(
+                          //     MaterialPageRoute(
+                          //         builder: (BuildContext context) =>
+                          //             const gwcaminstall()));
+                        }
+                      } else {
+                        // Navigator.pop(context);
+                        pr.hide();
+                        Fluttertoast.showToast(
+                            msg:
+                                "Kindly Choose your Region, Zone and Ward to Install",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.white,
+                            textColor: Colors.black,
+                            fontSize: 16.0);
+                        // refreshPage(context);
+                      }
+                    } else {
+                      List<String> myList = [];
+                      myList.add("lattitude");
+                      myList.add("longitude");
+
+                      List<BaseAttributeKvEntry> responser;
+
+                      responser = (await tbClient
+                              .getAttributeService()
+                              .getAttributeKvEntries(response.id!, myList))
+                          as List<BaseAttributeKvEntry>;
+
+                      prefs.setString('deviceLatitude',
+                          responser.first.kv.getValue().toString());
+                      prefs.setString('deviceLongitude',
+                          responser.last.kv.getValue().toString());
+
+                      pr.hide();
+                      if (response.type == ilm_deviceType) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const MaintenanceScreen()),
+                        );
+
+                        // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        //     builder: (BuildContext context) =>
+                        //         const MaintenanceScreen()));
+                      } else if (response.type == ccms_deviceType) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const CCMSMaintenanceScreen()),
+                        );
+
+                        // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        //     builder: (BuildContext context) =>
+                        //         const CCMSMaintenanceScreen()));
+                      } else if (response.type == Gw_deviceType) {
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GWMaintenanceScreen()),
+                        );
+
+                        // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        //     builder: (BuildContext context) =>
+                        //         const GWMaintenanceScreen()));
+
+                      }
+                    }
+                  } else {
+                    pr.hide();
+                    refreshPage(context);
+                    //"" No landmark attribute found
+                  }
                 } else {
-                  faultyDetails = responser.first.getValue();
-                }
-
-                if (faultyDetails == false) {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (_) => ilmcaminstall()));
-                } else {
-                  // Navigator.pop(context);
-                  // pr.hide();
-                  Fluttertoast.showToast(
-                      msg:
-                          "Device Currently in Faulty State Unable to Install.",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.BOTTOM,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.white,
-                      textColor: Colors.black,
-                      fontSize: 16.0);
-
-                  // refreshPage(context);
+                  pr.hide();
+                  refreshPage(context);
+                  //"" No Active attribute found
                 }
               } else {
-                // Navigator.pop(context);
-                // pr.hide();
-                Fluttertoast.showToast(
-                    msg: "Kindly Choose your Region, Zone and Ward to Install",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-
-                // refreshPage(context);
+                pr.hide();
+                refreshPage(context);
+                //"" No Firmware Device Found
               }
             } else {
-              // Navigator.pop(context);
-              // pr.hide();
-
-              List<String> myList = [];
-              myList.add("lattitude");
-              myList.add("longitude");
-
-              List<BaseAttributeKvEntry> responser;
-
-              responser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myList))
-              as List<BaseAttributeKvEntry>;
-
-              prefs.setString(
-                  'deviceLatitude', responser.first.kv.getValue().toString());
-              prefs.setString(
-                  'deviceLongitude', responser.last.kv.getValue().toString());
-
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => MaintenanceScreen()));
-
-              // Navigator.of(context).pushReplacement(MaterialPageRoute(
-              //     builder: (_) => MaintenanceScreen()));
+              pr.hide();
+              refreshPage(context);
+              //"" No Device Found
             }
           } else {
-            // Navigator.pop(context);
             pr.hide();
-            Fluttertoast.showToast(
-                msg: "Device Details Not Found, Please try again later.",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-
-            // refreshPage(context);
+            refreshPage(context);
           }
         } catch (e) {
-          // Navigator.pop(context);
+          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
-              fetchDeviceDetails(deviceName, context);
+              fetchGWDeviceDetails(deviceName, context);
             }
           } else {
+            refreshPage(context);
             Fluttertoast.showToast(
                 msg: device_toast_msg + deviceName + device_toast_notfound,
                 toastLength: Toast.LENGTH_SHORT,
@@ -843,18 +510,8 @@ class dashboard_screenState extends State<dashboard_screen> {
                 backgroundColor: Colors.white,
                 textColor: Colors.black,
                 fontSize: 16.0);
-            refreshPage(context);
           }
         }
-      } else {
-        Fluttertoast.showToast(
-            msg: no_network,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
       }
     });
   }

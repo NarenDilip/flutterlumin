@@ -123,7 +123,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
+    accuracy = location.accuracy;
 
     if (accuracy <= 5) {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
@@ -135,7 +135,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
         Fluttertoast.showToast(
             msg:
             "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                insideArea!.toString(),
+                insideArea.toString(),
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
@@ -147,8 +147,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
         var difference = await geolocator.distanceBetween(
             double.parse(Lattitude),
             double.parse(Longitude),
-            location!.latitude!,
-            location!.longitude!);
+            location.latitude,
+            location.longitude);
 
         if (difference <= 5.0) {
           visibility = true;
@@ -281,6 +281,61 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
     });
     // _listenLocation();
+    // CallCoordinates(context);
+    // _listenLocation();
+  // }
+    CallGeoFenceListener(context);
+
+    // _listenLocation();
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var geoFence = prefs.getString('geoFence').toString();
+    if (geoFence == "true") {
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
+        _polyGeofenceService.start();
+        _polyGeofenceService
+            .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+        _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+        _polyGeofenceService.addLocationServicesStatusChangeListener(
+            _onLocationServicesStatusChanged);
+        _polyGeofenceService.addStreamErrorListener(_onError);
+        _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+      });
+      CallCoordinates(context);
+      visibility = true;
+    } else {
+      visibility = true;
+      viewvisibility = false;
+      Fluttertoast.showToast(
+          msg: "GeoFence Availability is not found with this Ward",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    }
+  }
+
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      // polygonad(LatLng(latter,rlonger));
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+      // details[new LatLng(latter,rlonger)];
+    }
   }
 
   void toggle() {

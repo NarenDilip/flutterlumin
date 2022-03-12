@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -304,6 +305,7 @@ class region_list_screen_state extends State<region_list_screen> {
           prefs.setString("SelectedRegion", selectedZone);
 
           DBHelper dbHelper = new DBHelper();
+          dbHelper.zone_delete(selectedZone);
           List<Zone> details = await dbHelper
               .zone_regionbasedDetails(selectedZone) as List<Zone>;
           if (details.isEmpty) {
@@ -335,8 +337,12 @@ class region_list_screen_state extends State<region_list_screen> {
                       .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
                   if (asset.name != null) {
                     // var regionname = selectedZone.split("-");
+
+                    var rng = new Random();
+                    var code = rng.nextInt(999999) + 100000;
+
                     Zone zone =
-                        new Zone(j, asset.id!.id, asset.name, selectedZone);
+                        new Zone(j+code+0, asset.id!.id, asset.name, selectedZone);
                     dbHelper.zone_add(zone);
                   }
                 }

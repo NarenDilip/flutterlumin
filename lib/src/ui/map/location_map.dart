@@ -398,7 +398,21 @@ class _LocationWidgetState extends State<LocationWidget> {
                                         ),
                                       ))
                                   .toList();
-                              _markers = _markers_1 + _markers_2 + _markers_3;
+                              var _markers_4 = _latLngListGW
+                                  .map((point) => Marker(
+                                point: point,
+                                width: 60,
+                                height: 60,
+                                builder: (context) => const Icon(
+                                  Icons.location_pin,
+                                  size: 60,
+                                  color: Colors.purple,
+                                ),
+                              ))
+                                  .toList();
+                              setState(() {
+                                _markers = _markers_1 + _markers_2 + _markers_3;
+                              });
                             }
                             if (current == 1) {
                               _markers = _latLngListILM
@@ -1027,8 +1041,7 @@ class _LocationWidgetState extends State<LocationWidget> {
 
           responserse = (await tbClient
                   .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLister))
-              as List<AttributeKvEntry>;
+                  .getAttributeKvEntries(response.id!, myLister));
 
           if (responserse.length != "0") {
             prefs.setString(
@@ -1043,8 +1056,7 @@ class _LocationWidgetState extends State<LocationWidget> {
 
             version_responserse = (await tbClient
                     .getAttributeService()
-                    .getAttributeKvEntries(response.id!, versionlist))
-                as List<AttributeKvEntry>;
+                    .getAttributeKvEntries(response.id!, versionlist));
 
             if (version_responserse.length == 0) {
               prefs.setString('version', "0");
@@ -1062,8 +1074,7 @@ class _LocationWidgetState extends State<LocationWidget> {
 
                 responser = (await tbClient
                         .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<AttributeKvEntry>;
+                        .getAttributeKvEntries(response.id!, myList));
 
                 var faultyDetails = false;
                 if (responser.length == 0) {
@@ -1196,27 +1207,29 @@ class _LocationWidgetState extends State<LocationWidget> {
                     myList.add("lattitude");
                     myList.add("longitude");
 
-                    List<BaseAttributeKvEntry> responser;
+                    List<AttributeKvEntry> responser;
                     responser = (await tbClient
                             .getAttributeService()
-                            .getAttributeKvEntries(relatedDevice.id!, myList))
-                        as List<BaseAttributeKvEntry>;
+                            .getAttributeKvEntries(relatedDevice.id!, myList));
+
+                    var rng = new Random();
+                    var code = rng.nextInt(900000) + 100000;
 
                     if (responser.isNotEmpty) {
                       // distance();
                       DBHelper dbHelper = DBHelper();
                       Mapdata mapdata = Mapdata(
-                          j,
+                          j+code+1,
                           relatedDevice.id!.id,
                           relatedDevice.name,
-                          responser.first.kv.getValue(),
-                          responser.last.kv.getValue(),
+                          responser.first.getValue(),
+                          responser.last.getValue(),
                           relatedDevice.type,
                           SelectedWard);
 
                       dbHelper.mapdata_add(mapdata);
-                      var sslat = double.parse(responser.first.kv.getValue());
-                      var sslong = double.parse(responser.last.kv.getValue());
+                      var sslat = double.parse(responser.first.getValue());
+                      var sslong = double.parse(responser.last.getValue());
 
                       var keyPair = {
                         'Key': sslat.toString(),
@@ -1230,7 +1243,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                           _latLngListILM.add(LatLng(sslat, sslong));
                         } else if (relatedDevice.type == "CCMS") {
                           _latLngListCCMS.add(LatLng(sslat, sslong));
-                        } else {
+                        } else if (relatedDevice.type == "Gateway") {
                           _latLngListGW.add(LatLng(sslat, sslong));
                         }
 
@@ -1274,8 +1287,9 @@ class _LocationWidgetState extends State<LocationWidget> {
                             ),
                           ))
                       .toList();
-                  _markers = _markers_1 + _markers_2 + _markers_3;
-
+                  setState(() {
+                    _markers = _markers_1 + _markers_2 + _markers_3;
+                  });
                   distance();
                 } else {}
               }
@@ -1285,7 +1299,12 @@ class _LocationWidgetState extends State<LocationWidget> {
           }
         } catch (e) {
           var message;
-          if (message == session_expired) {}
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              callWatcher(context);
+            }
+          }
         }
       }
     });

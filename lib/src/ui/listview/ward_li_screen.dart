@@ -86,7 +86,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
     selectedZone = sharedPreferences.getString("SelectedZone").toString();
 
     if (selectedZone != "0") {
-      List<Ward> wards = await dbHelper.ward_getDetails() as List<Ward>;
+      List<Ward> wardser = await dbHelper.ward_getDetails();
+      List<Ward> wards = await dbHelper.ward_regionbasedDetails(selectedZone);
       // wards = (await dbHelper.ward_zonebasedDetails(selectedZone)) as List<Ward>;
       // wards.then((data) {
       for (int i = 0; i < wards.length; i++) {
@@ -194,16 +195,16 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       relatedDevices!.elementAt(k).id.toString())) as Device;
 
                   if (data_response.type == "lumiNode") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> vresponser;
+                    vresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
                             relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (vresponser != null) {
+                      if (vresponser.first.getValue().toString() == "true") {
                         activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (vresponser.first.getValue().toString() ==
                           "false") {
                         nonactiveDevices!.add(relatedDevices!.elementAt(k));
                       } else {
@@ -232,16 +233,16 @@ class ward_li_screen_state extends State<ward_li_screen> {
                         'nonactiveCount', nonactiveDevices!.length.toString());
                     sharedPreferences.setString('ncCount', noncomdevice);
                   } else if (data_response.type == "CCMS") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> sresponser;
+                    sresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
                             relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (sresponser != null) {
+                      if (sresponser.first.getValue().toString() == "true") {
                         ccms_activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (sresponser.first.getValue().toString() ==
                           "false") {
                         ccms_nonactiveDevices!
                             .add(relatedDevices!.elementAt(k));
@@ -274,16 +275,16 @@ class ward_li_screen_state extends State<ward_li_screen> {
                         'ccms_ncCount', ccms_noncomdevice);
 
                   } else if (data_response.type == "Gateway") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> kresponser;
+                    kresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
                         relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (kresponser != null) {
+                      if (kresponser.first.getValue().toString() == "true") {
                         gw_activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (kresponser.first.getValue().toString() ==
                           "false") {
                         gw_nonactiveDevices!
                             .add(relatedDevices!.elementAt(k));
