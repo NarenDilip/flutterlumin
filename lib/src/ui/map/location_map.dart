@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -53,6 +54,7 @@ class _LocationWidgetState extends State<LocationWidget> {
   LocationData? _location;
   StreamSubscription<LocationData>? _locationSubscription;
   double lattitude = 0;
+  String Lattitude = "";
   double longitude = 0;
   double accuracy = 0;
   var accuvalue;
@@ -78,6 +80,10 @@ class _LocationWidgetState extends State<LocationWidget> {
 
   get loginThingsboard => null;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   void initState() {
     super.initState();
@@ -85,6 +91,55 @@ class _LocationWidgetState extends State<LocationWidget> {
     _listenLocation();
     current = widget.initialLabel;
     callWatcher(context);
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
   }
 
   Future<void> _listenLocation() async {
@@ -400,15 +455,15 @@ class _LocationWidgetState extends State<LocationWidget> {
                                   .toList();
                               var _markers_4 = _latLngListGW
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.purple,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.purple,
+                                        ),
+                                      ))
                                   .toList();
                               setState(() {
                                 _markers = _markers_1 + _markers_2 + _markers_3;
@@ -490,8 +545,9 @@ class _LocationWidgetState extends State<LocationWidget> {
                   color: thbDblue,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.my_location,
+                  semanticLabel: "test",
                   color: Colors.white,
                 ),
               ),
@@ -532,256 +588,268 @@ class _LocationWidgetState extends State<LocationWidget> {
       _mapController.move(
           LatLng(_locationData.latitude, _locationData.longitude), 10.0);
 
-      _markers = [LatLng(_locationData.latitude, _locationData.longitude)]
-          .map((point) => Marker(
-                point: point,
-                width: 60,
-                height: 60,
-                builder: (context) => Icon(
-                  Icons.location_pin,
-                  size: 60,
-                  color: Colors.cyan,
-                ),
-              ))
-          .toList();
+      // _markers = [LatLng(_locationData.latitude, _locationData.longitude)]
+      //     .map((point) => Marker(
+      //           point: point,
+      //           width: 15,
+      //           height: 15,
+      //           builder: (context) => Icon(
+      //             Icons.circle,
+      //             size: 15,
+      //             color: Colors.blue,
+      //           ),
+      //         ))
+      //     .toList();
     });
   }
 
   Future<void> popupOnClick(String string, BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('deviceName', string);
-    fetchDeviceDetails(string, context);
-  }
-
-  @override
-  Future<Device?> fetchDeviceDetails(
-      String deviceName, BuildContext context) async {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        try {
-          // Utility.progressDialog(context);
-          pr.show();
-          Device response;
-          Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-          response = await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName) as Device;
-          if (response != null) {
-            DeviceCredentials deviceCredentials = (await tbClient
-                    .getDeviceService()
-                    .getDeviceCredentialsByDeviceId(response.id!.id!))
-                as DeviceCredentials;
-
-            if (response.type == ilm_deviceType) {
-              if (deviceCredentials.credentialsId.length == 16) {
-                fetchSmartDeviceDetails(
-                    deviceName, response.id!.id.toString(), context);
-              } else {
-                pr.hide();
-                Fluttertoast.showToast(
-                    msg:
-                        "Device Credentials are invalid, Device not despatched properly",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-              }
-            } else if (response.type == ccms_deviceType) {
-              if (deviceCredentials.credentialsId.length == 15) {
-                fetchCCMSDeviceDetails(
-                    deviceName, response.id!.id.toString(), context);
-              } else {
-                pr.hide();
-                Fluttertoast.showToast(
-                    msg:
-                        "Device Credentials are invalid, Device not despatched properly",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-              }
-            } else if (response.type == Gw_deviceType) {
-              if (deviceCredentials.credentialsId.length == 15) {
-                fetchGWDeviceDetails(
-                    deviceName, response.id!.id.toString(), context);
-              } else {
-                pr.hide();
-                Fluttertoast.showToast(
-                    msg:
-                        "Device Credentials are invalid, Device not despatched properly",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-              }
-            } else {
-              pr.hide();
-              // Navigator.pop(context);
-              Fluttertoast.showToast(
-                  msg: "Device Details Not Found",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
-            }
-          } else {
-            // Navigator.pop(context);
-            pr.hide();
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
-          }
-        } catch (e) {
-          // Navigator.pop(context);
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              fetchDeviceDetails(deviceName, context);
-            }
-          } else {
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
-        }
-      } else {
-        Fluttertoast.showToast(
-            msg: no_network,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-      }
-    });
+    fetchGWDeviceDetails(string, context);
   }
 
   @override
   Future<Device?> fetchGWDeviceDetails(
-      String deviceName, String string, BuildContext context) async {
+      String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
+      var gofenceValidation = false;
       if (value) {
         try {
           pr.show();
           Device response;
           String? SelectedRegion;
-          Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient = ThingsboardClient(serverUrl);
           tbClient.smart_init();
-
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
-
-          var relationDetails = await tbClient
-              .getEntityRelationService()
-              .findInfoByTo(response.id!);
-
-          List<String> myLists = [];
-          myLists.add("firmwareVersion");
-
-          List<AttributeKvEntry> deviceresponser;
-
-          deviceresponser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLists))
-              as List<AttributeKvEntry>;
-
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString(
-              'firmwareVersion', deviceresponser.first.getValue().toString());
-          prefs.setString('deviceName', deviceName);
           SelectedRegion = prefs.getString("SelectedRegion").toString();
+          if (SelectedRegion.toString() != "Region") {
+            if (SelectedRegion.toString() != "null") {
+              response = (await tbClient
+                  .getDeviceService()
+                  .getTenantDevice(deviceName)) as Device;
 
-          List<String> firstmyList = [];
-          firstmyList.add("lmp");
+              if (response.toString().isNotEmpty) {
+                prefs.setString('deviceId', response.id!.id!.toString());
+                prefs.setString('DeviceDetails', response.id!.id!.toString());
 
-          try {
-            List<TsKvEntry> faultresponser;
-            faultresponser = await tbClient
-                    .getAttributeService()
-                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
-                as List<TsKvEntry>;
-            if (faultresponser.length != 0) {
-              prefs.setString(
-                  'faultyStatus', faultresponser.first.getValue().toString());
-            }
-          } catch (e) {
-            var message = toThingsboardError(e, context);
-          }
+                // try {
+                //   List<TsKvEntry> faultresponser;
+                //   faultresponser = await tbClient
+                //       .getAttributeService()
+                //       .getselectedLatestTimeseries(response.id!.id!, "version");
+                //   if (faultresponser.isNotEmpty) {
+                //     prefs.setString('firmwareVersion',
+                //         faultresponser.first.getValue().toString());
+                //   }
+                // } catch (e) {
+                //   var message = toThingsboardError(e, context);
+                //   FlutterLogs.logInfo(
+                //       "Luminator 2.0", "dashboard_page", "");
+                // }
 
-          List<String> myList = [];
-          myList.add("active");
+                // List<String> myLists = [];
+                // myLists.add("version");
+                //
+                // List<AttributeKvEntry> deviceresponser;
+                //
+                // deviceresponser = (await tbClient
+                //     .getAttributeService()
+                //     .getAttributeKvEntries(response.id!, myLists));
 
-          List<AttributeKvEntry> responser;
+                // if (deviceresponser.isNotEmpty) {
+                //   prefs.setString('firmwareVersion',
+                //       deviceresponser.first.getValue().toString());
+                prefs.setString('deviceName', deviceName);
 
-          responser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myList))
-              as List<AttributeKvEntry>;
+                var relationDetails = await tbClient
+                    .getEntityRelationService()
+                    .findInfoByTo(response.id!);
 
-          prefs.setString(
-              'deviceStatus', responser.first.getValue().toString());
-          prefs.setString('devicetimeStamp',
-              responser.elementAt(0).getLastUpdateTs().toString());
+                List<AttributeKvEntry> responserse;
 
-          List<String> myLister = [];
-          myLister.add("landmark");
-          // myLister.add("location");
+                // var SelectedWard = prefs.getString("SelectedWard").toString();
+                // DBHelper dbHelper = new DBHelper();
+                // var wardDetails =
+                //     await dbHelper.ward_basedDetails(SelectedWard);
+                // if (wardDetails.isNotEmpty) {
+                //   wardDetails.first.wardid;
+                //
+                //   List<String> wardist = [];
+                //   wardist.add("geofence");
+                //
+                //   var wardresponser = await tbClient
+                //       .getAttributeService()
+                //       .getFirmAttributeKvEntries(
+                //           wardDetails.first.wardid!, wardist);
+                //
+                //   if (wardresponser.isNotEmpty) {
+                //     if (wardresponser.first.getValue() == "true") {
+                //       gofenceValidation = true;
+                //       prefs.setString('geoFence', "true");
+                //     } else {
+                //       gofenceValidation = false;
+                //       prefs.setString('geoFence', "false");
+                //     }
+                //   }
+                // }
 
-          List<AttributeKvEntry> responserse;
+                gofenceValidation = false;
+                prefs.setString('geoFence', "false");
 
-          responserse = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLister))
-              as List<AttributeKvEntry>;
+                if (relationDetails.length.toString() == "0") {
+                  pr.hide();
+                  if (response.type == ilm_deviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ilmcaminstall()),
+                    );
+                  } else if (response.type == ccms_deviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ccmscaminstall()),
+                    );
+                  } else if (response.type == Gw_deviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const gwcaminstall()),
+                    );
+                  }
+                  // } else {
+                  //   // Navigator.pop(context);
+                  //   pr.hide();
+                  //   // refreshPage(context);
+                  // }
+                } else {
+                  List<String> firstmyList = [];
+                  firstmyList.add("lmp");
 
-          if (responserse.length != "0") {
-            prefs.setString(
-                'location', responserse.first.getValue().toString());
-            prefs.setString('deviceId', response.id!.toString());
-            prefs.setString('deviceName', deviceName);
-          }
+                  try {
+                    List<TsKvEntry> faultresponser;
+                    faultresponser = await tbClient
+                        .getAttributeService()
+                        .getselectedLatestTimeseries(response.id!.id!, "lmp");
+                    if (faultresponser.isNotEmpty) {
+                      prefs.setString('faultyStatus',
+                          faultresponser.first.getValue().toString());
+                    }
+                  } catch (e) {
+                    var message = toThingsboardError(e, context);
+                    FlutterLogs.logInfo(
+                        "Luminator 2.0", "dashboard_page", "");
+                  }
 
-          if (relationDetails.length.toString() == "0") {
-            if (SelectedRegion.length.toString() != "0") {
-              // pr.hide();
-              // if (context != null) {
-              //   Navigator.push(
-              //     context,
-              //     MaterialPageRoute(builder: (context) => const gwcaminstall()),
-              //   );
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => gwcaminstall()));
-              // }
+                  List<String> myList = [];
+                  myList.add("active");
+
+                  List<AttributeKvEntry> atresponser;
+
+                  atresponser = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myList));
+
+                  if (atresponser.isNotEmpty) {
+                    prefs.setString('deviceStatus',
+                        atresponser.first.getValue().toString());
+                    prefs.setString(
+                        'devicetimeStamp',
+                        atresponser
+                            .elementAt(0)
+                            .getLastUpdateTs()
+                            .toString());
+
+                    List<String> myLister = [];
+                    myLister.add("landmark");
+
+                    responserse = (await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myLister));
+
+                    if (responserse.isNotEmpty) {
+                      prefs.setString('location',
+                          responserse.first.getValue().toString());
+                      prefs.setString('deviceName', deviceName);
+                    }
+                    // myLister.add("location");
+
+                    List<String> LampmyList = [];
+                    LampmyList.add("lampWatts");
+
+                    List<AttributeKvEntry> lampatresponser;
+
+                    lampatresponser = (await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, LampmyList));
+
+                    if (lampatresponser.isNotEmpty) {
+                      prefs.setString('deviceWatts',
+                          lampatresponser.first.getValue().toString());
+                    }
+
+                    List<String> myList = [];
+                    myList.add("lattitude");
+                    myList.add("longitude");
+
+                    List<BaseAttributeKvEntry> responser;
+
+                    responser = (await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myList))
+                    as List<BaseAttributeKvEntry>;
+
+                    prefs.setString('deviceLatitude',
+                        responser.first.kv.getValue().toString());
+                    prefs.setString('deviceLongitude',
+                        responser.last.kv.getValue().toString());
+
+                    pr.hide();
+                    if (response.type == ilm_deviceType) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const MaintenanceScreen()),
+                      );
+                    } else if (response.type == ccms_deviceType) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                            const CCMSMaintenanceScreen()),
+                      );
+                    } else if (response.type == Gw_deviceType) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                            const GWMaintenanceScreen()),
+                      );
+                    }
+                  } else {
+                    FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+                        "No attributes key found");
+                    pr.hide();
+                    refreshPage(context);
+                    //"" No Active attribute found
+                  }
+                }
+                // } else {
+                //   FlutterLogs.logInfo(
+                //       "Dashboard_Page", "Dashboard", "No version attributes key found");
+                //   pr.hide();
+                //   refreshPage(context);
+                //   //"" No Firmware Device Found
+                // }
+              } else {
+                FlutterLogs.logInfo(
+                    "Dashboard_Page", "Dashboard", "No Device Details Found");
+                pr.hide();
+                refreshPage(context);
+                //"" No Device Found
+              }
             } else {
-              // Navigator.pop(context);
-              pr.hide();
               Fluttertoast.showToast(
                   msg: "Kindly Choose your Region, Zone and Ward to Install",
                   toastLength: Toast.LENGTH_SHORT,
@@ -790,29 +858,34 @@ class _LocationWidgetState extends State<LocationWidget> {
                   backgroundColor: Colors.white,
                   textColor: Colors.black,
                   fontSize: 16.0);
-              // refreshPage(context);
+
+              pr.hide();
+              refreshPage(context);
+              //"" No Device Found
             }
           } else {
-            // pr.hide();
-            // Navigator.pop(context);
-            // if (context != null) {
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => const GWMaintenanceScreen()),
-            //   );
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => GWMaintenanceScreen()));
-            // }
+            Fluttertoast.showToast(
+                msg: "Kindly Choose your Region, Zone and Ward to Install",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+
+            pr.hide();
+            refreshPage(context);
+            //"" No Device Found
           }
-          // pr.hide();
         } catch (e) {
+          FlutterLogs.logInfo(
+              "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
-              fetchDeviceDetails(deviceName, context);
+              fetchGWDeviceDetails(deviceName, context);
             }
           } else {
             refreshPage(context);
@@ -829,6 +902,282 @@ class _LocationWidgetState extends State<LocationWidget> {
       }
     });
   }
+  // @override
+  // Future<Device?> fetchDeviceDetails(
+  //     String deviceName, BuildContext context) async {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       try {
+  //         // Utility.progressDialog(context);
+  //         pr.show();
+  //         Device response;
+  //         Future<List<EntityGroupInfo>> deviceResponse;
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //         response = await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevice(deviceName) as Device;
+  //         if (response != null) {
+  //           DeviceCredentials deviceCredentials = (await tbClient
+  //                   .getDeviceService()
+  //                   .getDeviceCredentialsByDeviceId(response.id!.id!))
+  //               as DeviceCredentials;
+  //
+  //           if (response.type == ilm_deviceType) {
+  //             if (deviceCredentials.credentialsId.length == 16) {
+  //               fetchSmartDeviceDetails(
+  //                   deviceName, response.id!.id.toString(), context);
+  //             } else {
+  //               pr.hide();
+  //               Fluttertoast.showToast(
+  //                   msg:
+  //                       "Device Credentials are invalid, Device not despatched properly",
+  //                   toastLength: Toast.LENGTH_SHORT,
+  //                   gravity: ToastGravity.BOTTOM,
+  //                   timeInSecForIosWeb: 1,
+  //                   backgroundColor: Colors.white,
+  //                   textColor: Colors.black,
+  //                   fontSize: 16.0);
+  //             }
+  //           } else if (response.type == ccms_deviceType) {
+  //             if (deviceCredentials.credentialsId.length == 15) {
+  //               fetchCCMSDeviceDetails(
+  //                   deviceName, response.id!.id.toString(), context);
+  //             } else {
+  //               pr.hide();
+  //               Fluttertoast.showToast(
+  //                   msg:
+  //                       "Device Credentials are invalid, Device not despatched properly",
+  //                   toastLength: Toast.LENGTH_SHORT,
+  //                   gravity: ToastGravity.BOTTOM,
+  //                   timeInSecForIosWeb: 1,
+  //                   backgroundColor: Colors.white,
+  //                   textColor: Colors.black,
+  //                   fontSize: 16.0);
+  //             }
+  //           } else if (response.type == Gw_deviceType) {
+  //             if (deviceCredentials.credentialsId.length == 15) {
+  //               fetchGWDeviceDetails(
+  //                   deviceName, response.id!.id.toString(), context);
+  //             } else {
+  //               pr.hide();
+  //               Fluttertoast.showToast(
+  //                   msg:
+  //                       "Device Credentials are invalid, Device not despatched properly",
+  //                   toastLength: Toast.LENGTH_SHORT,
+  //                   gravity: ToastGravity.BOTTOM,
+  //                   timeInSecForIosWeb: 1,
+  //                   backgroundColor: Colors.white,
+  //                   textColor: Colors.black,
+  //                   fontSize: 16.0);
+  //             }
+  //           } else {
+  //             pr.hide();
+  //             // Navigator.pop(context);
+  //             Fluttertoast.showToast(
+  //                 msg: "Device Details Not Found",
+  //                 toastLength: Toast.LENGTH_SHORT,
+  //                 gravity: ToastGravity.BOTTOM,
+  //                 timeInSecForIosWeb: 1,
+  //                 backgroundColor: Colors.white,
+  //                 textColor: Colors.black,
+  //                 fontSize: 16.0);
+  //           }
+  //         } else {
+  //           // Navigator.pop(context);
+  //           pr.hide();
+  //           Fluttertoast.showToast(
+  //               msg: device_toast_msg + deviceName + device_toast_notfound,
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //           Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //               builder: (BuildContext context) => dashboard_screen()));
+  //         }
+  //       } catch (e) {
+  //         // Navigator.pop(context);
+  //         pr.hide();
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             fetchDeviceDetails(deviceName, context);
+  //           }
+  //         } else {
+  //           Fluttertoast.showToast(
+  //               msg: device_toast_msg + deviceName + device_toast_notfound,
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //         }
+  //       }
+  //     } else {
+  //       Fluttertoast.showToast(
+  //           msg: no_network,
+  //           toastLength: Toast.LENGTH_SHORT,
+  //           gravity: ToastGravity.BOTTOM,
+  //           timeInSecForIosWeb: 1,
+  //           backgroundColor: Colors.white,
+  //           textColor: Colors.black,
+  //           fontSize: 16.0);
+  //     }
+  //   });
+  // }
+
+  // @override
+  // Future<Device?> fetchGWDeviceDetails(
+  //     String deviceName, String string, BuildContext context) async {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       try {
+  //         pr.show();
+  //         Device response;
+  //         String? SelectedRegion;
+  //         Future<List<EntityGroupInfo>> deviceResponse;
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //
+  //         response = (await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevice(deviceName)) as Device;
+  //
+  //         var relationDetails = await tbClient
+  //             .getEntityRelationService()
+  //             .findInfoByTo(response.id!);
+  //
+  //         List<String> myLists = [];
+  //         myLists.add("firmwareVersion");
+  //
+  //         List<AttributeKvEntry> deviceresponser;
+  //
+  //         deviceresponser = (await tbClient
+  //                 .getAttributeService()
+  //                 .getAttributeKvEntries(response.id!, myLists))
+  //             as List<AttributeKvEntry>;
+  //
+  //         SharedPreferences prefs = await SharedPreferences.getInstance();
+  //         prefs.setString(
+  //             'firmwareVersion', deviceresponser.first.getValue().toString());
+  //         prefs.setString('deviceName', deviceName);
+  //         SelectedRegion = prefs.getString("SelectedRegion").toString();
+  //
+  //         List<String> firstmyList = [];
+  //         firstmyList.add("lmp");
+  //
+  //         try {
+  //           List<TsKvEntry> faultresponser;
+  //           faultresponser = await tbClient
+  //                   .getAttributeService()
+  //                   .getselectedLatestTimeseries(response.id!.id!, "lmp")
+  //               as List<TsKvEntry>;
+  //           if (faultresponser.length != 0) {
+  //             prefs.setString(
+  //                 'faultyStatus', faultresponser.first.getValue().toString());
+  //           }
+  //         } catch (e) {
+  //           var message = toThingsboardError(e, context);
+  //         }
+  //
+  //         List<String> myList = [];
+  //         myList.add("active");
+  //
+  //         List<AttributeKvEntry> responser;
+  //
+  //         responser = (await tbClient
+  //                 .getAttributeService()
+  //                 .getAttributeKvEntries(response.id!, myList))
+  //             as List<AttributeKvEntry>;
+  //
+  //         prefs.setString(
+  //             'deviceStatus', responser.first.getValue().toString());
+  //         prefs.setString('devicetimeStamp',
+  //             responser.elementAt(0).getLastUpdateTs().toString());
+  //
+  //         List<String> myLister = [];
+  //         myLister.add("landmark");
+  //         // myLister.add("location");
+  //
+  //         List<AttributeKvEntry> responserse;
+  //
+  //         responserse = (await tbClient
+  //                 .getAttributeService()
+  //                 .getAttributeKvEntries(response.id!, myLister))
+  //             as List<AttributeKvEntry>;
+  //
+  //         if (responserse.length != "0") {
+  //           prefs.setString(
+  //               'location', responserse.first.getValue().toString());
+  //           prefs.setString('deviceId', response.id!.toString());
+  //           prefs.setString('deviceName', deviceName);
+  //         }
+  //
+  //         if (relationDetails.length.toString() == "0") {
+  //           if (SelectedRegion.length.toString() != "0") {
+  //             // pr.hide();
+  //             // if (context != null) {
+  //             //   Navigator.push(
+  //             //     context,
+  //             //     MaterialPageRoute(builder: (context) => const gwcaminstall()),
+  //             //   );
+  //             Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //                 builder: (BuildContext context) => gwcaminstall()));
+  //             // }
+  //           } else {
+  //             // Navigator.pop(context);
+  //             pr.hide();
+  //             Fluttertoast.showToast(
+  //                 msg: "Kindly Choose your Region, Zone and Ward to Install",
+  //                 toastLength: Toast.LENGTH_SHORT,
+  //                 gravity: ToastGravity.BOTTOM,
+  //                 timeInSecForIosWeb: 1,
+  //                 backgroundColor: Colors.white,
+  //                 textColor: Colors.black,
+  //                 fontSize: 16.0);
+  //             // refreshPage(context);
+  //           }
+  //         } else {
+  //           // pr.hide();
+  //           // Navigator.pop(context);
+  //           // if (context != null) {
+  //           //   Navigator.push(
+  //           //     context,
+  //           //     MaterialPageRoute(
+  //           //         builder: (context) => const GWMaintenanceScreen()),
+  //           //   );
+  //           Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //               builder: (BuildContext context) => GWMaintenanceScreen()));
+  //           // }
+  //         }
+  //         // pr.hide();
+  //       } catch (e) {
+  //         pr.hide();
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             fetchDeviceDetails(deviceName, context);
+  //           }
+  //         } else {
+  //           refreshPage(context);
+  //           Fluttertoast.showToast(
+  //               msg: device_toast_msg + deviceName + device_toast_notfound,
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //         }
+  //       }
+  //     }
+  //   });
+  // }
 
   @override
   Future<Device?> fetchCCMSDeviceDetails(
@@ -957,7 +1306,7 @@ class _LocationWidgetState extends State<LocationWidget> {
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
-              fetchDeviceDetails(deviceName, context);
+              fetchGWDeviceDetails(deviceName, context);
             }
           } else {
             Fluttertoast.showToast(
@@ -975,196 +1324,196 @@ class _LocationWidgetState extends State<LocationWidget> {
     });
   }
 
-  @override
-  Future<Device?> fetchSmartDeviceDetails(
-      String deviceName, String deviceid, BuildContext context) async {
-    Utility.isConnected().then((value) async {
-      if (value) {
-        try {
-          // Utility.progressDialog(context);
-          pr.show();
-          Device response;
-          Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
-
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
-
-          var relationDetails = await tbClient
-              .getEntityRelationService()
-              .findInfoByTo(response.id!);
-
-          List<String> firstmyList = [];
-          firstmyList.add("lmp");
-
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-
-          try {
-            List<TsKvEntry> faultresponser;
-            faultresponser = await tbClient
-                    .getAttributeService()
-                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
-                as List<TsKvEntry>;
-            if (faultresponser.length != 0) {
-              prefs.setString(
-                  'faultyStatus', faultresponser.first.getValue().toString());
-            }
-          } catch (e) {
-            var message = toThingsboardError(e, context);
-          }
-
-          List<String> myList = [];
-          myList.add("lampWatts");
-          myList.add("active");
-
-          List<BaseAttributeKvEntry> responser;
-
-          responser = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myList))
-              as List<BaseAttributeKvEntry>;
-
-          prefs.setString(
-              'deviceStatus', responser.first.kv.getValue().toString());
-          prefs.setString(
-              'deviceWatts', responser.last.kv.getValue().toString());
-          prefs.setString(
-              'devicetimeStamp', responser.first.lastUpdateTs.toString());
-
-          List<String> myLister = [];
-          // myLister.add("landmark");
-          myLister.add("location");
-
-          List<AttributeKvEntry> responserse;
-
-          responserse = (await tbClient
-                  .getAttributeService()
-                  .getAttributeKvEntries(response.id!, myLister));
-
-          if (responserse.length != "0") {
-            prefs.setString(
-                'location', responserse.first.getValue().toString());
-            prefs.setString('deviceId', deviceid);
-            prefs.setString('deviceName', deviceName);
-
-            List<String> versionlist = [];
-            versionlist.add("version");
-
-            List<AttributeKvEntry> version_responserse;
-
-            version_responserse = (await tbClient
-                    .getAttributeService()
-                    .getAttributeKvEntries(response.id!, versionlist));
-
-            if (version_responserse.length == 0) {
-              prefs.setString('version', "0");
-            } else {
-              prefs.setString('version', version_responserse.first.getValue());
-            }
-
-            if (relationDetails.length.toString() == "0") {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              var SelectedRegion = prefs.getString("SelectedRegion").toString();
-              if (SelectedRegion != "null") {
-                List<String> myList = [];
-                myList.add("faulty");
-                List<AttributeKvEntry> responser;
-
-                responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList));
-
-                var faultyDetails = false;
-                if (responser.length == 0) {
-                  faultyDetails = false;
-                } else {
-                  faultyDetails = responser.first.getValue();
-                }
-
-                if (faultyDetails == false) {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => ilmcaminstall()));
-                } else {
-                  // Navigator.pop(context);
-                  pr.hide();
-                  Fluttertoast.showToast(
-                      msg:
-                          "Device Currently in Faulty State Unable to Install.",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.BOTTOM,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.white,
-                      textColor: Colors.black,
-                      fontSize: 16.0);
-
-                  // refreshPage(context);
-                }
-              } else {
-                // Navigator.pop(context);
-                pr.hide();
-                Fluttertoast.showToast(
-                    msg: "Kindly Choose your Region, Zone and Ward to Install",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-
-                // refreshPage(context);
-              }
-            } else {
-              // Navigator.pop(context);
-              pr.hide();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => MaintenanceScreen()));
-            }
-          } else {
-            // Navigator.pop(context);
-            pr.hide();
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-            // refreshPage(context);
-          }
-        } catch (e) {
-          // Navigator.pop(context);
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              fetchDeviceDetails(deviceName, context);
-            }
-          } else {
-            Fluttertoast.showToast(
-                msg: device_toast_msg + deviceName + device_toast_notfound,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
-        }
-      } else {
-        Fluttertoast.showToast(
-            msg: no_network,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-      }
-    });
-  }
+  // @override
+  // Future<Device?> fetchSmartDeviceDetails(
+  //     String deviceName, String deviceid, BuildContext context) async {
+  //   Utility.isConnected().then((value) async {
+  //     if (value) {
+  //       try {
+  //         // Utility.progressDialog(context);
+  //         pr.show();
+  //         Device response;
+  //         Future<List<EntityGroupInfo>> deviceResponse;
+  //         var tbClient = ThingsboardClient(serverUrl);
+  //         tbClient.smart_init();
+  //
+  //         response = (await tbClient
+  //             .getDeviceService()
+  //             .getTenantDevice(deviceName)) as Device;
+  //
+  //         var relationDetails = await tbClient
+  //             .getEntityRelationService()
+  //             .findInfoByTo(response.id!);
+  //
+  //         List<String> firstmyList = [];
+  //         firstmyList.add("lmp");
+  //
+  //         SharedPreferences prefs = await SharedPreferences.getInstance();
+  //
+  //         try {
+  //           List<TsKvEntry> faultresponser;
+  //           faultresponser = await tbClient
+  //                   .getAttributeService()
+  //                   .getselectedLatestTimeseries(response.id!.id!, "lmp")
+  //               as List<TsKvEntry>;
+  //           if (faultresponser.length != 0) {
+  //             prefs.setString(
+  //                 'faultyStatus', faultresponser.first.getValue().toString());
+  //           }
+  //         } catch (e) {
+  //           var message = toThingsboardError(e, context);
+  //         }
+  //
+  //         List<String> myList = [];
+  //         myList.add("lampWatts");
+  //         myList.add("active");
+  //
+  //         List<BaseAttributeKvEntry> responser;
+  //
+  //         responser = (await tbClient
+  //                 .getAttributeService()
+  //                 .getAttributeKvEntries(response.id!, myList))
+  //             as List<BaseAttributeKvEntry>;
+  //
+  //         prefs.setString(
+  //             'deviceStatus', responser.first.kv.getValue().toString());
+  //         prefs.setString(
+  //             'deviceWatts', responser.last.kv.getValue().toString());
+  //         prefs.setString(
+  //             'devicetimeStamp', responser.first.lastUpdateTs.toString());
+  //
+  //         List<String> myLister = [];
+  //         // myLister.add("landmark");
+  //         myLister.add("location");
+  //
+  //         List<AttributeKvEntry> responserse;
+  //
+  //         responserse = (await tbClient
+  //             .getAttributeService()
+  //             .getAttributeKvEntries(response.id!, myLister));
+  //
+  //         if (responserse.length != "0") {
+  //           prefs.setString(
+  //               'location', responserse.first.getValue().toString());
+  //           prefs.setString('deviceId', deviceid);
+  //           prefs.setString('deviceName', deviceName);
+  //
+  //           List<String> versionlist = [];
+  //           versionlist.add("version");
+  //
+  //           List<AttributeKvEntry> version_responserse;
+  //
+  //           version_responserse = (await tbClient
+  //               .getAttributeService()
+  //               .getAttributeKvEntries(response.id!, versionlist));
+  //
+  //           if (version_responserse.length == 0) {
+  //             prefs.setString('version', "0");
+  //           } else {
+  //             prefs.setString('version', version_responserse.first.getValue());
+  //           }
+  //
+  //           if (relationDetails.length.toString() == "0") {
+  //             SharedPreferences prefs = await SharedPreferences.getInstance();
+  //             var SelectedRegion = prefs.getString("SelectedRegion").toString();
+  //             if (SelectedRegion != "null") {
+  //               List<String> myList = [];
+  //               myList.add("faulty");
+  //               List<AttributeKvEntry> responser;
+  //
+  //               responser = (await tbClient
+  //                   .getAttributeService()
+  //                   .getAttributeKvEntries(response.id!, myList));
+  //
+  //               var faultyDetails = false;
+  //               if (responser.length == 0) {
+  //                 faultyDetails = false;
+  //               } else {
+  //                 faultyDetails = responser.first.getValue();
+  //               }
+  //
+  //               if (faultyDetails == false) {
+  //                 Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //                     builder: (BuildContext context) => ilmcaminstall()));
+  //               } else {
+  //                 // Navigator.pop(context);
+  //                 pr.hide();
+  //                 Fluttertoast.showToast(
+  //                     msg:
+  //                         "Device Currently in Faulty State Unable to Install.",
+  //                     toastLength: Toast.LENGTH_SHORT,
+  //                     gravity: ToastGravity.BOTTOM,
+  //                     timeInSecForIosWeb: 1,
+  //                     backgroundColor: Colors.white,
+  //                     textColor: Colors.black,
+  //                     fontSize: 16.0);
+  //
+  //                 // refreshPage(context);
+  //               }
+  //             } else {
+  //               // Navigator.pop(context);
+  //               pr.hide();
+  //               Fluttertoast.showToast(
+  //                   msg: "Kindly Choose your Region, Zone and Ward to Install",
+  //                   toastLength: Toast.LENGTH_SHORT,
+  //                   gravity: ToastGravity.BOTTOM,
+  //                   timeInSecForIosWeb: 1,
+  //                   backgroundColor: Colors.white,
+  //                   textColor: Colors.black,
+  //                   fontSize: 16.0);
+  //
+  //               // refreshPage(context);
+  //             }
+  //           } else {
+  //             // Navigator.pop(context);
+  //             pr.hide();
+  //             Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //                 builder: (BuildContext context) => MaintenanceScreen()));
+  //           }
+  //         } else {
+  //           // Navigator.pop(context);
+  //           pr.hide();
+  //           Fluttertoast.showToast(
+  //               msg: device_toast_msg + deviceName + device_toast_notfound,
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //           // refreshPage(context);
+  //         }
+  //       } catch (e) {
+  //         // Navigator.pop(context);
+  //         var message = toThingsboardError(e, context);
+  //         if (message == session_expired) {
+  //           var status = loginThingsboard.callThingsboardLogin(context);
+  //           if (status == true) {
+  //             fetchGWDeviceDetails(deviceName, context);
+  //           }
+  //         } else {
+  //           Fluttertoast.showToast(
+  //               msg: device_toast_msg + deviceName + device_toast_notfound,
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //         }
+  //       }
+  //     } else {
+  //       Fluttertoast.showToast(
+  //           msg: no_network,
+  //           toastLength: Toast.LENGTH_SHORT,
+  //           gravity: ToastGravity.BOTTOM,
+  //           timeInSecForIosWeb: 1,
+  //           backgroundColor: Colors.white,
+  //           textColor: Colors.black,
+  //           fontSize: 16.0);
+  //     }
+  //   });
+  // }
 
   void circle() {
     circleMarkers = CircleMarker(
@@ -1209,8 +1558,8 @@ class _LocationWidgetState extends State<LocationWidget> {
 
                     List<AttributeKvEntry> responser;
                     responser = (await tbClient
-                            .getAttributeService()
-                            .getAttributeKvEntries(relatedDevice.id!, myList));
+                        .getAttributeService()
+                        .getAttributeKvEntries(relatedDevice.id!, myList));
 
                     var rng = new Random();
                     var code = rng.nextInt(900000) + 100000;
@@ -1219,7 +1568,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                       // distance();
                       DBHelper dbHelper = DBHelper();
                       Mapdata mapdata = Mapdata(
-                          j+code+1,
+                          j + code + 1,
                           relatedDevice.id!.id,
                           relatedDevice.name,
                           responser.first.getValue(),
@@ -1229,6 +1578,8 @@ class _LocationWidgetState extends State<LocationWidget> {
 
                       dbHelper.mapdata_add(mapdata);
                       var sslat = double.parse(responser.first.getValue());
+                      Lattitude =
+                          double.parse(responser.first.getValue()).toString();
                       var sslong = double.parse(responser.last.getValue());
 
                       var keyPair = {

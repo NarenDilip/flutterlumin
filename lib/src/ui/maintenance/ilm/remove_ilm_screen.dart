@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -38,6 +40,10 @@ class replacementilmState extends State<replacementilm> {
   String faultyStatus = "0";
   late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
@@ -59,6 +65,55 @@ class replacementilmState extends State<replacementilm> {
     DeviceName = "";
     _openCamera(context);
     getSharedPrefs();
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
   }
 
   @override
@@ -139,6 +194,7 @@ class replacementilmState extends State<replacementilm> {
                               callReplacementComplete(
                                   context, imageFile, DeviceName);
                             } else {
+                              FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
@@ -211,32 +267,33 @@ class replacementilmState extends State<replacementilm> {
                 regionid = regiondetails.first.regionid;
               }
 
-              try {
-                List<String> myfirmList = [];
-                myfirmList.add("firmware_versions");
-
-                List<AttributeKvEntry> faultresponser;
-
-                faultresponser = (await tbClient
-                        .getAttributeService()
-                        .getFirmAttributeKvEntries(regionid, myfirmList))
-                    as List<AttributeKvEntry>;
-
-                if (faultresponser.length != 0) {
-                  var firmwaredetails =
-                      faultresponser.first.getValue().toString();
-                  final decoded = jsonDecode(firmwaredetails) as Map;
-                  var firmware_versions = decoded['firmware_version'];
-
-                  if (firmware_versions.toString().contains(FirmwareVersion)) {
+              // try {
+              //   List<String> myfirmList = [];
+              //   myfirmList.add("firmware_versions");
+              //
+              //   List<AttributeKvEntry> faultresponser;
+              //
+              //   faultresponser = (await tbClient
+              //           .getAttributeService()
+              //           .getFirmAttributeKvEntries(regionid, myfirmList))
+              //       as List<AttributeKvEntry>;
+              //
+              //   if (faultresponser.length != 0) {
+              //     var firmwaredetails =
+              //         faultresponser.first.getValue().toString();
+              //     final decoded = jsonDecode(firmwaredetails) as Map;
+              //     var firmware_versions = decoded['firmware_version'];
+              //
+              //     if (firmware_versions.toString().contains(FirmwareVersion)) {
                     versionCompatability = true;
-                  } else {
-                    versionCompatability = false;
-                  }
-                }
-              } catch (e) {
-                var message = toThingsboardError(e, context);
-              }
+              //     } else {
+              //       versionCompatability = false;
+              //     }
+              //   }
+              // } catch (e) {
+              //   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+              //   var message = toThingsboardError(e, context);
+              // }
 
               if (versionCompatability == true) {
                 if (faultyStatus == "2") {
@@ -304,13 +361,13 @@ class replacementilmState extends State<replacementilm> {
                             .getEntityGroupService()
                             .removeEntitiesFromEntityGroup(
                                 DevicecurrentFolderName, myList);
-                      } catch (e) {}
+                      } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
                       try {
                         var add_response = await tbClient
                             .getEntityGroupService()
                             .addEntitiesToEntityGroup(
                                 DevicemoveFolderName, myList);
-                      } catch (e) {}
+                      } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
 
                       final bytes = File(imageFile!.path).readAsBytesSync();
                       String img64 = base64Encode(bytes);
@@ -318,6 +375,7 @@ class replacementilmState extends State<replacementilm> {
                       postRequest(context, img64, DeviceName);
                       pr.hide();
                     } else {
+                      FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
                       pr.hide();
                       calltoast("Device is not Found");
 
@@ -326,6 +384,7 @@ class replacementilmState extends State<replacementilm> {
                               dashboard_screen()));
                     }
                   } else {
+                    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
                     pr.hide();
                     calltoast("Device EntityGroup Not Found");
 
@@ -333,6 +392,7 @@ class replacementilmState extends State<replacementilm> {
                         builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
+                  FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
                   pr.hide();
                   calltoast(deviceName);
 
@@ -340,6 +400,7 @@ class replacementilmState extends State<replacementilm> {
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
+                FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
                 pr.hide();
                 Fluttertoast.showToast(
                     msg:
@@ -355,6 +416,7 @@ class replacementilmState extends State<replacementilm> {
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
+              FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
               pr.hide();
               calltoast(deviceName);
 
@@ -362,6 +424,7 @@ class replacementilmState extends State<replacementilm> {
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
+            FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
             pr.hide();
             Fluttertoast.showToast(
                 msg:
@@ -374,6 +437,7 @@ class replacementilmState extends State<replacementilm> {
                 fontSize: 16.0);
           }
         } catch (e) {
+          FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -406,6 +470,7 @@ class replacementilmState extends State<replacementilm> {
     var response;
     try {
       pr.show();
+      // Uri myUri = Uri.parse(serverUrl);
       Uri myUri = Uri.parse(localAPICall);
 
       Map data = {'img': imageFile, 'name': DeviceName};
@@ -431,6 +496,7 @@ class replacementilmState extends State<replacementilm> {
       } else {}
       return response;
     } catch (e) {
+      FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
       pr.hide();
       Fluttertoast.showToast(
           msg: "Device Replacement Image Upload Error",
@@ -447,6 +513,7 @@ class replacementilmState extends State<replacementilm> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

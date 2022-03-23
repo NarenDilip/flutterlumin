@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -5,6 +6,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -35,6 +37,10 @@ class region_list_screen_state extends State<region_list_screen> {
   String selectedZone = "0";
   late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   initState() {
     // at the beginning, all users are shown
@@ -53,9 +59,59 @@ class region_list_screen_state extends State<region_list_screen> {
     }, onError: (e) {
       print(e);
     });
-
+    setUpLogs();
     //loadDetails();
   }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+
 
   void loadDetails() async {
     var sharedPreferences =
@@ -221,6 +277,7 @@ class region_list_screen_state extends State<region_list_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    FlutterLogs.logInfo("regionlist_page", "region_list", "Details Fetching Exception with Server Error");
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
@@ -350,6 +407,7 @@ class region_list_screen_state extends State<region_list_screen> {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => zone_li_screen()));
               } else {
+                FlutterLogs.logInfo("regionlist_page", "region_list", "No Zone Details Found");
                 pr.hide();
                 Fluttertoast.showToast(
                     msg: "No Zones releated to this Region",
@@ -361,6 +419,7 @@ class region_list_screen_state extends State<region_list_screen> {
                     fontSize: 16.0);
               }
             } else {
+              FlutterLogs.logInfo("regionlist_page", "region_list", "No Region Details Found");
               pr.hide();
               Fluttertoast.showToast(
                   msg: "Unable to find Region Details",
@@ -372,11 +431,13 @@ class region_list_screen_state extends State<region_list_screen> {
                   fontSize: 16.0);
             }
           } else {
+            FlutterLogs.logInfo("regionlist_page", "region_list", "No Details Found");
             pr.hide();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => zone_li_screen()));
           }
         } catch (e) {
+          FlutterLogs.logInfo("regionlist_page", "region_list", "Region List Fetching Exception");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -392,6 +453,7 @@ class region_list_screen_state extends State<region_list_screen> {
           }
         }
       } else {
+        FlutterLogs.logInfo("regionlist_page", "region_list", "No Network");
         Fluttertoast.showToast(
             msg: "No Network. Please try again later",
             toastLength: Toast.LENGTH_SHORT,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
@@ -26,6 +28,10 @@ import '../../thingsboard/model/model.dart';
 import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
 class ward_li_screen extends StatefulWidget {
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   State<StatefulWidget> createState() {
     return ward_li_screen_state();
@@ -55,10 +61,63 @@ class ward_li_screen_state extends State<ward_li_screen> {
   String selectedWard = "0";
   late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   initState() {
     // at the beginning, all users are shown
     loadDetails();
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
   }
 
   void loadDetails() async {
@@ -170,20 +229,22 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 }
               }
 
-              var assetrelatedwardid;
-              for (int j = 0; j < AssetDevices!.length; j++) {
-                List<EntityRelationInfo> relationdevicelist = await tbClient
-                        .getEntityRelationService()
-                        .findInfoByAssetFrom(AssetDevices!.elementAt(j))
-                    as List<EntityRelationInfo>;
+              try {
+                var assetrelatedwardid;
+                for (int j = 0; j < AssetDevices!.length; j++) {
+                  List<EntityRelationInfo> relationdevicelist = await tbClient
+                          .getEntityRelationService()
+                          .findInfoByAssetFrom(AssetDevices!.elementAt(j))
+                      as List<EntityRelationInfo>;
 
-                for (int k = 0; k < relationdevicelist.length; k++) {
-                  if (relationdevicelist.length != 0) {
-                    assetrelatedwardid = relationdevicelist.elementAt(k).to;
-                    relatedDevices?.add(assetrelatedwardid);
+                  for (int k = 0; k < relationdevicelist.length; k++) {
+                    if (relationdevicelist.length != 0) {
+                      assetrelatedwardid = relationdevicelist.elementAt(k).to;
+                      relatedDevices?.add(assetrelatedwardid);
+                    }
                   }
                 }
-              }
+              } catch (e) {}
 
               if (relatedDevices != null) {
                 for (int k = 0; k < relatedDevices!.length; k++) {
@@ -273,21 +334,19 @@ class ward_li_screen_state extends State<ward_li_screen> {
                         ccms_nonactiveDevices!.length.toString());
                     sharedPreferences.setString(
                         'ccms_ncCount', ccms_noncomdevice);
-
                   } else if (data_response.type == "Gateway") {
                     List<AttributeKvEntry> kresponser;
                     kresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                        relatedDevices!.elementAt(k), myList);
+                            relatedDevices!.elementAt(k), myList);
 
                     if (kresponser != null) {
                       if (kresponser.first.getValue().toString() == "true") {
                         gw_activeDevice!.add(relatedDevices!.elementAt(k));
                       } else if (kresponser.first.getValue().toString() ==
                           "false") {
-                        gw_nonactiveDevices!
-                            .add(relatedDevices!.elementAt(k));
+                        gw_nonactiveDevices!.add(relatedDevices!.elementAt(k));
                       } else {
                         gw_ncDevices!.add(relatedDevices!.elementAt(k));
                       }
@@ -296,8 +355,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     var gw_totalval = gw_activeDevice!.length +
                         gw_nonactiveDevices!.length +
                         gw_ncDevices!.length;
-                    var gw_parttotalval = gw_activeDevice!.length +
-                        gw_nonactiveDevices!.length;
+                    var gw_parttotalval =
+                        gw_activeDevice!.length + gw_nonactiveDevices!.length;
                     var gw_ncdevices = gw_parttotalval - gw_totalval;
                     var gw_noncomdevice = "";
                     if (gw_ncdevices.toString().contains("-")) {
@@ -309,13 +368,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
                     sharedPreferences.setString(
                         'gw_totalCount', gw_totalval.toString());
-                    sharedPreferences.setString('gw_activeCount',
-                        gw_activeDevice!.length.toString());
+                    sharedPreferences.setString(
+                        'gw_activeCount', gw_activeDevice!.length.toString());
                     sharedPreferences.setString('gw_nonactiveCount',
                         gw_nonactiveDevices!.length.toString());
-                    sharedPreferences.setString(
-                        'gw_ncCount', gw_noncomdevice);
-
+                    sharedPreferences.setString('gw_ncCount', gw_noncomdevice);
                   }
                 }
 
@@ -325,6 +382,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
+              FlutterLogs.logInfo("wardlist_page", "ward_list",
+                  "No Ward Details Relations found");
               pr.hide();
               Fluttertoast.showToast(
                   msg: "No Devices Directly Related to Ward",
@@ -346,6 +405,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
             }
           }
         } catch (e) {
+          FlutterLogs.logInfo(
+              "wardlist_page", "ward_list", "No Ward Details found Exception");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -360,6 +421,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
           }
         }
       } else {
+        FlutterLogs.logInfo("wardlist_page", "ward_list", "No Network");
         Fluttertoast.showToast(
             msg: no_network,
             toastLength: Toast.LENGTH_SHORT,
@@ -491,6 +553,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    FlutterLogs.logInfo(
+        "wardlist_page", "ward_list", "Ward Details Exception with server");
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

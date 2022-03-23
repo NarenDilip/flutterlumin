@@ -2,6 +2,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -300,6 +301,7 @@ class LoginForm extends StatelessWidget {
           //   calltoast("Zone Details found");
           // }
         } else {
+          FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           // Navigator.pop(context);
           pr.hide();
           calltoast("Region Details found");

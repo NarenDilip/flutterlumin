@@ -26,6 +26,7 @@ class map_view_screen_state extends State<map_view_screen> {
   String SelectedZone = "0";
   String SelectedWard = "0";
 
+
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     SelectedRegion = prefs.getString("SelectedRegion").toString();

@@ -56,6 +56,8 @@ dependencies:
   fl_location: ^1.2.1
   vector_math: ^2.1.0
   flutter_foreground_task: ^3.5.5
+  flutter_logs: ^2.1.4
+  permission_handler: ^8.3.0
 #  geocoding: 1.0.5
   
   # The following adds the Cupertino Icons font to your application.

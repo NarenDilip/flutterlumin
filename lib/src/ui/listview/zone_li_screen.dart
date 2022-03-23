@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -5,6 +6,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/zone_model.dart';
@@ -38,11 +40,66 @@ class zone_li_screen_state extends State<zone_li_screen> {
   List<String>? relatedzones = [];
   late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   initState() {
     // at the beginning, all users are shown
     loadDetails();
+    setUpLogs();
   }
+
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
 
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
@@ -294,6 +351,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => ward_li_screen()));
               } else {
+                FlutterLogs.logInfo("zonelist_page", "zone_list", "Ward Details Relation Nof Found Exception");
                 pr.hide();
                 Fluttertoast.showToast(
                     msg: "No Wards releated to this zone",
@@ -305,6 +363,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                     fontSize: 16.0);
               }
             } else {
+              FlutterLogs.logInfo("zonelist_page", "zone_list", "Region Details Not found Exception");
               pr.hide();
               Fluttertoast.showToast(
                   msg: "Unable to find Region Details",
@@ -321,6 +380,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                 builder: (BuildContext context) => ward_li_screen()));
           }
         } catch (e) {
+          FlutterLogs.logInfo("zonelist_page", "zone_list", "Zone Details not found Exception");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -336,6 +396,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
           }
         }
       } else {
+        FlutterLogs.logInfo("zonelist_page", "zone_list", "No Network");
         Fluttertoast.showToast(
             msg: "No Network. Please try again later",
             toastLength: Toast.LENGTH_SHORT,
@@ -351,6 +412,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    FlutterLogs.logInfo("zonelist_page", "zone_list", "Zone Details Exception with server");
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

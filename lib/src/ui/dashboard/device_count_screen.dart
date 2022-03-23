@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
+import 'package:flutterlumin/src/thingsboard/model/dashboard_models.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
@@ -51,6 +53,10 @@ class device_count_screen_state extends State<device_count_screen> {
   var accuvalue;
   var addvalue;
   var polygonad;
+
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -139,7 +145,58 @@ class device_count_screen_state extends State<device_count_screen> {
     super.initState();
     selectedRegion = "";
     getSharedPrefs();
+    setUpLogs();
+    FlutterLogs.logInfo("devicecount_page", "device_count", "pageEntry");
   }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1110,34 +1167,41 @@ Future<void> callLogoutoption(BuildContext context) async {
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
           onPressed: () async {
-            DBHelper dbhelper = new DBHelper();
-            SharedPreferences prefs = await SharedPreferences.getInstance();
+            try {
+              DBHelper dbhelper = new DBHelper();
+              SharedPreferences prefs = await SharedPreferences.getInstance();
 
-            var SelectedRegion = prefs.getString("SelectedRegion").toString();
-            List<Region> details = await dbhelper.region_getDetails();
+              var SelectedRegion = prefs.getString("SelectedRegion").toString();
+              List<Region> details = await dbhelper.region_getDetails();
 
-            for (int i = 0; i < details.length; i++) {
-              dbhelper.delete(details.elementAt(i).id!.toInt());
+              for (int i = 0; i < details.length; i++) {
+                dbhelper.delete(details
+                    .elementAt(i)
+                    .id!
+                    .toInt());
+              }
+              dbhelper.zone_delete(SelectedRegion);
+              dbhelper.ward_delete(SelectedRegion);
+
+              // List<Region> detailss = await dbhelper.region_getDetails();
+              // List<Zone> zdetails =
+              //     (await dbhelper.zone_getDetails()).cast<Zone>();
+              // List<Ward> wdetails = await dbhelper.ward_getDetails();
+
+              // dbhelper.region_delete();
+              // dbhelper.zone_delete();
+              // dbhelper.ward_delete();
+
+              SharedPreferences preferences =
+              await SharedPreferences.getInstance();
+              await preferences.clear();
+              // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => splash_screen()));
+            }catch(e){
+              FlutterLogs.logInfo("devicecount_page", "device_count", "Db Exception");
             }
-            dbhelper.zone_delete(SelectedRegion);
-            dbhelper.ward_delete(SelectedRegion);
-
-            // List<Region> detailss = await dbhelper.region_getDetails();
-            // List<Zone> zdetails =
-            //     (await dbhelper.zone_getDetails()).cast<Zone>();
-            // List<Ward> wdetails = await dbhelper.ward_getDetails();
-
-            // dbhelper.region_delete();
-            // dbhelper.zone_delete();
-            // dbhelper.ward_delete();
-
-            SharedPreferences preferences =
-                await SharedPreferences.getInstance();
-            await preferences.clear();
-            // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => splash_screen()));
           },
         ),
       ],

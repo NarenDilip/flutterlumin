@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
@@ -35,6 +37,10 @@ class replacementccmsState extends State<replacementccms> {
   String faultyStatus = "0";
   late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
@@ -56,6 +62,55 @@ class replacementccmsState extends State<replacementccms> {
     DeviceName = "";
     _openCamera(context);
     getSharedPrefs();
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
   }
 
   @override
@@ -203,8 +258,7 @@ class replacementccmsState extends State<replacementccms> {
               DBHelper dbHelper = DBHelper();
               var regionid;
               List<Region> regiondetails = await dbHelper
-                  .region_name_regionbasedDetails(SelectedRegion)
-              as List<Region>;
+                  .region_name_regionbasedDetails(SelectedRegion);
               if (regiondetails.length != "0") {
                 regionid = regiondetails.first.regionid;
               }
@@ -217,8 +271,7 @@ class replacementccmsState extends State<replacementccms> {
 
                 faultresponser = (await tbClient
                     .getAttributeService()
-                    .getFirmAttributeKvEntries(regionid, myfirmList))
-                as List<AttributeKvEntry>;
+                    .getFirmAttributeKvEntries(regionid, myfirmList));
 
                 if (faultresponser.length != 0) {
                   var firmwaredetails =
@@ -260,7 +313,7 @@ class replacementccmsState extends State<replacementccms> {
                   for (int i = 0; i < entitygroups.length; i++) {
                     if (entitygroups
                         .elementAt(i)
-                        .name == GWserviceFolderName) {
+                        .name == CCMSserviceFolderName) {
                       DevicemoveFolderName =
                           entitygroups
                               .elementAt(i)
@@ -320,7 +373,8 @@ class replacementccmsState extends State<replacementccms> {
                             .getEntityGroupService()
                             .addEntitiesToEntityGroup(
                             DevicemoveFolderName, myList);
-                      } catch (e) {}
+                      } catch (e) {
+                      }
 
                       final bytes = File(imageFile!.path).readAsBytesSync();
                       String img64 = base64Encode(bytes);
@@ -328,6 +382,7 @@ class replacementccmsState extends State<replacementccms> {
                       postRequest(context, img64, DeviceName);
                       pr.hide();
                     } else {
+                      FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Device Not Found Exception");
                       pr.hide();
                       calltoast("Device is not Found");
 
@@ -336,6 +391,7 @@ class replacementccmsState extends State<replacementccms> {
                               dashboard_screen()));
                     }
                   } else {
+                    FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "No Device Groups Found");
                     pr.hide();
                     calltoast("Device EntityGroup Not Found");
 
@@ -350,6 +406,7 @@ class replacementccmsState extends State<replacementccms> {
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               }else{
+                FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Not authorized to Install");
                 pr.hide();
                 Fluttertoast.showToast(
                     msg:
@@ -373,6 +430,7 @@ class replacementccmsState extends State<replacementccms> {
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
+            FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Image Base64 Exception");
             pr.hide();
             Fluttertoast.showToast(
                 msg:
@@ -385,6 +443,7 @@ class replacementccmsState extends State<replacementccms> {
                 fontSize: 16.0);
           }
         } catch (e) {
+          FlutterLogs.logInfo("ccms_replacement_page", "ccms_remove", "CCMS Replacement Device Exception Occurs");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -417,6 +476,7 @@ class replacementccmsState extends State<replacementccms> {
     var response;
     try {
       pr.show();
+      // Uri myUri = Uri.parse(serverUrl);
       Uri myUri = Uri.parse(localAPICall);
 
       Map data = {'img': imageFile, 'name': DeviceName};
@@ -442,6 +502,7 @@ class replacementccmsState extends State<replacementccms> {
       } else {}
       return response;
     } catch (e) {
+      FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Passing Image Base64 to Local Basket");
       pr.hide();
       Fluttertoast.showToast(
           msg: "Device Replacement Image Upload Error",
