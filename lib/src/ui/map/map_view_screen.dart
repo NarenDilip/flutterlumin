@@ -100,10 +100,10 @@ class map_view_screen_state extends State<map_view_screen> {
                       children: [
                         Container(
                           alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: Text('Map View',
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: const Text('Map View',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 25.0,
                                   fontFamily: "Aqua",
                                   color: Colors.white)),
@@ -114,7 +114,7 @@ class map_view_screen_state extends State<map_view_screen> {
                           bottom: 0,
                           child: IconButton(
                             color: Colors.red,
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.logout_outlined,
                               size: 35,
                             ),

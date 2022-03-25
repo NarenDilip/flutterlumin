@@ -26,8 +26,9 @@ const darkgreen = Color(0xff146e00);
 const lightGrey = Color(0xffE8E8E8);
 const lightRed = Color(0xffFDEBEA);
 const lightRedColor = Color(0xffE1797A);
-const lightBlueColor = Color(0xff87CEEB);
+const lightBlueColor = Color(0xffADD8E6);
 const lightGreenColor = Color(0xff9FE2BF);
+const lightRedSalmonColor = Color(0xffFA8072);
 
 const splashscreen_text = "LUMINATOR";
 

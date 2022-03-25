@@ -1,14 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard_view.dart';
-import 'package:flutterlumin/src/presentation/views/login_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
-import 'package:flutterlumin/src/ui/login/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class splash_screen extends StatefulWidget {
@@ -38,10 +34,12 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                 return DashboardView(key: UniqueKey(),);
+                  return DashboardView(
+                    key: UniqueKey(),
+                  );
                   //return login_screen();
                 } else {
-                  return dashboard_screen();
+                  return DashboardView();
                 }
               })));
     } catch (e) {}
