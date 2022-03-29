@@ -1,5 +1,15 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/localdb/db_helper.dart';
+import 'package:flutterlumin/src/localdb/model/region_model.dart';
+import 'package:flutterlumin/src/localdb/model/zone_model.dart';
+import 'package:flutterlumin/src/thingsboard/model/model.dart';
+import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
+import 'package:flutterlumin/src/utils/utility.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   const FilterBottomSheet({Key? key}) : super(key: key);
@@ -10,7 +20,107 @@ class FilterBottomSheet extends StatefulWidget {
 
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
   final String _valueDropdownGrade = 'ILM';
+  List<String>? regions = [];
+  List<String>? zones = [];
+  List<String>? wards = [];
+  @override
+  initState() {
+    super.initState();
+    getRegions();
+  }
 
+  getRegions() {
+    DBHelper dbHelper = DBHelper();
+    dbHelper.getDetails().then((data) {
+      for (int i = 0; i < data.length; i++) {
+        String regionName = data[i].regionname.toString();
+        setState(() {
+          regions?.add(regionName);
+        });
+      }
+    }, onError: (e) {});
+  }
+
+  void callZoneDetailsFinder(BuildContext context, selectedZone) {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        try {
+          var tbClient = ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setString("selected_region", selectedZone);
+          DBHelper dbHelper = DBHelper();
+          List<Zone> details = await dbHelper
+              .zone_regionbasedDetails(selectedZone);
+          if (details.isEmpty) {
+            List<Region> regionDetails =
+            await dbHelper.region_name_regionbasedDetails(selectedZone);
+            if (regionDetails.isNotEmpty) {
+              Map<String, dynamic> fromId = {
+                'entityType': 'ASSET',
+                'id': regionDetails.first.regionid
+              };
+              List<EntityRelationInfo> wardlist = await tbClient
+                  .getEntityRelationService()
+                  .findInfoByAssetFrom(EntityId.fromJson(fromId));
+              if (wardlist.isNotEmpty) {
+                for (int i = 0; i < wardlist.length; i++) {
+                  zones?.add(wardlist.elementAt(i).to.id.toString());
+                }
+                for (int j = 0; j < zones!.length; j++) {
+                  Asset asset = await tbClient
+                      .getAssetService()
+                      .getAsset(zones!.elementAt(j).toString()) as Asset;
+                  if (asset.name != null) {
+                    Zone zone =
+                    Zone(j, asset.id!.id, asset.name, selectedZone);
+                    dbHelper.zone_add(zone);
+                  }
+                }
+
+              } else {
+                Fluttertoast.showToast(
+                    msg: "No Zones releated to this Region",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
+                    fontSize: 16.0);
+              }
+            } else {
+              Fluttertoast.showToast(
+                  msg: "Unable to find Region Details",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
+            }
+          } else {
+
+          }
+        } catch (e) {
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+
+          } else {
+
+          }
+        }
+      } else {
+        Fluttertoast.showToast(
+            msg: "No Network. Please try again later",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Wrap(children: <Widget>[
@@ -28,7 +138,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               const Align(
                 alignment: Alignment.center,
                 child: Text("Choose your ward",
-                    style: TextStyle(fontSize: 20, fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontSize: 20, fontFamily: 'Roboto')),
               ),
               const SizedBox(
                 height: 16,

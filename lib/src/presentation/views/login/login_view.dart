@@ -1,6 +1,18 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-
+import 'package:flutterlumin/src/localdb/db_helper.dart';
+import 'package:flutterlumin/src/localdb/model/region_model.dart';
+import 'package:flutterlumin/src/models/loginrequester.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
+import 'package:flutterlumin/src/thingsboard/model/model.dart';
+import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
+import 'package:flutterlumin/src/utils/utility.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -11,27 +23,45 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginAppState extends State<LoginView> {
-
+  TextEditingController passwordController = TextEditingController(text: "");
+  final TextEditingController _emailController =
+  TextEditingController(text: "");
+  final user = LoginRequester(
+      username: "",
+      password: "",
+      token: "",
+      refreshtoken: "",
+      responseCode: 0,
+      email: "");
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
-    return Form(
+    return Form(key: _formKey,
       child:Scaffold(
           body: SingleChildScrollView(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
                 Widget>[
-              const CurveBackground(),
+            Container(
+                padding:
+                const EdgeInsets.only(left: 20, top: 40, right: 20, bottom: 20),
+              child:  const Image(
+                image: AssetImage("assets/icons/background_luminator.png"),
+                height: 340,
+                width: double.infinity,),
+            ),
               Container(
                   padding:
-                  const EdgeInsets.only(left: 40, top: 40, right: 40, bottom: 40),
+                  const EdgeInsets.only(left: 40, top: 20, right: 40, bottom: 40),
                   child: Column(
                     children: [
-                      _EmailInputField(),
+                      _EmailInputField(_emailController, user),
                       const SizedBox(height: 10),
                       const SizedBox(height: 10,),
-                      _PasswordInputField(),
+                      _PasswordInputField(passwordController, user),
+                      const SizedBox(height: 6,),
                       _ForgotPassword(),
-                      const SizedBox(height: 60,),
-                      LoginButton(key: UniqueKey(),)
+                      const SizedBox(height: 30,),
+                      LoginButton(_formKey,key: UniqueKey(), user: user,)
                     ],
                   ))
             ]),
@@ -40,57 +70,25 @@ class _LoginAppState extends State<LoginView> {
   }
 }
 
-class CurveBackground extends StatelessWidget {
-  const CurveBackground({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: CurveClipper(),
-      child: Container(
-        padding: const EdgeInsets.only(left: 40, top: 50, right: 20),
-        height: 350,
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF80D8FF),
-              Color(0xFF0091EA),
-            ],
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: const <Widget>[
-            SizedBox(height: 10),
-            Image(
-                image: AssetImage("assets/icons/schnell-logo-white.png"),
-                height: 100,
-                width: 100),
-            SizedBox(height: 40),
-            Text(
-              "Lumiantor",
-              style: TextStyle(
-                  color: Colors.white, fontSize: 30, fontFamily: 'Roboto'),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _EmailInputField extends StatelessWidget {
+  const _EmailInputField(this._emailController, this.user);
+  final TextEditingController _emailController;
+  final LoginRequester user;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       textInputAction: TextInputAction.next,
       keyboardType: TextInputType.emailAddress,
-      validator: (value) => null,
+      controller: _emailController,
+      validator: (email) {
+        if (email!.isEmpty) {
+          return "Please enter the email";
+        } else if (!EmailValidator.validate(email)) {
+          return "Please enter the validate email";
+        }
+      },
+      onSaved: (email) => user.username = email!,
+      onChanged: (String value) {},
       decoration: const InputDecoration(
         hintText: 'Email',
         hintStyle:
@@ -110,11 +108,13 @@ class _EmailInputField extends StatelessWidget {
 }
 
 class _PasswordInputField extends StatelessWidget {
+  const _PasswordInputField(this._passwordController, this.user);
+  final TextEditingController _passwordController;
+  final LoginRequester user;
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       obscureText: true,
-      validator: (value) => null,
       decoration: const InputDecoration(
         hintText: 'Password',
         hintStyle:
@@ -133,6 +133,14 @@ class _PasswordInputField extends StatelessWidget {
           borderSide: BorderSide(color: lightGrey),
         ),
       ),
+      onSaved: (value) => user.password = value!,
+      controller: _passwordController,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return "Please enter the password";
+        }
+      },
+      onChanged: (value) {},
     );
   }
 }
@@ -156,14 +164,21 @@ class _ForgotPassword extends StatelessWidget {
 }
 
 class LoginButton extends StatelessWidget {
-  const LoginButton({Key? key}) : super(key: key);
-
+  const LoginButton(this._formKey, {Key? key, required this.user}) : super(key: key);
+  final GlobalKey<FormState> _formKey;
+  final LoginRequester user;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 50.0,
       child: GestureDetector(
         onTap: () {
+          if (_formKey.currentState!.validate()) {
+            _formKey.currentState!.save();
+            FocusScope.of(context).requestFocus(FocusNode());
+            _loginAPI(context,user );
+          }
+
         },
         child: Container(
           decoration: BoxDecoration(
@@ -198,21 +213,84 @@ class LoginButton extends StatelessWidget {
 }
 
 
+Future<void> _loginAPI(BuildContext context, LoginRequester user) async {
+  // storage = TbSecureStorage();
+  Utility.isConnected().then((value) async {
+    if (value) {
 
-class CurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, size.height - 80);
-    path.quadraticBezierTo(
-        size.width / 2, size.height, size.width, size.height - 80);
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
+      if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        var status = await login_thingsboard.callThingsboardLogin(
+            context, user.username, user.password);
+        if (status == true) {
+          prefs.setString('username', user.username);
+          prefs.setString('password', user.password);
+          callRegionDetails(context);
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+               builder: (BuildContext context) => const DashboardView()));
+        }else{
+          // Navigator.pop(context);
+          Fluttertoast.showToast(
+              msg: "Please check Username and Password, Invalid Credentials",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+        }
+      } else {
+        // Navigator.pop(context);
+        Fluttertoast.showToast(
+            msg: "Please check Username and Password, Invalid Credentials",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+    }
+  });
+}
 
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) {
-    return false;
-  }
+void callRegionDetails(BuildContext context) {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      var tbClient = ThingsboardClient(serverUrl);
+      tbClient.smart_init();
+      DBHelper dbHelper = DBHelper();
+      PageLink pageLink = PageLink(250);
+      pageLink.page = 0;
+      pageLink.pageSize = 250;
+      PageData<Asset> regionResponse;
+      regionResponse = (await tbClient
+          .getAssetService()
+          .getRegionTenantAssets(pageLink));
+      if (regionResponse != null) {
+        if (regionResponse.totalElements != 0) {
+          for (int i = 0; i < regionResponse.data.length; i++) {
+            String id = regionResponse.data
+                .elementAt(i)
+                .id!
+                .id
+                .toString();
+            String name = regionResponse.data
+                .elementAt(i)
+                .name
+                .toString();
+            Region region = new Region(i, id, name);
+            dbHelper.add(region);
+          }
+        }
+       await tbClient
+            .getAssetService()
+            .getZoneTenantAssets(pageLink);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => const DashboardView()));
+      } else {
+        calltoast("Region Details found");
+      }
+    }
+  });
 }

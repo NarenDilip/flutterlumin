@@ -1,7 +1,9 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_radio_choice/cupertino_radio_choice.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
 
 class SearchDevicesView extends StatefulWidget {
   const SearchDevicesView({Key? key}) : super(key: key);
@@ -12,8 +14,12 @@ class SearchDevicesView extends StatefulWidget {
 
 class _SearchDevicesState extends State<SearchDevicesView> {
   final List<String>? _foundUsers = [];
-  String _valueDropdownGrade = 'ILM';
-
+  static final Map<String, String> productMap = {
+    'ilm': 'ILM',
+    'ccms': 'CCMS',
+    'gateway': 'GATEWAY',
+  };
+   String _selectedProduct = productMap.keys.first;
   @override
   void initState() {
     super.initState();
@@ -38,85 +44,27 @@ class _SearchDevicesState extends State<SearchDevicesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: lightGrey,
       body: Column(
         children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.only(left: 30, top: 40, right: 20),
-                child: const Text(
-                  "Devices",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(left: 14, top: 40, right: 20),
-                child: const Align(
-                  alignment: Alignment.topRight,
-                  child: CircleAvatar(
-                    radius: 20, // Image radius
-                    backgroundImage:
-                        NetworkImage("https://i.imgur.com/BoN9kdC.png"),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          const AppBarWidget(),
           Container(
             padding:
                 const EdgeInsets.only(left: 30, top: 20, right: 30, bottom: 20),
             child: Column(
               children: <Widget>[
-                _SearchInputField(),
+                CupertinoRadioChoice(
+                    choices: productMap,
+                    onChange: onProductSelected,
+                    initialKeyValue: _selectedProduct),
                 const SizedBox(
                   height: 20,
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Flexible(
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                width: 1.0, style: BorderStyle.solid),
-                            borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                          ),
-                          contentPadding: EdgeInsets.all(0.0),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                              icon: const Icon(Icons.arrow_drop_down),
-                              hint: const Text('Choose the Product'),
-                              onChanged: (newValue) {
-                                setState(() => _valueDropdownGrade = newValue!);
-                              },
-                              value: _valueDropdownGrade,
-                              items: <String>[
-                                'ILM',
-                                'CCMS',
-                                'GATEWAY',
-                                'POLE',
-                              ].map((String value) {
-                                return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: SizedBox(
-                                      width: 100.0, // for example
-                                      child: Text(value,
-                                          textAlign: TextAlign.center),
-                                    ));
-                              }).toList()),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
+                    Flexible(child: _SearchInputField()),
+                    SizedBox(width: 10,),
                     const SearchButton()
                   ],
                 )
@@ -137,8 +85,14 @@ class _SearchDevicesState extends State<SearchDevicesView> {
     );
   }
 
+  void onProductSelected(String productKey) {
+    setState(() {
+      _selectedProduct = productKey;
+    });
+  }
   _list() => Expanded(
         child: Card(
+          color: lightGrey,
           margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           child: Scrollbar(
             child: ListView.builder(

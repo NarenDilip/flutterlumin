@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
+import 'package:flutterlumin/src/presentation/views/login/login_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,12 +35,9 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                  return DashboardView(
-                    key: UniqueKey(),
-                  );
-                  //return login_screen();
+                  return const LoginView();
                 } else {
-                  return DashboardView();
+                  return const DashboardView();
                 }
               })));
     } catch (e) {}

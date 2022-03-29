@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/projects_dashboard_view.dart';
 import 'package:flutterlumin/src/presentation/views/devices/search_devices.dart';
-import 'package:flutterlumin/src/presentation/views/location/location_view.dart';
 import 'package:flutterlumin/src/presentation/views/profile/profile_view.dart';
 import 'package:flutterlumin/src/presentation/widgets/modal_bottom_sheet.dart';
+import 'package:flutterlumin/src/ui/map/map_view_screen.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class DashboardView extends StatefulWidget {
@@ -19,7 +19,7 @@ class _DashboardAppState extends State<DashboardView> {
   late PageController _pageController;
   List<Widget> tabPages = [
     const ProjectDashboard(),
-    const DeviceLocationView(),
+    map_view_screen(),
     const SearchDevicesView(),
     const ProfileView(),
   ];
@@ -28,9 +28,9 @@ class _DashboardAppState extends State<DashboardView> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
-    Future.delayed(Duration.zero, () {
+   /* Future.delayed(Duration.zero, () {
       _modalBottomSheetMenu(context);
-    });
+    });*/
   }
 
   @override

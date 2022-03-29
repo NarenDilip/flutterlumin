@@ -8,13 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/thingsboard/model/asset_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/asset_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/device_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/relation_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/telemetry_models.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -224,13 +224,13 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       noncomdevice = ncdevices.toString();
                     }
 
-                    sharedPreferences.setString(
-                        'totalCount', totalval.toString());
-                    sharedPreferences.setString(
-                        'activeCount', activeDevice!.length.toString());
-                    sharedPreferences.setString(
-                        'nonactiveCount', nonactiveDevices!.length.toString());
-                    sharedPreferences.setString('ncCount', noncomdevice);
+                    sharedPreferences.setInt(
+                        'ilm_total_count', totalval);
+                    sharedPreferences.setInt(
+                        'ilm_on_count', activeDevice!.length);
+                    sharedPreferences.setInt(
+                        'ilm_off_count', nonactiveDevices!.length);
+                    sharedPreferences.setInt('ilm_nc_count', int.parse(noncomdevice));
                   } else if (data_response.type == "CCMS") {
                     List<AttributeKvEntry> responser;
                     responser = await tbClient
@@ -264,14 +264,14 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       ccms_noncomdevice = ccms_ncdevices.toString();
                     }
 
-                    sharedPreferences.setString(
-                        'ccms_totalCount', ccms_totalval.toString());
-                    sharedPreferences.setString('ccms_activeCount',
-                        ccms_activeDevice!.length.toString());
-                    sharedPreferences.setString('ccms_nonactiveCount',
-                        ccms_nonactiveDevices!.length.toString());
-                    sharedPreferences.setString(
-                        'ccms_ncCount', ccms_noncomdevice);
+                    sharedPreferences.setInt(
+                        'ccms_total_count', ccms_totalval);
+                    sharedPreferences.setInt('ccms_on_count',
+                        ccms_activeDevice!.length);
+                    sharedPreferences.setInt('ccms_off_count',
+                        ccms_nonactiveDevices!.length);
+                    sharedPreferences.setInt(
+                        'ccms_nc_count', int.parse(ccms_noncomdevice));
 
                   } else if (data_response.type == "Gateway") {
                     List<AttributeKvEntry> responser;
@@ -306,14 +306,14 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       gw_noncomdevice = gw_ncdevices.toString();
                     }
 
-                    sharedPreferences.setString(
-                        'gw_totalCount', gw_totalval.toString());
-                    sharedPreferences.setString('gw_activeCount',
-                        gw_activeDevice!.length.toString());
-                    sharedPreferences.setString('gw_nonactiveCount',
-                        gw_nonactiveDevices!.length.toString());
-                    sharedPreferences.setString(
-                        'gw_ncCount', gw_noncomdevice);
+                    sharedPreferences.setInt(
+                        'gw_total_count', gw_totalval);
+                    sharedPreferences.setInt('gw_on_count',
+                        gw_activeDevice!.length);
+                    sharedPreferences.setInt('gw_off_count',
+                        gw_nonactiveDevices!.length);
+                    sharedPreferences.setInt(
+                        'gw_nc_count', int.parse(gw_noncomdevice));
 
                   }
                 }
@@ -321,7 +321,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 // Navigator.pop(context);
                 pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               pr.hide();
@@ -341,7 +341,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
               pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           }
         } catch (e) {
@@ -354,7 +354,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
             // Navigator.pop(context);
           }
         }

@@ -3,10 +3,20 @@ import 'package:flutterlumin/src/constants/const.dart';
 
 class ProjectCard extends StatelessWidget {
   const ProjectCard(
-      {Key? key, required this.projectName, required this.cardBottomColor})
+      {Key? key,
+      required this.projectName,
+      required this.cardBottomColor,
+      required this.totalCount,
+      required this.onCount,
+      required this.offCount,
+      required this.ncCount})
       : super(key: key);
   final String projectName;
   final Color cardBottomColor;
+  final int totalCount;
+  final int onCount;
+  final int offCount;
+  final int ncCount;
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +33,8 @@ class ProjectCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const Icon(
-                    Icons.lightbulb,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
                   Text(projectName,
                       style: const TextStyle(
                         fontSize: 20,
@@ -39,9 +42,16 @@ class ProjectCard extends StatelessWidget {
                         color: Colors.black54,
                         fontWeight: FontWeight.bold,
                       )),
-                  const SizedBox(
-                    width: 20,
-                  ),
+                  Text(
+                      totalCount == 0
+                          ? "-"
+                          : " - " + totalCount.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'Roboto',
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold,
+                      )),
                 ],
               ),
             ),
@@ -49,15 +59,15 @@ class ProjectCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Column(
-                  children: const <Widget>[
-                    Text("On",
+                  children: <Widget>[
+                    const Text("On",
                         style: TextStyle(
                             fontSize: 14,
                             fontFamily: 'Roboto',
                             color: Colors.grey)),
-                    SizedBox(height: 6),
-                    Text("110 units",
-                        style: TextStyle(
+                    const SizedBox(height: 6),
+                    Text(onCount == 0 ? "-" : "$onCount units",
+                        style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Roboto',
@@ -65,20 +75,20 @@ class ProjectCard extends StatelessWidget {
                   ],
                 ),
                 Column(
-                  children: const <Widget>[
-                    Text(
+                  children: <Widget>[
+                    const Text(
                       "Off",
                       style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
                           fontFamily: 'Roboto'),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 6,
                     ),
                     Text(
-                      "10 units",
-                      style: TextStyle(
+                      offCount == 0 ? "-" : "$offCount units",
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: lightRedColor,
@@ -87,17 +97,17 @@ class ProjectCard extends StatelessWidget {
                   ],
                 ),
                 Column(
-                  children: const <Widget>[
-                    Text(
+                  children: <Widget>[
+                    const Text(
                       "Nc",
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 6,
                     ),
                     Text(
-                      "16 units",
-                      style: TextStyle(
+                      ncCount == 0 ? "-" : "$ncCount units",
+                      style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: thbDblue),
@@ -108,7 +118,7 @@ class ProjectCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Container(
-              height: 50,
+              height: 40,
               color: cardBottomColor,
               child: Row(
                 children: const <Widget>[],

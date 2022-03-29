@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/zone_model.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -324,7 +325,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => const DashboardView()));
             // Navigator.pop(context);
           }
         }
