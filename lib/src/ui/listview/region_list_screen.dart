@@ -86,49 +86,20 @@ class region_list_screen_state extends State<region_list_screen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
-      borderRadius: 20.0,
-      backgroundColor: Colors.lightBlueAccent,
-      elevation: 10.0,
+      progress: 50.0,
+      message: "Please wait...",
+      progressWidget: Container(
+          padding: const EdgeInsets.all(8.0), child: const CircularProgressIndicator()),
+      maxProgress: 100.0,
+      progressTextStyle: const TextStyle(
+          color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
       messageTextStyle: const TextStyle(
-          color: Colors.white,
-          fontFamily: "Montserrat",
-          fontSize: 19.0,
-          fontWeight: FontWeight.w600),
-      progressWidget: const CircularProgressIndicator(
-          backgroundColor: Colors.lightBlueAccent,
-          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-          strokeWidth: 3.0),
+          color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
     );
 
     return Container(
-        // onWillPop: () async {
-        //   final result = await showDialog(
-        //     context: context,
-        //     builder: (ctx) =>
-        //         AlertDialog(
-        //           title: Text("Luminator"),
-        //           content: Text("Are you sure you want to exit?"),
-        //           actions: <Widget>[
-        //             TextButton(
-        //               onPressed: () {
-        //                 Navigator.of(ctx).pop();
-        //               },
-        //               child: Text("NO"),
-        //             ),
-        //             TextButton(
-        //               child: Text('YES', style: TextStyle(color: Colors.red)),
-        //               onPressed: () {
-        //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        //               },
-        //             ),
-        //           ],
-        //         ),
-        //   );
-        //   return result;
-        // },
         child: Scaffold(
-      backgroundColor: thbDblue,
+      backgroundColor: lightGrey,
       body: Padding(
         padding: const EdgeInsets.all(30),
         child: Column(
@@ -140,10 +111,10 @@ class region_list_screen_state extends State<region_list_screen> {
               "Select Region",
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
+                  fontSize: 20.0,
+                  fontFamily: 'Roboto',
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: Colors.black),
             ),
             const SizedBox(
               height: 20,
@@ -152,21 +123,20 @@ class region_list_screen_state extends State<region_list_screen> {
               onChanged: (value) => _runFilter(value),
               style: const TextStyle(
                   fontSize: 18.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  fontFamily: 'Roboto',
+                  color: Colors.black),
               decoration: const InputDecoration(
-                labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
+                labelStyle: TextStyle(fontSize: 20.0, color: Colors.black),
                 labelText: 'Search',
                 suffixIcon: Icon(
                   Icons.search,
-                  color: Colors.white,
+                  color: Colors.black,
                 ),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(color: Colors.black),
                 ),
                 focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(color: Colors.black),
                 ),
               ),
             ),
@@ -199,8 +169,8 @@ class region_list_screen_state extends State<region_list_screen> {
                           },
                           title: Text(_foundUsers!.elementAt(index),
                               style: const TextStyle(
-                                  fontSize: 22.0,
-                                  fontFamily: "Montserrat",
+                                  fontSize: 20.0,
+                                  fontFamily: 'Roboto',
                                   fontWeight: FontWeight.bold,
                                   color: thbDblue)),
                         ),
