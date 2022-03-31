@@ -74,6 +74,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   var logStatus = '';
   static Completer _completer = new Completer<String>();
 
+  late Timer _timer;
+  int _start = 5;
+
   // final Location locations = Location();
   // LocationData? _location;
   // StreamSubscription<LocationData>? _locationSubscription;
@@ -119,100 +122,220 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   // }
 
   // This function is to be called when the location has changed.
+  // Future<void> _onLocationChanged(Location location) async {
+  //   print('location: ${location.toJson()}');
+  //   accuracy = location!.accuracy!;
+  //   Lattitude = location!.latitude!.toString();
+  //   Longitude = location!.longitude!.toString();
+  //   accuvalue = accuracy.toString().split(".");
+  //
+  //   var insideArea;
+  //   if (accuracy <= 7) {
+  //     _getAddress(location!.latitude, location!.longitude).then((value) {
+  //       setState(() {
+  //         address = value;
+  //       });
+  //     });
+  //     if (geoFence == "true") {
+  //       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+  //         insideArea = _checkIfValidMarker(
+  //             LatLng(location.latitude, location.longitude),
+  //             _polyGeofenceList[0].polygon);
+  //         if (insideArea == true) {
+  //           if (accuracy <= 5) {
+  //             _getAddress(location!.latitude, location!.longitude).then((value) {
+  //               setState(() {
+  //                 address = value;
+  //               });
+  //             });
+  //           } else {
+  //             setState(() {
+  //               visibility = false;
+  //             });
+  //             Fluttertoast.showToast(
+  //                 msg:
+  //                 "Fetching Device Location Accuracy Please wait for Some time" +
+  //                     "Acccuracy Level-->" +
+  //                     accuracy.toString(),
+  //                 toastLength: Toast.LENGTH_SHORT,
+  //                 gravity: ToastGravity.BOTTOM,
+  //                 timeInSecForIosWeb: 1,
+  //                 backgroundColor: Colors.white,
+  //                 textColor: Colors.black,
+  //                 fontSize: 16.0);
+  //           }
+  //           callPolygonStop();
+  //         } else {
+  //           setState(() {
+  //             visibility = false;
+  //           });
+  //           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
+  //             Fluttertoast.showToast(
+  //                 msg:
+  //                 "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+  //                     insideArea.toString(),
+  //                 toastLength: Toast.LENGTH_SHORT,
+  //                 gravity: ToastGravity.BOTTOM,
+  //                 timeInSecForIosWeb: 1,
+  //                 backgroundColor: Colors.white,
+  //                 textColor: Colors.black,
+  //                 fontSize: 16.0);
+  //             counter++;
+  //           }
+  //           callPolygonStop();
+  //           Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //               builder: (BuildContext context) => dashboard_screen()));
+  //         }
+  //       }
+  //     } else {
+  //       setState(() {
+  //         visibility = true;
+  //       });
+  //       callPolygonStop();
+  //     }
+  //   } else {
+  //     visibility = false;
+  //     Fluttertoast.showToast(
+  //         msg: "Fetching Device Location Accuracy Please wait for Some time" +
+  //             "Acccuracy Level-->" +
+  //             accuracy.toString(),
+  //         toastLength: Toast.LENGTH_SHORT,
+  //         gravity: ToastGravity.BOTTOM,
+  //         timeInSecForIosWeb: 1,
+  //         backgroundColor: Colors.white,
+  //         textColor: Colors.black,
+  //         fontSize: 16.0);
+  //   }
+  //   caclsss++;
+  //   if (caclsss == 10) {
+  //     setState(() {
+  //       visibility = true;
+  //       viewvisibility = false;
+  //     });
+  //     callPolygonStop();
+  //   }
+  //   Adressaccuvalue = address.toString().split(",");
+  // }
+
+  // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
-    Lattitude = location!.latitude!.toString();
-    Longitude = location!.longitude!.toString();
+    accuracy = location.accuracy;
+    Lattitude = location.latitude.toString();
+    Longitude = location.longitude.toString();
     accuvalue = accuracy.toString().split(".");
-
     var insideArea;
-    if (accuracy <= 7) {
-      _getAddress(location!.latitude, location!.longitude).then((value) {
-        setState(() {
-          address = value;
-        });
-      });
-      if (geoFence == "true") {
-        for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-          insideArea = _checkIfValidMarker(
-              LatLng(location.latitude, location.longitude),
-              _polyGeofenceList[0].polygon);
-          if (insideArea == true) {
-            if (accuracy <= 5) {
-              _getAddress(location!.latitude, location!.longitude).then((value) {
-                setState(() {
-                  address = value;
-                });
-              });
-            } else {
+
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
+
+    if (geoFence == "true") {
+      for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+        insideArea = _checkIfValidMarker(
+            LatLng(location.latitude, location.longitude),
+            _polyGeofenceList[0].polygon);
+        if (insideArea == true) {
+          if (accuracy <= 10) {
+            _getAddress(location!.latitude, location!.longitude).then((value) {
               setState(() {
-                visibility = false;
+                address = value;
               });
-              Fluttertoast.showToast(
-                  msg:
-                  "Fetching Device Location Accuracy Please wait for Some time" +
-                      "Acccuracy Level-->" +
-                      accuracy.toString(),
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
-            }
-            callPolygonStop();
+            });
           } else {
             setState(() {
               visibility = false;
             });
-            if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
-              Fluttertoast.showToast(
-                  msg:
-                  "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                      insideArea.toString(),
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
-              counter++;
-            }
-            callPolygonStop();
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+            Fluttertoast.showToast(
+                msg:
+                "Fetching Device Location Accuracy Please wait for Some time" +
+                    "Acccuracy Level-->" +
+                    accuracy.toString(),
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
+          callPolygonStop();
+        } else {
+          setState(() {
+            visibility = false;
+          });
+          if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
+            Fluttertoast.showToast(
+                msg:
+                "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+                    insideArea.toString(),
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+            counter++;
+          }
+          callPolygonStop();
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => dashboard_screen()));
         }
+      }
+    } else {
+      if (accuracy <= 10) {
+        _getAddress(location!.latitude, location!.longitude).then((value) {
+          setState(() {
+            visibility = true;
+            address = value;
+          });
+          callPolygonStop();
+        });
       } else {
         setState(() {
           visibility = true;
         });
-        callPolygonStop();
       }
-    } else {
-      visibility = false;
-      Fluttertoast.showToast(
-          msg: "Fetching Device Location Accuracy Please wait for Some time" +
-              "Acccuracy Level-->" +
-              accuracy.toString(),
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
+      // callILMInstallation(context, imageFile, DeviceName, SelectedWard);
     }
-    caclsss++;
-    if (caclsss == 10) {
-      setState(() {
-        visibility = true;
-        viewvisibility = false;
-      });
-      callPolygonStop();
-    }
+    // caclsss++;
+    // if (caclsss == 10) {
+    //   setState(() {
+    //     visibility = true;
+    //     viewvisibility = false;
+    //   });
+    //   callPolygonStop();
+
     Adressaccuvalue = address.toString().split(",");
   }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 10);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          if (accuracy <= 10) {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          } else {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          }
+        }
+      },
+    );
+    Adressaccuvalue = address.toString().split(",");
+  }
+
 
   void callPolygonStop() {
     _polyGeofenceService
@@ -674,20 +797,20 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     //     .getFIRMselectedLatestTimeseries(
                     //         regionid, "firmware_versions");
 
-                    if (faultresponser.length != 0) {
-                      var firmwaredetails =
-                          faultresponser.first.getValue().toString();
-                      final decoded = jsonDecode(firmwaredetails) as Map;
-                      var firmware_versions = decoded['firmware_version'];
-
-                      if (firmware_versions
-                          .toString()
-                          .contains(FirmwareVersion)) {
+                    // if (faultresponser.length != 0) {
+                    //   var firmwaredetails =
+                    //       faultresponser.first.getValue().toString();
+                    //   final decoded = jsonDecode(firmwaredetails) as Map;
+                    //   var firmware_versions = decoded['firmware_version'];
+                    //
+                    //   if (firmware_versions
+                    //       .toString()
+                    //       .contains(FirmwareVersion)) {
                         versionCompatability = true;
-                      } else {
-                        versionCompatability = false;
-                      }
-                    }
+                    //   } else {
+                    //     versionCompatability = false;
+                    //   }
+                    // }
                   } catch (e) {
                     var message = toThingsboardError(e, context);
                   }
@@ -696,20 +819,20 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                   //   var firmwaredetails = responserse.first.getValue();
                   // }
 
-                  List<String> myList = [];
-                  myList.add("faulty");
-                  List<AttributeKvEntry> responser;
-
-                  responser = (await tbClient
-                      .getAttributeService()
-                      .getAttributeKvEntries(response.id!, myList));
-
+                  // List<String> myList = [];
+                  // myList.add("faulty");
+                  // List<AttributeKvEntry> responser;
+                  //
+                  // responser = (await tbClient
+                  //     .getAttributeService()
+                  //     .getAttributeKvEntries(response.id!, myList));
+                  //
                   var faultyDetails = false;
-                  if (responser.length == 0) {
-                    faultyDetails = false;
-                  } else {
-                    faultyDetails = responser.first.getValue();
-                  }
+                  // if (responser.length == 0) {
+                  //   faultyDetails = false;
+                  // } else {
+                  //   faultyDetails = responser.first.getValue();
+                  // }
 
                   if (faultyDetails == false) {
                     if (SelectedWard != "Ward") {

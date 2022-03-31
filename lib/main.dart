@@ -1,13 +1,23 @@
-
 // @dart=2.9
-import 'package:flutter/material.dart';
-import 'package:flutterlumin/src/geofence/ExampleApp.dart';
-import 'package:flutterlumin/src/ui/splash_screen.dart';
-import 'package:flutter/services.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutterlumin/src/ui/splash_screen.dart';
+import 'firebase_options.dart';
+
+
+Future<void> main() async {
   SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
-  runApp(const MyApp());
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+  // FirebaseCrashlytics.instance.crash();
+  runApp(MyApp());
+
+  // FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
 }
 
 class MyApp extends StatelessWidget {
@@ -32,7 +42,6 @@ class MyApp extends StatelessWidget {
         ),
         home: Scaffold(
           body: splash_screen(),
-        )
-    );
+        ));
   }
 }

@@ -219,7 +219,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
             if (wardlist.length != 0) {
               for (int i = 0; i < wardlist.length; i++) {
-                if (wardlist.elementAt(i).to.entityType.name != "DEVICE") {
+                if (wardlist.elementAt(i).to.entityType.index != 6) {
                   relatedDeviceId = wardlist.elementAt(i).to;
                   AssetDevices?.add(relatedDeviceId);
                 } else {

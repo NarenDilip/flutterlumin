@@ -586,7 +586,7 @@ class _LocationWidgetState extends State<LocationWidget> {
     setState(() {
       //_center = LatLng(_locationData.latitude, _locationData.longitude);
       _mapController.move(
-          LatLng(_locationData.latitude, _locationData.longitude), 10.0);
+          LatLng(_locationData!.latitude!, _locationData!.longitude!), 10.0);
 
       // _markers = [LatLng(_locationData.latitude, _locationData.longitude)]
       //     .map((point) => Marker(

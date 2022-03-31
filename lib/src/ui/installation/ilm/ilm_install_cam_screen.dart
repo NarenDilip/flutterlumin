@@ -37,6 +37,7 @@ import 'package:poly_geofence_service/models/poly_geofence.dart';
 import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class ilmcaminstall extends StatefulWidget {
+
   const ilmcaminstall() : super();
 
   @override
@@ -48,6 +49,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   var imageFile;
   var accuvalue;
   var Adressaccuvalue;
+
   // var addvalue;
 
   // LocationData? currentLocation;
@@ -66,6 +68,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   String geoFence = "false";
   var counter = 0;
   var caclsss = 0;
+
   // String FirmwareVersion = "0";
   late bool visibility = false;
   late bool viewvisibility = true;
@@ -75,6 +78,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   var _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
   static Completer _completer = new Completer<String>();
+
+  late Timer _timer;
+  int _start = 5;
 
   // final Location locations = Location();
   // LocationData? _location;
@@ -123,6 +129,10 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     accuvalue = accuracy.toString().split(".");
     var insideArea;
 
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
 
     if (geoFence == "true") {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
@@ -130,7 +140,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             LatLng(location.latitude, location.longitude),
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
-          if (accuracy <= 5) {
+          if (accuracy <= 10) {
             _getAddress(location!.latitude, location!.longitude).then((value) {
               setState(() {
                 address = value;
@@ -176,7 +186,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         }
       }
     } else {
-      if (accuracy <= 5) {
+      if (accuracy <= 10) {
         _getAddress(location!.latitude, location!.longitude).then((value) {
           setState(() {
             visibility = true;
@@ -186,31 +196,50 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         });
       } else {
         setState(() {
-          visibility = false;
+          visibility = true;
         });
-        Fluttertoast.showToast(
-            msg: "Fetching Device Location Accuracy Please wait for Some time" +
-                "Acccuracy Level-->" +
-                accuracy.toString(),
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
       }
       // callILMInstallation(context, imageFile, DeviceName, SelectedWard);
     }
-    caclsss++;
-    if (caclsss == 10) {
-      setState(() {
-        visibility = true;
-        viewvisibility = false;
-      });
-      callPolygonStop();
-    }
+    // caclsss++;
+    // if (caclsss == 10) {
+    //   setState(() {
+    //     visibility = true;
+    //     viewvisibility = false;
+    //   });
+    //   callPolygonStop();
+
     Adressaccuvalue = address.toString().split(",");
   }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 10);
+    _timer = Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          if (accuracy <= 10) {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          } else {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          }
+        }
+      },
+    );
+    Adressaccuvalue = address.toString().split(",");
+  }
+
+  // }
 
   Future<void> callPolygons() async {}
 
@@ -276,8 +305,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     DeviceName = "";
     SelectedWard = "";
     getSharedPrefs();
-      _openCamera(context);
-      setUpLogs();
+    _openCamera(context);
+    setUpLogs();
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       _polyGeofenceService.start();
@@ -513,15 +542,19 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   }
 
   void _openCamera(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        maxHeight: 480,
-        maxWidth: 640,
-        imageQuality: 25,
-        preferredCameraDevice: CameraDevice.rear);
-    setState(() {
-      imageFile = pickedFile;
-    });
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+          maxHeight: 480,
+          maxWidth: 640,
+          imageQuality: 25,
+          preferredCameraDevice: CameraDevice.rear);
+      setState(() {
+        imageFile = pickedFile;
+      });
+    }catch(e){
+      e.toString();
+    }
   }
 
   Future<void> CallGeoFenceListener(BuildContext context) async {
@@ -587,21 +620,21 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                         response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 16) {
-                  List<String> myList = [];
-                  myList.add("faulty");
-                  List<AttributeKvEntry> responser;
-
-                  responser = (await tbClient
-                      .getAttributeService()
-                      .getAttributeKvEntries(response.id!, myList));
-
+                  // List<String> myList = [];
+                  // myList.add("faulty");
+                  // List<AttributeKvEntry> responser;
+                  //
+                  // responser = (await tbClient
+                  //     .getAttributeService()
+                  //     .getAttributeKvEntries(response.id!, myList));
+                  //
                   var faultyDetails = false;
-                  if (responser.isEmpty) {
-                    faultyDetails = false;
-                  } else {
-                    var datas = responser.first.getValue();
-                    faultyDetails = datas;
-                  }
+                  // if (responser.isEmpty) {
+                  //   faultyDetails = false;
+                  // } else {
+                  //   var datas = responser.first.getValue();
+                  //   faultyDetails = datas;
+                  // }
 
                   DBHelper dbHelper = DBHelper();
                   var regionid;
@@ -630,7 +663,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                   //     if (firmware_versions
                   //         .toString()
                   //         .contains(FirmwareVersion)) {
-                        versionCompatability = true;
+                  versionCompatability = true;
                   //     } else {
                   //       versionCompatability = false;
                   //     }
@@ -670,7 +703,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
                             Map data = {
                               'landmark': address,
-                              'lattitude': Lattitude.toString(),
+                              'latitude': Lattitude.toString(),
                               'longitude': Longitude.toString(),
                               'accuracy': accuracy.toString(),
                               'lampWatts': ""
@@ -780,7 +813,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                         dashboard_screen()));
                           }
                         } else {
-                          FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+                          FlutterLogs.logInfo(
+                              "ilm_installation_page",
+                              "ilm_installation",
                               "ILM Device Not authorized to Install");
                           pr.hide();
                           callPolygonStop();
@@ -844,7 +879,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                 } else {
                   // Navigator.pop(context);
                   pr.hide();
-                  FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+                  FlutterLogs.logInfo(
+                      "ilm_installation_page",
+                      "ilm_installation",
                       "ILM Device Invalid Credentials Server Exception");
                   callPolygonStop();
                   calltoast(

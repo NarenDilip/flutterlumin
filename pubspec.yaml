@@ -18,8 +18,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-#  sdk: ">=2.15.0-178.1.beta <3.0.0"
-    sdk: ">=2.12.0 <3.0.0"
+  #  sdk: ">=2.15.0-178.1.beta <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -50,19 +50,24 @@ dependencies:
   flutter_icons: ^1.1.0
   qr_code_scanner: ^0.4.0
   image_picker: ^0.8.3
-  flutter_launcher_icons: "^0.9.0"
-  progress_dialog: ^1.2.4
-  poly_geofence_service: ^1.5.8
-  fl_location: ^1.2.1
-  vector_math: ^2.1.0
-  flutter_foreground_task: ^3.5.5
   flutter_logs: ^2.1.4
-  permission_handler: ^8.3.0
-#  geocoding: 1.0.5
-  
+  progress_dialog: ^1.2.4
+  permission_handler: ^8.1.0
+  fl_location: any
+  vector_math: ^2.1.0
+  flutter_foreground_task: any
+  poly_geofence_service: any
+  firebase_core: any
+  firebase_crashlytics: 2.5.1
+
+  #  geocoding: 1.0.5
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+
+dependency_overrides:
+  firebase_crashlytics_platform_interface: 3.1.13
 
 dev_dependencies:
   flutter_test:

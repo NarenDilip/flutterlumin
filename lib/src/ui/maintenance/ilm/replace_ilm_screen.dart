@@ -313,8 +313,8 @@ class replaceilmState extends State<replaceilm> {
       onPressed: () {
         late Future<Device?> entityFuture;
         // Utility.progressDialog(context);
-        entityFuture =
-            ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice, imageFile);
+        entityFuture = ilm_main_fetchDeviceDetails(
+            context, OldDevice, NewDevice, imageFile);
       },
     );
 
@@ -409,7 +409,8 @@ class replaceilmState extends State<replaceilm> {
             } else if (response.type == ccms_deviceType) {
             } else if (response.type == Gw_deviceType) {
             } else {
-              FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+              FlutterLogs.logInfo(
+                  "devicelist_page", "device_list", "logMessage");
               pr.hide();
               calltoast("Device Details Not Found");
             }
@@ -456,6 +457,8 @@ class replaceilmState extends State<replaceilm> {
         String SelectedRegion = prefs.getString('SelectedRegion').toString();
         String SelectedWard = prefs.getString('SelectedWard').toString();
         String FirmwareVersion = prefs.getString("firmwareVersion").toString();
+        String Lattitude = prefs.getString("deviceLatitude").toString();
+        String Longitude = prefs.getString("deviceLongitude").toString();
         var versionCompatability = false;
 
         pr.show();
@@ -551,14 +554,14 @@ class replaceilmState extends State<replaceilm> {
                         regionid = regiondetails.first.regionid;
                       }
 
-                      List<String> myfirmList = [];
-                      myfirmList.add("firmware_versions");
-
-                      List<AttributeKvEntry> faultresponser;
-
-                      faultresponser = (await tbClient
-                          .getAttributeService()
-                          .getFirmAttributeKvEntries(regionid, myfirmList));
+                      // List<String> myfirmList = [];
+                      // myfirmList.add("firmware_versions");
+                      //
+                      // List<AttributeKvEntry> faultresponser;
+                      //
+                      // faultresponser = (await tbClient
+                      //     .getAttributeService()
+                      //     .getFirmAttributeKvEntries(regionid, myfirmList));
 
                       // List<String> myreplacefirmList = [];
                       // myreplacefirmList.add("firmware_versions");
@@ -581,7 +584,7 @@ class replaceilmState extends State<replaceilm> {
                       //   if (compatable_versions
                       //       .toString()
                       //       .contains(relacefaultresponser.first.getValue())) {
-                          versionCompatability = true;
+                      versionCompatability = true;
                       //   } else {
                       //     versionCompatability = false;
                       //   }
@@ -655,6 +658,8 @@ class replaceilmState extends State<replaceilm> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
+                                  'lattitude': Lattitude,
+                                  'longitude': Longitude
                                 };
 
                                 var up_attribute = (await tbClient
@@ -682,8 +687,8 @@ class replaceilmState extends State<replaceilm> {
                                 };
 
                                 DBHelper dbHelper = DBHelper();
-                                List<Ward> warddetails =
-                                await dbHelper.ward_basedDetails(SelectedWard);
+                                List<Ward> warddetails = await dbHelper
+                                    .ward_basedDetails(SelectedWard);
                                 if (warddetails.length != "0") {
                                   warddetails.first.wardid;
 
@@ -697,16 +702,17 @@ class replaceilmState extends State<replaceilm> {
                                     'id': response.id!.id
                                   };
 
-                                  EntityRelation entityRelation = EntityRelation(
-                                      from: EntityId.fromJson(fromId),
-                                      to: EntityId.fromJson(toId),
-                                      type: "Contains",
-                                      typeGroup: RelationTypeGroup.COMMON);
+                                  EntityRelation entityRelation =
+                                      EntityRelation(
+                                          from: EntityId.fromJson(fromId),
+                                          to: EntityId.fromJson(toId),
+                                          type: "Contains",
+                                          typeGroup: RelationTypeGroup.COMMON);
 
-                                  Future<
-                                      EntityRelation> entityRelations = tbClient
-                                      .getEntityRelationService()
-                                      .saveRelation(entityRelation);
+                                  Future<EntityRelation> entityRelations =
+                                      tbClient
+                                          .getEntityRelationService()
+                                          .saveRelation(entityRelation);
                                 }
 
                                 try {
@@ -716,7 +722,10 @@ class replaceilmState extends State<replaceilm> {
                                           Olddevicedetails.id!.id!,
                                           "SERVER_SCOPE",
                                           new_body_req));
-                                } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
+                                } catch (e) {
+                                  FlutterLogs.logInfo("devicelist_page",
+                                      "device_list", "logMessage");
+                                }
 
                                 List<String> myList = [];
                                 myList.add(response.id!.id!);
@@ -726,19 +735,26 @@ class replaceilmState extends State<replaceilm> {
                                       .getEntityGroupService()
                                       .removeEntitiesFromEntityGroup(
                                           DevicecurrentFolderName, myList);
-                                } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
+                                } catch (e) {
+                                  FlutterLogs.logInfo("devicelist_page",
+                                      "device_list", "logMessage");
+                                }
                                 try {
                                   var add_response = await tbClient
                                       .getEntityGroupService()
                                       .addEntitiesToEntityGroup(
                                           DevicemoveFolderName, myList);
-                                } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
+                                } catch (e) {
+                                  FlutterLogs.logInfo("devicelist_page",
+                                      "device_list", "logMessage");
+                                }
                                 pr.hide();
                                 callReplacementComplete(
                                     context, imageFile, deviceName);
                               }
                             } else {
-                              FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                              FlutterLogs.logInfo("devicelist_page",
+                                  "device_list", "logMessage");
                               pr.hide();
                               calltoast(deviceName);
 
@@ -820,6 +836,32 @@ class replaceilmState extends State<replaceilm> {
                                     .getDeviceService()
                                     .saveDevice(response);
 
+                                List<String> myfirmList = [];
+                                myfirmList.add("lattitude");
+
+                                List<AttributeKvEntry> latt_faultresponser;
+
+                                latt_faultresponser = (await tbClient
+                                    .getAttributeService()
+                                    .getFirmAttributeKvEntries(
+                                        regionid, myfirmList));
+
+                                if (latt_faultresponser.first
+                                    .getValue()
+                                    .toString()
+                                    .isNotEmpty) {
+                                } else {
+                                  final old_bodyW_req = {
+                                    'lattitude': Lattitude,
+                                    'longitude': Longitude,
+                                  };
+
+                                  var up_attribute = (await tbClient
+                                      .getAttributeService()
+                                      .saveDeviceAttributes(response.id!.id!,
+                                          "SERVER_SCOPE", old_bodyW_req));
+                                }
+
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
@@ -855,7 +897,10 @@ class replaceilmState extends State<replaceilm> {
                                           Olddevicedetails.id!.id!,
                                           "SERVER_SCOPE",
                                           new_body_req));
-                                } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
+                                } catch (e) {
+                                  FlutterLogs.logInfo("devicelist_page",
+                                      "device_list", "logMessage");
+                                }
 
                                 List<String> myList = [];
                                 myList.add(response.id!.id!);
@@ -865,13 +910,19 @@ class replaceilmState extends State<replaceilm> {
                                       .getEntityGroupService()
                                       .removeEntitiesFromEntityGroup(
                                           DevicecurrentFolderName, myList);
-                                } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
+                                } catch (e) {
+                                  FlutterLogs.logInfo("devicelist_page",
+                                      "device_list", "logMessage");
+                                }
                                 try {
                                   var add_response = tbClient
                                       .getEntityGroupService()
                                       .addEntitiesToEntityGroup(
                                           DevicemoveFolderName, myList);
-                                } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
+                                } catch (e) {
+                                  FlutterLogs.logInfo("devicelist_page",
+                                      "device_list", "logMessage");
+                                }
 
                                 pr.hide();
                                 Navigator.of(context, rootNavigator: true)
@@ -880,7 +931,8 @@ class replaceilmState extends State<replaceilm> {
                                     context, imageFile, deviceName);
                               }
                             } else {
-                              FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                              FlutterLogs.logInfo("devicelist_page",
+                                  "device_list", "logMessage");
                               pr.hide();
                               calltoast(deviceName);
                               Navigator.of(context).pushReplacement(
@@ -889,7 +941,8 @@ class replaceilmState extends State<replaceilm> {
                                           dashboard_screen()));
                             }
                           } else {
-                            FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                            FlutterLogs.logInfo(
+                                "devicelist_page", "device_list", "logMessage");
                             pr.hide();
                             callstoast("Unable to Fetch Device Credentials");
                             Navigator.of(context).pushReplacement(
@@ -899,12 +952,13 @@ class replaceilmState extends State<replaceilm> {
                           }
                         }
                       } else {
-                        FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                        FlutterLogs.logInfo(
+                            "devicelist_page", "device_list", "logMessage");
                         //Firmware Version Validation
                         pr.hide();
                         Fluttertoast.showToast(
                             msg:
-                            "Selected Device is not authorized to install in this Region",
+                                "Selected Device is not authorized to install in this Region",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -917,7 +971,8 @@ class replaceilmState extends State<replaceilm> {
                                 dashboard_screen()));
                       }
                     } else {
-                      FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                      FlutterLogs.logInfo(
+                          "devicelist_page", "device_list", "logMessage");
                       pr.hide();
                       callstoast("Unable to find device attributes");
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -925,28 +980,32 @@ class replaceilmState extends State<replaceilm> {
                               dashboard_screen()));
                     }
                   } else {
-                    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                    FlutterLogs.logInfo(
+                        "devicelist_page", "device_list", "logMessage");
                     pr.hide();
                     callstoast("Unable to Find Related Devices");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
-                  FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                  FlutterLogs.logInfo(
+                      "devicelist_page", "device_list", "logMessage");
                   pr.hide();
                   callstoast("Unable to find current Device Folder Details");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
-                FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+                FlutterLogs.logInfo(
+                    "devicelist_page", "device_list", "logMessage");
                 pr.hide();
                 callstoast("Unable to find Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
-              FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+              FlutterLogs.logInfo(
+                  "devicelist_page", "device_list", "logMessage");
               pr.hide();
               callstoast("Unable to find Selected Device Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(

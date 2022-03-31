@@ -67,6 +67,10 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   String timevalue = "0";
   String location = "0";
 
+  double difference = 0;
+  late Timer _timer;
+  int _start = 5;
+
   // String version = "0";
   late ProgressDialog pr;
 
@@ -130,10 +134,173 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   //   return rootBundle.loadString('geofence.json');
   // }
 
+  // // This function is to be called when the location has changed.
+  // Future<void> _onLocationChanged(Location location) async {
+  //   print('location: ${location.toJson()}');
+  //   accuracy = location.accuracy;
+  //
+  //   if (geoFence == "true") {
+  //     for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
+  //       var insideArea = _checkIfValidMarker(
+  //           LatLng(location.latitude, location.longitude),
+  //           _polyGeofenceList[0].polygon);
+  //       if (insideArea == true) {
+  //         if (accuracy <= 5) {
+  //           Geolocator geolocator = new Geolocator();
+  //           var difference = await geolocator.distanceBetween(
+  //               double.parse(Lattitude),
+  //               double.parse(Longitude),
+  //               location.latitude,
+  //               location.longitude);
+  //
+  //           if (difference <= 50.0) {
+  //             setState(() {
+  //               visibility = true;
+  //               viewvisibility = false;
+  //             });
+  //             callPolygonStop();
+  //           } else {
+  //             setState(() {
+  //               visibility = false;
+  //               viewvisibility = false;
+  //             });
+  //           }
+  //         } else {
+  //           setState(() {
+  //             visibility = false;
+  //             viewvisibility = true;
+  //           });
+  //
+  //           Fluttertoast.showToast(
+  //               msg:
+  //                   "Fetching Device Location Accuracy Please wait for Some time" +
+  //                       "Acccuracy Level-->" +
+  //                       accuracy.toString(),
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //         }
+  //       } else {
+  //         Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //             builder: (BuildContext context) => dashboard_screen()));
+  //         setState(() {
+  //           visibility = false;
+  //         });
+  //         if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
+  //           Fluttertoast.showToast(
+  //               msg:
+  //                   "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+  //                       insideArea.toString(),
+  //               toastLength: Toast.LENGTH_SHORT,
+  //               gravity: ToastGravity.BOTTOM,
+  //               timeInSecForIosWeb: 1,
+  //               backgroundColor: Colors.white,
+  //               textColor: Colors.black,
+  //               fontSize: 16.0);
+  //           counter++;
+  //         }
+  //         callPolygonStop();
+  //       }
+  //     }
+  //   } else {
+  //     if (accuracy <= 5) {
+  //       caclsss = 12;
+  //       Geolocator geolocator = new Geolocator();
+  //       var difference = await geolocator.distanceBetween(
+  //           double.parse(Lattitude),
+  //           double.parse(Longitude),
+  //           location.latitude,
+  //           location.longitude);
+  //
+  //       if (difference <= 50.0) {
+  //         setState(() {
+  //           visibility = true;
+  //           viewvisibility = false;
+  //         });
+  //         callPolygonStop();
+  //       } else {
+  //         Fluttertoast.showToast(
+  //             msg: "Your Distance with device Location is More, Your not in the adequate Range",
+  //             toastLength: Toast.LENGTH_SHORT,
+  //             gravity: ToastGravity.BOTTOM,
+  //             timeInSecForIosWeb: 1,
+  //             backgroundColor: Colors.white,
+  //             textColor: Colors.black,
+  //             fontSize: 16.0);
+  //
+  //         setState(() {
+  //           visibility = false;
+  //           viewvisibility = false;
+  //         });
+  //       }
+  //     } else {
+  //       setState(() {
+  //         visibility = false;
+  //         viewvisibility = true;
+  //       });
+  //
+  //       Fluttertoast.showToast(
+  //           msg: "Fetching Device Location Accuracy Please wait for Some time" +
+  //               "Acccuracy Level-->" +
+  //               accuracy.toString(),
+  //           toastLength: Toast.LENGTH_SHORT,
+  //           gravity: ToastGravity.BOTTOM,
+  //           timeInSecForIosWeb: 1,
+  //           backgroundColor: Colors.white,
+  //           textColor: Colors.black,
+  //           fontSize: 16.0);
+  //     }
+  //   }
+  //   caclsss++;
+  //   if (caclsss == 10) {
+  //     Geolocator geolocator = new Geolocator();
+  //     var difference = await geolocator.distanceBetween(
+  //         double.parse(Lattitude),
+  //         double.parse(Longitude),
+  //         location.latitude,
+  //         location.longitude);
+  //
+  //     // if (difference <= 25.0) {
+  //     //   setState(() {
+  //     //     visibility = true;
+  //     //     viewvisibility = false;
+  //     //   });
+  //     //   callPolygonStop();
+  //     // } else {
+  //       Fluttertoast.showToast(
+  //           msg: "Your Distance with device Location is More, Your not in the adequate Range",
+  //           toastLength: Toast.LENGTH_SHORT,
+  //           gravity: ToastGravity.BOTTOM,
+  //           timeInSecForIosWeb: 1,
+  //           backgroundColor: Colors.white,
+  //           textColor: Colors.black,
+  //           fontSize: 16.0);
+  //
+  //       setState(() {
+  //         visibility = false;
+  //         viewvisibility = false;
+  //       });
+  //       callPolygonStop();
+  //     // }
+  //   }
+  // }
+
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
     accuracy = location.accuracy;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('deviceLatitude', location.latitude.toString());
+    prefs.setString('deviceLongitude', location.longitude.toString());
+
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
 
     if (geoFence == "true") {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
@@ -141,25 +308,28 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             LatLng(location.latitude, location.longitude),
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
-          if (accuracy <= 5) {
+          if (accuracy <= 10) {
             Geolocator geolocator = new Geolocator();
-            var difference = await geolocator.distanceBetween(
+            difference = (await geolocator.distanceBetween(
                 double.parse(Lattitude),
                 double.parse(Longitude),
                 location.latitude,
-                location.longitude);
-
+                location.longitude));
+            difference = difference;
             if (difference <= 50.0) {
               setState(() {
                 visibility = true;
                 viewvisibility = false;
+                difference = difference;
               });
               callPolygonStop();
             } else {
-              setState(() {
-                visibility = false;
-                viewvisibility = false;
-              });
+              callPolygonStop();
+              // _controll_dialog_show(context, difference, true);
+              // setState(() {
+              //   visibility = false;
+              //   viewvisibility = false;
+              // });
             }
           } else {
             setState(() {
@@ -167,17 +337,17 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
               viewvisibility = true;
             });
 
-            Fluttertoast.showToast(
-                msg:
-                    "Fetching Device Location Accuracy Please wait for Some time" +
-                        "Acccuracy Level-->" +
-                        accuracy.toString(),
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
+            // Fluttertoast.showToast(
+            //     msg:
+            //         "Fetching Device Location Accuracy Please wait for Some time" +
+            //             "Acccuracy Level-->" +
+            //             accuracy.toString(),
+            //     toastLength: Toast.LENGTH_SHORT,
+            //     gravity: ToastGravity.BOTTOM,
+            //     timeInSecForIosWeb: 1,
+            //     backgroundColor: Colors.white,
+            //     textColor: Colors.black,
+            //     fontSize: 16.0);
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -186,51 +356,58 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             visibility = false;
           });
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
-            Fluttertoast.showToast(
-                msg:
-                    "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                        insideArea.toString(),
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
+            // Fluttertoast.showToast(
+            //     msg:
+            //         "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+            //             insideArea.toString(),
+            //     toastLength: Toast.LENGTH_SHORT,
+            //     gravity: ToastGravity.BOTTOM,
+            //     timeInSecForIosWeb: 1,
+            //     backgroundColor: Colors.white,
+            //     textColor: Colors.black,
+            //     fontSize: 16.0);
             counter++;
           }
           callPolygonStop();
         }
       }
     } else {
-      if (accuracy <= 5) {
-        caclsss = 12;
+      if (accuracy <= 10) {
+        _timer.cancel();
         Geolocator geolocator = new Geolocator();
-        var difference = await geolocator.distanceBetween(
-            double.parse(Lattitude),
-            double.parse(Longitude),
-            location.latitude,
-            location.longitude);
+        difference = (await geolocator.distanceBetween(double.parse(Lattitude),
+            double.parse(Longitude), location.latitude, location.longitude));
+        difference = difference;
 
         if (difference <= 50.0) {
           setState(() {
             visibility = true;
             viewvisibility = false;
+            difference = difference;
           });
           callPolygonStop();
         } else {
-          Fluttertoast.showToast(
-              msg: "Your Distance with device Location is More, Your not in the adequate Range",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.white,
-              textColor: Colors.black,
-              fontSize: 16.0);
-
+          callPolygonStop();
           setState(() {
-            visibility = false;
+            visibility = true;
             viewvisibility = false;
           });
+          // _controll_dialog_show(context, difference, true);
+
+          // Fluttertoast.showToast(
+          //     msg:
+          //         "Your Distance with device Location is More, Your not in the adequate Range",
+          //     toastLength: Toast.LENGTH_SHORT,
+          //     gravity: ToastGravity.BOTTOM,
+          //     timeInSecForIosWeb: 1,
+          //     backgroundColor: Colors.white,
+          //     textColor: Colors.black,
+          //     fontSize: 16.0);
+          //
+          // setState(() {
+          //   visibility = false;
+          //   viewvisibility = false;
+          // });
         }
       } else {
         setState(() {
@@ -238,50 +415,88 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
           viewvisibility = true;
         });
 
-        Fluttertoast.showToast(
-            msg: "Fetching Device Location Accuracy Please wait for Some time" +
-                "Acccuracy Level-->" +
-                accuracy.toString(),
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
+        // Fluttertoast.showToast(
+        //     msg: "Fetching Device Location Accuracy Please wait for Some time" +
+        //         "Acccuracy Level-->" +
+        //         accuracy.toString(),
+        //     toastLength: Toast.LENGTH_SHORT,
+        //     gravity: ToastGravity.BOTTOM,
+        //     timeInSecForIosWeb: 1,
+        //     backgroundColor: Colors.white,
+        //     textColor: Colors.black,
+        //     fontSize: 16.0);
       }
     }
-    caclsss++;
-    if (caclsss == 10) {
-      Geolocator geolocator = new Geolocator();
-      var difference = await geolocator.distanceBetween(
-          double.parse(Lattitude),
-          double.parse(Longitude),
-          location.latitude,
-          location.longitude);
+    // caclsss++;
+    // if (caclsss == 10) {
+    //   Geolocator geolocator = new Geolocator();
+    //   var difference = await geolocator.distanceBetween(double.parse(Lattitude),
+    //       double.parse(Longitude), location.latitude, location.longitude);
+    //   if (difference <= 25.0) {
+    //     setState(() {
+    //       visibility = true;
+    //       viewvisibility = false;
+    //     });
+    //     callPolygonStop();
+    //   } else {
+    //     Fluttertoast.showToast(
+    //         msg:
+    //             "Your Distance with device Location is More, Your not in the adequate Range",
+    //         toastLength: Toast.LENGTH_SHORT,
+    //         gravity: ToastGravity.BOTTOM,
+    //         timeInSecForIosWeb: 1,
+    //         backgroundColor: Colors.white,
+    //         textColor: Colors.black,
+    //         fontSize: 16.0);
+    //
+    //     setState(() {
+    //       visibility = false;
+    //       viewvisibility = false;
+    //     });
+    //     callPolygonStop();
+    //   }
+    // }
+  }
 
-      // if (difference <= 25.0) {
-      //   setState(() {
-      //     visibility = true;
-      //     viewvisibility = false;
-      //   });
-      //   callPolygonStop();
-      // } else {
-        Fluttertoast.showToast(
-            msg: "Your Distance with device Location is More, Your not in the adequate Range",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-
-        setState(() {
-          visibility = false;
-          viewvisibility = false;
-        });
-        callPolygonStop();
-      // }
-    }
+  void startTimer() {
+    const oneSec = Duration(seconds: 10);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          if (accuracy <= 10) {
+            if (difference <= 50) {
+              setState(() {
+                timer.cancel();
+                callPolygonStop();
+              });
+            } else {
+              callPolygonStop();
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+              // _controll_dialog_show(context, difference, true);
+            }
+          } else {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+            if (difference <= 50) {
+            } else {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+              // _controll_dialog_show(context, difference, true);
+            }
+          }
+        }
+      },
+    );
   }
 
   void callPolygonStop() {

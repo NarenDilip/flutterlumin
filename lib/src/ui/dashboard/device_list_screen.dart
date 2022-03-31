@@ -1638,7 +1638,7 @@ class device_list_screen_state extends State<device_list_screen> {
                     }
 
                     List<String> myList = [];
-                    myList.add("lattitude");
+                    myList.add("latitude");
                     myList.add("longitude");
 
                     List<BaseAttributeKvEntry> responser;
