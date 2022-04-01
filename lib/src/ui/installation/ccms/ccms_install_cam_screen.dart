@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -19,8 +18,9 @@ import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-// import 'package:location/location.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,10 +31,6 @@ import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
-
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class ccmscaminstall extends StatefulWidget {
   const ccmscaminstall() : super();
@@ -49,8 +45,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   var accuvalue;
   var Adressaccuvalue;
 
-  // var addvalue;
-  // LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
   String SelectedZone = "0";
@@ -59,7 +53,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   double longitude = 0;
   double accuracy = 0;
 
-  // String addresss = "0";
   String? _error;
   late ProgressDialog pr;
   List<double>? _latt = [];
@@ -75,18 +68,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   static Completer _completer = new Completer<String>();
 
   late Timer _timer;
-  int _start = 5;
-
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
+  int _start = 20;
 
   final _streamController = StreamController<PolyGeofence>();
-
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
-
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
       interval: 5000,
       accuracy: 100,
@@ -116,106 +100,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
     _streamController.sink.add(polyGeofence);
   }
-
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
-
-  // This function is to be called when the location has changed.
-  // Future<void> _onLocationChanged(Location location) async {
-  //   print('location: ${location.toJson()}');
-  //   accuracy = location!.accuracy!;
-  //   Lattitude = location!.latitude!.toString();
-  //   Longitude = location!.longitude!.toString();
-  //   accuvalue = accuracy.toString().split(".");
-  //
-  //   var insideArea;
-  //   if (accuracy <= 7) {
-  //     _getAddress(location!.latitude, location!.longitude).then((value) {
-  //       setState(() {
-  //         address = value;
-  //       });
-  //     });
-  //     if (geoFence == "true") {
-  //       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-  //         insideArea = _checkIfValidMarker(
-  //             LatLng(location.latitude, location.longitude),
-  //             _polyGeofenceList[0].polygon);
-  //         if (insideArea == true) {
-  //           if (accuracy <= 5) {
-  //             _getAddress(location!.latitude, location!.longitude).then((value) {
-  //               setState(() {
-  //                 address = value;
-  //               });
-  //             });
-  //           } else {
-  //             setState(() {
-  //               visibility = false;
-  //             });
-  //             Fluttertoast.showToast(
-  //                 msg:
-  //                 "Fetching Device Location Accuracy Please wait for Some time" +
-  //                     "Acccuracy Level-->" +
-  //                     accuracy.toString(),
-  //                 toastLength: Toast.LENGTH_SHORT,
-  //                 gravity: ToastGravity.BOTTOM,
-  //                 timeInSecForIosWeb: 1,
-  //                 backgroundColor: Colors.white,
-  //                 textColor: Colors.black,
-  //                 fontSize: 16.0);
-  //           }
-  //           callPolygonStop();
-  //         } else {
-  //           setState(() {
-  //             visibility = false;
-  //           });
-  //           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
-  //             Fluttertoast.showToast(
-  //                 msg:
-  //                 "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-  //                     insideArea.toString(),
-  //                 toastLength: Toast.LENGTH_SHORT,
-  //                 gravity: ToastGravity.BOTTOM,
-  //                 timeInSecForIosWeb: 1,
-  //                 backgroundColor: Colors.white,
-  //                 textColor: Colors.black,
-  //                 fontSize: 16.0);
-  //             counter++;
-  //           }
-  //           callPolygonStop();
-  //           Navigator.of(context).pushReplacement(MaterialPageRoute(
-  //               builder: (BuildContext context) => dashboard_screen()));
-  //         }
-  //       }
-  //     } else {
-  //       setState(() {
-  //         visibility = true;
-  //       });
-  //       callPolygonStop();
-  //     }
-  //   } else {
-  //     visibility = false;
-  //     Fluttertoast.showToast(
-  //         msg: "Fetching Device Location Accuracy Please wait for Some time" +
-  //             "Acccuracy Level-->" +
-  //             accuracy.toString(),
-  //         toastLength: Toast.LENGTH_SHORT,
-  //         gravity: ToastGravity.BOTTOM,
-  //         timeInSecForIosWeb: 1,
-  //         backgroundColor: Colors.white,
-  //         textColor: Colors.black,
-  //         fontSize: 16.0);
-  //   }
-  //   caclsss++;
-  //   if (caclsss == 10) {
-  //     setState(() {
-  //       visibility = true;
-  //       viewvisibility = false;
-  //     });
-  //     callPolygonStop();
-  //   }
-  //   Adressaccuvalue = address.toString().split(",");
-  // }
 
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
@@ -249,9 +133,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
             });
             Fluttertoast.showToast(
                 msg:
-                "Fetching Device Location Accuracy Please wait for Some time" +
-                    "Acccuracy Level-->" +
-                    accuracy.toString(),
+                    "Fetching Device Location Accuracy Please wait for Some time" +
+                        "Acccuracy Level-->" +
+                        accuracy.toString(),
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -267,8 +151,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
                 msg:
-                "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                    insideArea.toString(),
+                    "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+                        insideArea.toString(),
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -284,36 +168,33 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       }
     } else {
       if (accuracy <= 10) {
+        _timer.cancel();
+        callPolygonStop();
         _getAddress(location!.latitude, location!.longitude).then((value) {
           setState(() {
             visibility = true;
             address = value;
           });
-          callPolygonStop();
-        });
-      } else {
-        setState(() {
-          visibility = true;
         });
       }
-      // callILMInstallation(context, imageFile, DeviceName, SelectedWard);
     }
-    // caclsss++;
-    // if (caclsss == 10) {
-    //   setState(() {
-    //     visibility = true;
-    //     viewvisibility = false;
-    //   });
-    //   callPolygonStop();
 
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      setState(() {
+        visibility = true;
+        viewvisibility = false;
+      });
+    }
     Adressaccuvalue = address.toString().split(",");
   }
 
   void startTimer() {
-    const oneSec = Duration(seconds: 10);
+    const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -330,12 +211,15 @@ class ccmscaminstallState extends State<ccmscaminstall> {
               viewvisibility = false;
             });
           }
+        } else {
+          setState(() {
+            _start--;
+          });
         }
       },
     );
     Adressaccuvalue = address.toString().split(",");
   }
-
 
   void callPolygonStop() {
     _polyGeofenceService
@@ -467,19 +351,11 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
 
-        // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -499,59 +375,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     final jsonResult = jsonDecode(data); //latest Dart
     var coordinateCount =
         jsonResult['features'][0]['geometry']['coordinates'][0].length;
-    var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
           jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
           jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
-      // polygonad(LatLng(latter,rlonger));
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
-      // details[new LatLng(latter,rlonger)];
     }
   }
-
-  // Future<void> _listenLocation() async {
-  //   _locationSubscription =
-  //       locations.onLocationChanged.handleError((dynamic err) {
-  //     if (err is PlatformException) {
-  //       setState(() {
-  //         _error = err.code;
-  //       });
-  //     }
-  //     _locationSubscription?.cancel();
-  //     setState(() {
-  //       _locationSubscription = null;
-  //     });
-  //   }).listen((LocationData currentLocation) {
-  //     setState(() {
-  //       _error = null;
-  //       _location = currentLocation;
-  //       _getAddress(_location!.latitude, _location!.longitude).then((value) {
-  //         setState(() {
-  //           address = value;
-  //           // if (_latt!.length <= 5) {
-  //           _latt!.add(_location!.latitude!);
-  //           lattitude = _location!.latitude!;
-  //           longitude = _location!.longitude!;
-  //           accuracy = _location!.accuracy!;
-  //           // addresss = addresss;
-  //           // } else {
-  //           if (accuracy <= 7) {
-  //             _locationSubscription?.cancel();
-  //             setState(() {
-  //               _locationSubscription = null;
-  //             });
-  //             accuvalue = accuracy.toString().split(".");
-  //             addvalue = value.toString().split(",");
-  //             callReplacementComplete(
-  //                 context, imageFile, DeviceName, SelectedWard);
-  //           }
-  //         });
-  //       });
-  //     });
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -640,25 +471,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                     callReplacementComplete(context, imageFile,
                                         DeviceName, SelectedWard);
                                   }
-
-                                  // WidgetsBinding.instance
-                                  //     ?.addPostFrameCallback((_) {
-                                  //   _polyGeofenceService.start();
-                                  //   _polyGeofenceService
-                                  //       .addPolyGeofenceStatusChangeListener(
-                                  //       _onPolyGeofenceStatusChanged);
-                                  //   _polyGeofenceService.addLocationChangeListener(
-                                  //       _onLocationChanged);
-                                  //   _polyGeofenceService
-                                  //       .addLocationServicesStatusChangeListener(
-                                  //       _onLocationServicesStatusChanged);
-                                  //   _polyGeofenceService
-                                  //       .addStreamErrorListener(_onError);
-                                  //   _polyGeofenceService
-                                  //       .start(_polyGeofenceList)
-                                  //       .catchError(_onError);
-                                  // });
-
                                 } else {
                                   pr.hide();
                                   Fluttertoast.showToast(
@@ -742,7 +554,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     if (status.isGranted) {
       Utility.isConnected().then((value) async {
         if (value) {
-          // Utility.progressDialog(context);
           pr.show();
           try {
             var tbClient = ThingsboardClient(serverUrl);
@@ -769,16 +580,16 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     regionid = regiondetails.first.regionid;
                   }
 
-                  // List<String> firmmyList = [];
-                  // firmmyList.add("firmware_versions");
-                  // List<AttributeKvEntry> firmmyList_responser;
-                  //
-                  // List<AttributeKvEntry> responserse;
-                  //
-                  // responserse = (await tbClient
-                  //     .getAttributeService()
-                  //     .getAttributeKvEntries(response.id!, firmmyList))
-                  // as List<AttributeKvEntry>;
+                  /*List<String> firmmyList = [];
+                  firmmyList.add("firmware_versions");
+                  List<AttributeKvEntry> firmmyList_responser;
+
+                  List<AttributeKvEntry> responserse;
+
+                  responserse = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, firmmyList))
+                  as List<AttributeKvEntry>;
 
                   try {
                     List<String> myfirmList = [];
@@ -790,49 +601,51 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         .getAttributeService()
                         .getFirmAttributeKvEntries(regionid, myfirmList));
 
-                    //
-                    // List<TsKvEntry> faultresponser;
-                    // faultresponser = await tbClient
-                    //     .getAttributeService()
-                    //     .getFIRMselectedLatestTimeseries(
-                    //         regionid, "firmware_versions");
 
-                    // if (faultresponser.length != 0) {
-                    //   var firmwaredetails =
-                    //       faultresponser.first.getValue().toString();
-                    //   final decoded = jsonDecode(firmwaredetails) as Map;
-                    //   var firmware_versions = decoded['firmware_version'];
-                    //
-                    //   if (firmware_versions
-                    //       .toString()
-                    //       .contains(FirmwareVersion)) {
-                        versionCompatability = true;
-                    //   } else {
-                    //     versionCompatability = false;
-                    //   }
-                    // }
+                  List<TsKvEntry> faultresponser;
+                  faultresponser = await tbClient
+                      .getAttributeService()
+                      .getFIRMselectedLatestTimeseries(
+                          regionid, "firmware_versions");
+
+                  if (faultresponser.length != 0) {
+                    var firmwaredetails =
+                        faultresponser.first.getValue().toString();
+                    final decoded = jsonDecode(firmwaredetails) as Map;
+                    var firmware_versions = decoded['firmware_version'];
+
+                    if (firmware_versions
+                        .toString()
+                        .contains(FirmwareVersion)) {*/
+                  versionCompatability = true;
+
+                  /*  } else {
+                      versionCompatability = false;
+                    }
+                  }
                   } catch (e) {
                     var message = toThingsboardError(e, context);
                   }
 
-                  // if (responserse.length != 0) {
-                  //   var firmwaredetails = responserse.first.getValue();
-                  // }
+                  if (responserse.length != 0) {
+                    var firmwaredetails = responserse.first.getValue();
+                  }
 
-                  // List<String> myList = [];
-                  // myList.add("faulty");
-                  // List<AttributeKvEntry> responser;
-                  //
-                  // responser = (await tbClient
-                  //     .getAttributeService()
-                  //     .getAttributeKvEntries(response.id!, myList));
-                  //
+                  List<String> myList = [];
+                  myList.add("faulty");
+                  List<AttributeKvEntry> responser;
+
+                  responser = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myList));*/
+
                   var faultyDetails = false;
-                  // if (responser.length == 0) {
-                  //   faultyDetails = false;
-                  // } else {
-                  //   faultyDetails = responser.first.getValue();
-                  // }
+
+                  /* if (responser.length == 0) {
+                    faultyDetails = false;
+                  } else {
+                    faultyDetails = responser.first.getValue();
+                   } */
 
                   if (faultyDetails == false) {
                     if (SelectedWard != "Ward") {
@@ -840,7 +653,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         if (versionCompatability == true) {
                           DBHelper dbHelper = DBHelper();
                           List<Ward> warddetails = await dbHelper
-                              .ward_basedDetails(SelectedWard) as List<Ward>;
+                              .ward_basedDetails(SelectedWard);
                           if (warddetails.length != "0") {
                             warddetails.first.wardid;
 
@@ -864,9 +677,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                 .saveRelation(entityRelation);
 
                             Map data = {
-                              'landmark': address,
-                              'lattitude': Lattitude.toString(),
-                              'longitude': Longitude.toString(),
+                              'location': address,
+                              'slatitude': Lattitude.toString(),
+                              'slongitude': Longitude.toString(),
                               'accuracy': accuracy.toString()
                             };
 
@@ -959,7 +772,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                 postRequest(context, img64, DeviceName);
                                 pr.hide();
                               } else {
-                                FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+                                FlutterLogs.logInfo(
+                                    "ccms_installation_page",
+                                    "ccms_installation",
                                     "CCMS Device Not Found Folder Details Exception");
                                 // Navigator.pop(context);
                                 callPolygonStop();
@@ -999,7 +814,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                           }
                         } else {
                           callPolygonStop();
-                          FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+                          FlutterLogs.logInfo(
+                              "ccms_installation_page",
+                              "ccms_installation",
                               "CCMS Device Not authorized to install");
                           pr.hide();
                           Fluttertoast.showToast(
@@ -1045,8 +862,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     }
                   } else {
                     // Navigator.pop(context);
-                    FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
-                        "CCMS Device Faulty Exception");
+                    FlutterLogs.logInfo("ccms_installation_page",
+                        "ccms_installation", "CCMS Device Faulty Exception");
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
@@ -1062,8 +879,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                   }
                 } else {
                   // Navigator.pop(context);
-                  FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
-                      "CCMS Device Credentials Exception");
+                  FlutterLogs.logInfo("ccms_installation_page",
+                      "ccms_installation", "CCMS Device Credentials Exception");
                   pr.hide();
                   Fluttertoast.showToast(
                       msg: "Invalid Device Credentials",
@@ -1130,7 +947,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
           fontSize: 16.0);
 
       pr.hide();
-      openAppSettings();
+      Permission.locationAlways.request();
+      // openAppSettings();
     }
   }
 
@@ -1170,7 +988,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                        Adressaccuvalue[0].toString(),
+                      Adressaccuvalue[0].toString(),
                       style: const TextStyle(
                           fontSize: 16.0,
                           fontFamily: "Montserrat",
@@ -1213,41 +1031,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         textColor: Colors.black,
         fontSize: 16.0);
   }
-
-  // Future<LocationData?> _getLocation() async {
-  //   Location location = Location();
-  //   LocationData _locationData;
-  //   bool _serviceEnabled;
-  //   PermissionStatus _permissionGranted;
-  //
-  //   _serviceEnabled = await location.serviceEnabled();
-  //   if (!_serviceEnabled) {
-  //     _serviceEnabled = await location.requestService();
-  //     if (!_serviceEnabled) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _permissionGranted = await location.hasPermission();
-  //   if (_permissionGranted == PermissionStatus.denied) {
-  //     _permissionGranted = await location.requestPermission();
-  //     if (_permissionGranted != PermissionStatus.granted) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _locationData = await location.getLocation();
-  //
-  //   return _locationData;
-  // }
-  //
-  // Future<String> _getAddress(double? lat, double? lang) async {
-  //   if (lat == null || lang == null) return "";
-  //   final coordinates = new Coordinates(lat, lang);
-  //   List<Address> addresss = (await Geocoder.local
-  //       .findAddressesFromCoordinates(coordinates)) as List<Address>;
-  //   return "${addresss.elementAt(1).addressLine}";
-  // }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;

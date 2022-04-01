@@ -234,7 +234,7 @@ class _GwToggleButtonnState extends State<GwToggleButtonn> {
           backgroundColor: Colors.white,
           textColor: Colors.black,
           fontSize: 16.0);
-      openAppSettings();
+      // openAppSettings();
     }
   }
 

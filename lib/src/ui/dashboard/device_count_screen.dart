@@ -166,25 +166,15 @@ class device_count_screen_state extends State<device_count_screen> {
         debugFileOperations: true,
         isDebuggable: true);
 
-    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
-    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
-
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
         // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
-
         // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -196,7 +186,6 @@ class device_count_screen_state extends State<device_count_screen> {
       logStatus = status;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -1183,19 +1172,9 @@ Future<void> callLogoutoption(BuildContext context) async {
               dbhelper.zone_delete(SelectedRegion);
               dbhelper.ward_delete(SelectedRegion);
 
-              // List<Region> detailss = await dbhelper.region_getDetails();
-              // List<Zone> zdetails =
-              //     (await dbhelper.zone_getDetails()).cast<Zone>();
-              // List<Ward> wdetails = await dbhelper.ward_getDetails();
-
-              // dbhelper.region_delete();
-              // dbhelper.zone_delete();
-              // dbhelper.ward_delete();
-
               SharedPreferences preferences =
               await SharedPreferences.getInstance();
               await preferences.clear();
-              // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => splash_screen()));

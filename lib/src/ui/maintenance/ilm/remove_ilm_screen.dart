@@ -296,13 +296,13 @@ class replacementilmState extends State<replacementilm> {
               // }
 
               if (versionCompatability == true) {
-                if (faultyStatus == "2") {
-                  Map data = {'faulty': "true"};
-                  var saveAttributes = await tbClient
-                      .getAttributeService()
-                      .saveDeviceAttributes(
-                          response.id!.id!, "SERVER_SCOPE", data);
-                }
+                // if (faultyStatus == "2") {
+                //   Map data = {'faulty': "true"};
+                //   var saveAttributes = await tbClient
+                //       .getAttributeService()
+                //       .saveDeviceAttributes(
+                //           response.id!.id!, "SERVER_SCOPE", data);
+                // }
 
                 var relationDetails = await tbClient
                     .getEntityRelationService()

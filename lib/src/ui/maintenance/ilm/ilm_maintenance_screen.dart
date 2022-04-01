@@ -27,6 +27,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:poly_geofence_service/models/lat_lng.dart';
 import 'package:poly_geofence_service/models/poly_geofence.dart';
 import 'package:poly_geofence_service/poly_geofence_service.dart';
+
 // import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,7 +44,7 @@ class MaintenanceScreen extends StatefulWidget {
   _MaintenanceScreenState createState() => _MaintenanceScreenState();
 }
 
-class _MaintenanceScreenState extends State<MaintenanceScreen> {
+class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindingObserver {
   var selectedImage = "";
   bool _isOn = true;
   DateTime? date;
@@ -88,7 +89,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   static Completer _completer = new Completer<String>();
 
   late Timer _timer;
-  int _start = 5;
+  int _start = 20;
 
   // final Location locations = Location();
   // LocationData? _location;
@@ -177,17 +178,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               viewvisibility = true;
             });
 
-            // Fluttertoast.showToast(
-            //     msg:
-            //         "Fetching Device Location Accuracy Please wait for Some time" +
-            //             "Acccuracy Level-->" +
-            //             accuracy.toString(),
-            //     toastLength: Toast.LENGTH_SHORT,
-            //     gravity: ToastGravity.BOTTOM,
-            //     timeInSecForIosWeb: 1,
-            //     backgroundColor: Colors.white,
-            //     textColor: Colors.black,
-            //     fontSize: 16.0);
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -213,25 +203,24 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       }
     } else {
       if (accuracy <= 10) {
-        _timer.cancel();
         Geolocator geolocator = new Geolocator();
         difference = (await geolocator.distanceBetween(double.parse(Lattitude),
             double.parse(Longitude), location.latitude, location.longitude));
         difference = difference;
 
         if (difference <= 50.0) {
+          _timer.cancel();
+          callPolygonStop();
           setState(() {
             visibility = true;
             viewvisibility = false;
-            difference = difference;
           });
-          callPolygonStop();
         } else {
-          callPolygonStop();
           setState(() {
             visibility = true;
             viewvisibility = false;
           });
+
           // _controll_dialog_show(context, difference, true);
 
           // Fluttertoast.showToast(
@@ -250,10 +239,12 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           // });
         }
       } else {
-        setState(() {
-          visibility = false;
-          viewvisibility = true;
-        });
+        // _timer.cancel();
+        // callPolygonStop();
+        // setState(() {
+        //   visibility = false;
+        //   viewvisibility = true;
+        // });
 
         // Fluttertoast.showToast(
         //     msg: "Fetching Device Location Accuracy Please wait for Some time" +
@@ -267,51 +258,42 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         //     fontSize: 16.0);
       }
     }
-    // caclsss++;
-    // if (caclsss == 10) {
-    //   Geolocator geolocator = new Geolocator();
-    //   var difference = await geolocator.distanceBetween(double.parse(Lattitude),
-    //       double.parse(Longitude), location.latitude, location.longitude);
-    //   if (difference <= 25.0) {
-    //     setState(() {
-    //       visibility = true;
-    //       viewvisibility = false;
-    //     });
-    //     callPolygonStop();
-    //   } else {
-    //     Fluttertoast.showToast(
-    //         msg:
-    //             "Your Distance with device Location is More, Your not in the adequate Range",
-    //         toastLength: Toast.LENGTH_SHORT,
-    //         gravity: ToastGravity.BOTTOM,
-    //         timeInSecForIosWeb: 1,
-    //         backgroundColor: Colors.white,
-    //         textColor: Colors.black,
-    //         fontSize: 16.0);
-    //
-    //     setState(() {
-    //       visibility = false;
-    //       viewvisibility = false;
-    //     });
-    //     callPolygonStop();
-    //   }
-    // }
+
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      Geolocator geolocator = new Geolocator();
+      var difference = await geolocator.distanceBetween(double.parse(Lattitude),
+          double.parse(Longitude), location.latitude, location.longitude);
+      if (difference <= 50.0) {
+        setState(() {
+          visibility = true;
+          viewvisibility = false;
+        });
+      } else {
+        setState(() {
+          visibility = false;
+          viewvisibility = false;
+        });
+      }
+    }
   }
 
   void startTimer() {
-    const oneSec = Duration(seconds: 10);
+    const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
       (Timer timer) {
         if (_start == 0) {
+          timer.cancel();
+          callPolygonStop();
           if (accuracy <= 10) {
             if (difference <= 50) {
               setState(() {
-                timer.cancel();
-                callPolygonStop();
+                visibility = true;
+                viewvisibility = false;
               });
             } else {
-              callPolygonStop();
               setState(() {
                 visibility = true;
                 viewvisibility = false;
@@ -319,13 +301,17 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               // _controll_dialog_show(context, difference, true);
             }
           } else {
-            timer.cancel();
-            callPolygonStop();
+            // timer.cancel();
+            // callPolygonStop();
             setState(() {
               visibility = true;
               viewvisibility = false;
             });
             if (difference <= 50) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
             } else {
               setState(() {
                 visibility = true;
@@ -334,6 +320,10 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               // _controll_dialog_show(context, difference, true);
             }
           }
+        }else{
+          setState(() {
+            _start--;
+          });
         }
       },
     );
@@ -463,7 +453,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     DeviceStatus = "";
     getSharedPrefs();
     CallGeoFenceListener(context);
-    setUpLogs();
+    // calllocationFinder();
+
 
     // visibility = true;
     // _listenLocation();
@@ -511,6 +502,16 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     });
   }
 
+  // void calllocationFinder() async {
+  //   var status = await Permission.location.status;
+  //   if (status.isGranted) {
+  //     CallGeoFenceListener(context);
+  //     setUpLogs();
+  //   } else {
+  //     Permission.locationAlways.request();
+  //   }
+  // }
+
   void setLogsStatus({String status = '', bool append = false}) {
     setState(() {
       logStatus = status;
@@ -521,7 +522,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     var status = await Permission.location.status;
     if (status.isGranted) {
       try {
-        pr1.show();
+
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var geoFence = prefs.getString('geoFence').toString();
         WidgetsBinding.instance?.addPostFrameCallback((_) {
@@ -533,6 +534,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               _onLocationServicesStatusChanged);
           _polyGeofenceService.addStreamErrorListener(_onError);
           _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+          pr1.show();
         });
         if (geoFence == "true") {
           CallCoordinates(context);
@@ -540,6 +542,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             visibility = true;
           });
         } else {
+
           visibility = true;
           viewvisibility = false;
           // Fluttertoast.showToast(
@@ -553,15 +556,16 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         }
       } catch (e) {}
     } else {
-      Fluttertoast.showToast(
-          msg: "Kindly Enable App Location Permission",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
-      openAppSettings();
+      // Fluttertoast.showToast(
+      //     msg: "Kindly Enable App Location Permission",
+      //     toastLength: Toast.LENGTH_SHORT,
+      //     gravity: ToastGravity.BOTTOM,
+      //     timeInSecForIosWeb: 1,
+      //     backgroundColor: Colors.white,
+      //     textColor: Colors.black,
+      //     fontSize: 16.0);
+      Permission.locationAlways.request();
+      // openAppSettings();
     }
   }
 
@@ -1296,7 +1300,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 TextButton(
                     onPressed: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) => dashboard_screen()));
+                          builder: (BuildContext context) =>
+                              dashboard_screen()));
                     },
                     child: const Text('Cancel',
                         style: TextStyle(

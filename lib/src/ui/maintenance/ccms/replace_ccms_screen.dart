@@ -93,19 +93,12 @@ class replaceccmsState extends State<replaceccms> {
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
 
         // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -215,20 +208,7 @@ class replaceccmsState extends State<replaceccms> {
                                   fontSize: 16.0);
                             }
                           })),
-                  // rounded_button(
-                  //   text: "Complete Replacement",
-                  //   color: Colors.green,
-                  //   press: () {
-                  //     late Future<Device?> entityFuture;
-                  //     entityFuture =
-                  //         ilm_main_fetchDeviceDetails(
-                  //             DeviceName,newDeviceName,context,imageFile);
-                  //     showActionAlertDialog(context, DeviceName, newDeviceName);
-                  //   },
-                  //   key: null,
-                  // ),
                 ]))));
-    // );
   }
 
   void _openCamera(BuildContext context) async {
@@ -242,51 +222,6 @@ class replaceccmsState extends State<replaceccms> {
       imageFile = pickedFile;
     });
   }
-
-//
-// Future<void> replaceILM(context,imageFile) async {
-//   Utility.isConnected().then((value) async {
-//     if (value) {
-//       try {
-//         Utility.progressDialog(context);
-//         SharedPreferences prefs = await SharedPreferences.getInstance();
-//         String OlddeviceID = prefs.getString('deviceId').toString();
-//         String OlddeviceName = prefs.getString('deviceName').toString();
-//
-//         Navigator.pushAndRemoveUntil(
-//             context,
-//             MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-//                 (route) => true).then((value) async {
-//           if (value != null) {
-//             if (OlddeviceName.toString() != value.toString()) {
-//               Navigator.pop(context);
-//               late Future<Device?> entityFuture;
-//               // Utility.progressDialog(context);
-//
-//             } else {
-//               calltoast("Duplicate QR Code");
-//               Navigator.pop(context);
-//             }
-//           } else {
-//             calltoast("Invalid QR Code");
-//             Navigator.pop(context);
-//           }
-//         });
-//       }catch(e){
-//         var message = toThingsboardError(e, context);
-//         if (message == session_expired) {
-//           var status = loginThingsboard.callThingsboardLogin(context);
-//           if (status == true) {
-//           }
-//         } else {
-//           Navigator.pop(context);
-//         }
-//       }
-//     } else {
-//       calltoast(no_network);
-//     }
-//   });
-// }
 
   showActionAlertDialog(context, OldDevice, NewDevice) {
     // set up the buttons
@@ -309,10 +244,6 @@ class replaceccmsState extends State<replaceccms> {
               fontWeight: FontWeight.bold,
               color: Colors.green)),
       onPressed: () {
-        // late Future<Device?> entityFuture;
-        // // Utility.progressDialog(context);
-        // entityFuture =
-        //     ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice, imageFile);
       },
     );
 
@@ -365,16 +296,6 @@ class replaceccmsState extends State<replaceccms> {
           ],
         ),
       ),
-
-      // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
-      //     fontSize: 18.0,
-      //     fontFamily: "Montserrat",
-      //     fontWeight: FontWeight.normal,
-      //     color: liorange)),
-      // actions: [
-      //   cancelButton,
-      //   continueButton,
-      // ],
     );
 
     // show the dialog

@@ -53,7 +53,6 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
   bool clickedCentreFAB = false;
   var LampactiveStatus;
 
-  // String Lampwatts = "0";
   String DeviceName = "0";
   String DeviceStatus = "0";
   String SelectedRegion = "0";
@@ -70,9 +69,8 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
 
   double difference = 0;
   late Timer _timer;
-  int _start = 5;
+  int _start = 20;
 
-  // LocationData? currentLocation;
   String? _error;
   double lattitude = 0;
   double longitude = 0;
@@ -86,11 +84,6 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
   List<double>? _latt = [];
   final _streamController = StreamController<PolyGeofence>();
 
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
-
-  // String version = "0";
   late ProgressDialog pr;
   var caclsss = 0;
   var _myLogFileName = "Luminator2.0_LogFile";
@@ -126,10 +119,6 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
     print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
     _streamController.sink.add(polyGeofence);
   }
-
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
 
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
@@ -179,18 +168,6 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
               visibility = false;
               viewvisibility = true;
             });
-
-            // Fluttertoast.showToast(
-            //     msg:
-            //         "Fetching Device Location Accuracy Please wait for Some time" +
-            //             "Acccuracy Level-->" +
-            //             accuracy.toString(),
-            //     toastLength: Toast.LENGTH_SHORT,
-            //     gravity: ToastGravity.BOTTOM,
-            //     timeInSecForIosWeb: 1,
-            //     backgroundColor: Colors.white,
-            //     textColor: Colors.black,
-            //     fontSize: 16.0);
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -198,123 +175,62 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
           setState(() {
             visibility = false;
           });
-          if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
-            // Fluttertoast.showToast(
-            //     msg:
-            //         "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-            //             insideArea.toString(),
-            //     toastLength: Toast.LENGTH_SHORT,
-            //     gravity: ToastGravity.BOTTOM,
-            //     timeInSecForIosWeb: 1,
-            //     backgroundColor: Colors.white,
-            //     textColor: Colors.black,
-            //     fontSize: 16.0);
-            counter++;
-          }
           callPolygonStop();
         }
       }
     } else {
       if (accuracy <= 10) {
-        _timer.cancel();
+        // _timer.cancel();
         Geolocator geolocator = new Geolocator();
         difference = (await geolocator.distanceBetween(double.parse(Lattitude),
             double.parse(Longitude), location.latitude, location.longitude));
         difference = difference;
 
         if (difference <= 50.0) {
-          setState(() {
-            visibility = true;
-            viewvisibility = false;
-            difference = difference;
-          });
-          callPolygonStop();
-        } else {
+          _timer.cancel();
           callPolygonStop();
           setState(() {
             visibility = true;
             viewvisibility = false;
           });
-          // _controll_dialog_show(context, difference, true);
-
-          // Fluttertoast.showToast(
-          //     msg:
-          //         "Your Distance with device Location is More, Your not in the adequate Range",
-          //     toastLength: Toast.LENGTH_SHORT,
-          //     gravity: ToastGravity.BOTTOM,
-          //     timeInSecForIosWeb: 1,
-          //     backgroundColor: Colors.white,
-          //     textColor: Colors.black,
-          //     fontSize: 16.0);
-          //
-          // setState(() {
-          //   visibility = false;
-          //   viewvisibility = false;
-          // });
-        }
+        } else {}
+      }
+    }
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      Geolocator geolocator = new Geolocator();
+      var difference = await geolocator.distanceBetween(double.parse(Lattitude),
+          double.parse(Longitude), location.latitude, location.longitude);
+      if (difference <= 50.0) {
+        setState(() {
+          visibility = true;
+          viewvisibility = false;
+        });
       } else {
         setState(() {
           visibility = false;
-          viewvisibility = true;
+          viewvisibility = false;
         });
-
-        // Fluttertoast.showToast(
-        //     msg: "Fetching Device Location Accuracy Please wait for Some time" +
-        //         "Acccuracy Level-->" +
-        //         accuracy.toString(),
-        //     toastLength: Toast.LENGTH_SHORT,
-        //     gravity: ToastGravity.BOTTOM,
-        //     timeInSecForIosWeb: 1,
-        //     backgroundColor: Colors.white,
-        //     textColor: Colors.black,
-        //     fontSize: 16.0);
       }
     }
-    // caclsss++;
-    // if (caclsss == 10) {
-    //   Geolocator geolocator = new Geolocator();
-    //   var difference = await geolocator.distanceBetween(double.parse(Lattitude),
-    //       double.parse(Longitude), location.latitude, location.longitude);
-    //   if (difference <= 25.0) {
-    //     setState(() {
-    //       visibility = true;
-    //       viewvisibility = false;
-    //     });
-    //     callPolygonStop();
-    //   } else {
-    //     Fluttertoast.showToast(
-    //         msg:
-    //             "Your Distance with device Location is More, Your not in the adequate Range",
-    //         toastLength: Toast.LENGTH_SHORT,
-    //         gravity: ToastGravity.BOTTOM,
-    //         timeInSecForIosWeb: 1,
-    //         backgroundColor: Colors.white,
-    //         textColor: Colors.black,
-    //         fontSize: 16.0);
-    //
-    //     setState(() {
-    //       visibility = false;
-    //       viewvisibility = false;
-    //     });
-    //     callPolygonStop();
-    //   }
-    // }
   }
 
   void startTimer() {
-    const oneSec = Duration(seconds: 10);
+    const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
+          timer.cancel();
+          callPolygonStop();
           if (accuracy <= 10) {
             if (difference <= 50) {
               setState(() {
-                timer.cancel();
-                callPolygonStop();
+                visibility = true;
+                viewvisibility = false;
               });
             } else {
-              callPolygonStop();
               setState(() {
                 visibility = true;
                 viewvisibility = false;
@@ -322,13 +238,17 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
               // _controll_dialog_show(context, difference, true);
             }
           } else {
-            timer.cancel();
-            callPolygonStop();
+            // timer.cancel();
+            // callPolygonStop();
             setState(() {
               visibility = true;
               viewvisibility = false;
             });
             if (difference <= 50) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
             } else {
               setState(() {
                 visibility = true;
@@ -337,1029 +257,804 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
               // _controll_dialog_show(context, difference, true);
             }
           }
+        } else {
+          setState(() {
+            _start--;
+          });
         }
       },
     );
   }
 
-void callPolygonStop() {
-  _polyGeofenceService
-      .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
-  _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
-  _polyGeofenceService.removeLocationServicesStatusChangeListener(
-      _onLocationServicesStatusChanged);
-  _polyGeofenceService.removeStreamErrorListener(_onError);
-  _polyGeofenceService.clearAllListeners();
-  _polyGeofenceService.stop();
-}
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
+  }
 
-Future<void> callPolygons() async {}
+  Future<void> callPolygons() async {}
 
 // This function is to be called when a location services status change occurs
 // since the service was started.
-void _onLocationServicesStatusChanged(bool status) {
-  print('isLocationServicesEnabled: $status');
-}
+  void _onLocationServicesStatusChanged(bool status) {
+    print('isLocationServicesEnabled: $status');
+  }
 
 // This function is used to handle errors that occur in the service.
-void _onError(error) {
-  final errorCode = getErrorCodesFromError(error);
-  if (errorCode == null) {
-    print('Undefined error: $error');
-    return;
+  void _onError(error) {
+    final errorCode = getErrorCodesFromError(error);
+    if (errorCode == null) {
+      print('Undefined error: $error');
+      return;
+    }
+    print('ErrorCode: $errorCode');
   }
-  print('ErrorCode: $errorCode');
-}
 
-bool _checkIfValidMarker(LatLng tap, List<LatLng> vertices) {
-  int intersectCount = 0;
-  for (int j = 0; j < vertices.length - 1; j++) {
-    if (rayCastIntersect(tap, vertices[j], vertices[j + 1])) {
-      intersectCount++;
-    }
-  }
-  return ((intersectCount % 2) == 1); // odd = inside, even = outside;
-}
-
-bool rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
-  double aY = vertA.latitude;
-  double bY = vertB.latitude;
-  double aX = vertA.longitude;
-  double bX = vertB.longitude;
-  double pY = tap.latitude;
-  double pX = tap.longitude;
-
-  if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
-    return false; // a and b can't both be above or below pt.y, and a or
-    // b must be east of pt.x
-  }
-  return true;
-}
-
-Future<Null> getSharedPrefs() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  // Lampwatts = prefs.getString('deviceWatts').toString();
-  DeviceName = prefs.getString('deviceName').toString();
-  DeviceStatus = prefs.getString('deviceStatus').toString();
-  SelectedRegion = prefs.getString("SelectedRegion").toString();
-  SelectedZone = prefs.getString("SelectedZone").toString();
-  SelectedWard = prefs.getString("SelectedWard").toString();
-  timevalue = prefs.getString("devicetimeStamp").toString();
-  location = prefs.getString("location").toString();
-  geoFence = prefs.getString('geoFence').toString();
-  // version = prefs.getString("version").toString();
-  faultyStatus = prefs.getString("faultyStatus").toString();
-  prefs.setString('Maintenance', "Yes");
-  FirmwareVersion = prefs.getString("firmwareVersion").toString();
-  Lattitude = prefs.getString('deviceLatitude').toString();
-  Longitude = prefs.getString('deviceLongitude').toString();
-
-  setState(() {
-    // Lampwatts = Lampwatts;
-    DeviceName = DeviceName;
-    DeviceStatus = DeviceStatus;
-    SelectedRegion = SelectedRegion;
-    SelectedZone = SelectedZone;
-    SelectedWard = SelectedWard;
-    timevalue = timevalue;
-    location = location;
-    // version = version;
-    faultyStatus = faultyStatus;
-    FirmwareVersion = FirmwareVersion;
-    geoFence = geoFence;
-
-    Lattitude = Lattitude;
-    Longitude = Longitude;
-
-    if (timevalue != null) {
-      date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
-    }
-
-    if (SelectedRegion == "null") {
-      SelectedRegion = "Region";
-      SelectedZone = "Zone";
-      SelectedWard = "Ward";
-      faultyStatus = "0";
-    }
-
-    if (SelectedZone == "0" || SelectedZone == "null") {
-      SelectedZone = "Zone";
-    }
-
-    if (SelectedWard == "0" || SelectedWard == "null") {
-      SelectedWard = "Ward";
-    }
-
-    if (location == "0") {
-      location = location;
-    }
-  });
-}
-
-@override
-void initState() {
-  super.initState();
-  // Lampwatts = "";
-  DeviceName = "";
-  DeviceStatus = "";
-  getSharedPrefs();
-  WidgetsBinding.instance?.addPostFrameCallback((_) {
-    _polyGeofenceService.start();
-    _polyGeofenceService
-        .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
-    _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
-    _polyGeofenceService.addLocationServicesStatusChangeListener(
-        _onLocationServicesStatusChanged);
-    _polyGeofenceService.addStreamErrorListener(_onError);
-    _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
-  });
-  // _listenLocation();
-  // CallCoordinates(context);
-  // _listenLocation();
-  // }
-  CallGeoFenceListener(context);
-  setUpLogs();
-  // _listenLocation();
-}
-
-void setUpLogs() async {
-  await FlutterLogs.initLogs(
-      logLevelsEnabled: [
-        LogLevel.INFO,
-        LogLevel.WARNING,
-        LogLevel.ERROR,
-        LogLevel.SEVERE
-      ],
-      timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
-      directoryStructure: DirectoryStructure.FOR_DATE,
-      logTypesEnabled: [_myLogFileName],
-      logFileExtension: LogFileExtension.LOG,
-      logsWriteDirectoryName: "MyLogs",
-      logsExportDirectoryName: "MyLogs/Exported",
-      debugFileOperations: true,
-      isDebuggable: true);
-
-  // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
-  // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
-
-  // Logs Exported Callback
-  FlutterLogs.channel.setMethodCallHandler((call) async {
-    if (call.method == 'logsExported') {
-      // Contains file name of zip
-      // FlutterLogs.logInfo(
-      //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
-      setLogsStatus(
-          status: "logsExported: ${call.arguments.toString()}", append: true);
-
-      // Notify Future with value
-      _completer.complete(call.arguments.toString());
-    } else if (call.method == 'logsPrinted') {
-      // FlutterLogs.logInfo(
-      //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
-      setLogsStatus(
-          status: "logsPrinted: ${call.arguments.toString()}", append: true);
-    }
-  });
-}
-
-void setLogsStatus({String status = '', bool append = false}) {
-  setState(() {
-    logStatus = status;
-  });
-}
-
-Future<void> CallGeoFenceListener(BuildContext context) async {
-  var status = await Permission.location.status;
-  if (status.isGranted) {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var geoFence = prefs.getString('geoFence').toString();
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
-        _polyGeofenceService.start();
-        _polyGeofenceService.addPolyGeofenceStatusChangeListener(
-            _onPolyGeofenceStatusChanged);
-        _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
-        _polyGeofenceService.addLocationServicesStatusChangeListener(
-            _onLocationServicesStatusChanged);
-        _polyGeofenceService.addStreamErrorListener(_onError);
-        _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
-      });
-      if (geoFence == "true") {
-        CallCoordinates(context);
-        setState(() {
-          visibility = true;
-        });
-      } else {
-        visibility = true;
-        viewvisibility = false;
-        Fluttertoast.showToast(
-            msg: "GeoFence Availability is not found with this Ward",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
+  bool _checkIfValidMarker(LatLng tap, List<LatLng> vertices) {
+    int intersectCount = 0;
+    for (int j = 0; j < vertices.length - 1; j++) {
+      if (rayCastIntersect(tap, vertices[j], vertices[j + 1])) {
+        intersectCount++;
       }
-    } catch (e) {}
-  } else {
-    Fluttertoast.showToast(
-        msg: "Kindly Enable App Location Permission",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.white,
-        textColor: Colors.black,
-        fontSize: 16.0);
-    openAppSettings();
+    }
+    return ((intersectCount % 2) == 1); // odd = inside, even = outside;
   }
-}
 
-Future<void> CallCoordinates(context) async {
-  _polyGeofenceList[0].polygon.clear();
-  String data = await DefaultAssetBundle.of(context)
-      .loadString("assets/json/geofence.json");
-  final jsonResult = jsonDecode(data); //latest Dart
-  var coordinateCount =
-      jsonResult['features'][0]['geometry']['coordinates'][0].length;
-  var details;
-  for (int i = 0; i < coordinateCount; i++) {
-    var latter =
-    jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
-    var rlonger =
-    jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
-    // polygonad(LatLng(latter,rlonger));
-    _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
-    // details[new LatLng(latter,rlonger)];
+  bool rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
+    double aY = vertA.latitude;
+    double bY = vertB.latitude;
+    double aX = vertA.longitude;
+    double bX = vertB.longitude;
+    double pY = tap.latitude;
+    double pX = tap.longitude;
+
+    if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
+      return false; // a and b can't both be above or below pt.y, and a or
+      // b must be east of pt.x
+    }
+    return true;
   }
-}
 
-void toggle() {
-  setState(() => _isOn = !_isOn);
-}
+  Future<Null> getSharedPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Lampwatts = prefs.getString('deviceWatts').toString();
+    DeviceName = prefs.getString('deviceName').toString();
+    DeviceStatus = prefs.getString('deviceStatus').toString();
+    SelectedRegion = prefs.getString("SelectedRegion").toString();
+    SelectedZone = prefs.getString("SelectedZone").toString();
+    SelectedWard = prefs.getString("SelectedWard").toString();
+    timevalue = prefs.getString("devicetimeStamp").toString();
+    location = prefs.getString("location").toString();
+    geoFence = prefs.getString('geoFence').toString();
+    // version = prefs.getString("version").toString();
+    faultyStatus = prefs.getString("faultyStatus").toString();
+    prefs.setString('Maintenance', "Yes");
+    FirmwareVersion = prefs.getString("firmwareVersion").toString();
+    Lattitude = prefs.getString('deviceLatitude').toString();
+    Longitude = prefs.getString('deviceLongitude').toString();
 
-// Future<void> _listenLocation() async {
-//   // pr.show();
-//   _locationSubscription =
-//       locations.onLocationChanged.handleError((dynamic err) {
-//     if (err is PlatformException) {
-//       setState(() {
-//         _error = err.code;
-//       });
-//     }
-//     _locationSubscription?.cancel();
-//     setState(() {
-//       _locationSubscription = null;
-//     });
-//   }).listen((LocationData currentLocation) {
-//     setState(() async {
-//       _error = null;
-//       _location = currentLocation;
-//       _latt!.add(_location!.latitude!);
-//       lattitude = _location!.latitude!;
-//       longitude = _location!.longitude!;
-//       accuracy = _location!.accuracy!;
-//
-//       // if (accuracy <= 7) {
-//       //   _locationSubscription?.cancel();
-//       setState(() {
-//         viewvisibility = false;
-//         // _locationSubscription = null;
-//       });
-//       accuvalue = accuracy.toString().split(".");
-//       // distanceCalculation(context);
-//
-//       Geolocator geolocator = new Geolocator();
-//       var difference = await geolocator.distanceBetween(
-//           double.parse(Lattitude),
-//           double.parse(Longitude),
-//           _location!.latitude!,
-//           _location!.longitude!);
-//       if (difference <= 5.0) {
-//         visibility = true;
-//       } else {
-//         visibility = false;
-//       }
-//       // }
-//     });
-//   });
-// }
+    setState(() {
+      // Lampwatts = Lampwatts;
+      DeviceName = DeviceName;
+      DeviceStatus = DeviceStatus;
+      SelectedRegion = SelectedRegion;
+      SelectedZone = SelectedZone;
+      SelectedWard = SelectedWard;
+      timevalue = timevalue;
+      location = location;
+      // version = version;
+      faultyStatus = faultyStatus;
+      FirmwareVersion = FirmwareVersion;
+      geoFence = geoFence;
 
-BuildContext get context => super.context;
+      Lattitude = Lattitude;
+      Longitude = Longitude;
 
-final List<Widget> _widgetOptions = <Widget>[
-  device_count_screen(),
-  device_list_screen()
-];
+      if (timevalue != null) {
+        date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
+      }
 
-@override
-Widget build(BuildContext context) {
-  Size size = MediaQuery
-      .of(context)
-      .size;
-  double width = MediaQuery
-      .of(context)
-      .size
-      .width;
+      if (SelectedRegion == "null") {
+        SelectedRegion = "Region";
+        SelectedZone = "Zone";
+        SelectedWard = "Ward";
+        faultyStatus = "0";
+      }
 
-  pr = ProgressDialog(context,
-      type: ProgressDialogType.Normal, isDismissible: false);
-  pr.style(
-    message: 'Please wait ..',
-    borderRadius: 20.0,
-    backgroundColor: Colors.lightBlueAccent,
-    elevation: 10.0,
-    messageTextStyle: const TextStyle(
-        color: Colors.white,
-        fontFamily: "Montserrat",
-        fontSize: 19.0,
-        fontWeight: FontWeight.w600),
-    progressWidget: const CircularProgressIndicator(
-        backgroundColor: Colors.lightBlueAccent,
-        valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-        strokeWidth: 3.0),
-  );
+      if (SelectedZone == "0" || SelectedZone == "null") {
+        SelectedZone = "Zone";
+      }
 
-  return WillPopScope(
-    onWillPop: () async {
-      callPolygonStop();
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
-      return true;
-    },
-    child: Scaffold(
-      resizeToAvoidBottomInset: false,
-      extendBody: true,
-      body: Stack(
-        children: [
-          _widgetOptions.elementAt(_selectedIndex),
-          Align(
-            alignment: FractionalOffset.bottomRight,
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 250),
-              //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
-              height: clickedCentreFAB
-                  ? MediaQuery
-                  .of(context)
-                  .size
-                  .height
-                  : 10.0,
-              width: clickedCentreFAB
-                  ? MediaQuery
-                  .of(context)
-                  .size
-                  .height
-                  : 10.0,
-              decoration: BoxDecoration(
-                  borderRadius:
-                  BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
-                  color: Colors.white),
+      if (SelectedWard == "0" || SelectedWard == "null") {
+        SelectedWard = "Ward";
+      }
+
+      if (location == "0") {
+        location = location;
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Lampwatts = "";
+    DeviceName = "";
+    DeviceStatus = "";
+    getSharedPrefs();
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+    });
+
+    CallGeoFenceListener(context);
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    var status = await Permission.location.status;
+    if (status.isGranted) {
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        var geoFence = prefs.getString('geoFence').toString();
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          _polyGeofenceService.start();
+          _polyGeofenceService.addPolyGeofenceStatusChangeListener(
+              _onPolyGeofenceStatusChanged);
+          _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+          _polyGeofenceService.addLocationServicesStatusChangeListener(
+              _onLocationServicesStatusChanged);
+          _polyGeofenceService.addStreamErrorListener(_onError);
+          _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+        });
+        if (geoFence == "true") {
+          CallCoordinates(context);
+          setState(() {
+            visibility = true;
+          });
+        } else {
+          visibility = true;
+          viewvisibility = false;
+          Fluttertoast.showToast(
+              msg: "GeoFence Availability is not found with this Ward",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+        }
+      } catch (e) {}
+    } else {
+      Permission.locationAlways.request();
+    }
+  }
+
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      // polygonad(LatLng(latter,rlonger));
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+      // details[new LatLng(latter,rlonger)];
+    }
+  }
+
+  void toggle() {
+    setState(() => _isOn = !_isOn);
+  }
+
+  BuildContext get context => super.context;
+
+  final List<Widget> _widgetOptions = <Widget>[
+    device_count_screen(),
+    device_list_screen()
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    double width = MediaQuery.of(context).size.width;
+
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(
+      message: 'Please wait ..',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
+    return WillPopScope(
+      onWillPop: () async {
+        callPolygonStop();
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+        return true;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
+        body: Stack(
+          children: [
+            _widgetOptions.elementAt(_selectedIndex),
+            Align(
+              alignment: FractionalOffset.bottomRight,
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 250),
+                //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
+                height: clickedCentreFAB
+                    ? MediaQuery.of(context).size.height
+                    : 10.0,
+                width: clickedCentreFAB
+                    ? MediaQuery.of(context).size.height
+                    : 10.0,
+                decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                    color: Colors.white),
+              ),
             ),
-          ),
-          Container(
-            color: thbDblue,
-            child: Column(
-              children: [
-                Container(
-                  height: 100,
-                  decoration: const BoxDecoration(
-                      color: thbDblue,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(0.0),
-                          topRight: Radius.circular(0.0),
-                          bottomLeft: Radius.circular(0.0),
-                          bottomRight: Radius.circular(0.0))),
-                  child: Stack(
-                    children: [
-                      Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Text('GATEWAY Maintanance',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                fontSize: 20.0,
-                                fontFamily: "Montserrat",
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                      ),
-                      Positioned(
-                        right: 10,
-                        top: 20,
-                        bottom: 0,
-                        child: IconButton(
-                          color: Colors.red,
-                          icon: Icon(
-                            Icons.logout_outlined,
-                            size: 35,
-                          ),
-                          onPressed: () {
-                            callLogoutoption(context);
-                          },
+            Container(
+              color: thbDblue,
+              child: Column(
+                children: [
+                  Container(
+                    height: 100,
+                    decoration: const BoxDecoration(
+                        color: thbDblue,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(0.0),
+                            topRight: Radius.circular(0.0),
+                            bottomLeft: Radius.circular(0.0),
+                            bottomRight: Radius.circular(0.0))),
+                    child: Stack(
+                      children: [
+                        Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: Text('GATEWAY Maintanance',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 20.0,
+                                  fontFamily: "Montserrat",
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white)),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          right: 10,
+                          top: 20,
+                          bottom: 0,
+                          child: IconButton(
+                            color: Colors.red,
+                            icon: Icon(
+                              Icons.logout_outlined,
+                              size: 35,
+                            ),
+                            onPressed: () {
+                              callLogoutoption(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(35.0),
-                              topRight: Radius.circular(35.0),
-                              bottomLeft: Radius.circular(0.0),
-                              bottomRight: Radius.circular(0.0))),
-                      child: ListView(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          children: <Widget>[
-                            SizedBox(height: 5),
-                            Wrap(
-                                spacing: 8.0,
-                                // gap between adjacent chips
-                                runSpacing: 4.0,
-                                // gap between lines
-                                direction: Axis.horizontal,
-                                // main axis (rows or columns)
-                                children: <Widget>[
-                                  Container(
-                                      child: Padding(
-                                        padding: EdgeInsets.fromLTRB(
-                                            0, 10, 0, 0),
-                                        child: Row(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              Align(
-                                                alignment: Alignment.center,
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 5.0),
-                                                  child: Point(
-                                                    triangleHeight: 25.0,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        Navigator.of(context)
-                                                            .push(
-                                                            MaterialPageRoute(
-                                                                builder: (
-                                                                    BuildContext
-                                                                    context) =>
-                                                                    ward_li_screen()));
-                                                        setState(() {});
-                                                      },
-                                                      child: Container(
-                                                        color: thbDblue,
-                                                        height: 40.0,
-                                                        child: Center(
-                                                          child: Text(
-                                                              '  $SelectedRegion  ',
-                                                              style: const TextStyle(
-                                                                  fontSize: 16.0,
-                                                                  fontFamily:
-                                                                  "Montserrat",
-                                                                  fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                                  color: Colors
-                                                                      .white)),
-                                                        ),
-                                                      ),
-                                                    ),
+                  Expanded(
+                      child: Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(35.0),
+                            topRight: Radius.circular(35.0),
+                            bottomLeft: Radius.circular(0.0),
+                            bottomRight: Radius.circular(0.0))),
+                    child: ListView(
+                        padding: EdgeInsets.only(left: 10, right: 10),
+                        children: <Widget>[
+                          SizedBox(height: 5),
+                          Wrap(
+                              spacing: 8.0,
+                              // gap between adjacent chips
+                              runSpacing: 4.0,
+                              // gap between lines
+                              direction: Axis.horizontal,
+                              // main axis (rows or columns)
+                              children: <Widget>[
+                                Container(
+                                    child: Padding(
+                                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(left: 5.0),
+                                            child: Point(
+                                              triangleHeight: 25.0,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              ward_li_screen()));
+                                                  setState(() {});
+                                                },
+                                                child: Container(
+                                                  color: thbDblue,
+                                                  height: 40.0,
+                                                  child: Center(
+                                                    child: Text(
+                                                        '  $SelectedRegion  ',
+                                                        style: const TextStyle(
+                                                            fontSize: 16.0,
+                                                            fontFamily:
+                                                                "Montserrat",
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color:
+                                                                Colors.white)),
                                                   ),
                                                 ),
                                               ),
-                                              Align(
-                                                alignment: Alignment.center,
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 5.0),
-                                                  child: Point(
-                                                    triangleHeight: 25.0,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        Navigator.of(context)
-                                                            .push(
-                                                            MaterialPageRoute(
-                                                                builder: (
-                                                                    BuildContext
-                                                                    context) =>
-                                                                    zone_li_screen()));
-                                                        setState(() {});
-                                                      },
-                                                      child: Container(
-                                                        color: thbDblue,
-                                                        height: 40.0,
-                                                        child: Center(
-                                                          child: Text(
-                                                              '  $SelectedZone  ',
-                                                              style: const TextStyle(
-                                                                  fontSize: 16.0,
-                                                                  fontFamily:
-                                                                  "Montserrat",
-                                                                  fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                                  color: Colors
-                                                                      .white)),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Align(
-                                                alignment: Alignment.center,
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                      left: 5.0),
-                                                  child: Point(
-                                                    triangleHeight: 25.0,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        Navigator.of(context)
-                                                            .push(
-                                                            MaterialPageRoute(
-                                                                builder: (
-                                                                    BuildContext
-                                                                    context) =>
-                                                                    ward_li_screen()));
-                                                        setState(() {});
-                                                      },
-                                                      child: Container(
-                                                        color: thbDblue,
-                                                        height: 40.0,
-                                                        child: Center(
-                                                          child: Text(
-                                                              '  $SelectedWard  ',
-                                                              style: const TextStyle(
-                                                                  fontSize: 16.0,
-                                                                  fontFamily:
-                                                                  "Montserrat",
-                                                                  fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                                  color: Colors
-                                                                      .white)),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ]),
-                                      )),
-                                  const SizedBox(
-                                    height: 15,
-                                  ),
-
-                                  Wrap(
-                                      spacing: 8.0,
-                                      // gap between adjacent chips
-                                      runSpacing: 4.0,
-                                      // gap between lines
-                                      direction: Axis.horizontal,
-                                      // main axis (rows or columns)
-                                      children: <Widget>[
-                                        Container(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              5, 10, 2, 0),
-                                          decoration: const BoxDecoration(
-                                              color: thbDblue,
-                                              borderRadius:
-                                              BorderRadius.all(
-                                                  Radius.circular(35.0))),
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: <Widget>[
-                                                  Container(
-                                                    padding: const EdgeInsets
-                                                        .fromLTRB(
-                                                        5, 0, 0, 0),
-                                                    width: width / 3,
-                                                    height: 45,
-                                                    alignment: Alignment
-                                                        .centerLeft,
-                                                    decoration: const BoxDecoration(
-                                                        color: Colors.white,
-                                                        borderRadius: BorderRadius
-                                                            .all(
-                                                            Radius.circular(
-                                                                15.0))),
-                                                    child: Center(
-                                                      child: Text(
-                                                        '$DeviceName',
-                                                        style: TextStyle(
-                                                            color: Colors
-                                                                .deepOrange,
-                                                            fontSize: 26,
-                                                            fontFamily: "Montserrat",
-                                                            fontWeight: FontWeight
-                                                                .bold),
-                                                      ),
-                                                    ),
-                                                  ), //Container
-                                                  SizedBox(
-                                                    width: 15,
-                                                  ), //SizedBox
-                                                  Container(
-                                                      width: width / 2.05,
-                                                      height: 25,
-                                                      child: Text(
-                                                        "$location",
-                                                        style: const TextStyle(
-                                                            fontSize: 18,
-                                                            fontFamily: "Montserrat",
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight
-                                                                .bold),
-                                                      ) //BoxDecoration
-                                                  ) //Container
-                                                ], //<Widget>[]
-                                                mainAxisAlignment: MainAxisAlignment
-                                                    .center,
-                                              ),
-                                              const SizedBox(
-                                                height: 20,
-                                              ),
-                                              // Row(
-                                              //   children: <Widget>[
-                                              //     Container(
-                                              //         width: width / 3,
-                                              //         height: 25,
-                                              //         child: Text(
-                                              //           "Lamp watts",
-                                              //           style: const TextStyle(
-                                              //               fontSize: 16,
-                                              //               fontFamily: "Montserrat",
-                                              //               color: Colors.white),
-                                              //         )), //Container
-                                              //     SizedBox(
-                                              //       width: 5,
-                                              //     ), //SizedBox
-                                              //     Container(
-                                              //         width: width / 2.05,
-                                              //         height: 25,
-                                              //         child: Text(
-                                              //           "$Lampwatts",
-                                              //           style: const TextStyle(
-                                              //               fontSize: 18,
-                                              //               color: Colors.white,
-                                              //               fontFamily: "Montserrat",
-                                              //               fontWeight: FontWeight.bold),
-                                              //         ) //BoxDecoration
-                                              //         ) //Container
-                                              //   ], //<Widget>[]
-                                              //   mainAxisAlignment: MainAxisAlignment.center,
-                                              // ),
-                                              const SizedBox(
-                                                height: 20,
-                                              ),
-                                              Row(
-                                                children: <Widget>[
-                                                  Container(
-                                                      width: width / 3,
-                                                      height: 25,
-                                                      child: Text(
-                                                        "Last Comm @ ",
-                                                        style: const TextStyle(
-                                                            fontSize: 16,
-                                                            color: Colors.white,
-                                                            fontFamily: "Montserrat"),
-                                                      )), //Container
-                                                  SizedBox(
-                                                    width: 5,
-                                                  ), //SizedBox
-                                                  Container(
-                                                      width: width / 2.05,
-                                                      height: 25,
-                                                      child: Text(
-                                                        "$date",
-                                                        style: const TextStyle(
-                                                            fontSize: 18,
-                                                            color: Colors.white,
-                                                            fontFamily: "Montserrat",
-                                                            fontWeight: FontWeight
-                                                                .bold),
-                                                      ) //BoxDecoration
-                                                  ) //Container
-                                                ], //<Widget>[]
-                                                mainAxisAlignment: MainAxisAlignment
-                                                    .center,
-                                              ),
-                                              const SizedBox(
-                                                height: 20,
-                                              ),
-                                              // Column(
-                                              //   children: [
-                                              //     Container(
-                                              //       alignment: Alignment.topLeft,
-                                              //       padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
-                                              //       height: 40,
-                                              //       child: Text(
-                                              //         'Last Comm @',
-                                              //         style: TextStyle(
-                                              //             fontSize: 18, fontFamily: "Montserrat"),
-                                              //       ),
-                                              //     ),
-                                              //     Container(
-                                              //       padding: const EdgeInsets.all(8),
-                                              //       height: 40,
-                                              //       child: Text(
-                                              //         '$date',
-                                              //         style: TextStyle(
-                                              //             fontSize: 16,
-                                              //             fontWeight: FontWeight.bold,
-                                              //             fontFamily: "Montserrat"),
-                                              //       ),
-                                              //     ),
-                                              //     // Expanded(
-                                              //     //   child: Container(
-                                              //     //     alignment: Alignment.centerRight,
-                                              //     //     padding: EdgeInsets.all(6),
-                                              //     //     child: IconButton(
-                                              //     //       icon: const Icon(
-                                              //     //         Icons.arrow_drop_down,
-                                              //     //       ),
-                                              //     //       iconSize: 50,
-                                              //     //       color: Colors.black,
-                                              //     //       splashColor: Colors.purple,
-                                              //     //       onPressed: () {
-                                              //     //         // showDialog(context, date);
-                                              //     //       },
-                                              //     //     ),
-                                              //     //   ),
-                                              //     // ),
-                                              //   ],
-                                              // ),
-                                            ],
+                                            ),
                                           ),
                                         ),
-                                        // const SizedBox(
-                                        //   height: 15,
-                                        // ),
-                                        // Visibility(
-                                        //   visible: viewvisibility,
-                                        //   child: Text(
-                                        //       'Your Not in adequate Range to Access & Controll of Devices',
-                                        //       textAlign: TextAlign.center,
-                                        //       style: TextStyle(
-                                        //           fontSize: 22,
-                                        //           color: Colors.redAccent,
-                                        //           fontFamily: "Montserrat")),
-                                        // ),
-                                        const SizedBox(
-                                          height: 15,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment
-                                              .spaceAround,
-                                          children: [
-                                            const Expanded(flex: 2,
-                                                child: GwToggleButtonn()),
-                                            const SizedBox(
-                                              width: 15,
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(left: 5.0),
+                                            child: Point(
+                                              triangleHeight: 25.0,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              zone_li_screen()));
+                                                  setState(() {});
+                                                },
+                                                child: Container(
+                                                  color: thbDblue,
+                                                  height: 40.0,
+                                                  child: Center(
+                                                    child: Text(
+                                                        '  $SelectedZone  ',
+                                                        style: const TextStyle(
+                                                            fontSize: 16.0,
+                                                            fontFamily:
+                                                                "Montserrat",
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color:
+                                                                Colors.white)),
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                            Expanded(
-                                                flex: 2,
-                                                child: InkWell(
-                                                  child: Container(
-                                                    height: 90,
-                                                    decoration: const BoxDecoration(
-                                                        color: Colors.orange,
-                                                        borderRadius: BorderRadius
-                                                            .all(
-                                                            Radius.circular(
-                                                                50.0))),
-                                                    child: const Center(
-                                                      child: Text('GET LIVE',
-                                                          style: TextStyle(
-                                                              fontSize: 18,
-                                                              color: Colors
-                                                                  .white,
-                                                              fontFamily: "Montserrat")),
+                                          ),
+                                        ),
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(left: 5.0),
+                                            child: Point(
+                                              triangleHeight: 25.0,
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              ward_li_screen()));
+                                                  setState(() {});
+                                                },
+                                                child: Container(
+                                                  color: thbDblue,
+                                                  height: 40.0,
+                                                  child: Center(
+                                                    child: Text(
+                                                        '  $SelectedWard  ',
+                                                        style: const TextStyle(
+                                                            fontSize: 16.0,
+                                                            fontFamily:
+                                                                "Montserrat",
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color:
+                                                                Colors.white)),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ]),
+                                )),
+                                const SizedBox(
+                                  height: 15,
+                                ),
+                                Wrap(
+                                    spacing: 8.0,
+                                    // gap between adjacent chips
+                                    runSpacing: 4.0,
+                                    // gap between lines
+                                    direction: Axis.horizontal,
+                                    // main axis (rows or columns)
+                                    children: <Widget>[
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            5, 10, 2, 0),
+                                        decoration: const BoxDecoration(
+                                            color: thbDblue,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(35.0))),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              children: <Widget>[
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.fromLTRB(
+                                                          5, 0, 0, 0),
+                                                  width: width / 3,
+                                                  height: 45,
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  decoration: const BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  15.0))),
+                                                  child: Center(
+                                                    child: Text(
+                                                      '$DeviceName',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.deepOrange,
+                                                          fontSize: 26,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                   ),
-                                                  onTap: () {
-                                                    if (visibility == true) {
-                                                      if ('$DeviceStatus' !=
-                                                          "false") {
-                                                        getLiveRPCCall(context);
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg: "Device in Offline Mode",
-                                                            toastLength: Toast
-                                                                .LENGTH_SHORT,
-                                                            gravity: ToastGravity
-                                                                .BOTTOM,
-                                                            timeInSecForIosWeb: 1);
-                                                      }
-                                                    } else {
-                                                      _show(context, true);
-                                                    }
-                                                  },
-                                                )),
+                                                ), //Container
+                                                SizedBox(
+                                                  width: 15,
+                                                ), //SizedBox
+                                                Container(
+                                                    width: width / 2.05,
+                                                    height: 25,
+                                                    child: Text(
+                                                      "$location",
+                                                      style: const TextStyle(
+                                                          fontSize: 18,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ) //BoxDecoration
+                                                    ) //Container
+                                              ], //<Widget>[]
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                            ),
+                                            const SizedBox(
+                                              height: 20,
+                                            ),
+                                            const SizedBox(
+                                              height: 20,
+                                            ),
+                                            Row(
+                                              children: <Widget>[
+                                                Container(
+                                                    width: width / 3,
+                                                    height: 25,
+                                                    child: Text(
+                                                      "Last Comm @ ",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          color: Colors.white,
+                                                          fontFamily:
+                                                              "Montserrat"),
+                                                    )), //Container
+                                                SizedBox(
+                                                  width: 5,
+                                                ), //SizedBox
+                                                Container(
+                                                    width: width / 2.05,
+                                                    height: 25,
+                                                    child: Text(
+                                                      "$date",
+                                                      style: const TextStyle(
+                                                          fontSize: 18,
+                                                          color: Colors.white,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ) //BoxDecoration
+                                                    ) //Container
+                                              ], //<Widget>[]
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                            ),
+                                            const SizedBox(
+                                              height: 20,
+                                            ),
                                           ],
                                         ),
-                                        const SizedBox(
-                                          height: 15,
-                                        ),
-                                        // Row(
-                                        //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                        //   children: [
-                                        //     Expanded(
-                                        //         flex: 2,
-                                        //         child: InkWell(
-                                        //           child: Container(
-                                        //             height: 90,
-                                        //             decoration: const BoxDecoration(
-                                        //                 color: Colors.lightBlue,
-                                        //                 borderRadius: BorderRadius.all(
-                                        //                     Radius.circular(50.0))),
-                                        //             child: const Center(
-                                        //               child: Text('MCB TRIP',
-                                        //                   style: TextStyle(
-                                        //                       fontSize: 18,
-                                        //                       color: Colors.white,
-                                        //                       fontFamily: "Montserrat")),
-                                        //             ),
-                                        //           ),
-                                        //           onTap: () {
-                                        //             if ('$DeviceStatus' != "false") {
-                                        //               callMCBTrip(context);
-                                        //             } else {
-                                        //               Fluttertoast.showToast(
-                                        //                   msg: "Device in Offline Mode",
-                                        //                   toastLength: Toast.LENGTH_SHORT,
-                                        //                   gravity: ToastGravity.BOTTOM,
-                                        //                   timeInSecForIosWeb: 1);
-                                        //             }
-                                        //           },
-                                        //         )),
-                                        //     const SizedBox(
-                                        //       width: 15,
-                                        //     ),
-                                        //     // Expanded(
-                                        //     //     flex: 2,
-                                        //     //     child: InkWell(
-                                        //     //       child: Container(
-                                        //     //         height: 90,
-                                        //     //         decoration: const BoxDecoration(
-                                        //     //             color: Colors.lightGreen,
-                                        //     //             borderRadius: BorderRadius.all(
-                                        //     //                 Radius.circular(50.0))),
-                                        //     //         child: const Center(
-                                        //     //           child: Text('MCB CLEAR',
-                                        //     //               style: TextStyle(
-                                        //     //                   fontSize: 18,
-                                        //     //                   color: Colors.white,
-                                        //     //                   fontFamily: "Montserrat")),
-                                        //     //         ),
-                                        //     //       ),
-                                        //     //       onTap: () {},
-                                        //     //     )),
-                                        //   ],
-                                        // ),
-                                        const SizedBox(
-                                          height: 15,
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              5, 5, 5, 5),
-                                          decoration: const BoxDecoration(
-                                              color: Colors.black12,
-                                              borderRadius:
-                                              BorderRadius.all(
-                                                  Radius.circular(18.0))),
-                                          child: Column(
-                                            children: [
-                                              const SizedBox(
-                                                height: 15,
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                                children: [
-                                                  Expanded(
-                                                      flex: 2,
-                                                      child: InkWell(
+                                      ),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          const Expanded(
+                                              flex: 2,
+                                              child: GwToggleButtonn()),
+                                          const SizedBox(
+                                            width: 15,
+                                          ),
+                                          Expanded(
+                                              flex: 2,
+                                              child: InkWell(
+                                                child: Container(
+                                                  height: 90,
+                                                  decoration: const BoxDecoration(
+                                                      color: Colors.orange,
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0))),
+                                                  child: const Center(
+                                                    child: Text('GET LIVE',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            color: Colors.white,
+                                                            fontFamily:
+                                                                "Montserrat")),
+                                                  ),
+                                                ),
+                                                onTap: () {
+                                                  if (visibility == true) {
+                                                    if ('$DeviceStatus' !=
+                                                        "false") {
+                                                      getLiveRPCCall(context);
+                                                    } else {
+                                                      Fluttertoast.showToast(
+                                                          msg:
+                                                              "Device in Offline Mode",
+                                                          toastLength: Toast
+                                                              .LENGTH_SHORT,
+                                                          gravity: ToastGravity
+                                                              .BOTTOM,
+                                                          timeInSecForIosWeb:
+                                                              1);
+                                                    }
+                                                  } else {
+                                                    _show(context, true);
+                                                  }
+                                                },
+                                              )),
+                                        ],
+                                      ),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            5, 5, 5, 5),
+                                        decoration: const BoxDecoration(
+                                            color: Colors.black12,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(18.0))),
+                                        child: Column(
+                                          children: [
+                                            const SizedBox(
+                                              height: 15,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                              children: [
+                                                Expanded(
+                                                    flex: 2,
+                                                    child: InkWell(
+                                                      child: Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        height: 90,
+                                                        decoration: const BoxDecoration(
+                                                            color: Colors
+                                                                .deepOrange,
+                                                            borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        50.0))),
+                                                        child: const Text(
+                                                            'REMOVE',
+                                                            style: TextStyle(
+                                                                fontSize: 18,
+                                                                color: Colors
+                                                                    .white,
+                                                                fontFamily:
+                                                                    "Montserrat")),
+                                                      ),
+                                                      onTap: () {
+                                                        if (visibility ==
+                                                            true) {
+                                                          removeCCMS(context);
+                                                        } else {
+                                                          _show(context, true);
+                                                        }
+                                                      },
+                                                    )),
+                                                const SizedBox(
+                                                  width: 15,
+                                                ),
+                                                Expanded(
+                                                    flex: 2,
+                                                    child: InkWell(
                                                         child: Container(
-                                                          alignment: Alignment
-                                                              .center,
+                                                          alignment:
+                                                              Alignment.center,
                                                           height: 90,
                                                           decoration: const BoxDecoration(
-                                                              color: Colors
-                                                                  .deepOrange,
-                                                              borderRadius:
-                                                              BorderRadius.all(
-                                                                  Radius
+                                                              color:
+                                                                  Colors.green,
+                                                              borderRadius: BorderRadius
+                                                                  .all(Radius
                                                                       .circular(
-                                                                      50.0))),
+                                                                          50.0))),
                                                           child: const Text(
-                                                              'REMOVE',
+                                                              'REPLACE',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
                                                               style: TextStyle(
                                                                   fontSize: 18,
                                                                   color: Colors
                                                                       .white,
                                                                   fontFamily:
-                                                                  "Montserrat")),
+                                                                      "Montserrat")),
                                                         ),
                                                         onTap: () {
                                                           if (visibility ==
                                                               true) {
-                                                            removeCCMS(context);
+                                                            replaceCCMS(
+                                                                context);
                                                           } else {
                                                             _show(
                                                                 context, true);
                                                           }
-                                                        },
-                                                      )),
-                                                  const SizedBox(
-                                                    width: 15,
-                                                  ),
-                                                  Expanded(
-                                                      flex: 2,
-                                                      child: InkWell(
-                                                          child: Container(
-                                                            alignment: Alignment
-                                                                .center,
-                                                            height: 90,
-                                                            decoration: const BoxDecoration(
-                                                                color: Colors
-                                                                    .green,
-                                                                borderRadius:
-                                                                BorderRadius
-                                                                    .all(
-                                                                    Radius
-                                                                        .circular(
-                                                                        50.0))),
-                                                            child: const Text(
-                                                                'REPLACE',
-                                                                textAlign: TextAlign
-                                                                    .center,
-                                                                style: TextStyle(
-                                                                    fontSize: 18,
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontFamily:
-                                                                    "Montserrat")),
-                                                          ),
-                                                          onTap: () {
-                                                            if (visibility ==
-                                                                true) {
-                                                              replaceCCMS(
-                                                                  context);
-                                                            } else {
-                                                              _show(context,
-                                                                  true);
-                                                            }
-                                                          })),
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 15,
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      ]),
-                                ]),
-                          ]),
-                    ))
+                                                        })),
+                                              ],
+                                            ),
+                                            const SizedBox(
+                                              height: 15,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    ]),
+                              ]),
+                        ]),
+                  ))
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _show(context, visibility) {
+    showDialog(
+        context: context,
+        barrierColor: Colors.transparent,
+        builder: (BuildContext ctx) {
+          return Visibility(
+            visible: visibility,
+            child: AlertDialog(
+              elevation: 10,
+              title: const Text('Luminator Location Alert'),
+              content: const Text(
+                  'Your are not in the Nearest Range to Controll or Access the Device'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Close'))
               ],
             ),
-          ),
-        ],
-      ),
-    ),
-  );
+          );
+        });
+  }
 }
-
-void _show(context, visibility) {
-  showDialog(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext ctx) {
-        return Visibility(
-          visible: visibility,
-          child: AlertDialog(
-            elevation: 10,
-            title: const Text('Luminator Location Alert'),
-            content: const Text(
-                'Your are not in the Nearest Range to Controll or Access the Device'),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Close'))
-            ],
-          ),
-        );
-      });
-}}
 
 Future<void> callONRPCCall(context) async {
   Utility.isConnected().then((value) async {
@@ -1412,15 +1107,12 @@ Future<void> callONRPCCall(context) async {
               textColor: Colors.black,
               fontSize: 16.0);
           pr.hide();
-          // Navigator.pop(context);
         } else {
           pr.hide();
-          // Navigator.pop(context);
           calltoast("Unable to Process, Please try again");
         }
       } catch (e) {
         pr.hide();
-        // Navigator.pop(context);
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -1470,7 +1162,6 @@ Future<void> callOFFRPCCall(context) async {
           "method": "ctrl",
           "params": {"lamp": 0}
         };
-        // final parsedJson = jsonDecode(jsonData);
 
         var response = await tbClient
             .getDeviceService()
@@ -1542,7 +1233,6 @@ Future<void> callMCBTrip(context) async {
 
         jsonData = {"method": "clr", "params": "8"};
 
-        // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
             .getDeviceService()
             .handleOneWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
@@ -1558,7 +1248,7 @@ Future<void> callMCBTrip(context) async {
         var responsee = await tbClient
             .getDeviceService()
             .handleOneWayDeviceRPCRequest(
-            DeviceIdDetails!.toString(), jsonDatat)
+                DeviceIdDetails!.toString(), jsonDatat)
             .timeout(const Duration(minutes: 5));
 
         pr.hide();
@@ -1688,7 +1378,7 @@ Future<void> replaceCCMS(context) async {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-              (route) => true).then((value) async {
+          (route) => true).then((value) async {
         if (value != null) {
           if (OlddeviceName.toString() != value.toString()) {
             SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -2528,73 +2218,68 @@ Future<ThingsboardError> toThingsboardError(error, context,
 Future<void> callLogoutoption(BuildContext context) async {
   final result = await showDialog(
     context: context,
-    builder: (ctx) =>
-        AlertDialog(
-          insetPadding: EdgeInsets.symmetric(horizontal: 10),
-          backgroundColor: Colors.white,
-          title: Text("Luminator",
-              style: const TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: liorange)),
-          content: Text("Are you sure you want to Logout?",
+    builder: (ctx) => AlertDialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: 10),
+      backgroundColor: Colors.white,
+      title: Text("Luminator",
+          style: const TextStyle(
+              fontSize: 25.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: liorange)),
+      content: Text("Are you sure you want to Logout?",
+          style: const TextStyle(
+              fontSize: 18.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.bold,
+              color: Colors.black)),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(ctx).pop();
+          },
+          child: Text("NO",
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
-                  color: Colors.black)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text("NO",
-                  style: const TextStyle(
-                      fontSize: 18.0,
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green)),
-            ),
-            TextButton(
-              child: Text('YES',
-                  style: const TextStyle(
-                      fontSize: 18.0,
-                      fontFamily: "Montserrat",
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red)),
-              onPressed: () async {
-                // DBHelper dbhelper = new DBHelper();
-                // dbhelper.region_delete();
-                // dbhelper.zone_delete();
-                // dbhelper.ward_delete();
-
-                DBHelper dbhelper = new DBHelper();
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-
-                var SelectedRegion = prefs.getString("SelectedRegion")
-                    .toString();
-                List<Region> details = await dbhelper.region_getDetails();
-
-                for (int i = 0; i < details.length; i++) {
-                  dbhelper.delete(details
-                      .elementAt(i)
-                      .id!
-                      .toInt());
-                }
-                dbhelper.zone_delete(SelectedRegion);
-                dbhelper.ward_delete(SelectedRegion);
-
-                SharedPreferences preferences =
-                await SharedPreferences.getInstance();
-                await preferences.clear();
-                SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => splash_screen()));
-              },
-            ),
-          ],
+                  color: Colors.green)),
         ),
+        TextButton(
+          child: Text('YES',
+              style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red)),
+          onPressed: () async {
+            // DBHelper dbhelper = new DBHelper();
+            // dbhelper.region_delete();
+            // dbhelper.zone_delete();
+            // dbhelper.ward_delete();
+
+            DBHelper dbhelper = new DBHelper();
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+
+            var SelectedRegion = prefs.getString("SelectedRegion").toString();
+            List<Region> details = await dbhelper.region_getDetails();
+
+            for (int i = 0; i < details.length; i++) {
+              dbhelper.delete(details.elementAt(i).id!.toInt());
+            }
+            dbhelper.zone_delete(SelectedRegion);
+            dbhelper.ward_delete(SelectedRegion);
+
+            SharedPreferences preferences =
+                await SharedPreferences.getInstance();
+            await preferences.clear();
+            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => splash_screen()));
+          },
+        ),
+      ],
+    ),
   );
 }

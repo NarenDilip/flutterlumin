@@ -30,7 +30,6 @@ class region_list_screen extends StatefulWidget {
 }
 
 class region_list_screen_state extends State<region_list_screen> {
-  // return Scaffold(body: regionListview());
   List<String>? _allUsers = [];
   List<String>? _foundUsers = [];
   List<String>? relatedzones = [];
@@ -60,7 +59,6 @@ class region_list_screen_state extends State<region_list_screen> {
       print(e);
     });
     setUpLogs();
-    //loadDetails();
   }
 
   void setUpLogs() async {
@@ -80,25 +78,13 @@ class region_list_screen_state extends State<region_list_screen> {
         debugFileOperations: true,
         isDebuggable: true);
 
-    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
-    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
 
-    // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
-
-        // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -110,8 +96,6 @@ class region_list_screen_state extends State<region_list_screen> {
       logStatus = status;
     });
   }
-
-
 
   void loadDetails() async {
     var sharedPreferences =
@@ -159,31 +143,6 @@ class region_list_screen_state extends State<region_list_screen> {
     );
 
     return Container(
-        // onWillPop: () async {
-        //   final result = await showDialog(
-        //     context: context,
-        //     builder: (ctx) =>
-        //         AlertDialog(
-        //           title: Text("Luminator"),
-        //           content: Text("Are you sure you want to exit?"),
-        //           actions: <Widget>[
-        //             TextButton(
-        //               onPressed: () {
-        //                 Navigator.of(ctx).pop();
-        //               },
-        //               child: Text("NO"),
-        //             ),
-        //             TextButton(
-        //               child: Text('YES', style: TextStyle(color: Colors.red)),
-        //               onPressed: () {
-        //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        //               },
-        //             ),
-        //           ],
-        //         ),
-        //   );
-        //   return result;
-        // },
         child: Scaffold(
       backgroundColor: thbDblue,
       body: Padding(
@@ -237,14 +196,6 @@ class region_list_screen_state extends State<region_list_screen> {
                         elevation: 4,
                         margin: const EdgeInsets.symmetric(vertical: 10),
                         child: ListTile(
-                          // leading: Text(
-                          //   _foundUsers[index]["id"].toString(),
-                          //   style: const TextStyle(
-                          //       fontSize: 24.0,
-                          //       fontFamily: "Montserrat",
-                          //       fontWeight: FontWeight.normal,
-                          //       color: Colors.black),
-                          // ),
                           onTap: () {
                             setState(() {
                               selectedZone =
@@ -352,7 +303,6 @@ class region_list_screen_state extends State<region_list_screen> {
   void callZoneDetailsFinder(BuildContext context, selectedZone) {
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         try {
           pr.show();
           var tbClient = await ThingsboardClient(serverUrl);
@@ -364,7 +314,7 @@ class region_list_screen_state extends State<region_list_screen> {
           DBHelper dbHelper = new DBHelper();
           dbHelper.zone_delete(selectedZone);
           List<Zone> details = await dbHelper
-              .zone_regionbasedDetails(selectedZone) as List<Zone>;
+              .zone_regionbasedDetails(selectedZone);
           if (details.isEmpty) {
             // dbHelper.zone_delete();
 
@@ -385,15 +335,11 @@ class region_list_screen_state extends State<region_list_screen> {
                   relatedzones?.add(wardlist.elementAt(i).to.id.toString());
                 }
 
-                // DBHelper dbHelper = new DBHelper();
-                // dbHelper.region_delete();
-
                 for (int j = 0; j < relatedzones!.length; j++) {
                   Asset asset = await tbClient
                       .getAssetService()
                       .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
                   if (asset.name != null) {
-                    // var regionname = selectedZone.split("-");
 
                     var rng = new Random();
                     var code = rng.nextInt(999999) + 100000;
@@ -449,7 +395,6 @@ class region_list_screen_state extends State<region_list_screen> {
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => region_list_screen()));
-            // Navigator.pop(context);
           }
         }
       } else {

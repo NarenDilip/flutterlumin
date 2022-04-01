@@ -32,7 +32,6 @@ class zone_li_screen extends StatefulWidget {
 }
 
 class zone_li_screen_state extends State<zone_li_screen> {
-  // return Scaffold(body: regionListview());
   List<String>? _allUsers = [];
   List<String>? _foundUsers = [];
   String selectedRegion = "0";
@@ -46,7 +45,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
 
   @override
   initState() {
-    // at the beginning, all users are shown
     loadDetails();
     setUpLogs();
   }
@@ -69,25 +67,12 @@ class zone_li_screen_state extends State<zone_li_screen> {
         debugFileOperations: true,
         isDebuggable: true);
 
-    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
-    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
-
-    // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
-
-        // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -99,7 +84,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
       logStatus = status;
     });
   }
-
 
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
@@ -140,10 +124,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
         print(e);
       });
     }
-
-    // setState(() {
-    //   _foundUsers = _allUsers! ;
-    // });
   }
 
   loadLocalData() async {
@@ -155,14 +135,12 @@ class zone_li_screen_state extends State<zone_li_screen> {
   void _runFilter(String enteredKeyword) {
     List<String> results = [];
     if (enteredKeyword.isEmpty) {
-      // if the search field is empty or only contains white-space, we'll display all users
       results = _allUsers!;
     } else {
       results = _allUsers!
           .where((user) =>
               user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
-      // we use the toLowerCase() method to make it case-insensitive
     }
 
     // Refresh the UI
@@ -174,31 +152,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        // onWillPop: () async {
-        //   final result = await showDialog(
-        //     context: context,
-        //     builder: (ctx) =>
-        //         AlertDialog(
-        //           title: Text("Luminator"),
-        //           content: Text("Are you sure you want to exit?"),
-        //           actions: <Widget>[
-        //             TextButton(
-        //               onPressed: () {
-        //                 Navigator.of(ctx).pop();
-        //               },
-        //               child: Text("NO"),
-        //             ),
-        //             TextButton(
-        //               child: Text('YES', style: TextStyle(color: Colors.red)),
-        //               onPressed: () {
-        //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        //               },
-        //             ),
-        //           ],
-        //         ),
-        //   );
-        //   return result;
-        // },
         child: Scaffold(
       backgroundColor: thbDblue,
       body: Padding(
@@ -252,26 +205,13 @@ class zone_li_screen_state extends State<zone_li_screen> {
                         elevation: 4,
                         margin: const EdgeInsets.symmetric(vertical: 10),
                         child: ListTile(
-                          // leading: Text(
-                          //   _foundUsers[index]["id"].toString(),
-                          //   style: const TextStyle(
-                          //       fontSize: 24.0,
-                          //       fontFamily: "Montserrat",
-                          //       fontWeight: FontWeight.normal,
-                          //       color: Colors.black),
-                          // ),
                           onTap: () {
                             setState(() {
                               selectedZone =
                                   _foundUsers!.elementAt(index).toString();
                               loadLocalData();
                             });
-
                             callWardDetailsFinder(context, selectedZone);
-                            // Navigator.of(context).pushReplacement(
-                            //     MaterialPageRoute(
-                            //         builder: (BuildContext context) =>
-                            //             ward_li_screen()));
                           },
                           title: Text(_foundUsers!.elementAt(index),
                               style: const TextStyle(
@@ -297,7 +237,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
-          // Utility.progressDialog(context);
           pr.show();
           var tbClient = await ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -310,9 +249,8 @@ class zone_li_screen_state extends State<zone_li_screen> {
           DBHelper dbHelper = new DBHelper();
           dbHelper.ward_delete(regionname[0].toString());
           List<Ward> ward =
-              await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
+              await dbHelper.ward_zonebasedDetails(selectedZone);
           if (ward.isEmpty) {
-            // dbHelper.ward_delete();
 
             List<Zone> regiondetails =
                 await dbHelper.zone_zonebasedDetails(selectedZone);
@@ -392,7 +330,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen()));
-            // Navigator.pop(context);
           }
         }
       } else {

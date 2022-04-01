@@ -233,7 +233,7 @@ class _CCMSToggleButtonnState extends State<CCMSToggleButtonn> {
           backgroundColor: Colors.white,
           textColor: Colors.black,
           fontSize: 16.0);
-      openAppSettings();
+      // openAppSettings();
     }
   }
 

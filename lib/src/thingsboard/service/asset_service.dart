@@ -123,6 +123,16 @@ class AssetService {
     return _tbClient.compute(parseAssetPageData, response.data!);
   }
 
+  Future<PageData<Asset>> getUsertypeAssets(PageLink pageLink,
+      {String type = 'luminode_group', RequestConfig? requestConfig}) async {
+    var queryParams = pageLink.toQueryParameters();
+    queryParams['type'] = type;
+    var response = await _tbClient.get<Map<String, dynamic>>('/api/user/assets',
+        queryParameters: queryParams,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return _tbClient.compute(parseAssetPageData, response.data!);
+  }
+
   Future<List<Asset>> getAssetsByIds(List<String> assetIds,
       {RequestConfig? requestConfig}) async {
     var response = await _tbClient.get<List<dynamic>>('/api/assets',

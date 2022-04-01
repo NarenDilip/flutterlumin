@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -19,8 +18,9 @@ import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-// import 'package:location/location.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,10 +31,6 @@ import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
-
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class gwcaminstall extends StatefulWidget {
   const gwcaminstall() : super();
@@ -48,9 +44,7 @@ class gwcaminstallState extends State<gwcaminstall> {
   var imageFile;
   var accuvalue;
   var Adressaccuvalue;
-  // var addvalue;
 
-  // LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
   String SelectedZone = "0";
@@ -59,7 +53,6 @@ class gwcaminstallState extends State<gwcaminstall> {
   double longitude = 0;
   double accuracy = 0;
 
-  // String addresss = "0";
   String? _error;
   late ProgressDialog pr;
   String geoFence = "false";
@@ -78,11 +71,7 @@ class gwcaminstallState extends State<gwcaminstall> {
   static Completer _completer = new Completer<String>();
 
   late Timer _timer;
-  int _start = 5;
-
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
+  int _start = 20;
 
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
       interval: 5000,
@@ -113,108 +102,6 @@ class gwcaminstallState extends State<gwcaminstall> {
     print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
     _streamController.sink.add(polyGeofence);
   }
-
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
-
-  // // This function is to be called when the location has changed.
-  // Future<void> _onLocationChanged(Location location) async {
-  //   print('location: ${location.toJson()}');
-  //   accuracy = location!.accuracy!;
-  //   Lattitude = location!.latitude!.toString();
-  //   Longitude = location!.longitude!.toString();
-  //   accuvalue = accuracy.toString().split(".");
-  //
-  //   var insideArea;
-  //
-  //   if (geoFence == "true") {
-  //     for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-  //       insideArea = _checkIfValidMarker(
-  //           LatLng(location.latitude, location.longitude),
-  //           _polyGeofenceList[0].polygon);
-  //       if (insideArea == true) {
-  //         if (accuracy <= 5) {
-  //           _getAddress(location!.latitude, location!.longitude).then((value) {
-  //             setState(() {
-  //               address = value;
-  //             });
-  //           });
-  //         } else {
-  //           setState(() {
-  //             visibility = false;
-  //           });
-  //           Fluttertoast.showToast(
-  //               msg:
-  //                   "Fetching Device Location Accuracy Please wait for Some time" +
-  //                       "Acccuracy Level-->" +
-  //                       accuracy.toString(),
-  //               toastLength: Toast.LENGTH_SHORT,
-  //               gravity: ToastGravity.BOTTOM,
-  //               timeInSecForIosWeb: 1,
-  //               backgroundColor: Colors.white,
-  //               textColor: Colors.black,
-  //               fontSize: 16.0);
-  //         }
-  //         callPolygonStop();
-  //       } else {
-  //         // setState(() {
-  //         //   visibility = false;
-  //         // });
-  //         // if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
-  //           Fluttertoast.showToast(
-  //               msg:
-  //                   "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-  //                       insideArea.toString(),
-  //               toastLength: Toast.LENGTH_SHORT,
-  //               gravity: ToastGravity.BOTTOM,
-  //               timeInSecForIosWeb: 1,
-  //               backgroundColor: Colors.white,
-  //               textColor: Colors.black,
-  //               fontSize: 16.0);
-  //           // counter++;
-  //         // }
-  //         callPolygonStop();
-  //         Navigator.of(context).pushReplacement(MaterialPageRoute(
-  //             builder: (BuildContext context) => dashboard_screen()));
-  //       }
-  //     }
-  //   } else {
-  //     if (accuracy <= 7) {
-  //       _getAddress(location!.latitude, location!.longitude).then((value) {
-  //         setState(() {
-  //           visibility = true;
-  //           address = value;
-  //         });
-  //         callPolygonStop();
-  //       });
-  //     } else {
-  //       setState(() {
-  //         visibility = false;
-  //       });
-  //       Fluttertoast.showToast(
-  //           msg: "Fetching Device Location Accuracy Please wait for Some time" +
-  //               "Acccuracy Level-->" +
-  //               accuracy.toString(),
-  //           toastLength: Toast.LENGTH_SHORT,
-  //           gravity: ToastGravity.BOTTOM,
-  //           timeInSecForIosWeb: 1,
-  //           backgroundColor: Colors.white,
-  //           textColor: Colors.black,
-  //           fontSize: 16.0);
-  //     }
-  //   }
-  //   caclsss++;
-  //   if (caclsss == 10) {
-  //     setState(() {
-  //       visibility = true;
-  //       viewvisibility = false;
-  //     });
-  //     callPolygonStop();
-  //   }
-  //   Adressaccuvalue = address.toString().split(",");
-  // }
-
 
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
@@ -248,9 +135,9 @@ class gwcaminstallState extends State<gwcaminstall> {
             });
             Fluttertoast.showToast(
                 msg:
-                "Fetching Device Location Accuracy Please wait for Some time" +
-                    "Acccuracy Level-->" +
-                    accuracy.toString(),
+                    "Fetching Device Location Accuracy Please wait for Some time" +
+                        "Acccuracy Level-->" +
+                        accuracy.toString(),
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -266,8 +153,8 @@ class gwcaminstallState extends State<gwcaminstall> {
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
                 msg:
-                "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                    insideArea.toString(),
+                    "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+                        insideArea.toString(),
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -283,36 +170,34 @@ class gwcaminstallState extends State<gwcaminstall> {
       }
     } else {
       if (accuracy <= 10) {
+        _timer.cancel();
+        callPolygonStop();
         _getAddress(location!.latitude, location!.longitude).then((value) {
           setState(() {
             visibility = true;
             address = value;
           });
-          callPolygonStop();
-        });
-      } else {
-        setState(() {
-          visibility = true;
         });
       }
-      // callILMInstallation(context, imageFile, DeviceName, SelectedWard);
     }
-    // caclsss++;
-    // if (caclsss == 10) {
-    //   setState(() {
-    //     visibility = true;
-    //     viewvisibility = false;
-    //   });
-    //   callPolygonStop();
+
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      setState(() {
+        visibility = true;
+        viewvisibility = false;
+      });
+    }
 
     Adressaccuvalue = address.toString().split(",");
   }
 
   void startTimer() {
-    const oneSec = Duration(seconds: 10);
+    const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -329,6 +214,10 @@ class gwcaminstallState extends State<gwcaminstall> {
               viewvisibility = false;
             });
           }
+        } else {
+          setState(() {
+            _start--;
+          });
         }
       },
     );
@@ -358,19 +247,11 @@ class gwcaminstallState extends State<gwcaminstall> {
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
 
-        // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -436,10 +317,6 @@ class gwcaminstallState extends State<gwcaminstall> {
     }
     return true;
   }
-
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -512,49 +389,6 @@ class gwcaminstallState extends State<gwcaminstall> {
       // details[new LatLng(latter,rlonger)];
     }
   }
-
-  // Future<void> _listenLocation() async {
-  //   _locationSubscription =
-  //       locations.onLocationChanged.handleError((dynamic err) {
-  //     if (err is PlatformException) {
-  //       setState(() {
-  //         _error = err.code;
-  //       });
-  //     }
-  //     _locationSubscription?.cancel();
-  //     setState(() {
-  //       _locationSubscription = null;
-  //     });
-  //   }).listen((LocationData currentLocation) {
-  //     setState(() {
-  //       _error = null;
-  //       _location = currentLocation;
-  //       _getAddress(_location!.latitude, _location!.longitude).then((value) {
-  //         setState(() {
-  //           address = value;
-  //           // if (_latt!.length <= 5) {
-  //           _latt!.add(_location!.latitude!);
-  //           lattitude = _location!.latitude!;
-  //           longitude = _location!.longitude!;
-  //           accuracy = _location!.accuracy!;
-  //           // addresss = addresss;
-  //           // } else {
-  //           if (accuracy <= 7) {
-  //             _locationSubscription?.cancel();
-  //             setState(() {
-  //               _locationSubscription = null;
-  //             });
-  //             accuvalue = accuracy.toString().split(".");
-  //             addvalue = value.toString().split(",");
-  //             callReplacementComplete(
-  //                 context, imageFile, DeviceName, SelectedWard);
-  //           }
-  //           // }
-  //         });
-  //       });
-  //     });
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -742,16 +576,16 @@ class gwcaminstallState extends State<gwcaminstall> {
                     regionid = regiondetails.first.regionid;
                   }
 
-                  // List<String> firmmyList = [];
-                  // firmmyList.add("firmware_versions");
-                  // List<AttributeKvEntry> firmmyList_responser;
-                  //
-                  // List<AttributeKvEntry> responserse;
-                  //
-                  // responserse = (await tbClient
-                  //     .getAttributeService()
-                  //     .getAttributeKvEntries(response.id!, firmmyList))
-                  // as List<AttributeKvEntry>;
+                  /* List<String> firmmyList = [];
+                  firmmyList.add("firmware_versions");
+                  List<AttributeKvEntry> firmmyList_responser;
+
+                  List<AttributeKvEntry> responserse;
+
+                  responserse = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, firmmyList))
+                  as List<AttributeKvEntry>;*/
 
                   try {
                     List<String> myfirmList = [];
@@ -762,27 +596,27 @@ class gwcaminstallState extends State<gwcaminstall> {
                         .getAttributeService()
                         .getFirmAttributeKvEntries(regionid, myfirmList));
 
-                    //
-                    // List<TsKvEntry> faultresponser;
-                    // faultresponser = await tbClient
-                    //     .getAttributeService()
-                    //     .getFIRMselectedLatestTimeseries(
-                    //         regionid, "firmware_versions");
+                    /* List<TsKvEntry> faultresponser;
+                    faultresponser = await tbClient
+                        .getAttributeService()
+                        .getFIRMselectedLatestTimeseries(
+                            regionid, "firmware_versions");
 
-                    // if (faultresponser.length != 0) {
-                    //   var firmwaredetails =
-                    //       faultresponser.first.getValue().toString();
-                    //   final decoded = jsonDecode(firmwaredetails) as Map;
-                    //   var firmware_versions = decoded['firmware_version'];
-                    //
-                    //   if (firmware_versions
-                    //       .toString()
-                    //       .contains(FirmwareVersion)) {
+                    if (faultresponser.length != 0) {
+                      var firmwaredetails =
+                          faultresponser.first.getValue().toString();
+                      final decoded = jsonDecode(firmwaredetails) as Map;
+                      var firmware_versions = decoded['firmware_version'];
+
+                      if (firmware_versions
+                          .toString()
+                          .contains(FirmwareVersion)) {
                         versionCompatability = true;
-                    //   } else {
-                    //     versionCompatability = false;
-                    //   }
-                    // }
+                      } else {
+                        versionCompatability = false;
+                      }
+                    }*/
+
                   } catch (e) {
                     FlutterLogs.logInfo(
                         "gw_installation_page",
@@ -791,24 +625,26 @@ class gwcaminstallState extends State<gwcaminstall> {
                     var message = toThingsboardError(e, context);
                   }
 
-                  // if (responserse.length != 0) {
-                  //   var firmwaredetails = responserse.first.getValue();
-                  // }
+                  /* if (responserse.length != 0) {
+                    var firmwaredetails = responserse.first.getValue();
+                  }
 
-                  // List<String> myList = [];
-                  // myList.add("faulty");
-                  // List<AttributeKvEntry> responser;
-                  //
-                  // responser = (await tbClient
-                  //         .getAttributeService()
-                  //         .getAttributeKvEntries(response.id!, myList));
-                  //
+                  List<String> myList = [];
+                  myList.add("faulty");
+                  List<AttributeKvEntry> responser;
+
+                  responser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myList));
+                  */
+
                   var faultyDetails = false;
-                  // if (responser.length == 0) {
-                  //   faultyDetails = false;
-                  // } else {
-                  //   faultyDetails = responser.first.getValue();
-                  // }
+
+                  /* if (responser.length == 0) {
+                     faultyDetails = false;
+                   } else {
+                     faultyDetails = responser.first.getValue();
+                   } */
 
                   if (faultyDetails == false) {
                     if (SelectedWard != "Ward") {
@@ -936,7 +772,9 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 pr.hide();
                               } else {
                                 // Navigator.pop(context);
-                                FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                                FlutterLogs.logInfo(
+                                    "gw_installation_page",
+                                    "gw_installation",
                                     "Gateway Device No Folder Found Exception");
                                 callPolygonStop();
                                 pr.hide();
@@ -975,7 +813,9 @@ class gwcaminstallState extends State<gwcaminstall> {
                           }
                         } else {
                           callPolygonStop();
-                          FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                          FlutterLogs.logInfo(
+                              "gw_installation_page",
+                              "gw_installation",
                               "Gateway Device Not Authorized Exception");
                           pr.hide();
                           Fluttertoast.showToast(
@@ -1021,8 +861,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                     }
                   } else {
                     // Navigator.pop(context);
-                    FlutterLogs.logInfo("gw_installation_page", "gw_installation",
-                        "Gateway Device Faulty Exception");
+                    FlutterLogs.logInfo("gw_installation_page",
+                        "gw_installation", "Gateway Device Faulty Exception");
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
@@ -1096,17 +936,9 @@ class gwcaminstallState extends State<gwcaminstall> {
         }
       });
     } else {
-      Fluttertoast.showToast(
-          msg: "Kindly Enable App Location Permission",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
-
       pr.hide();
-      openAppSettings();
+      Permission.locationAlways.request();
+      // openAppSettings();
     }
   }
 
@@ -1190,33 +1022,6 @@ class gwcaminstallState extends State<gwcaminstall> {
         fontSize: 16.0);
   }
 
-  // Future<LocationData?> _getLocation() async {
-  //   Location location = Location();
-  //   LocationData _locationData;
-  //   bool _serviceEnabled;
-  //   PermissionStatus _permissionGranted;
-  //
-  //   _serviceEnabled = await location.serviceEnabled();
-  //   if (!_serviceEnabled) {
-  //     _serviceEnabled = await location.requestService();
-  //     if (!_serviceEnabled) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _permissionGranted = await location.hasPermission();
-  //   if (_permissionGranted == PermissionStatus.denied) {
-  //     _permissionGranted = await location.requestPermission();
-  //     if (_permissionGranted != PermissionStatus.granted) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _locationData = await location.getLocation();
-  //
-  //   return _locationData;
-  // }
-  //
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
     final coordinates = new Coordinates(lat, lang);

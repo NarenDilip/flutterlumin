@@ -88,19 +88,12 @@ class replacementccmsState extends State<replacementccms> {
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
-        setLogsStatus(
+          setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
 
         // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -203,14 +196,6 @@ class replacementccmsState extends State<replacementccms> {
                                   fontSize: 16.0);
                             }
                           }))
-                  // rounded_button(
-                  //   text: "Complete Replacement",
-                  //   color: Colors.green,
-                  //   press: () {
-                  //     callReplacementComplete(context, imageFile, DeviceName);
-                  //   },
-                  //   key: null,
-                  // ),
                 ]))));
   }
 
@@ -241,7 +226,6 @@ class replacementccmsState extends State<replacementccms> {
 
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         pr.show();
         try {
           var tbClient = ThingsboardClient(serverUrl);
@@ -356,8 +340,6 @@ class replacementccmsState extends State<replacementccms> {
                               .id!,
                           response.id!.id!);
 
-                      // DevicecurrentFolderName =
-                      //     currentdeviceresponse.last.id.toString();
 
                       List<String> myList = [];
                       myList.add(response.id!.id!);

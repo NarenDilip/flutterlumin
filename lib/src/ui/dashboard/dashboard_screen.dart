@@ -78,25 +78,14 @@ class dashboard_screenState extends State<dashboard_screen> {
         debugFileOperations: true,
         isDebuggable: true);
 
-    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
-    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
-
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-        // Contains file name of zip
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
 
-        // Notify Future with value
         _completer.complete(call.arguments.toString());
       } else if (call.method == 'logsPrinted') {
-        // FlutterLogs.logInfo(
-        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
-
         setLogsStatus(
             status: "logsPrinted: ${call.arguments.toString()}", append: true);
       }
@@ -180,14 +169,6 @@ class dashboard_screenState extends State<dashboard_screen> {
           body: Stack(
             children: <Widget>[
               _widgetOptions.elementAt(_selectedIndex),
-              // Align(
-              //   alignment: FractionalOffset.center,
-              //   //in this demo, only the button text is updated based on the bottom app bar clicks
-              //   child: RaisedButton(
-              //     // child: Text(""),
-              //     onPressed: () {},
-              //   ),
-              // ),
               //this is the code for the widget container that comes from behind the floating action button (FAB)
               Align(
                 alignment: FractionalOffset.bottomRight,
@@ -341,215 +322,205 @@ class dashboard_screenState extends State<dashboard_screen> {
                 prefs.setString('deviceId', response.id!.id!.toString());
                 prefs.setString('DeviceDetails', response.id!.id!.toString());
 
-                // try {
-                //   List<TsKvEntry> faultresponser;
-                //   faultresponser = await tbClient
-                //       .getAttributeService()
-                //       .getselectedLatestTimeseries(response.id!.id!, "version");
-                //   if (faultresponser.isNotEmpty) {
-                //     prefs.setString('firmwareVersion',
-                //         faultresponser.first.getValue().toString());
-                //   }
-                // } catch (e) {
-                //   var message = toThingsboardError(e, context);
-                //   FlutterLogs.logInfo(
-                //       "Luminator 2.0", "dashboard_page", "");
-                // }
+                /*try {
+                  List<TsKvEntry> faultresponser;
+                  faultresponser = await tbClient
+                      .getAttributeService()
+                      .getselectedLatestTimeseries(response.id!.id!, "version");
+                  if (faultresponser.isNotEmpty) {
+                    prefs.setString('firmwareVersion',
+                        faultresponser.first.getValue().toString());
+                  }
+                } catch (e) {
+                  var message = toThingsboardError(e, context);
+                  FlutterLogs.logInfo(
+                      "Luminator 2.0", "dashboard_page", "");
+                }
 
-                // List<String> myLists = [];
-                // myLists.add("version");
-                //
-                // List<AttributeKvEntry> deviceresponser;
-                //
-                // deviceresponser = (await tbClient
-                //     .getAttributeService()
-                //     .getAttributeKvEntries(response.id!, myLists));
+                List<String> myLists = [];
+                myLists.add("version");
 
-                // if (deviceresponser.isNotEmpty) {
-                //   prefs.setString('firmwareVersion',
-                //       deviceresponser.first.getValue().toString());
-                  prefs.setString('deviceName', deviceName);
+                List<AttributeKvEntry> deviceresponser;
 
-                  var relationDetails = await tbClient
-                      .getEntityRelationService()
-                      .findInfoByTo(response.id!);
+                deviceresponser = (await tbClient
+                    .getAttributeService()
+                    .getAttributeKvEntries(response.id!, myLists));
 
-                  List<AttributeKvEntry> responserse;
+                if (deviceresponser.isNotEmpty) {
+                  prefs.setString('firmwareVersion',
+                      deviceresponser.first.getValue().toString());*/
 
-                  // var SelectedWard = prefs.getString("SelectedWard").toString();
-                  // DBHelper dbHelper = new DBHelper();
-                  // var wardDetails =
-                  //     await dbHelper.ward_basedDetails(SelectedWard);
-                  // if (wardDetails.isNotEmpty) {
-                  //   wardDetails.first.wardid;
-                  //
-                  //   List<String> wardist = [];
-                  //   wardist.add("geofence");
-                  //
-                  //   var wardresponser = await tbClient
-                  //       .getAttributeService()
-                  //       .getFirmAttributeKvEntries(
-                  //           wardDetails.first.wardid!, wardist);
-                  //
-                  //   if (wardresponser.isNotEmpty) {
-                  //     if (wardresponser.first.getValue() == "true") {
-                  //       gofenceValidation = true;
-                  //       prefs.setString('geoFence', "true");
-                  //     } else {
-                  //       gofenceValidation = false;
-                  //       prefs.setString('geoFence', "false");
-                  //     }
-                  //   }
-                  // }
+                prefs.setString('deviceName', deviceName);
 
-                  gofenceValidation = false;
-                  prefs.setString('geoFence', "false");
+                var relationDetails = await tbClient
+                    .getEntityRelationService()
+                    .findInfoByTo(response.id!);
 
-                  if (relationDetails.length.toString() == "0") {
+                List<AttributeKvEntry> responserse;
+
+                /* var SelectedWard = prefs.getString("SelectedWard").toString();
+                  DBHelper dbHelper = new DBHelper();
+                  var wardDetails =
+                      await dbHelper.ward_basedDetails(SelectedWard);
+                  if (wardDetails.isNotEmpty) {
+                    wardDetails.first.wardid;
+
+                    List<String> wardist = [];
+                    wardist.add("geofence");
+
+                    var wardresponser = await tbClient
+                        .getAttributeService()
+                        .getFirmAttributeKvEntries(
+                            wardDetails.first.wardid!, wardist);
+
+                    if (wardresponser.isNotEmpty) {
+                      if (wardresponser.first.getValue() == "true") {
+                        gofenceValidation = true;
+                        prefs.setString('geoFence', "true");
+                      } else {
+                        gofenceValidation = false;
+                        prefs.setString('geoFence', "false");
+                      }
+                    }
+                  }*/
+
+                gofenceValidation = false;
+                prefs.setString('geoFence', "false");
+
+                if (relationDetails.length.toString() == "0") {
+                  pr.hide();
+                  if (response.type == ilm_deviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ilmcaminstall()),
+                    );
+                  } else if (response.type == ccms_deviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ccmscaminstall()),
+                    );
+                  } else if (response.type == Gw_deviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const gwcaminstall()),
+                    );
+                  }
+                } else {
+                  List<String> firstmyList = [];
+                  firstmyList.add("lmp");
+
+                  try {
+                    List<TsKvEntry> faultresponser;
+                    faultresponser = await tbClient
+                        .getAttributeService()
+                        .getselectedLatestTimeseries(response.id!.id!, "lmp");
+                    if (faultresponser.isNotEmpty) {
+                      prefs.setString('faultyStatus',
+                          faultresponser.first.getValue().toString());
+                    }
+                  } catch (e) {
+                    var message = toThingsboardError(e, context);
+                    FlutterLogs.logInfo("Luminator 2.0", "dashboard_page", "");
+                  }
+
+                  List<String> myList = [];
+                  myList.add("active");
+
+                  List<AttributeKvEntry> atresponser;
+
+                  atresponser = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myList));
+
+                  if (atresponser.isNotEmpty) {
+                    prefs.setString('deviceStatus',
+                        atresponser.first.getValue().toString());
+                    prefs.setString('devicetimeStamp',
+                        atresponser.elementAt(0).getLastUpdateTs().toString());
+
+                    List<String> myLister = [];
+                    myLister.add("landmark");
+
+                    responserse = (await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myLister));
+
+                    if (responserse.isNotEmpty) {
+                      prefs.setString(
+                          'location', responserse.first.getValue().toString());
+                      prefs.setString('deviceName', deviceName);
+                    }
+                    // myLister.add("location");
+
+                    List<String> LampmyList = [];
+                    LampmyList.add("lampWatts");
+
+                    List<AttributeKvEntry> lampatresponser;
+
+                    lampatresponser = (await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, LampmyList));
+
+                    if (lampatresponser.isNotEmpty) {
+                      prefs.setString('deviceWatts',
+                          lampatresponser.first.getValue().toString());
+                    }
+
+                    List<String> myList = [];
+                    myList.add("lattitude");
+                    myList.add("longitude");
+
+                    List<BaseAttributeKvEntry> responser;
+
+                    responser = (await tbClient
+                            .getAttributeService()
+                            .getAttributeKvEntries(response.id!, myList))
+                        as List<BaseAttributeKvEntry>;
+
+                    prefs.setString('deviceLatitude',
+                        responser.first.kv.getValue().toString());
+                    prefs.setString('deviceLongitude',
+                        responser.last.kv.getValue().toString());
+
                     pr.hide();
                     if (response.type == ilm_deviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ilmcaminstall()),
+                            builder: (context) => const MaintenanceScreen()),
                       );
                     } else if (response.type == ccms_deviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ccmscaminstall()),
+                            builder: (context) =>
+                                const CCMSMaintenanceScreen()),
                       );
                     } else if (response.type == Gw_deviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const gwcaminstall()),
+                            builder: (context) => const GWMaintenanceScreen()),
                       );
                     }
-                    // } else {
-                    //   // Navigator.pop(context);
-                    //   pr.hide();
-                    //   // refreshPage(context);
-                    // }
                   } else {
-                    List<String> firstmyList = [];
-                    firstmyList.add("lmp");
-
-                    try {
-                      List<TsKvEntry> faultresponser;
-                      faultresponser = await tbClient
-                          .getAttributeService()
-                          .getselectedLatestTimeseries(response.id!.id!, "lmp");
-                      if (faultresponser.isNotEmpty) {
-                        prefs.setString('faultyStatus',
-                            faultresponser.first.getValue().toString());
-                      }
-                    } catch (e) {
-                      var message = toThingsboardError(e, context);
-                      FlutterLogs.logInfo(
-                          "Luminator 2.0", "dashboard_page", "");
-                    }
-
-                    List<String> myList = [];
-                    myList.add("active");
-
-                    List<AttributeKvEntry> atresponser;
-
-                    atresponser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList));
-
-                    if (atresponser.isNotEmpty) {
-                      prefs.setString('deviceStatus',
-                          atresponser.first.getValue().toString());
-                      prefs.setString(
-                          'devicetimeStamp',
-                          atresponser
-                              .elementAt(0)
-                              .getLastUpdateTs()
-                              .toString());
-
-                      List<String> myLister = [];
-                      myLister.add("landmark");
-
-                      responserse = (await tbClient
-                          .getAttributeService()
-                          .getAttributeKvEntries(response.id!, myLister));
-
-                      if (responserse.isNotEmpty) {
-                        prefs.setString('location',
-                            responserse.first.getValue().toString());
-                        prefs.setString('deviceName', deviceName);
-                      }
-                      // myLister.add("location");
-
-                      List<String> LampmyList = [];
-                      LampmyList.add("lampWatts");
-
-                      List<AttributeKvEntry> lampatresponser;
-
-                      lampatresponser = (await tbClient
-                          .getAttributeService()
-                          .getAttributeKvEntries(response.id!, LampmyList));
-
-                      if (lampatresponser.isNotEmpty) {
-                        prefs.setString('deviceWatts',
-                            lampatresponser.first.getValue().toString());
-                      }
-
-                      List<String> myList = [];
-                      myList.add("lattitude");
-                      myList.add("longitude");
-
-                      List<BaseAttributeKvEntry> responser;
-
-                      responser = (await tbClient
-                              .getAttributeService()
-                              .getAttributeKvEntries(response.id!, myList))
-                          as List<BaseAttributeKvEntry>;
-
-                      prefs.setString('deviceLatitude',
-                          responser.first.kv.getValue().toString());
-                      prefs.setString('deviceLongitude',
-                          responser.last.kv.getValue().toString());
-
-                      pr.hide();
-                      if (response.type == ilm_deviceType) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const MaintenanceScreen()),
-                        );
-                      } else if (response.type == ccms_deviceType) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const CCMSMaintenanceScreen()),
-                        );
-                      } else if (response.type == Gw_deviceType) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const GWMaintenanceScreen()),
-                        );
-                      }
-                    } else {
-                      FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
-                          "No attributes key found");
-                      pr.hide();
-                      refreshPage(context);
-                      //"" No Active attribute found
-                    }
+                    FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+                        "No attributes key found");
+                    pr.hide();
+                    refreshPage(context);
+                    //"" No Active attribute found
                   }
-                // } else {
-                //   FlutterLogs.logInfo(
-                //       "Dashboard_Page", "Dashboard", "No version attributes key found");
-                //   pr.hide();
-                //   refreshPage(context);
-                //   //"" No Firmware Device Found
-                // }
+                }
+                /*} else {
+                  FlutterLogs.logInfo(
+                      "Dashboard_Page", "Dashboard", "No version attributes key found");
+                  pr.hide();
+                  refreshPage(context);
+                  //"" No Firmware Device Found
+                }*/
               } else {
                 FlutterLogs.logInfo(
                     "Dashboard_Page", "Dashboard", "No Device Details Found");

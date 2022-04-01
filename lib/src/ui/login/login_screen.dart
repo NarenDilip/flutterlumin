@@ -12,7 +12,6 @@ import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
@@ -157,7 +156,6 @@ class LoginForm extends StatelessWidget {
     // storage = TbSecureStorage();
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         pr.show();
 
         if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
@@ -168,10 +166,7 @@ class LoginForm extends StatelessWidget {
             prefs.setString('username', user.username);
             prefs.setString('password', user.password);
             callRegionDetails(context);
-            // Navigator.of(context).pushReplacement(MaterialPageRoute(
-            //     builder: (BuildContext context) => dashboard_screen()));
           }else{
-            // Navigator.pop(context);
             pr.hide();
             Fluttertoast.showToast(
                 msg: "Please check Username and Password, Invalid Credentials",
@@ -201,16 +196,11 @@ class LoginForm extends StatelessWidget {
   void callRegionDetails(BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         pr.show();
         var tbClient = ThingsboardClient(serverUrl);
         tbClient.smart_init();
 
         DBHelper dbHelper = new DBHelper();
-
-        // dbHelper.region_delete();
-        // final jsonData = '{"region"}';
-        // final parsedJson = jsonDecode(jsonData);
 
         Map<String, dynamic> _portaInfoMap = {
           "type": ["region"],
@@ -247,63 +237,11 @@ class LoginForm extends StatelessWidget {
               .getAssetService()
               .getZoneTenantAssets(pageLink));
 
-          // if (zone_response != null) {
-          //   if (zone_response.totalElements != 0) {
-          //     for (int i = 0; i < zone_response.data.length; i++) {
-          //       String id = zone_response.data
-          //           .elementAt(i)
-          //           .id!
-          //           .id
-          //           .toString();
-          //       String name = zone_response.data
-          //           .elementAt(i)
-          //           .name
-          //           .toString();
-          //       var regionname = name.split("-");
-          //       Zone zone = new Zone(i, id, name, regionname[0].toString());
-          //       dbHelper.zone_add(zone);
-          //     }
-          //   }
-          //
-          //   PageData<Asset> ward_response;
-          //   ward_response = (await tbClient
-          //       .getAssetService()
-          //       .getWardTenantAssets(pageLink));
-
-            // if (ward_response != null) {
-            //   if (ward_response.totalElements != 0) {
-            //     for (int i = 0; i < ward_response.data.length; i++) {
-            //       String id = ward_response.data
-            //           .elementAt(i)
-            //           .id!
-            //           .id
-            //           .toString();
-            //       String name = ward_response.data
-            //           .elementAt(i)
-            //           .name
-            //           .toString();
-            //       var regionname = name.split("-");
-            //       Ward ward = new Ward(i, id, name, regionname[0].toString(),
-            //           regionname[0].toString() + "-" +
-            //               regionname[1].toString());
-            //       dbHelper.ward_add(ward);
-            //     }
-            //   }
-            //   Navigator.pop(context);
           pr.hide();
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => region_list_screen()));
-            // } else {
-            //   Navigator.pop(context);
-            //   calltoast("Ward Details found");
-            // }
-          // } else {
-          //   Navigator.pop(context);
-          //   calltoast("Zone Details found");
-          // }
         } else {
           FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
-          // Navigator.pop(context);
           pr.hide();
           calltoast("Region Details found");
         }

@@ -215,7 +215,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
           if (response != null) {
             List<EntityRelationInfo> wardlist = await tbClient
                 .getEntityRelationService()
-                .findInfoByAssetFrom(response.id!) as List<EntityRelationInfo>;
+                .findInfoByAssetFrom(response.id!);
 
             if (wardlist.length != 0) {
               for (int i = 0; i < wardlist.length; i++) {
@@ -234,8 +234,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 for (int j = 0; j < AssetDevices!.length; j++) {
                   List<EntityRelationInfo> relationdevicelist = await tbClient
                           .getEntityRelationService()
-                          .findInfoByAssetFrom(AssetDevices!.elementAt(j))
-                      as List<EntityRelationInfo>;
+                          .findInfoByAssetFrom(AssetDevices!.elementAt(j));
 
                   for (int k = 0; k < relationdevicelist.length; k++) {
                     if (relationdevicelist.length != 0) {
@@ -376,7 +375,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
                   }
                 }
 
-                // Navigator.pop(context);
                 pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
@@ -417,7 +415,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen()));
-            // Navigator.pop(context);
           }
         }
       } else {
@@ -437,31 +434,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        // onWillPop: () async {
-        //   final result = await showDialog(
-        //     context: context,
-        //     builder: (ctx) =>
-        //         AlertDialog(
-        //           title: Text("Luminator"),
-        //           content: Text("Are you sure you want to exit?"),
-        //           actions: <Widget>[
-        //             TextButton(
-        //               onPressed: () {
-        //                 Navigator.of(ctx).pop();
-        //               },
-        //               child: Text("NO"),
-        //             ),
-        //             TextButton(
-        //               child: Text('YES', style: TextStyle(color: Colors.red)),
-        //               onPressed: () {
-        //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        //               },
-        //             ),
-        //           ],
-        //         ),
-        //   );
-        //   return result;
-        // },
         child: Scaffold(
       backgroundColor: thbDblue,
       body: Padding(
@@ -515,14 +487,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
                         elevation: 4,
                         margin: const EdgeInsets.symmetric(vertical: 10),
                         child: ListTile(
-                          // leading: Text(
-                          //   _foundUsers[index]["id"].toString(),
-                          //   style: const TextStyle(
-                          //       fontSize: 24.0,
-                          //       fontFamily: "Montserrat",
-                          //       fontWeight: FontWeight.normal,
-                          //       color: Colors.black),
-                          // ),
                           onTap: () {
                             setState(() {
                               selectedWard =
@@ -626,11 +590,3 @@ class ward_li_screen_state extends State<ward_li_screen> {
     return tbError;
   }
 }
-//
-// void callNavigator(context) {
-//   if (Navigator.canPop(context)) {
-//     Navigator.pop(context);
-//   } else {
-//     SystemNavigator.pop();
-//   }
-// }

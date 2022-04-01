@@ -476,13 +476,13 @@ class replaceilmState extends State<replaceilm> {
             if (response != null) {
               var new_Device_Name = response.name;
 
-              if (faultyStatus == "2") {
-                Map data = {'faulty': "true"};
-                var saveAttributes = await tbClient
-                    .getAttributeService()
-                    .saveDeviceAttributes(
-                        response.id!.id!, "SERVER_SCOPE", data);
-              }
+              // if (faultyStatus == "2") {
+              //   Map data = {'faulty': "true"};
+              //   var saveAttributes = await tbClient
+              //       .getAttributeService()
+              //       .saveDeviceAttributes(
+              //           response.id!.id!, "SERVER_SCOPE", data);
+              // }
 
               List<EntityGroupInfo> entitygroups;
               entitygroups = await tbClient
@@ -521,24 +521,24 @@ class replaceilmState extends State<replaceilm> {
                       .findInfoByTo(response.id!);
 
                   if (relationDetails != null) {
-                    List<String> myList = [];
-                    myList.add("lampWatts");
-                    myList.add("active");
+                    // List<String> myList = [];
+                    // myList.add("lampWatts");
+                    // myList.add("active");
 
-                    List<BaseAttributeKvEntry> responser;
+                    // List<BaseAttributeKvEntry> responser;
+                    //
+                    // responser = (await tbClient
+                    //         .getAttributeService()
+                    //         .getAttributeKvEntries(response.id!, myList))
+                    //     as List<BaseAttributeKvEntry>;
 
-                    responser = (await tbClient
-                            .getAttributeService()
-                            .getAttributeKvEntries(response.id!, myList))
-                        as List<BaseAttributeKvEntry>;
-
-                    if (responser != null) {
-                      SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
-                      prefs.setString('deviceStatus',
-                          responser.first.kv.getValue().toString());
-                      prefs.setString('deviceWatts',
-                          responser.last.kv.getValue().toString());
+                    // if (responser != null) {
+                    //   SharedPreferences prefs =
+                    //       await SharedPreferences.getInstance();
+                    //   prefs.setString('deviceStatus',
+                    //       responser.first.kv.getValue().toString());
+                    //   prefs.setString('deviceWatts',
+                    //       responser.last.kv.getValue().toString());
 
                       prefs.setString('deviceId', deviceid);
                       prefs.setString('deviceName', deviceName);
@@ -658,7 +658,7 @@ class replaceilmState extends State<replaceilm> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
-                                  'lattitude': Lattitude,
+                                  'latitude': Lattitude,
                                   'longitude': Longitude
                                 };
 
@@ -1011,19 +1011,19 @@ class replaceilmState extends State<replaceilm> {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
-          } else {
-            FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
-            pr.hide();
-            Fluttertoast.showToast(
-                msg:
-                    "Invalid Image Capture, Please recapture and try replacement",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
+          // } else {
+          //   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+          //   pr.hide();
+          //   Fluttertoast.showToast(
+          //       msg:
+          //           "Invalid Image Capture, Please recapture and try replacement",
+          //       toastLength: Toast.LENGTH_SHORT,
+          //       gravity: ToastGravity.BOTTOM,
+          //       timeInSecForIosWeb: 1,
+          //       backgroundColor: Colors.white,
+          //       textColor: Colors.black,
+          //       fontSize: 16.0);
+          // }
         } catch (e) {
           FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           pr.hide();
