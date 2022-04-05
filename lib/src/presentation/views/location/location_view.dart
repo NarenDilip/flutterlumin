@@ -27,7 +27,7 @@ class _DeviceLocationState extends State<DeviceLocationView> {
       backgroundColor: lightGrey,
       body: SingleChildScrollView(
         child: Column(children: const <Widget>[
-          AppBarWidget(),
+          AppBarWidget(title: "",),
         ]),
       )
     );

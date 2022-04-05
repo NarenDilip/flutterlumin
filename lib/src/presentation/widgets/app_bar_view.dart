@@ -6,8 +6,9 @@ import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppBarWidget extends StatefulWidget {
+  final String title;
   const AppBarWidget({
-    Key? key,
+    Key? key, required this.title
   }) : super(key: key);
 
   @override
@@ -39,9 +40,20 @@ class _AppBarWidgetState extends State<AppBarWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: lightGrey,
-        padding: const EdgeInsets.only(left: 10, top: 40, right: 10),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(5),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
+          ),
+        ),
+        padding: const EdgeInsets.only(left: 10, top: 40, right: 10,bottom: 20),
         child: Column(children: <Widget>[
+          const SizedBox(
+            height: 10,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -49,24 +61,21 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                   image: AssetImage("assets/icons/logo.png"),
                   height: 30,
                   width: 30),
-              const Text(
-                "VLR-1-1",
-                style: TextStyle(
+              Text(widget.title,
+                style: const TextStyle(
                     fontSize: 20,
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.bold),
               ),
-              Container(
-                child: const CircleAvatar(
-                  radius: 16, // Image radius
-                  backgroundImage:
-                      NetworkImage("https://i.imgur.com/BoN9kdC.png"),
-                ),
+              const CircleAvatar(
+                radius: 16, // Image radius
+                backgroundImage:
+                    NetworkImage("https://i.imgur.com/BoN9kdC.png"),
               ),
             ],
           ),
           const SizedBox(
-            height: 20,
+            height: 30,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -126,10 +135,10 @@ class CategoryWidget extends StatelessWidget {
             width: 100,
             alignment: Alignment.center,
             padding: const EdgeInsets.all(12),
-            color: selectedItem != 'null'  && selectedItem != '' ? Colors.white : Colors.grey,
+            color: selectedItem != 'null'  && selectedItem != '' ? kPrimaryColor : lightGrey,
             child: Text(selectedItem != 'null'  && selectedItem != '' ? selectedItem :categoryName  ,
                 style:
-                    const TextStyle(color: Colors.black, fontFamily: "Roboto")),
+                     TextStyle(color: selectedItem != 'null'  && selectedItem != '' ? Colors.white : Colors.black, fontFamily: "Roboto")),
           ),
         ));
   }

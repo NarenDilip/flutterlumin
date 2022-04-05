@@ -53,7 +53,7 @@ class _ProjectDashboardState extends State<ProjectDashboard> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(children: <Widget>[
-        const AppBarWidget(),
+        const AppBarWidget(title: "Dashboard",),
         ProjectCard(
           projectName: "ILM",
           cardBottomColor: lightBlueCardColor,

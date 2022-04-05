@@ -673,34 +673,33 @@ class device_list_screen_state extends State<device_list_screen> {
                                         _vtoggle();
                                       });
                                     },
-                                    child: Container(
-                                        child: Row(
-                                      children: [
-                                        Expanded(
-                                            child: Padding(
-                                                padding:
-                                                    EdgeInsets.only(left: 12),
-                                                child: Text('ILM Devices',
-                                                    style: TextStyle(
-                                                        fontSize: 18.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)))),
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: Icon(
-                                                Icons.arrow_drop_down,
-                                              ),
-                                            ),
+                                    child: Row(
+                                      children: const [
+                                    Expanded(
+                                        child: Padding(
+                                            padding:
+                                                EdgeInsets.only(left: 12),
+                                            child: Text('ILM Devices',
+                                                style: TextStyle(
+                                                    fontSize: 18.0,
+                                                    fontFamily:
+                                                        "Montserrat",
+                                                    fontWeight:
+                                                        FontWeight.bold,
+                                                    color: Colors.white)))),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(12),
+                                          child: Icon(
+                                            Icons.arrow_drop_down,
                                           ),
-                                        )
+                                        ),
+                                      ),
+                                    )
                                       ],
-                                    )),
+                                    ),
                                   ),
                                 ],
                               )),
@@ -738,14 +737,14 @@ class device_list_screen_state extends State<device_list_screen> {
                                     )
                                   : Container(
                                       color: Colors.white,
-                                      child: Column(children: [
+                                      child: Column(children: const [
                                         SizedBox(
                                           height: 10,
                                         ),
                                         Text(
                                           'No results found',
                                           textAlign: TextAlign.center,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               fontSize: 18.0,
                                               fontFamily: "Montserrat",
                                               fontWeight: FontWeight.normal,
@@ -779,7 +778,7 @@ class device_list_screen_state extends State<device_list_screen> {
           PageData<Device> devicelist_response;
           devicelist_response = (await tbClient
               .getDeviceService()
-              .getTenantDevices(pageLink)) as PageData<Device>;
+              .getTenantDevices(pageLink));
 
           if (devicelist_response != null) {
             if (devicelist_response.totalElements != 0) {

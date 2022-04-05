@@ -33,6 +33,7 @@ const lightBlueAlterColor = Color(0xff008080);
 const lightBlueCardColor = Color(0xffBAE5F5);
 const lightPinkCardColor = Color(0xffE2D3FE);
 const lightGreenCardColor = Color(0xffCCF0C0);
+const lightBlueViewColor = Color(0xff0091EA);
 
 
 const splashscreen_text = "LUMINATOR";

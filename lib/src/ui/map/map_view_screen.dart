@@ -100,11 +100,8 @@ class map_view_screen_state extends State<map_view_screen> {
                           child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                AppBarWidget(),
-                                SizedBox(height: 5),
-                                SizedBox(
-                                  height: 5,
-                                ),
+                                const AppBarWidget(title: "Location",),
+                                const SizedBox(height: 5),
                                 Expanded(
                                     child: Container(
                                         color: Colors.grey,
