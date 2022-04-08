@@ -169,7 +169,7 @@ class LoginForm extends StatelessWidget {
           }else{
             pr.hide();
             Fluttertoast.showToast(
-                msg: "Please check Username and Password, Invalid Credentials",
+                msg: "Invalid credentials, Please try again.",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -181,7 +181,7 @@ class LoginForm extends StatelessWidget {
           // Navigator.pop(context);
           pr.hide();
           Fluttertoast.showToast(
-              msg: "Please check Username and Password, Invalid Credentials",
+              msg: "Invalid credentials, Please try again.",
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -241,7 +241,7 @@ class LoginForm extends StatelessWidget {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => region_list_screen()));
         } else {
-          FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+          // FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           pr.hide();
           calltoast("Region Details found");
         }

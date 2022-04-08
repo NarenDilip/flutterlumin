@@ -505,7 +505,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   } else {
                                                     Fluttertoast.showToast(
                                                         msg:
-                                                            "Please Enter Device",
+                                                        device_no_entry,
                                                         toastLength:
                                                             Toast.LENGTH_SHORT,
                                                         gravity:
@@ -584,7 +584,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   } else {
                                                     Fluttertoast.showToast(
                                                         msg:
-                                                            "Please Enter Device",
+                                                        device_no_entry,
                                                         toastLength:
                                                             Toast.LENGTH_SHORT,
                                                         gravity:
@@ -661,7 +661,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   } else {
                                                     Fluttertoast.showToast(
                                                         msg:
-                                                            "Please Enter Device",
+                                                        device_no_entry,
                                                         toastLength:
                                                             Toast.LENGTH_SHORT,
                                                         gravity:
@@ -743,7 +743,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                   } else {
                                                     Fluttertoast.showToast(
                                                         msg:
-                                                            "Please Enter Device",
+                                                        device_no_entry,
                                                         toastLength:
                                                             Toast.LENGTH_SHORT,
                                                         gravity:
@@ -1064,7 +1064,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                           height: 10,
                                         ),
                                         Text(
-                                          'No results found',
+                                          device_no_result ,
                                           textAlign: TextAlign.center,
                                           style: const TextStyle(
                                               fontSize: 18.0,
@@ -1638,7 +1638,7 @@ class device_list_screen_state extends State<device_list_screen> {
               }
             } else {
               Fluttertoast.showToast(
-                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  msg: "Please select Region to start Installation",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -1652,7 +1652,7 @@ class device_list_screen_state extends State<device_list_screen> {
             }
           } else {
             Fluttertoast.showToast(
-                msg: "Kindly Choose your Region, Zone and Ward to Install",
+                msg: "Please select Region to start Installation",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,

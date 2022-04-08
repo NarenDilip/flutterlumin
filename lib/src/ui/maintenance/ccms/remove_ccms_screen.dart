@@ -187,7 +187,7 @@ class replacementccmsState extends State<replacementccms> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      "Invalid Image Capture, Please recapture and try installation",
+                                      "Image not captured successfully! Please try again!",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -392,7 +392,7 @@ class replacementccmsState extends State<replacementccms> {
                 pr.hide();
                 Fluttertoast.showToast(
                     msg:
-                    "Selected Device is not authorized to Replace the selected in this Region",
+                    "Device is not compatible with this Project "+ SelectedRegion + " Kindly try another one.",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -416,7 +416,7 @@ class replacementccmsState extends State<replacementccms> {
             pr.hide();
             Fluttertoast.showToast(
                 msg:
-                    "Invalid Image Capture, Please recapture and try replacement",
+                    "Image not captured successfully! Please try again!",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,

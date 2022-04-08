@@ -135,9 +135,7 @@ class gwcaminstallState extends State<gwcaminstall> {
             });
             Fluttertoast.showToast(
                 msg:
-                    "Fetching Device Location Accuracy Please wait for Some time" +
-                        "Acccuracy Level-->" +
-                        accuracy.toString(),
+                    "Fetching your location",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -153,8 +151,7 @@ class gwcaminstallState extends State<gwcaminstall> {
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
                 msg:
-                    "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                        insideArea.toString(),
+                "Your current location does not appear to be in the selected Ward",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -481,7 +478,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                                   pr.hide();
                                   Fluttertoast.showToast(
                                       msg:
-                                          "Invalid Image Capture, Please recapture and try installation",
+                                          "Image not captured successfully! Please try again!",
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.BOTTOM,
                                       timeInSecForIosWeb: 1,
@@ -820,7 +817,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                           pr.hide();
                           Fluttertoast.showToast(
                               msg:
-                                  "Selected Device is not authorized to install in this Region",
+                              "Device is not compatible with this Project "+ SelectedRegion +" Kindly try another one",
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
@@ -838,7 +835,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         pr.hide();
                         Fluttertoast.showToast(
                             msg:
-                                "Please wait to load lattitude, longitude Details to Install.",
+                                "Fetching your location",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -851,7 +848,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                              "Kindly Select the Region, Zone and Ward Details to Install.",
+                              "Please select Region to start Installation.",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -866,7 +863,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
-                            "Device Currently in Faulty State Unable to Install.",
+                            "Unable to Install. Device appears to be Faulty. Kindly try another one.",
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -905,7 +902,7 @@ class gwcaminstallState extends State<gwcaminstall> {
               pr.hide();
               Fluttertoast.showToast(
                   msg:
-                      "Invalid Image Capture, Please recapture and try installation",
+                      " Image not captured successfully! Please try again!",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,

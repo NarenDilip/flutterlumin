@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/ui/splash_screen.dart';
 import 'firebase_options.dart';
 
-
 Future<void> main() async {
   SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
 
@@ -16,8 +15,6 @@ Future<void> main() async {
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
   // FirebaseCrashlytics.instance.crash();
   runApp(MyApp());
-
-  // FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
 }
 
 class MyApp extends StatelessWidget {

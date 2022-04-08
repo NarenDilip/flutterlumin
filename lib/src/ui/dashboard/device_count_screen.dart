@@ -1130,7 +1130,7 @@ Future<void> callLogoutoption(BuildContext context) async {
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: liorange)),
-      content: const Text("Are you sure you want to Logout?",
+      content: const Text(app_logout,
           style: TextStyle(
               fontSize: 18.0,
               fontFamily: "Montserrat",

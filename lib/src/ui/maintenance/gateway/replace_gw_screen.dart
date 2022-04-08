@@ -205,7 +205,7 @@ class replacegwState extends State<replacegw> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      "Invalid Image Capture, Please recapture and try installation",
+                                      "Image not captured successfully! Please try again!",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -407,7 +407,7 @@ class replacegwState extends State<replacegw> {
                   response.id!.id.toString(), context, imageFile);
             } else {
               pr.hide();
-              calltoast("Device Details Not Found");
+              calltoast("Unable to find device. Kindly try another device");
             }
           } else {
             pr.hide();
@@ -892,7 +892,7 @@ class replacegwState extends State<replacegw> {
                         pr.hide();
                         Fluttertoast.showToast(
                             msg:
-                                "Selected Device is not authorized to install in this Region",
+                                "Device is not compatible with this Project"+ SelectedRegion + "Kindly try another one.",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -939,7 +939,7 @@ class replacegwState extends State<replacegw> {
             pr.hide();
             Fluttertoast.showToast(
                 msg:
-                    "Invalid Image Capture, Please recapture and try replacement",
+                    " Image not captured successfully! Please try again!",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,

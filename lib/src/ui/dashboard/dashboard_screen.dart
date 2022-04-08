@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_logs/flutter_logs.dart';
@@ -275,7 +276,7 @@ class dashboard_screenState extends State<dashboard_screen> {
             fetchGWDeviceDetails(value, context);
           } else {
             Fluttertoast.showToast(
-                msg: "No QRs Found",
+                msg: device_qr_nt_found,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -530,7 +531,7 @@ class dashboard_screenState extends State<dashboard_screen> {
               }
             } else {
               Fluttertoast.showToast(
-                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  msg: device_selec_regions,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -544,7 +545,7 @@ class dashboard_screenState extends State<dashboard_screen> {
             }
           } else {
             Fluttertoast.showToast(
-                msg: "Kindly Choose your Region, Zone and Ward to Install",
+                msg: device_selec_regions,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -557,6 +558,7 @@ class dashboard_screenState extends State<dashboard_screen> {
             //"" No Device Found
           }
         } catch (e) {
+          FirebaseCrashlytics.instance.crash();
           FlutterLogs.logInfo(
               "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
           pr.hide();

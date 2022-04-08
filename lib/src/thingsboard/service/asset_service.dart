@@ -124,7 +124,7 @@ class AssetService {
   }
 
   Future<PageData<Asset>> getUsertypeAssets(PageLink pageLink,
-      {String type = 'luminode_group', RequestConfig? requestConfig}) async {
+      {String type = 'node-cluster', RequestConfig? requestConfig}) async {
     var queryParams = pageLink.toQueryParameters();
     queryParams['type'] = type;
     var response = await _tbClient.get<Map<String, dynamic>>('/api/user/assets',

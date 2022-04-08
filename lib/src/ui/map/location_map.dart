@@ -851,7 +851,7 @@ class _LocationWidgetState extends State<LocationWidget> {
               }
             } else {
               Fluttertoast.showToast(
-                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  msg: "Please select Region to start Installation.",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -865,7 +865,7 @@ class _LocationWidgetState extends State<LocationWidget> {
             }
           } else {
             Fluttertoast.showToast(
-                msg: "Kindly Choose your Region, Zone and Ward to Install",
+                msg: "Please select Region to start Installation.",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -1277,7 +1277,7 @@ class _LocationWidgetState extends State<LocationWidget> {
               // Navigator.pop(context);
               pr.hide();
               Fluttertoast.showToast(
-                  msg: "Kindly Choose your Region, Zone and Ward to Install",
+                  msg: "Please select Region to start Installation",
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,

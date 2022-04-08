@@ -26,8 +26,8 @@ const darkgreen = Color(0xff146e00);
 
 const splashscreen_text = "LUMINATOR";
 
-// const serverUrl = "http://iotpro.io:8077";
-const serverUrl = "https://schnelliot.in/";
+const serverUrl = "http://iotpro.io:8077";
+// const serverUrl = "https://schnelliot.in/";
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
 // const app_username = "smartLumi@gmail.com";
@@ -40,17 +40,17 @@ const validate_email = "Please enter the validate email";
 const sign_in = "Start Process";
 const qr_text = "SCAN QR CODE";
 
-// const ILMDeviceInstallationFolder = "lumismartLights";
-const ILMDeviceInstallationFolder = "smartLights";
+const ILMDeviceInstallationFolder = "lumismartLights";
+// const ILMDeviceInstallationFolder = "smartLights";
 
-// const ILMserviceFolderName = "forRepairILM";
-const ILMserviceFolderName = "forServiceLuminodes";
+const ILMserviceFolderName = "forRepairILM";
+// const ILMserviceFolderName = "forServiceLuminodes";
 
-// const CCMSserviceFolderName = "forRepairCCMS";
-const CCMSserviceFolderName = "forServiceCCMS";
+const CCMSserviceFolderName = "forRepairCCMS";
+// const CCMSserviceFolderName = "forServiceCCMS";
 
-// const GWserviceFolderName = "forRepairGateway";
-const GWserviceFolderName = "forServiceCCMS";
+const GWserviceFolderName = "forRepairGateway";
+// const GWserviceFolderName = "forServiceCCMS";
 
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "CCMS";
@@ -64,5 +64,14 @@ const session_expired = "Session expired!";
 // const prod_Username = "production@schnellenergy.com";
 // const prod_Password = "LumiNode";
 
-const device_toast_msg = "Given Device ";
-const device_toast_notfound = " Not Found";
+const device_toast_msg = "Unable to find device  ";
+const device_toast_notfound = "  Kindly try another device";
+
+//Const messages
+
+const device_qr_nt_found = "No QRs Found";
+const device_selec_regions = "Please select Region to start Installation.";
+const app_logout = "Are you sure you want to Logout?";
+const device_no_entry = "Please Enter Device";
+const device_no_result = 'No results found';
+
