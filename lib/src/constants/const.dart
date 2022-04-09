@@ -74,4 +74,23 @@ const device_selec_regions = "Please select Region to start Installation.";
 const app_logout = "Are you sure you want to Logout?";
 const device_no_entry = "Please Enter Device";
 const device_no_result = 'No results found';
+const device_name = "Luminator";
+const app_logout_msg = "Are you sure you want to exit Luminator?";
+const app_logout_no = "NO";
+const app_logout_yes = "YES";
+const app_scan_qr= "SCAN QR";
+const app_dashboard = 'Dashboard';
+const app_device_list  = "Device List view";
+const app_device_filters = 'Device Filters';
+const app_reg_selec = "Please select Region to start Installation";
+const app_fetch_loc = "Fetching your location.";
+const app_loc_ward = "Your current location does not appear to be in the selected Ward";
+const app_pls_wait ='Please wait ..';
+const app_invalid_img ="Invalid Image Capture, Please recapture and try installation";
+const app_geofence_nfound ="GeoFence Availability is not found with this Ward";
+const app_unable_folder ="Unable to Find Folder Details";
+const app_compat_one ="Device is not compatible with this Project.";
+const app_compat_two =" Kindly try another one.";
+
+
 

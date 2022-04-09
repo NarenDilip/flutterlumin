@@ -232,7 +232,7 @@ class device_list_screen_state extends State<device_list_screen> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Text('Device List view',
+                      child: Text(app_device_list,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 25.0,
@@ -419,7 +419,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 padding:
                                                     EdgeInsets.only(left: 12),
                                                 child: Text(
-                                                  'Device Filters',
+                                                  app_device_filters,
                                                   style: TextStyle(
                                                       fontSize: 18.0,
                                                       fontFamily: "Montserrat",
@@ -1180,8 +1180,8 @@ class device_list_screen_state extends State<device_list_screen> {
             calltoast(searchNumber);
           }
         } catch (e) {
-          FlutterLogs.logInfo(
-              "devicelist_page", "device_list", "ILM Device Finder Issue");
+          /*FlutterLogs.logInfo(
+              "devicelist_page", "device_list", "ILM Device Finder Issue");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -1240,8 +1240,8 @@ class device_list_screen_state extends State<device_list_screen> {
             calltoast(searchNumber);
           }
         } catch (e) {
-          FlutterLogs.logInfo(
-              "devicelist_page", "device_list", "CCMS Device Finder Issue");
+          /*FlutterLogs.logInfo(
+              "devicelist_page", "device_list", "CCMS Device Finder Issue");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -1296,8 +1296,8 @@ class device_list_screen_state extends State<device_list_screen> {
             calltoast(searchNumber);
           }
         } catch (e) {
-          FlutterLogs.logInfo(
-              "devicelist_page", "device_list", "GW Device Finder Exception");
+          /*FlutterLogs.logInfo(
+              "devicelist_page", "device_list", "GW Device Finder Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -1366,20 +1366,20 @@ class device_list_screen_state extends State<device_list_screen> {
               });
               pr.hide();
             } else {
-              FlutterLogs.logInfo("devicelist_page", "device_list",
-                  "No Relation Occurs and cause Exception");
+              /*FlutterLogs.logInfo("devicelist_page", "device_list",
+                  "No Relation Occurs and cause Exception");*/
               pr.hide();
               calltoast(polenumber);
             }
           } else {
-            FlutterLogs.logInfo("devicelist_page", "device_list",
-                "No Device Found for execution");
+            /*FlutterLogs.logInfo("devicelist_page", "device_list",
+                "No Device Found for execution");*/
             pr.hide();
             calltoast(polenumber);
           }
         } catch (e) {
-          FlutterLogs.logInfo("devicelist_page", "device_list",
-              "Pole Based Device Installation Exception");
+          /*FlutterLogs.logInfo("devicelist_page", "device_list",
+              "Pole Based Device Installation Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -1525,8 +1525,8 @@ class device_list_screen_state extends State<device_list_screen> {
                     }
                   } catch (e) {
                     var message = toThingsboardError(e, context);
-                    FlutterLogs.logInfo(
-                        "Luminator 2.0", "dashboard_page", "");
+                    /*FlutterLogs.logInfo(
+                        "Luminator 2.0", "dashboard_page", "");*/
                   }
 
                   List<String> myList = [];
@@ -1615,8 +1615,8 @@ class device_list_screen_state extends State<device_list_screen> {
                       );
                     }
                   } else {
-                    FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
-                        "No attributes key found");
+                    /*FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+                        "No attributes key found");*/
                     pr.hide();
                     refreshPage(context);
                     //"" No Active attribute found
@@ -1630,15 +1630,15 @@ class device_list_screen_state extends State<device_list_screen> {
                   //"" No Firmware Device Found
                 }*/
               } else {
-                FlutterLogs.logInfo(
-                    "Dashboard_Page", "Dashboard", "No Device Details Found");
+                /*FlutterLogs.logInfo(
+                    "Dashboard_Page", "Dashboard", "No Device Details Found");*/
                 pr.hide();
                 refreshPage(context);
                 //"" No Device Found
               }
             } else {
               Fluttertoast.showToast(
-                  msg: "Please select Region to start Installation",
+                  msg: app_reg_selec,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -1652,7 +1652,7 @@ class device_list_screen_state extends State<device_list_screen> {
             }
           } else {
             Fluttertoast.showToast(
-                msg: "Please select Region to start Installation",
+                msg: app_reg_selec,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -1665,8 +1665,8 @@ class device_list_screen_state extends State<device_list_screen> {
             //"" No Device Found
           }
         } catch (e) {
-          FlutterLogs.logInfo(
-              "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
+          /*FlutterLogs.logInfo(
+              "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -1709,11 +1709,11 @@ class device_list_screen_state extends State<device_list_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo(
+    /*FlutterLogs.logInfo(
         "devicelist_page",
         "device_list",
         "Device List Exception with server Exception " +
-            error.message.toString());
+            error.message.toString());*/
     if (error.message == "Session expired!") {
       // Navigator.pop(context);
       var status = loginThingsboard.callThingsboardLogin(context);
@@ -1793,13 +1793,13 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",
+      title: Text(device_name,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: liorange)),
-      content: Text("Are you sure you want to Logout?",
+      content: Text(app_logout,
           style: const TextStyle(
               fontSize: 18.0,
               fontFamily: "Montserrat",
@@ -1810,7 +1810,7 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",
+          child: Text(app_logout_no,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1818,7 +1818,7 @@ Future<void> callLogoutoption(BuildContext context) async {
                   color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',
+          child: Text(app_logout_no,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1846,7 +1846,7 @@ Future<void> callLogoutoption(BuildContext context) async {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => splash_screen()));
             } catch (e) {
-              FlutterLogs.logInfo("devicelist_page", "device_list", "DB Exception");
+              /*FlutterLogs.logInfo("devicelist_page", "device_list", "DB Exception");*/
             }
           },
         ),

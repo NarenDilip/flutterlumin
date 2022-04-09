@@ -133,7 +133,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
             });
             Fluttertoast.showToast(
                 msg:
-                    "Fetching your location.",
+                app_fetch_loc,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -149,7 +149,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
                 msg:
-                    "Your current location does not appear to be in the selected Ward",
+                app_loc_ward,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -314,7 +314,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       CallCoordinates(context);
     } else {
       Fluttertoast.showToast(
-          msg: "GeoFence Availability is not found with this Ward",
+          msg: app_geofence_nfound,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -390,7 +390,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -472,7 +472,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                   pr.hide();
                                   Fluttertoast.showToast(
                                       msg:
-                                          "Invalid Image Capture, Please recapture and try installation",
+                                      app_invalid_img,
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.BOTTOM,
                                       timeInSecForIosWeb: 1,
@@ -524,7 +524,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     } else {
       visibility = false;
       Fluttertoast.showToast(
-          msg: "GeoFence Availability is not found with this Ward",
+          msg: app_geofence_nfound,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -769,15 +769,15 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                 postRequest(context, img64, DeviceName);
                                 pr.hide();
                               } else {
-                                FlutterLogs.logInfo(
+                                /*FlutterLogs.logInfo(
                                     "ccms_installation_page",
                                     "ccms_installation",
-                                    "CCMS Device Not Found Folder Details Exception");
+                                    "CCMS Device Not Found Folder Details Exception");*/
                                 // Navigator.pop(context);
                                 callPolygonStop();
                                 pr.hide();
                                 Fluttertoast.showToast(
-                                    msg: "Unable to Find Folder Details",
+                                    msg: app_unable_folder,
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.BOTTOM,
                                     timeInSecForIosWeb: 1,
@@ -811,14 +811,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                           }
                         } else {
                           callPolygonStop();
-                          FlutterLogs.logInfo(
+                          /*FlutterLogs.logInfo(
                               "ccms_installation_page",
                               "ccms_installation",
-                              "CCMS Device Not authorized to install");
+                              "CCMS Device Not authorized to install");*/
                           pr.hide();
                           Fluttertoast.showToast(
                               msg:
-                                  "Device is not compatible with this Project ."+ SelectedRegion + " Kindly try another one.",
+                              app_compat_one + SelectedRegion + app_compat_two,
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
@@ -836,7 +836,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         pr.hide();
                         Fluttertoast.showToast(
                             msg:
-                                "Fetching your location.",
+                            app_fetch_loc,
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -849,7 +849,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                              "Please select Region to start Installation.",
+                          "Please select Region to start Installation",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,

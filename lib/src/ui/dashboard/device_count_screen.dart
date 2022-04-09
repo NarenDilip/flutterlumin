@@ -210,7 +210,7 @@ class device_count_screen_state extends State<device_count_screen> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Text('Dashboard',
+                      child: Text(app_dashboard,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 25.0,
@@ -1124,7 +1124,7 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: const Text("Luminator",
+      title: const Text(device_name,
           style: TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
@@ -1141,7 +1141,7 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: const Text("NO",
+          child: const Text(app_logout_no,
               style: TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1149,7 +1149,7 @@ Future<void> callLogoutoption(BuildContext context) async {
                   color: Colors.green)),
         ),
         TextButton(
-          child: const Text('YES',
+          child: const Text(app_logout_yes,
               style: TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1164,22 +1164,19 @@ Future<void> callLogoutoption(BuildContext context) async {
               List<Region> details = await dbhelper.region_getDetails();
 
               for (int i = 0; i < details.length; i++) {
-                dbhelper.delete(details
-                    .elementAt(i)
-                    .id!
-                    .toInt());
+                dbhelper.delete(details.elementAt(i).id!.toInt());
               }
               dbhelper.zone_delete(SelectedRegion);
               dbhelper.ward_delete(SelectedRegion);
 
               SharedPreferences preferences =
-              await SharedPreferences.getInstance();
+                  await SharedPreferences.getInstance();
               await preferences.clear();
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => splash_screen()));
-            }catch(e){
-              FlutterLogs.logInfo("devicecount_page", "device_count", "Db Exception");
+            } catch (e) {
+              // FlutterLogs.logInfo("devicecount_page", "device_count", "Db Exception");
             }
           },
         ),

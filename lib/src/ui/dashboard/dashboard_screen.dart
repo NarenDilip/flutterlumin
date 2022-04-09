@@ -126,13 +126,13 @@ class dashboard_screenState extends State<dashboard_screen> {
             builder: (ctx) => AlertDialog(
               insetPadding: EdgeInsets.symmetric(horizontal: 0),
               backgroundColor: Colors.white,
-              title: Text("Luminator",
+              title: Text(device_name,
                   style: const TextStyle(
                       fontSize: 25.0,
                       fontFamily: "Montserrat",
                       fontWeight: FontWeight.bold,
                       color: liorange)),
-              content: Text("Are you sure you want to exit Luminator?",
+              content: Text(app_logout_msg,
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontFamily: "Montserrat",
@@ -143,7 +143,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                   onPressed: () {
                     Navigator.of(ctx).pop();
                   },
-                  child: Text("NO",
+                  child: Text(app_logout_no,
                       style: const TextStyle(
                           fontSize: 25.0,
                           fontFamily: "Montserrat",
@@ -151,7 +151,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                           color: Colors.green)),
                 ),
                 TextButton(
-                  child: Text('YES',
+                  child: Text(app_logout_yes,
                       style: const TextStyle(
                           fontSize: 25.0,
                           fontFamily: "Montserrat",
@@ -201,7 +201,7 @@ class dashboard_screenState extends State<dashboard_screen> {
               }
               deviceFetcher(context);
             },
-            tooltip: "SCAN QR",
+            tooltip: app_scan_qr,
             child: Container(
               margin: EdgeInsets.all(15.0),
               child: Icon(Icons.qr_code),
@@ -286,7 +286,7 @@ class dashboard_screenState extends State<dashboard_screen> {
           }
         });
       } else {
-        FlutterLogs.logInfo("Dashboard_Page", "Dashboard", "No Network");
+        // FlutterLogs.logInfo("Dashboard_Page", "Dashboard", "No Network");
         Fluttertoast.showToast(
             msg: no_network,
             toastLength: Toast.LENGTH_SHORT,
@@ -424,7 +424,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                     }
                   } catch (e) {
                     var message = toThingsboardError(e, context);
-                    FlutterLogs.logInfo("Luminator 2.0", "dashboard_page", "");
+                    // FlutterLogs.logInfo("Luminator 2.0", "dashboard_page", "");
                   }
 
                   List<String> myList = [];
@@ -508,8 +508,8 @@ class dashboard_screenState extends State<dashboard_screen> {
                       );
                     }
                   } else {
-                    FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
-                        "No attributes key found");
+                    // FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+                    //     "No attributes key found");
                     pr.hide();
                     refreshPage(context);
                     //"" No Active attribute found
@@ -523,8 +523,8 @@ class dashboard_screenState extends State<dashboard_screen> {
                   //"" No Firmware Device Found
                 }*/
               } else {
-                FlutterLogs.logInfo(
-                    "Dashboard_Page", "Dashboard", "No Device Details Found");
+                // FlutterLogs.logInfo(
+                //     "Dashboard_Page", "Dashboard", "No Device Details Found");
                 pr.hide();
                 refreshPage(context);
                 //"" No Device Found
@@ -559,8 +559,8 @@ class dashboard_screenState extends State<dashboard_screen> {
           }
         } catch (e) {
           FirebaseCrashlytics.instance.crash();
-          FlutterLogs.logInfo(
-              "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
+          // FlutterLogs.logInfo(
+          //     "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -599,8 +599,8 @@ class dashboard_screenState extends State<dashboard_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
-        "Global Error " + error.message.toString());
+    // FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+    //     "Global Error " + error.message.toString());
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
