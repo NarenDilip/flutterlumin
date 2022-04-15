@@ -2,7 +2,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_logs/flutter_logs.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -56,7 +56,7 @@ class LoginForm extends StatelessWidget {
   late final TbStorage storage;
   TextEditingController passwordController = TextEditingController(text: "");
   final TextEditingController _emailController =
-      TextEditingController(text: "");
+  TextEditingController(text: "");
 
 
   @override
@@ -74,89 +74,89 @@ class LoginForm extends StatelessWidget {
           strokeWidth: 3.0),
     );
     return WillPopScope(
-        onWillPop: () async {
-          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-          return true;
-        },
-    child: SingleChildScrollView(
-      child: Container(
-        color: Colors.white,
-          height: size.height,
-          width: double.infinity,
+      onWillPop: () async {
+        SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        return true;
+      },
+      child: SingleChildScrollView(
+          child: Container(
+              color: Colors.white,
+              height: size.height,
+              width: double.infinity,
 
-          child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Image(
-                      image: AssetImage("assets/icons/logo.png"),
-                      height: 95,
-                      width: 95),
-                  const SizedBox(height: 35),
-                  const SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      app_log_email,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontFamily: "Montserrat",
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  rounded_input_field(
-                    hintText: user_email,
-                    isObscure: false,
-                    controller: _emailController,
-                    validator: (email) {
-                      if (email!.isEmpty) {
-                        return app_no_email;
-                      } else if (!EmailValidator.validate(email)) {
-                        return app_validate_email;
-                      }
-                    },
-                    onSaved: (email) => user.username = email!,
-                    onChanged: (String value) {},
-                  ),
-                  SizedBox(height: size.height * 0.02),
-                  rounded_input_field(
-                    hintText: user_password,
-                    isObscure: true,
-                    onSaved: (value) => user.password = value!,
-                    controller: passwordController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return app_validate_pass;
-                      }
-                    },
-                    onChanged: (value) {},
-                  ),
-                  const SizedBox(height: 10),
-                  rounded_button(
-                    text: sign_in,
-                    color: thbDblue,
-                    press: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        FocusScope.of(context).requestFocus(FocusNode());
-                        _loginAPI(context);
-                      }
-                    },
-                    key: null,
-                  ),
-                  const SizedBox(height: 60),
-                  Center(
-                      child:Text("Version 2.0.1",style: const TextStyle(
-                          fontSize: 15.0,
-                          fontFamily: "Montserrat",
-                          fontWeight: FontWeight.bold,
-                          color: invListBackgroundColor))
-                  ),
-                ],
-              )))),
+              child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Image(
+                          image: AssetImage("assets/icons/logo.png"),
+                          height: 95,
+                          width: 95),
+                      const SizedBox(height: 35),
+                      const SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          app_log_email,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 18.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      rounded_input_field(
+                        hintText: user_email,
+                        isObscure: false,
+                        controller: _emailController,
+                        validator: (email) {
+                          if (email!.isEmpty) {
+                            return app_no_email;
+                          } else if (!EmailValidator.validate(email)) {
+                            return app_validate_email;
+                          }
+                        },
+                        onSaved: (email) => user.username = email!,
+                        onChanged: (String value) {},
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      rounded_input_field(
+                        hintText: user_password,
+                        isObscure: true,
+                        onSaved: (value) => user.password = value!,
+                        controller: passwordController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return app_validate_pass;
+                          }
+                        },
+                        onChanged: (value) {},
+                      ),
+                      const SizedBox(height: 10),
+                      rounded_button(
+                        text: sign_in,
+                        color: thbDblue,
+                        press: () {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            FocusScope.of(context).requestFocus(FocusNode());
+                            _loginAPI(context);
+                          }
+                        },
+                        key: null,
+                      ),
+                      const SizedBox(height: 60),
+                      Center(
+                          child:Text("Version 2.0.1",style: const TextStyle(
+                              fontSize: 15.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: invListBackgroundColor))
+                      ),
+                    ],
+                  )))),
     );
   }
 
@@ -205,7 +205,7 @@ class LoginForm extends StatelessWidget {
     Utility.isConnected().then((value) async {
       if (value) {
         pr.show();
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
 
         DBHelper dbHelper = new DBHelper();
@@ -246,8 +246,8 @@ class LoginForm extends StatelessWidget {
               .getZoneTenantAssets(pageLink));
 
           pr.hide();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => region_list_screen()));
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => region_list_screen()));
         } else {
           // FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           pr.hide();

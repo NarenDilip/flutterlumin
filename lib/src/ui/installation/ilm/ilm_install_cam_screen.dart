@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -195,7 +195,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-      (Timer timer) {
+          (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -360,9 +360,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
     }
   }
@@ -412,13 +412,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Visibility(
@@ -434,15 +434,15 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                       color: Colors.white)),
                               style: ButtonStyle(
                                   padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
+                                  MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
                                   backgroundColor:
-                                      MaterialStateProperty.all(Colors.green),
+                                  MaterialStateProperty.all(Colors.green),
                                   shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ))),
+                                        borderRadius: BorderRadius.circular(25.0),
+                                      ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
                                 if (imageFile != null) {
@@ -532,7 +532,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         if (value) {
           pr.show();
           try {
-            var tbClient = ThingsboardClient(serverUrl);
+            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
             tbClient.smart_init();
 
             Device response;
@@ -544,7 +544,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                 DeviceCredentials deviceCredentials = await tbClient
                     .getDeviceService()
                     .getDeviceCredentialsByDeviceId(
-                        response.id!.id.toString()) as DeviceCredentials;
+                    response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 16) {
                   /* List<String> myList = [];
@@ -607,7 +607,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                         if (versionCompatability == true) {
                           DBHelper dbHelper = DBHelper();
                           List<Ward> warddetails =
-                              await dbHelper.ward_basedDetails(SelectedWard);
+                          await dbHelper.ward_basedDetails(SelectedWard);
                           if (warddetails.length != "0") {
                             warddetails.first.wardid;
 
@@ -623,12 +623,12 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
                             if (assetPagedetails.data.length != 0) {
                               for (int i = 0;
-                                  i < assetPagedetails.data.length;
-                                  i++) {
+                              i < assetPagedetails.data.length;
+                              i++) {
                                 if (assetPagedetails.data
-                                        .elementAt(i)
-                                        .name
-                                        .toString() ==
+                                    .elementAt(i)
+                                    .name
+                                    .toString() ==
                                     SelectedWard + "-" + "ILM") {
                                   oldasset =
                                       assetPagedetails.data
@@ -705,31 +705,31 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                             var saveAttributes = await tbClient
                                 .getAttributeService()
                                 .saveDeviceAttributes(
-                                    response.id!.id!, "SERVER_SCOPE", data);
+                                response.id!.id!, "SERVER_SCOPE", data);
 
                             List<EntityGroupId> currentdeviceresponse;
                             currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
                                 .getEntityGroupsForFolderEntity(
-                                    response.id!.id!);
+                                response.id!.id!);
 
                             if (currentdeviceresponse != null) {
                               var firstdetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.first.id!);
+                                  currentdeviceresponse.first.id!);
 
                               if (firstdetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.first.id!;
+                                currentdeviceresponse.first.id!;
                               }
                               var seconddetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.last.id!);
+                                  currentdeviceresponse.last.id!);
                               if (seconddetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.last.id!;
+                                currentdeviceresponse.last.id!;
                               }
 
                               List<EntityGroupInfo> entitygroups;
@@ -740,7 +740,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               if (entitygroups != null) {
                                 for (int i = 0; i < entitygroups.length; i++) {
                                   if (entitygroups.elementAt(i).name ==
-                                      ILMDeviceInstallationFolder) {
+                                      FlavorConfig.instance.variables["ILMDeviceInstallationFolder"]) {
                                     DevicemoveFolderName = entitygroups
                                         .elementAt(i)
                                         .id!
@@ -755,15 +755,15 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                        DevicecurrentFolderName, myList);
+                                    DevicecurrentFolderName, myList);
 
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                        DevicemoveFolderName, myList);
+                                    DevicemoveFolderName, myList);
 
                                 final bytes =
-                                    File(imageFile!.path).readAsBytesSync();
+                                File(imageFile!.path).readAsBytesSync();
                                 String img64 = base64Encode(bytes);
 
                                 postRequest(context, img64, DeviceName);
@@ -803,7 +803,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                         dashboard_screen()));
                           }
                         } else {
-                         /* FlutterLogs.logInfo(
+                          /* FlutterLogs.logInfo(
                               "ilm_installation_page",
                               "ilm_installation",
                               "ILM Device Not authorized to Install");*/
@@ -951,13 +951,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              width: 200,
-                              height: 200,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.grey[800],
-                              )),
+                          decoration: BoxDecoration(color: Colors.white),
+                          width: 200,
+                          height: 200,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey[800],
+                          )),
                     ),
                     SizedBox(height: 10),
                     Text(

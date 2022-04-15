@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
@@ -160,13 +161,13 @@ class replacementilmState extends State<replacementilm> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -182,12 +183,12 @@ class replacementilmState extends State<replacementilm> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                              MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                           onPressed: () {
                             if (imageFile != null) {
                               pr.show();
@@ -198,7 +199,7 @@ class replacementilmState extends State<replacementilm> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      "Image not captured successfully! Please try again!",
+                                  "Image not captured successfully! Please try again!",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -248,7 +249,7 @@ class replacementilmState extends State<replacementilm> {
         // Utility.progressDialog(context);
         pr.show();
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           Device response;
@@ -261,8 +262,8 @@ class replacementilmState extends State<replacementilm> {
               DBHelper dbHelper = DBHelper();
               var regionid;
               List<Region> regiondetails =
-                  await dbHelper.region_name_regionbasedDetails(SelectedRegion)
-                      as List<Region>;
+              await dbHelper.region_name_regionbasedDetails(SelectedRegion)
+              as List<Region>;
               if (regiondetails.length != "0") {
                 regionid = regiondetails.first.regionid;
               }
@@ -285,7 +286,7 @@ class replacementilmState extends State<replacementilm> {
               //     var firmware_versions = decoded['firmware_version'];
               //
               //     if (firmware_versions.toString().contains(FirmwareVersion)) {
-                    versionCompatability = true;
+              versionCompatability = true;
               //     } else {
               //       versionCompatability = false;
               //     }
@@ -316,7 +317,7 @@ class replacementilmState extends State<replacementilm> {
                 if (entitygroups != null) {
                   for (int i = 0; i < entitygroups.length; i++) {
                     if (entitygroups.elementAt(i).name ==
-                        ILMserviceFolderName) {
+                        FlavorConfig.instance.variables["ILMserviceFolderName"]) {
                       DevicemoveFolderName =
                           entitygroups.elementAt(i).id!.id!.toString();
                     }
@@ -334,21 +335,21 @@ class replacementilmState extends State<replacementilm> {
                           .getEntityGroup(currentdeviceresponse.first.id!);
                       if (firstdetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                            currentdeviceresponse.first.id!;
+                        currentdeviceresponse.first.id!;
                       }
                       var seconddetails = await tbClient
                           .getEntityGroupService()
                           .getEntityGroup(currentdeviceresponse.last.id!);
                       if (seconddetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                            currentdeviceresponse.last.id!;
+                        currentdeviceresponse.last.id!;
                       }
 
                       var relation_response = await tbClient
                           .getEntityRelationService()
                           .deleteDeviceRelation(
-                              relationDetails.elementAt(0).from.id!,
-                              response.id!.id!);
+                          relationDetails.elementAt(0).from.id!,
+                          response.id!.id!);
 
                       // DevicecurrentFolderName =
                       //     currentdeviceresponse.last.id.toString();
@@ -360,13 +361,13 @@ class replacementilmState extends State<replacementilm> {
                         var remove_response = await tbClient
                             .getEntityGroupService()
                             .removeEntitiesFromEntityGroup(
-                                DevicecurrentFolderName, myList);
+                            DevicecurrentFolderName, myList);
                       } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
                       try {
                         var add_response = await tbClient
                             .getEntityGroupService()
                             .addEntitiesToEntityGroup(
-                                DevicemoveFolderName, myList);
+                            DevicemoveFolderName, myList);
                       } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
 
                       final bytes = File(imageFile!.path).readAsBytesSync();
@@ -404,7 +405,7 @@ class replacementilmState extends State<replacementilm> {
                 pr.hide();
                 Fluttertoast.showToast(
                     msg:
-                        "Device is not compatible with this Project"+ SelectedRegion + "Kindly try another one.",
+                    "Device is not compatible with this Project"+ SelectedRegion + "Kindly try another one.",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -428,7 +429,7 @@ class replacementilmState extends State<replacementilm> {
             pr.hide();
             Fluttertoast.showToast(
                 msg:
-                    "Image not captured successfully! Please try again",
+                "Image not captured successfully! Please try again",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,

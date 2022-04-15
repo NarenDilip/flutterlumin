@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -155,13 +156,13 @@ class replaceccmsState extends State<replaceccms> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -177,12 +178,12 @@ class replaceccmsState extends State<replaceccms> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                              MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                           onPressed: () {
                             if (imageFile != null) {
                               pr.show();
@@ -313,7 +314,7 @@ class replaceccmsState extends State<replaceccms> {
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           response = await tbClient
               .getDeviceService()
@@ -377,7 +378,7 @@ class replaceccmsState extends State<replaceccms> {
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           response = (await tbClient
@@ -393,7 +394,7 @@ class replaceccmsState extends State<replaceccms> {
                 var saveAttributes = await tbClient
                     .getAttributeService()
                     .saveDeviceAttributes(
-                        response.id!.id!, "SERVER_SCOPE", data);
+                    response.id!.id!, "SERVER_SCOPE", data);
               }
 
               List<EntityGroupInfo> entitygroups;
@@ -403,7 +404,7 @@ class replaceccmsState extends State<replaceccms> {
 
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name == CCMSserviceFolderName) {
+                  if (entitygroups.elementAt(i).name == FlavorConfig.instance.variables["CCMSserviceFolderName"]) {
                     DevicemoveFolderName =
                         entitygroups.elementAt(i).id!.id!.toString();
                   }
@@ -440,13 +441,13 @@ class replaceccmsState extends State<replaceccms> {
                     List<BaseAttributeKvEntry> responser;
 
                     responser = (await tbClient
-                            .getAttributeService()
-                            .getAttributeKvEntries(response.id!, myList))
-                        as List<BaseAttributeKvEntry>;
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myList))
+                    as List<BaseAttributeKvEntry>;
 
                     if (responser != null) {
                       SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
+                      await SharedPreferences.getInstance();
                       prefs.setString('deviceStatus',
                           responser.first.kv.getValue().toString());
                       prefs.setString('deviceWatts',
@@ -483,11 +484,11 @@ class replaceccmsState extends State<replaceccms> {
                       relacefaultresponser = (await tbClient
                           .getAttributeService()
                           .getAttributeallKvEntries(
-                              response.id!.id!, myreplacefirmList));
+                          response.id!.id!, myreplacefirmList));
 
                       if (faultresponser.length != 0) {
                         var firmwaredetails =
-                            faultresponser.first.getValue().toString();
+                        faultresponser.first.getValue().toString();
 
                         final decoded = jsonDecode(firmwaredetails) as Map;
                         var firmware_versions = decoded['firmware_version'];
@@ -504,14 +505,14 @@ class replaceccmsState extends State<replaceccms> {
                         if (versionCompatability == true) {
                           if (relationDetails.length.toString() == "0") {
                             newdeviceCredentials = await tbClient
-                                    .getDeviceService()
-                                    .getDeviceCredentialsByDeviceId(
-                                        response.id!.id.toString())
-                                as DeviceCredentials;
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                response.id!.id.toString())
+                            as DeviceCredentials;
 
                             if (newdeviceCredentials != null) {
                               var newQRID =
-                                  newdeviceCredentials.credentialsId.toString();
+                              newdeviceCredentials.credentialsId.toString();
 
                               newdeviceCredentials.credentialsId =
                                   newQRID + "L";
@@ -534,10 +535,10 @@ class replaceccmsState extends State<replaceccms> {
                                 var Old_Device_Name = Olddevicedetails.name;
 
                                 olddeviceCredentials = await tbClient
-                                        .getDeviceService()
-                                        .getDeviceCredentialsByDeviceId(
-                                            Olddevicedetails.id!.id.toString())
-                                    as DeviceCredentials;
+                                    .getDeviceService()
+                                    .getDeviceCredentialsByDeviceId(
+                                    Olddevicedetails.id!.id.toString())
+                                as DeviceCredentials;
 
                                 if (olddeviceCredentials != null) {
                                   var oldQRID = olddeviceCredentials
@@ -549,7 +550,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var old_cred_response = await tbClient
                                       .getDeviceService()
                                       .saveDeviceCredentials(
-                                          olddeviceCredentials);
+                                      olddeviceCredentials);
 
                                   Olddevicedetails.name = Olddevicename + "99";
                                   var old_dev_response = await tbClient
@@ -560,7 +561,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var oldcredresponse = await tbClient
                                       .getDeviceService()
                                       .saveDeviceCredentials(
-                                          olddeviceCredentials);
+                                      olddeviceCredentials);
 
                                   response.name = Old_Device_Name;
                                   response.label = Old_Device_Name;
@@ -590,23 +591,23 @@ class replaceccmsState extends State<replaceccms> {
                                     };
 
                                     EntityRelation entityRelation =
-                                        EntityRelation(
-                                            from: EntityId.fromJson(fromId),
-                                            to: EntityId.fromJson(toId),
-                                            type: "Contains",
-                                            typeGroup:
-                                                RelationTypeGroup.COMMON);
+                                    EntityRelation(
+                                        from: EntityId.fromJson(fromId),
+                                        to: EntityId.fromJson(toId),
+                                        type: "Contains",
+                                        typeGroup:
+                                        RelationTypeGroup.COMMON);
 
                                     Future<EntityRelation> entityRelations =
-                                        tbClient
-                                            .getEntityRelationService()
-                                            .saveRelation(entityRelation);
+                                    tbClient
+                                        .getEntityRelationService()
+                                        .saveRelation(entityRelation);
                                   }
 
                                   var up_attribute = (await tbClient
                                       .getAttributeService()
                                       .saveDeviceAttributes(response.id!.id!,
-                                          "SERVER_SCOPE", old_body_req));
+                                      "SERVER_SCOPE", old_body_req));
 
                                   // New Device Updations
 
@@ -620,7 +621,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var up_credresponse = await tbClient
                                       .getDeviceService()
                                       .saveDeviceCredentials(
-                                          newdeviceCredentials);
+                                      newdeviceCredentials);
 
                                   final new_body_req = {
                                     'boardNumber': new_Device_Name,
@@ -631,9 +632,9 @@ class replaceccmsState extends State<replaceccms> {
                                     var up_newdevice_attribute = (await tbClient
                                         .getAttributeService()
                                         .saveDeviceAttributes(
-                                            Olddevicedetails.id!.id!,
-                                            "SERVER_SCOPE",
-                                            new_body_req));
+                                        Olddevicedetails.id!.id!,
+                                        "SERVER_SCOPE",
+                                        new_body_req));
                                   } catch (e) {}
 
                                   List<String> myList = [];
@@ -643,13 +644,13 @@ class replaceccmsState extends State<replaceccms> {
                                     var remove_response = await tbClient
                                         .getEntityGroupService()
                                         .removeEntitiesFromEntityGroup(
-                                            DevicecurrentFolderName, myList);
+                                        DevicecurrentFolderName, myList);
                                   } catch (e) {}
                                   try {
                                     var add_response = await tbClient
                                         .getEntityGroupService()
                                         .addEntitiesToEntityGroup(
-                                            DevicemoveFolderName, myList);
+                                        DevicemoveFolderName, myList);
                                   } catch (e) {}
                                   pr.hide();
                                   callReplacementComplete(
@@ -668,20 +669,20 @@ class replaceccmsState extends State<replaceccms> {
                           } else {
                             // New Device Updations
                             newdeviceCredentials = await tbClient
-                                    .getDeviceService()
-                                    .getDeviceCredentialsByDeviceId(
-                                        response.id!.id.toString())
-                                as DeviceCredentials;
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                response.id!.id.toString())
+                            as DeviceCredentials;
 
                             var relation_response = await tbClient
                                 .getEntityRelationService()
                                 .deleteDeviceRelation(
-                                    relationDetails.elementAt(0).from.id!,
-                                    response.id!.id!);
+                                relationDetails.elementAt(0).from.id!,
+                                response.id!.id!);
 
                             if (newdeviceCredentials != null) {
                               var newQRID =
-                                  newdeviceCredentials.credentialsId.toString();
+                              newdeviceCredentials.credentialsId.toString();
 
                               newdeviceCredentials.credentialsId =
                                   newQRID + "L";
@@ -705,10 +706,10 @@ class replaceccmsState extends State<replaceccms> {
                                 var Old_Device_Name = Olddevicedetails.name;
 
                                 olddeviceCredentials = await tbClient
-                                        .getDeviceService()
-                                        .getDeviceCredentialsByDeviceId(
-                                            Olddevicedetails.id!.id.toString())
-                                    as DeviceCredentials;
+                                    .getDeviceService()
+                                    .getDeviceCredentialsByDeviceId(
+                                    Olddevicedetails.id!.id.toString())
+                                as DeviceCredentials;
 
                                 if (olddeviceCredentials != null) {
                                   var oldQRID = olddeviceCredentials
@@ -720,7 +721,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var old_cred_response = await tbClient
                                       .getDeviceService()
                                       .saveDeviceCredentials(
-                                          olddeviceCredentials);
+                                      olddeviceCredentials);
 
                                   Olddevicedetails.name = Olddevicename + "99";
                                   var old_dev_response = await tbClient
@@ -731,7 +732,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var oldcredresponse = await tbClient
                                       .getDeviceService()
                                       .saveDeviceCredentials(
-                                          olddeviceCredentials);
+                                      olddeviceCredentials);
 
                                   response.name = Old_Device_Name;
                                   response.label = Old_Device_Name;
@@ -747,7 +748,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var up_attribute = (await tbClient
                                       .getAttributeService()
                                       .saveDeviceAttributes(response.id!.id!,
-                                          "SERVER_SCOPE", old_body_req));
+                                      "SERVER_SCOPE", old_body_req));
 
                                   // New Device Updations
 
@@ -761,7 +762,7 @@ class replaceccmsState extends State<replaceccms> {
                                   var up_credresponse = await tbClient
                                       .getDeviceService()
                                       .saveDeviceCredentials(
-                                          newdeviceCredentials);
+                                      newdeviceCredentials);
 
                                   final new_body_req = {
                                     'boardNumber': new_Device_Name,
@@ -771,9 +772,9 @@ class replaceccmsState extends State<replaceccms> {
                                     var up_newdevice_attribute = (await tbClient
                                         .getAttributeService()
                                         .saveDeviceAttributes(
-                                            Olddevicedetails.id!.id!,
-                                            "SERVER_SCOPE",
-                                            new_body_req));
+                                        Olddevicedetails.id!.id!,
+                                        "SERVER_SCOPE",
+                                        new_body_req));
                                   } catch (e) {}
 
                                   List<String> myList = [];
@@ -783,13 +784,13 @@ class replaceccmsState extends State<replaceccms> {
                                     var remove_response = tbClient
                                         .getEntityGroupService()
                                         .removeEntitiesFromEntityGroup(
-                                            DevicecurrentFolderName, myList);
+                                        DevicecurrentFolderName, myList);
                                   } catch (e) {}
                                   try {
                                     var add_response = tbClient
                                         .getEntityGroupService()
                                         .addEntitiesToEntityGroup(
-                                            DevicemoveFolderName, myList);
+                                        DevicemoveFolderName, myList);
                                   } catch (e) {}
 
                                   pr.hide();

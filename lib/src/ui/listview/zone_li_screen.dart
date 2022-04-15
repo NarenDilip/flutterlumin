@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
@@ -128,7 +129,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
 
   loadLocalData() async {
     var sharedPreferences =
-        await SharedPreferences.getInstance() as SharedPreferences;
+    await SharedPreferences.getInstance() as SharedPreferences;
     sharedPreferences.setString("SelectedZone", selectedZone);
   }
 
@@ -139,7 +140,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
     } else {
       results = _allUsers!
           .where((user) =>
-              user.toLowerCase().contains(enteredKeyword.toLowerCase()))
+          user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
     }
 
@@ -153,84 +154,84 @@ class zone_li_screen_state extends State<zone_li_screen> {
   Widget build(BuildContext context) {
     return Container(
         child: Scaffold(
-      backgroundColor: thbDblue,
-      body: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "Select Zone",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            TextField(
-              onChanged: (value) => _runFilter(value),
-              style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-              decoration: const InputDecoration(
-                labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
-                labelText: 'Search',
-                suffixIcon: Icon(
-                  Icons.search,
-                  color: Colors.white,
+          backgroundColor: thbDblue,
+          body: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const Text(
+                  "Select Zone",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-            ),
-            Expanded(
-              child: _foundUsers!.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _foundUsers!.length,
-                      itemBuilder: (context, index) => Card(
-                        key: ValueKey(_foundUsers),
-                        color: Colors.white,
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: ListTile(
-                          onTap: () {
-                            setState(() {
-                              selectedZone =
-                                  _foundUsers!.elementAt(index).toString();
-                              loadLocalData();
-                            });
-                            callWardDetailsFinder(context, selectedZone);
-                          },
-                          title: Text(_foundUsers!.elementAt(index),
-                              style: const TextStyle(
-                                  fontSize: 22.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: thbDblue)),
-                        ),
-                      ),
-                    )
-                  : const Text(
-                app_no_results,
-                      style: TextStyle(fontSize: 24),
+                TextField(
+                  onChanged: (value) => _runFilter(value),
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
+                    labelText: 'Search',
+                    suffixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white,
                     ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _foundUsers!.isNotEmpty
+                      ? ListView.builder(
+                    itemCount: _foundUsers!.length,
+                    itemBuilder: (context, index) => Card(
+                      key: ValueKey(_foundUsers),
+                      color: Colors.white,
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        onTap: () {
+                          setState(() {
+                            selectedZone =
+                                _foundUsers!.elementAt(index).toString();
+                            loadLocalData();
+                          });
+                          callWardDetailsFinder(context, selectedZone);
+                        },
+                        title: Text(_foundUsers!.elementAt(index),
+                            style: const TextStyle(
+                                fontSize: 22.0,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.bold,
+                                color: thbDblue)),
+                      ),
+                    ),
+                  )
+                      : const Text(
+                    app_no_results,
+                    style: TextStyle(fontSize: 24),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 
   void callWardDetailsFinder(BuildContext context, selectedZone) {
@@ -238,7 +239,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
       if (value) {
         try {
           pr.show();
-          var tbClient = await ThingsboardClient(serverUrl);
+          var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -249,11 +250,11 @@ class zone_li_screen_state extends State<zone_li_screen> {
           DBHelper dbHelper = new DBHelper();
           dbHelper.ward_delete(regionname[0].toString());
           List<Ward> ward =
-              await dbHelper.ward_zonebasedDetails(selectedZone);
+          await dbHelper.ward_zonebasedDetails(selectedZone);
           if (ward.isEmpty) {
 
             List<Zone> regiondetails =
-                await dbHelper.zone_zonebasedDetails(selectedZone);
+            await dbHelper.zone_zonebasedDetails(selectedZone);
             if (regiondetails.length != 0) {
               Map<String, dynamic> fromId = {
                 'entityType': 'ASSET',

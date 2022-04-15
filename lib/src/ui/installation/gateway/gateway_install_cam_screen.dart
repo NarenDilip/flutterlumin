@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -194,7 +195,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-      (Timer timer) {
+          (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -378,9 +379,9 @@ class gwcaminstallState extends State<gwcaminstall> {
     var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       // polygonad(LatLng(latter,rlonger));
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
       // details[new LatLng(latter,rlonger)];
@@ -432,13 +433,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Visibility(
@@ -454,15 +455,15 @@ class gwcaminstallState extends State<gwcaminstall> {
                                       color: Colors.white)),
                               style: ButtonStyle(
                                   padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
+                                  MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
                                   backgroundColor:
-                                      MaterialStateProperty.all(Colors.green),
+                                  MaterialStateProperty.all(Colors.green),
                                   shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ))),
+                                        borderRadius: BorderRadius.circular(25.0),
+                                      ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
                                 if (imageFile != null) {
@@ -549,7 +550,7 @@ class gwcaminstallState extends State<gwcaminstall> {
           // Utility.progressDialog(context);
           pr.show();
           try {
-            var tbClient = ThingsboardClient(serverUrl);
+            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
             tbClient.smart_init();
 
             Device response;
@@ -562,7 +563,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                 DeviceCredentials deviceCredentials = await tbClient
                     .getDeviceService()
                     .getDeviceCredentialsByDeviceId(
-                        response.id!.id.toString()) as DeviceCredentials;
+                    response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 15) {
                   DBHelper dbHelper = DBHelper();
@@ -649,7 +650,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         if (versionCompatability == true) {
                           DBHelper dbHelper = DBHelper();
                           List<Ward> warddetails =
-                              await dbHelper.ward_basedDetails(SelectedWard);
+                          await dbHelper.ward_basedDetails(SelectedWard);
                           if (warddetails.length != "0") {
                             warddetails.first.wardid;
 
@@ -682,31 +683,31 @@ class gwcaminstallState extends State<gwcaminstall> {
                             var saveAttributes = await tbClient
                                 .getAttributeService()
                                 .saveDeviceAttributes(
-                                    response.id!.id!, "SERVER_SCOPE", data);
+                                response.id!.id!, "SERVER_SCOPE", data);
 
                             List<EntityGroupId> currentdeviceresponse;
                             currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
                                 .getEntityGroupsForFolderEntity(
-                                    response.id!.id!);
+                                response.id!.id!);
 
                             if (currentdeviceresponse != null) {
                               var firstdetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.first.id!);
+                                  currentdeviceresponse.first.id!);
 
                               if (firstdetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.first.id!;
+                                currentdeviceresponse.first.id!;
                               }
                               var seconddetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.elementAt(1).id!);
+                                  currentdeviceresponse.elementAt(1).id!);
                               if (seconddetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.last.id!;
+                                currentdeviceresponse.last.id!;
                               }
 
                               List<EntityGroupInfo> entitygroups;
@@ -751,18 +752,18 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                        DevicecurrentFolderName, myList);
+                                    DevicecurrentFolderName, myList);
 
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                        DevicemoveFolderName, myList);
+                                    DevicemoveFolderName, myList);
 
                                 // Need to add with Region Folder, Zone Folder and
                                 // Ward Folder as device verification, Need to update
 
                                 final bytes =
-                                    File(imageFile!.path).readAsBytesSync();
+                                File(imageFile!.path).readAsBytesSync();
                                 String img64 = base64Encode(bytes);
 
                                 postRequest(context, img64, DeviceName);
@@ -810,7 +811,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                           }
                         } else {
                           callPolygonStop();
-                         /* FlutterLogs.logInfo(
+                          /* FlutterLogs.logInfo(
                               "gw_installation_page",
                               "gw_installation",
                               "Gateway Device Not Authorized Exception");*/
@@ -965,13 +966,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              width: 200,
-                              height: 200,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.grey[800],
-                              )),
+                          decoration: BoxDecoration(color: Colors.white),
+                          width: 200,
+                          height: 200,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey[800],
+                          )),
                     ),
                     SizedBox(height: 10),
                     Text(

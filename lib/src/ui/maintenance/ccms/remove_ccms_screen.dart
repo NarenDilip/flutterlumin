@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -108,9 +109,17 @@ class replacementccmsState extends State<replacementccms> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
+    Size size = MediaQuery
+        .of(context)
+        .size;
+    double width = MediaQuery
+        .of(context)
+        .size
+        .width;
+    double height = MediaQuery
+        .of(context)
+        .size
+        .height;
 
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
@@ -150,13 +159,13 @@ class replacementccmsState extends State<replacementccms> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -172,12 +181,12 @@ class replacementccmsState extends State<replacementccms> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                              MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                           onPressed: () {
                             if (imageFile != null) {
                               pr.show();
@@ -227,7 +236,7 @@ class replacementccmsState extends State<replacementccms> {
       if (value) {
         pr.show();
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           Device response;
@@ -240,7 +249,7 @@ class replacementccmsState extends State<replacementccms> {
               DBHelper dbHelper = DBHelper();
               var regionid;
               List<Region> regiondetails =
-                  await dbHelper.region_name_regionbasedDetails(SelectedRegion);
+              await dbHelper.region_name_regionbasedDetails(SelectedRegion);
               if (regiondetails.length != "0") {
                 regionid = regiondetails.first.regionid;
               }
@@ -257,7 +266,7 @@ class replacementccmsState extends State<replacementccms> {
 
                 if (faultresponser.length != 0) {
                   var firmwaredetails =
-                      faultresponser.first.getValue().toString();
+                  faultresponser.first.getValue().toString();
                   final decoded = jsonDecode(firmwaredetails) as Map;
                   var firmware_versions = decoded['firmware_version'];
 
@@ -277,7 +286,7 @@ class replacementccmsState extends State<replacementccms> {
                   var saveAttributes = await tbClient
                       .getAttributeService()
                       .saveDeviceAttributes(
-                          response.id!.id!, "SERVER_SCOPE", data);
+                      response.id!.id!, "SERVER_SCOPE", data);
                 }
 
                 var relationDetails = await tbClient
@@ -291,10 +300,16 @@ class replacementccmsState extends State<replacementccms> {
 
                 if (entitygroups != null) {
                   for (int i = 0; i < entitygroups.length; i++) {
-                    if (entitygroups.elementAt(i).name ==
+                    if (entitygroups
+                        .elementAt(i)
+                        .name ==
                         CCMSserviceFolderName) {
                       DevicemoveFolderName =
-                          entitygroups.elementAt(i).id!.id!.toString();
+                          entitygroups
+                              .elementAt(i)
+                              .id!
+                              .id!
+                              .toString();
                     }
                   }
 
@@ -304,27 +319,32 @@ class replacementccmsState extends State<replacementccms> {
                       .getEntityGroupsForFolderEntity(response.id!.id!);
 
                   if (currentdeviceresponse != null) {
-                    if (currentdeviceresponse.last.id.toString().isNotEmpty) {
+                    if (currentdeviceresponse.last.id
+                        .toString()
+                        .isNotEmpty) {
                       var firstdetails = await tbClient
                           .getEntityGroupService()
                           .getEntityGroup(currentdeviceresponse.first.id!);
                       if (firstdetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                            currentdeviceresponse.first.id!;
+                        currentdeviceresponse.first.id!;
                       }
                       var seconddetails = await tbClient
                           .getEntityGroupService()
                           .getEntityGroup(currentdeviceresponse.last.id!);
                       if (seconddetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                            currentdeviceresponse.last.id!;
+                        currentdeviceresponse.last.id!;
                       }
 
                       var relation_response = await tbClient
                           .getEntityRelationService()
                           .deleteDeviceRelation(
-                              relationDetails.elementAt(0).from.id!,
-                              response.id!.id!);
+                          relationDetails
+                              .elementAt(0)
+                              .from
+                              .id!,
+                          response.id!.id!);
 
                       List<String> myList = [];
                       myList.add(response.id!.id!);
@@ -333,13 +353,13 @@ class replacementccmsState extends State<replacementccms> {
                         var remove_response = await tbClient
                             .getEntityGroupService()
                             .removeEntitiesFromEntityGroup(
-                                DevicecurrentFolderName, myList);
+                            DevicecurrentFolderName, myList);
                       } catch (e) {}
                       try {
                         var add_response = await tbClient
                             .getEntityGroupService()
                             .addEntitiesToEntityGroup(
-                                DevicemoveFolderName, myList);
+                            DevicemoveFolderName, myList);
                       } catch (e) {}
 
                       final bytes = File(imageFile!.path).readAsBytesSync();

@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/models/devicelistrequester.dart';
@@ -283,7 +284,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                   height: 55,
                                   child: Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
+                                    MainAxisAlignment.spaceEvenly,
                                     children: [
                                       Align(
                                         alignment: Alignment.center,
@@ -296,7 +297,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 Navigator.of(context).push(
                                                     MaterialPageRoute(
                                                         builder: (BuildContext
-                                                                context) =>
+                                                        context) =>
                                                             region_list_screen()));
                                                 setState(() {});
                                               },
@@ -311,9 +312,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       style: const TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
-                                                              "Montserrat",
+                                                          "Montserrat",
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                          FontWeight.bold,
                                                           color: Colors.white)),
                                                 ),
                                               ),
@@ -332,7 +333,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 Navigator.of(context).push(
                                                     MaterialPageRoute(
                                                         builder: (BuildContext
-                                                                context) =>
+                                                        context) =>
                                                             zone_li_screen()));
                                                 setState(() {});
                                               },
@@ -347,9 +348,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       style: const TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
-                                                              "Montserrat",
+                                                          "Montserrat",
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                          FontWeight.bold,
                                                           color: Colors.white)),
                                                 ),
                                               ),
@@ -368,7 +369,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 Navigator.of(context).push(
                                                     MaterialPageRoute(
                                                         builder: (BuildContext
-                                                                context) =>
+                                                        context) =>
                                                             ward_li_screen()));
                                                 setState(() {});
                                               },
@@ -383,9 +384,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       style: const TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
-                                                              "Montserrat",
+                                                          "Montserrat",
                                                           fontWeight:
-                                                              FontWeight.bold,
+                                                          FontWeight.bold,
                                                           color: Colors.white)),
                                                 ),
                                               ),
@@ -417,14 +418,14 @@ class device_list_screen_state extends State<device_list_screen> {
                                         Expanded(
                                             child: Padding(
                                                 padding:
-                                                    EdgeInsets.only(left: 12),
+                                                EdgeInsets.only(left: 12),
                                                 child: Text(
                                                   app_device_filters,
                                                   style: TextStyle(
                                                       fontSize: 18.0,
                                                       fontFamily: "Montserrat",
                                                       fontWeight:
-                                                          FontWeight.bold,
+                                                      FontWeight.bold,
                                                       color: Colors.white),
                                                 ))),
                                         Expanded(
@@ -475,21 +476,21 @@ class device_list_screen_state extends State<device_list_screen> {
                                               hintText: 'ILM Number',
                                               fillColor: Colors.white,
                                               contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                              EdgeInsets.fromLTRB(
+                                                  10, 0, 0, 0),
                                               border: OutlineInputBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          70.0),
+                                                  BorderRadius.circular(
+                                                      70.0),
                                                   borderSide: BorderSide(
                                                       color: thbDblue)),
                                               enabledBorder:
-                                                  const OutlineInputBorder(
+                                              const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
                                                 borderRadius: BorderRadius.all(
                                                     Radius.circular(20.0)),
                                                 borderSide:
-                                                    BorderSide(color: thbDblue),
+                                                BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -498,7 +499,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       .ilmnumber.isNotEmpty) {
                                                     FocusScope.of(context)
                                                         .requestFocus(
-                                                            FocusNode());
+                                                        FocusNode());
                                                     callILMDeviceListFinder(
                                                         user.ilmnumber,
                                                         context);
@@ -507,9 +508,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         msg:
                                                         device_no_entry,
                                                         toastLength:
-                                                            Toast.LENGTH_SHORT,
+                                                        Toast.LENGTH_SHORT,
                                                         gravity:
-                                                            ToastGravity.BOTTOM,
+                                                        ToastGravity.BOTTOM,
                                                         timeInSecForIosWeb: 1);
                                                   }
                                                 },
@@ -549,21 +550,21 @@ class device_list_screen_state extends State<device_list_screen> {
                                               hintText: 'CCMS Number',
                                               fillColor: Colors.white,
                                               contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                              EdgeInsets.fromLTRB(
+                                                  10, 0, 0, 0),
                                               border: OutlineInputBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                  BorderRadius.circular(
+                                                      20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
                                               enabledBorder:
-                                                  const OutlineInputBorder(
+                                              const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
                                                 borderRadius: BorderRadius.all(
                                                     Radius.circular(20.0)),
                                                 borderSide:
-                                                    BorderSide(color: thbDblue),
+                                                BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -572,7 +573,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       .ccmsnumber.isNotEmpty) {
                                                     FocusScope.of(context)
                                                         .requestFocus(
-                                                            FocusNode());
+                                                        FocusNode());
                                                     callCcmsDeviceListFinder(
                                                         user.ccmsnumber,
                                                         context);
@@ -586,9 +587,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         msg:
                                                         device_no_entry,
                                                         toastLength:
-                                                            Toast.LENGTH_SHORT,
+                                                        Toast.LENGTH_SHORT,
                                                         gravity:
-                                                            ToastGravity.BOTTOM,
+                                                        ToastGravity.BOTTOM,
                                                         timeInSecForIosWeb: 1);
                                                   }
                                                 },
@@ -603,8 +604,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                               ),
                                             ),
                                             onSaved: (value) =>
-                                                user.ccmsnumber =
-                                                    value!.toUpperCase(),
+                                            user.ccmsnumber =
+                                                value!.toUpperCase(),
                                             onChanged: (String value) {
                                               user.ccmsnumber =
                                                   value.toUpperCase();
@@ -629,21 +630,21 @@ class device_list_screen_state extends State<device_list_screen> {
                                               hintText: 'Pole Number',
                                               fillColor: Colors.white,
                                               contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                              EdgeInsets.fromLTRB(
+                                                  10, 0, 0, 0),
                                               border: OutlineInputBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                  BorderRadius.circular(
+                                                      20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
                                               enabledBorder:
-                                                  const OutlineInputBorder(
+                                              const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
                                                 borderRadius: BorderRadius.all(
                                                     Radius.circular(20.0)),
                                                 borderSide:
-                                                    BorderSide(color: thbDblue),
+                                                BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -652,7 +653,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       .polenumber.isNotEmpty) {
                                                     FocusScope.of(context)
                                                         .requestFocus(
-                                                            FocusNode());
+                                                        FocusNode());
                                                     callpolebasedILMDeviceListFinder(
                                                         user.polenumber,
                                                         _relationdevices,
@@ -663,9 +664,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         msg:
                                                         device_no_entry,
                                                         toastLength:
-                                                            Toast.LENGTH_SHORT,
+                                                        Toast.LENGTH_SHORT,
                                                         gravity:
-                                                            ToastGravity.BOTTOM,
+                                                        ToastGravity.BOTTOM,
                                                         timeInSecForIosWeb: 1);
                                                   }
                                                 },
@@ -680,8 +681,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                               ),
                                             ),
                                             onSaved: (value) =>
-                                                user.polenumber =
-                                                    value!.toUpperCase(),
+                                            user.polenumber =
+                                                value!.toUpperCase(),
                                             onChanged: (String value) {
                                               user.polenumber =
                                                   value.toUpperCase();
@@ -708,21 +709,21 @@ class device_list_screen_state extends State<device_list_screen> {
                                               hintText: 'Gateway Number',
                                               fillColor: Colors.white,
                                               contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      10, 0, 0, 0),
+                                              EdgeInsets.fromLTRB(
+                                                  10, 0, 0, 0),
                                               border: OutlineInputBorder(
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0),
+                                                  BorderRadius.circular(
+                                                      20.0),
                                                   borderSide: BorderSide(
                                                       color: Colors.white)),
                                               enabledBorder:
-                                                  const OutlineInputBorder(
+                                              const OutlineInputBorder(
                                                 // width: 0.0 produces a thin "hairline" border
                                                 borderRadius: BorderRadius.all(
                                                     Radius.circular(20.0)),
                                                 borderSide:
-                                                    BorderSide(color: thbDblue),
+                                                BorderSide(color: thbDblue),
                                                 //borderSide: const BorderSide(),
                                               ),
                                               suffixIcon: GestureDetector(
@@ -731,7 +732,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                       .isNotEmpty) {
                                                     FocusScope.of(context)
                                                         .requestFocus(
-                                                            FocusNode());
+                                                        FocusNode());
                                                     callgwDeviceListFinder(
                                                         user.gatewaynumber,
                                                         context);
@@ -745,9 +746,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                                         msg:
                                                         device_no_entry,
                                                         toastLength:
-                                                            Toast.LENGTH_SHORT,
+                                                        Toast.LENGTH_SHORT,
                                                         gravity:
-                                                            ToastGravity.BOTTOM,
+                                                        ToastGravity.BOTTOM,
                                                         timeInSecForIosWeb: 1);
                                                   }
                                                 },
@@ -762,8 +763,8 @@ class device_list_screen_state extends State<device_list_screen> {
                                               ),
                                             ),
                                             onSaved: (value) =>
-                                                user.gatewaynumber =
-                                                    value!.toUpperCase(),
+                                            user.gatewaynumber =
+                                                value!.toUpperCase(),
                                             onChanged: (String value) {
                                               user.gatewaynumber =
                                                   value.toUpperCase();
@@ -802,32 +803,32 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                      children: [
-                                        Expanded(
-                                            child: Padding(
-                                                padding:
+                                          children: [
+                                            Expanded(
+                                                child: Padding(
+                                                    padding:
                                                     EdgeInsets.only(left: 12),
-                                                child: Text('ILM Devices',
-                                                    style: TextStyle(
-                                                        fontSize: 18.0,
-                                                        fontFamily:
+                                                    child: Text('ILM Devices',
+                                                        style: TextStyle(
+                                                            fontSize: 18.0,
+                                                            fontFamily:
                                                             "Montserrat",
-                                                        fontWeight:
+                                                            fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white)))),
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: Icon(
-                                                Icons.arrow_drop_down,
+                                                            color: Colors.white)))),
+                                            Expanded(
+                                              child: Align(
+                                                alignment: Alignment.centerRight,
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(12),
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    )),
+                                            )
+                                          ],
+                                        )),
                                   ),
                                 ],
                               )),
@@ -836,49 +837,49 @@ class device_list_screen_state extends State<device_list_screen> {
                               color: thbDblue,
                               child: _foundUsers!.isNotEmpty
                                   ? ListView.builder(
-                                      primary: false,
-                                      scrollDirection: Axis.vertical,
-                                      shrinkWrap: true,
-                                      itemCount: _foundUsers!.length,
-                                      itemBuilder: (context, index) => Card(
-                                        key: ValueKey(_foundUsers),
-                                        color: Colors.white,
-                                        margin: const EdgeInsets.fromLTRB(
-                                            15, 1, 10, 0),
-                                        child: ListTile(
-                                          onTap: () {
-                                            fetchGWDeviceDetails(
-                                                _foundUsers!
-                                                    .elementAt(index)
-                                                    .toString(),
-                                                context);
-                                          },
-                                          title: Text(
-                                              _foundUsers!.elementAt(index),
-                                              style: const TextStyle(
-                                                  fontSize: 22.0,
-                                                  fontFamily: "Montserrat",
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black)),
-                                        ),
-                                      ),
-                                    )
+                                primary: false,
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: _foundUsers!.length,
+                                itemBuilder: (context, index) => Card(
+                                  key: ValueKey(_foundUsers),
+                                  color: Colors.white,
+                                  margin: const EdgeInsets.fromLTRB(
+                                      15, 1, 10, 0),
+                                  child: ListTile(
+                                    onTap: () {
+                                      fetchGWDeviceDetails(
+                                          _foundUsers!
+                                              .elementAt(index)
+                                              .toString(),
+                                          context);
+                                    },
+                                    title: Text(
+                                        _foundUsers!.elementAt(index),
+                                        style: const TextStyle(
+                                            fontSize: 22.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black)),
+                                  ),
+                                ),
+                              )
                                   : Container(
-                                      color: Colors.white,
-                                      child: Column(children: [
-                                        // SizedBox(
-                                        //   height: 10,
-                                        // ),
-                                        // Text(
-                                        //   'No results found',
-                                        //   textAlign: TextAlign.center,
-                                        //   style: const TextStyle(
-                                        //       fontSize: 18.0,
-                                        //       fontFamily: "Montserrat",
-                                        //       fontWeight: FontWeight.normal,
-                                        //       color: Colors.black),
-                                        // )
-                                      ])),
+                                  color: Colors.white,
+                                  child: Column(children: [
+                                    // SizedBox(
+                                    //   height: 10,
+                                    // ),
+                                    // Text(
+                                    //   'No results found',
+                                    //   textAlign: TextAlign.center,
+                                    //   style: const TextStyle(
+                                    //       fontSize: 18.0,
+                                    //       fontFamily: "Montserrat",
+                                    //       fontWeight: FontWeight.normal,
+                                    //       color: Colors.black),
+                                    // )
+                                  ])),
                             ),
                             visible: _ilmvisible,
                           ),
@@ -899,32 +900,32 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                      children: [
-                                        Expanded(
-                                            child: Padding(
-                                                padding:
+                                          children: [
+                                            Expanded(
+                                                child: Padding(
+                                                    padding:
                                                     EdgeInsets.only(left: 12),
-                                                child: Text('CCMS Devices',
-                                                    style: TextStyle(
-                                                        fontSize: 18.0,
-                                                        fontFamily:
+                                                    child: Text('CCMS Devices',
+                                                        style: TextStyle(
+                                                            fontSize: 18.0,
+                                                            fontFamily:
                                                             "Montserrat",
-                                                        fontWeight:
+                                                            fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white)))),
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: Icon(
-                                                Icons.arrow_drop_down,
+                                                            color: Colors.white)))),
+                                            Expanded(
+                                              child: Align(
+                                                alignment: Alignment.centerRight,
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(12),
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    )),
+                                            )
+                                          ],
+                                        )),
                                   ),
                                 ],
                               )),
@@ -933,49 +934,49 @@ class device_list_screen_state extends State<device_list_screen> {
                               color: thbDblue,
                               child: _ccmsfoundUsers!.isNotEmpty
                                   ? ListView.builder(
-                                      primary: false,
-                                      scrollDirection: Axis.vertical,
-                                      shrinkWrap: true,
-                                      itemCount: _ccmsfoundUsers!.length,
-                                      itemBuilder: (context, index) => Card(
-                                        key: ValueKey(_ccmsfoundUsers),
-                                        color: Colors.white,
-                                        margin: const EdgeInsets.fromLTRB(
-                                            15, 1, 10, 0),
-                                        child: ListTile(
-                                          onTap: () {
-                                            fetchGWDeviceDetails(
-                                                _ccmsfoundUsers!
-                                                    .elementAt(index)
-                                                    .toString(),
-                                                context);
-                                          },
-                                          title: Text(
-                                              _ccmsfoundUsers!.elementAt(index),
-                                              style: const TextStyle(
-                                                  fontSize: 22.0,
-                                                  fontFamily: "Montserrat",
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black)),
-                                        ),
-                                      ),
-                                    )
+                                primary: false,
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: _ccmsfoundUsers!.length,
+                                itemBuilder: (context, index) => Card(
+                                  key: ValueKey(_ccmsfoundUsers),
+                                  color: Colors.white,
+                                  margin: const EdgeInsets.fromLTRB(
+                                      15, 1, 10, 0),
+                                  child: ListTile(
+                                    onTap: () {
+                                      fetchGWDeviceDetails(
+                                          _ccmsfoundUsers!
+                                              .elementAt(index)
+                                              .toString(),
+                                          context);
+                                    },
+                                    title: Text(
+                                        _ccmsfoundUsers!.elementAt(index),
+                                        style: const TextStyle(
+                                            fontSize: 22.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black)),
+                                  ),
+                                ),
+                              )
                                   : Container(
-                                      color: Colors.white,
-                                      child: Column(children: [
-                                        // SizedBox(
-                                        //   height: 10,
-                                        // ),
-                                        // Text(
-                                        //   'No results found',
-                                        //   textAlign: TextAlign.center,
-                                        //   style: const TextStyle(
-                                        //       fontSize: 18.0,
-                                        //       fontFamily: "Montserrat",
-                                        //       fontWeight: FontWeight.normal,
-                                        //       color: Colors.black),
-                                        // )
-                                      ])),
+                                  color: Colors.white,
+                                  child: Column(children: [
+                                    // SizedBox(
+                                    //   height: 10,
+                                    // ),
+                                    // Text(
+                                    //   'No results found',
+                                    //   textAlign: TextAlign.center,
+                                    //   style: const TextStyle(
+                                    //       fontSize: 18.0,
+                                    //       fontFamily: "Montserrat",
+                                    //       fontWeight: FontWeight.normal,
+                                    //       color: Colors.black),
+                                    // )
+                                  ])),
                             ),
                             visible: _ccmsvisible,
                           ),
@@ -996,32 +997,32 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                      children: [
-                                        Expanded(
-                                            child: Padding(
-                                                padding:
+                                          children: [
+                                            Expanded(
+                                                child: Padding(
+                                                    padding:
                                                     EdgeInsets.only(left: 12),
-                                                child: Text('Gateway Devices',
-                                                    style: TextStyle(
-                                                        fontSize: 18.0,
-                                                        fontFamily:
+                                                    child: Text('Gateway Devices',
+                                                        style: TextStyle(
+                                                            fontSize: 18.0,
+                                                            fontFamily:
                                                             "Montserrat",
-                                                        fontWeight:
+                                                            fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white)))),
-                                        Expanded(
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Padding(
-                                              padding: EdgeInsets.all(12),
-                                              child: Icon(
-                                                Icons.arrow_drop_down,
+                                                            color: Colors.white)))),
+                                            Expanded(
+                                              child: Align(
+                                                alignment: Alignment.centerRight,
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(12),
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    )),
+                                            )
+                                          ],
+                                        )),
                                   ),
                                 ],
                               )),
@@ -1030,49 +1031,49 @@ class device_list_screen_state extends State<device_list_screen> {
                               color: thbDblue,
                               child: _gwfoundUsers!.isNotEmpty
                                   ? ListView.builder(
-                                      primary: false,
-                                      scrollDirection: Axis.vertical,
-                                      shrinkWrap: true,
-                                      itemCount: _gwfoundUsers!.length,
-                                      itemBuilder: (context, index) => Card(
-                                        key: ValueKey(_gwfoundUsers),
-                                        color: Colors.white,
-                                        margin: const EdgeInsets.fromLTRB(
-                                            15, 1, 10, 0),
-                                        child: ListTile(
-                                          onTap: () {
-                                            fetchGWDeviceDetails(
-                                                _gwfoundUsers!
-                                                    .elementAt(index)
-                                                    .toString(),
-                                                context);
-                                          },
-                                          title: Text(
-                                              _gwfoundUsers!.elementAt(index),
-                                              style: const TextStyle(
-                                                  fontSize: 22.0,
-                                                  fontFamily: "Montserrat",
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black)),
-                                        ),
-                                      ),
-                                    )
+                                primary: false,
+                                scrollDirection: Axis.vertical,
+                                shrinkWrap: true,
+                                itemCount: _gwfoundUsers!.length,
+                                itemBuilder: (context, index) => Card(
+                                  key: ValueKey(_gwfoundUsers),
+                                  color: Colors.white,
+                                  margin: const EdgeInsets.fromLTRB(
+                                      15, 1, 10, 0),
+                                  child: ListTile(
+                                    onTap: () {
+                                      fetchGWDeviceDetails(
+                                          _gwfoundUsers!
+                                              .elementAt(index)
+                                              .toString(),
+                                          context);
+                                    },
+                                    title: Text(
+                                        _gwfoundUsers!.elementAt(index),
+                                        style: const TextStyle(
+                                            fontSize: 22.0,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black)),
+                                  ),
+                                ),
+                              )
                                   : Container(
-                                      color: Colors.white,
-                                      child: Column(children: [
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text(
-                                          device_no_result ,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                              fontSize: 18.0,
-                                              fontFamily: "Montserrat",
-                                              fontWeight: FontWeight.normal,
-                                              color: Colors.black),
-                                        )
-                                      ])),
+                                  color: Colors.white,
+                                  child: Column(children: [
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      device_no_result ,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontFamily: "Montserrat",
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.black),
+                                    )
+                                  ])),
                             ),
                             visible: _gwvisible,
                           ),
@@ -1148,7 +1149,7 @@ class device_list_screen_state extends State<device_list_screen> {
       if (value) {
         pr.show();
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           String searchnumber = user.ilmnumber.replaceAll(" ", "");
@@ -1160,13 +1161,13 @@ class device_list_screen_state extends State<device_list_screen> {
 
           PageData<Device> devicelist_response;
           devicelist_response =
-              (await tbClient.getDeviceService().getTenantDevices(pageLink));
+          (await tbClient.getDeviceService().getTenantDevices(pageLink));
 
           if (devicelist_response != null) {
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {
                 String name =
-                    devicelist_response.data.elementAt(i).name.toString();
+                devicelist_response.data.elementAt(i).name.toString();
                 _foundUsers!.add(name);
               }
             }
@@ -1207,7 +1208,7 @@ class device_list_screen_state extends State<device_list_screen> {
       if (value) {
         pr.show();
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           String searchnumber = user.ccmsnumber.replaceAll(" ", "");
@@ -1226,7 +1227,7 @@ class device_list_screen_state extends State<device_list_screen> {
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {
                 String name =
-                    devicelist_response.data.elementAt(i).name.toString();
+                devicelist_response.data.elementAt(i).name.toString();
                 _ccmsfoundUsers!.add(name);
               }
             }
@@ -1263,7 +1264,7 @@ class device_list_screen_state extends State<device_list_screen> {
       if (value) {
         pr.show();
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           String searchnumber = user.gatewaynumber.replaceAll(" ", "");
@@ -1282,7 +1283,7 @@ class device_list_screen_state extends State<device_list_screen> {
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {
                 String name =
-                    devicelist_response.data.elementAt(i).name.toString();
+                devicelist_response.data.elementAt(i).name.toString();
                 _gwfoundUsers!.add(name);
               }
             }
@@ -1331,10 +1332,10 @@ class device_list_screen_state extends State<device_list_screen> {
           String polenumber = searchnumber.replaceAll(" ", "");
 
           Asset response;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           response = await tbClient.getAssetService().getTenantAsset(polenumber)
-              as Asset;
+          as Asset;
 
           if (response != null) {
             List<EntityRelation> relationresponse;
@@ -1349,9 +1350,9 @@ class device_list_screen_state extends State<device_list_screen> {
               Device devrelationresponse;
               for (int i = 0; i < _relationdevices.length; i++) {
                 devrelationresponse = await tbClient
-                        .getDeviceService()
-                        .getDevice(_relationdevices.elementAt(i).toString())
-                    as Device;
+                    .getDeviceService()
+                    .getDevice(_relationdevices.elementAt(i).toString())
+                as Device;
                 if (devrelationresponse != null) {
                   if (devrelationresponse.type == "lumiNode") {
                     _foundUsers!.add(devrelationresponse.name);
@@ -1409,7 +1410,7 @@ class device_list_screen_state extends State<device_list_screen> {
           pr.show();
           Device response;
           String? SelectedRegion;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           SelectedRegion = prefs.getString("SelectedRegion").toString();
@@ -1423,7 +1424,7 @@ class device_list_screen_state extends State<device_list_screen> {
                 prefs.setString('deviceId', response.id!.id!.toString());
                 prefs.setString('DeviceDetails', response.id!.id!.toString());
 
-               /* try {
+                /* try {
                   List<TsKvEntry> faultresponser;
                   faultresponser = await tbClient
                       .getAttributeService()
@@ -1550,49 +1551,49 @@ class device_list_screen_state extends State<device_list_screen> {
 
                     try {
 
-                    List<String> myLister = [];
-                    myLister.add("landmark");
+                      List<String> myLister = [];
+                      myLister.add("landmark");
 
-                    responserse = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myLister));
+                      responserse = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myLister));
 
-                    if (responserse.isNotEmpty) {
-                      prefs.setString('location',
-                          responserse.first.getValue().toString());
-                      prefs.setString('deviceName', deviceName);
-                    }
-                    // myLister.add("location");
+                      if (responserse.isNotEmpty) {
+                        prefs.setString('location',
+                            responserse.first.getValue().toString());
+                        prefs.setString('deviceName', deviceName);
+                      }
+                      // myLister.add("location");
 
-                    List<String> LampmyList = [];
-                    LampmyList.add("lampWatts");
+                      List<String> LampmyList = [];
+                      LampmyList.add("lampWatts");
 
-                    List<AttributeKvEntry> lampatresponser;
+                      List<AttributeKvEntry> lampatresponser;
 
-                    lampatresponser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, LampmyList));
+                      lampatresponser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, LampmyList));
 
-                    if (lampatresponser.isNotEmpty) {
-                      prefs.setString('deviceWatts',
-                          lampatresponser.first.getValue().toString());
-                    }
+                      if (lampatresponser.isNotEmpty) {
+                        prefs.setString('deviceWatts',
+                            lampatresponser.first.getValue().toString());
+                      }
 
-                    List<String> myList = [];
-                    myList.add("latitude");
-                    myList.add("longitude");
+                      List<String> myList = [];
+                      myList.add("latitude");
+                      myList.add("longitude");
 
-                    List<BaseAttributeKvEntry> responser;
+                      List<BaseAttributeKvEntry> responser;
 
-                    responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<BaseAttributeKvEntry>;
+                      responser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myList))
+                      as List<BaseAttributeKvEntry>;
 
-                    prefs.setString('deviceLatitude',
-                        responser.first.kv.getValue().toString());
-                    prefs.setString('deviceLongitude',
-                        responser.last.kv.getValue().toString());
+                      prefs.setString('deviceLatitude',
+                          responser.first.kv.getValue().toString());
+                      prefs.setString('deviceLongitude',
+                          responser.last.kv.getValue().toString());
 
                     }catch(e){
                       var message = toThingsboardError(e, context);
@@ -1846,7 +1847,7 @@ Future<void> callLogoutoption(BuildContext context) async {
               dbhelper.ward_delete(SelectedRegion);
 
               SharedPreferences preferences =
-                  await SharedPreferences.getInstance();
+              await SharedPreferences.getInstance();
               await preferences.clear();
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(

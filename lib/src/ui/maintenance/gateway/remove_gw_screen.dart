@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -157,13 +158,13 @@ class replacementgwState extends State<replacementgw> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -179,12 +180,12 @@ class replacementgwState extends State<replacementgw> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                              MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                           onPressed: () {
                             if (imageFile != null) {
                               pr.show();
@@ -194,7 +195,7 @@ class replacementgwState extends State<replacementgw> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      " Image not captured successfully! Please try again!",
+                                  " Image not captured successfully! Please try again!",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -244,7 +245,7 @@ class replacementgwState extends State<replacementgw> {
         // Utility.progressDialog(context);
         pr.show();
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           Device response;
@@ -257,8 +258,8 @@ class replacementgwState extends State<replacementgw> {
               DBHelper dbHelper = DBHelper();
               var regionid;
               List<Region> regiondetails =
-                  await dbHelper.region_name_regionbasedDetails(SelectedRegion)
-                      as List<Region>;
+              await dbHelper.region_name_regionbasedDetails(SelectedRegion)
+              as List<Region>;
               if (regiondetails.length != "0") {
                 regionid = regiondetails.first.regionid;
               }
@@ -270,12 +271,12 @@ class replacementgwState extends State<replacementgw> {
                 List<AttributeKvEntry> faultresponser;
 
                 faultresponser = (await tbClient
-                        .getAttributeService()
-                        .getFirmAttributeKvEntries(regionid, myfirmList));
+                    .getAttributeService()
+                    .getFirmAttributeKvEntries(regionid, myfirmList));
 
                 if (faultresponser.length != 0) {
                   var firmwaredetails =
-                      faultresponser.first.getValue().toString();
+                  faultresponser.first.getValue().toString();
                   final decoded = jsonDecode(firmwaredetails) as Map;
                   var firmware_versions = decoded['firmware_version'];
 
@@ -295,7 +296,7 @@ class replacementgwState extends State<replacementgw> {
                   var saveAttributes = await tbClient
                       .getAttributeService()
                       .saveDeviceAttributes(
-                          response.id!.id!, "SERVER_SCOPE", data);
+                      response.id!.id!, "SERVER_SCOPE", data);
                 }
 
                 var relationDetails = await tbClient
@@ -309,7 +310,7 @@ class replacementgwState extends State<replacementgw> {
 
                 if (entitygroups != null) {
                   for (int i = 0; i < entitygroups.length; i++) {
-                    if (entitygroups.elementAt(i).name == GWserviceFolderName) {
+                    if (entitygroups.elementAt(i).name == FlavorConfig.instance.variables["GWserviceFolderName"]) {
                       DevicemoveFolderName =
                           entitygroups.elementAt(i).id!.id!.toString();
                     }
@@ -327,21 +328,21 @@ class replacementgwState extends State<replacementgw> {
                           .getEntityGroup(currentdeviceresponse.first.id!);
                       if (firstdetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                            currentdeviceresponse.first.id!;
+                        currentdeviceresponse.first.id!;
                       }
                       var seconddetails = await tbClient
                           .getEntityGroupService()
                           .getEntityGroup(currentdeviceresponse.last.id!);
                       if (seconddetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                            currentdeviceresponse.last.id!;
+                        currentdeviceresponse.last.id!;
                       }
 
                       var relation_response = await tbClient
                           .getEntityRelationService()
                           .deleteDeviceRelation(
-                              relationDetails.elementAt(0).from.id!,
-                              response.id!.id!);
+                          relationDetails.elementAt(0).from.id!,
+                          response.id!.id!);
 
                       // DevicecurrentFolderName =
                       //     currentdeviceresponse.last.id.toString();
@@ -353,13 +354,13 @@ class replacementgwState extends State<replacementgw> {
                         var remove_response = await tbClient
                             .getEntityGroupService()
                             .removeEntitiesFromEntityGroup(
-                                DevicecurrentFolderName, myList);
+                            DevicecurrentFolderName, myList);
                       } catch (e) { }
                       try {
                         var add_response = await tbClient
                             .getEntityGroupService()
                             .addEntitiesToEntityGroup(
-                                DevicemoveFolderName, myList);
+                            DevicemoveFolderName, myList);
                       } catch (e) {}
 
                       final bytes = File(imageFile!.path).readAsBytesSync();
@@ -393,7 +394,7 @@ class replacementgwState extends State<replacementgw> {
                 pr.hide();
                 Fluttertoast.showToast(
                     msg:
-                        "Device is not compatible with this Project "+ SelectedRegion +" Kindly try another one",
+                    "Device is not compatible with this Project "+ SelectedRegion +" Kindly try another one",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -415,7 +416,7 @@ class replacementgwState extends State<replacementgw> {
             pr.hide();
             Fluttertoast.showToast(
                 msg:
-                    "Image not captured successfully! Please try again!",
+                "Image not captured successfully! Please try again!",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,

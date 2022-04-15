@@ -26,8 +26,9 @@ const darkgreen = Color(0xff146e00);
 
 const splashscreen_text = "LUMINATOR";
 
-// const serverUrl = "http://iotpro.io:8077";
-const serverUrl = "https://schnelliot.in/";
+const devBaseUrl = "http://iotpro.io:8077";
+const prodBaseUrl = "https://schnelliot.in/";
+
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
 // const app_username = "smartLumi@gmail.com";
@@ -40,17 +41,17 @@ const validate_email = "Please enter the validate email";
 const sign_in = "Start Process";
 const qr_text = "SCAN QR CODE";
 
-const ILMDeviceInstallationFolder = "lumismartLights";
-// const ILMDeviceInstallationFolder = "smartLights";
+const devILMDeviceInstallationFolder = "lumismartLights";
+const ILMDeviceInstallationFolder = "smartLights";
 
-const ILMserviceFolderName = "forRepairILM";
-// const ILMserviceFolderName = "forServiceLuminodes";
+const devILMserviceFolderName = "forRepairILM";
+const ILMserviceFolderName = "forServiceLuminodes";
 
-const CCMSserviceFolderName = "forRepairCCMS";
-// const CCMSserviceFolderName = "forServiceCCMS";
+const devCCMSserviceFolderName = "forRepairCCMS";
+const CCMSserviceFolderName = "forServiceCCMS";
 
-const GWserviceFolderName = "forRepairGateway";
-// const GWserviceFolderName = "forServiceCCMS";
+const devGWserviceFolderName = "forRepairGateway";
+const GWserviceFolderName = "forServiceCCMS";
 
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "CCMS";

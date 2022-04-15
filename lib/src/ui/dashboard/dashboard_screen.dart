@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
@@ -184,7 +185,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                       : 10.0,
                   decoration: BoxDecoration(
                       borderRadius:
-                          BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                      BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
                       color: Colors.white),
                 ),
               )
@@ -270,7 +271,7 @@ class dashboard_screenState extends State<dashboard_screen> {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-            (route) => true).then((value) async {
+                (route) => true).then((value) async {
           if (value != null) {
             // if (value.toString().length == 6) {
             fetchGWDeviceDetails(value, context);
@@ -309,7 +310,7 @@ class dashboard_screenState extends State<dashboard_screen> {
           pr.show();
           Device response;
           String? SelectedRegion;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           SelectedRegion = prefs.getString("SelectedRegion").toString();
@@ -505,7 +506,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                const CCMSMaintenanceScreen()),
+                            const CCMSMaintenanceScreen()),
                       );
                     } else if (response.type == Gw_deviceType) {
                       Navigator.push(

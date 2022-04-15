@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -191,7 +192,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-      (Timer timer) {
+          (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -374,9 +375,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         jsonResult['features'][0]['geometry']['coordinates'][0].length;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
     }
   }
@@ -426,13 +427,13 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Visibility(
@@ -448,15 +449,15 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                       color: Colors.white)),
                               style: ButtonStyle(
                                   padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
+                                  MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
                                   backgroundColor:
-                                      MaterialStateProperty.all(Colors.green),
+                                  MaterialStateProperty.all(Colors.green),
                                   shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ))),
+                                        borderRadius: BorderRadius.circular(25.0),
+                                      ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
                                 if (imageFile != null) {
@@ -553,7 +554,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         if (value) {
           pr.show();
           try {
-            var tbClient = ThingsboardClient(serverUrl);
+            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
             tbClient.smart_init();
 
             Device response;
@@ -566,7 +567,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                 DeviceCredentials deviceCredentials = await tbClient
                     .getDeviceService()
                     .getDeviceCredentialsByDeviceId(
-                        response.id!.id.toString()) as DeviceCredentials;
+                    response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 15) {
                   DBHelper dbHelper = DBHelper();
@@ -683,31 +684,31 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                             var saveAttributes = await tbClient
                                 .getAttributeService()
                                 .saveDeviceAttributes(
-                                    response.id!.id!, "SERVER_SCOPE", data);
+                                response.id!.id!, "SERVER_SCOPE", data);
 
                             List<EntityGroupId> currentdeviceresponse;
                             currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
                                 .getEntityGroupsForFolderEntity(
-                                    response.id!.id!);
+                                response.id!.id!);
 
                             if (currentdeviceresponse != null) {
                               var firstdetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.first.id!);
+                                  currentdeviceresponse.first.id!);
 
                               if (firstdetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.first.id!;
+                                currentdeviceresponse.first.id!;
                               }
                               var seconddetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.last.id!);
+                                  currentdeviceresponse.last.id!);
                               if (seconddetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.last.id!;
+                                currentdeviceresponse.last.id!;
                               }
 
                               List<EntityGroupInfo> entitygroups;
@@ -752,18 +753,18 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                        DevicecurrentFolderName, myList);
+                                    DevicecurrentFolderName, myList);
 
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                        DevicemoveFolderName, myList);
+                                    DevicemoveFolderName, myList);
 
                                 // Need to add with Region Folder, Zone Folder and
                                 // Ward Folder as device verification, Need to update
 
                                 final bytes =
-                                    File(imageFile!.path).readAsBytesSync();
+                                File(imageFile!.path).readAsBytesSync();
                                 String img64 = base64Encode(bytes);
 
                                 postRequest(context, img64, DeviceName);
@@ -859,7 +860,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     }
                   } else {
                     // Navigator.pop(context);
-                   /* FlutterLogs.logInfo("ccms_installation_page",
+                    /* FlutterLogs.logInfo("ccms_installation_page",
                         "ccms_installation", "CCMS Device Faulty Exception");*/
                     pr.hide();
                     Fluttertoast.showToast(
@@ -975,13 +976,13 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              width: 200,
-                              height: 200,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.grey[800],
-                              )),
+                          decoration: BoxDecoration(color: Colors.white),
+                          width: 200,
+                          height: 200,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey[800],
+                          )),
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -1051,7 +1052,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       return response;
     } catch (e) {
       callPolygonStop();
-     /* FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+      /* FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
           "CCMS Device Image Upload Error");*/
       Fluttertoast.showToast(
           msg: app_dev_img_uperror,

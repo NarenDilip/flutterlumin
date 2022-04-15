@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
@@ -165,13 +166,13 @@ class replaceilmState extends State<replaceilm> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -187,12 +188,12 @@ class replaceilmState extends State<replaceilm> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                              MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                           onPressed: () {
                             if (imageFile != null) {
                               pr.show();
@@ -208,7 +209,7 @@ class replaceilmState extends State<replaceilm> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      "Image not captured successfully! Please try again",
+                                  "Image not captured successfully! Please try again",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -397,7 +398,7 @@ class replaceilmState extends State<replaceilm> {
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           response = await tbClient
               .getDeviceService()
@@ -485,7 +486,7 @@ class replaceilmState extends State<replaceilm> {
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           response = (await tbClient
@@ -511,7 +512,7 @@ class replaceilmState extends State<replaceilm> {
 
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+                  if (entitygroups.elementAt(i).name == FlavorConfig.instance.variables["ILMserviceFolderName"]) {
                     DevicemoveFolderName =
                         entitygroups.elementAt(i).id!.id!.toString();
                   }
@@ -561,455 +562,243 @@ class replaceilmState extends State<replaceilm> {
                     //   prefs.setString('deviceWatts',
                     //       responser.last.kv.getValue().toString());
 
-                      prefs.setString('deviceId', deviceid);
-                      prefs.setString('deviceName', deviceName);
+                    prefs.setString('deviceId', deviceid);
+                    prefs.setString('deviceName', deviceName);
 
-                      DeviceCredentials? newdeviceCredentials;
-                      DeviceCredentials? olddeviceCredentials;
+                    DeviceCredentials? newdeviceCredentials;
+                    DeviceCredentials? olddeviceCredentials;
 
-                      DBHelper dbHelper = DBHelper();
-                      var regionid;
-                      List<Region> regiondetails = await dbHelper
-                          .region_name_regionbasedDetails(SelectedRegion);
-                      if (regiondetails.length != "0") {
-                        regionid = regiondetails.first.regionid;
-                      }
+                    DBHelper dbHelper = DBHelper();
+                    var regionid;
+                    List<Region> regiondetails = await dbHelper
+                        .region_name_regionbasedDetails(SelectedRegion);
+                    if (regiondetails.length != "0") {
+                      regionid = regiondetails.first.regionid;
+                    }
 
-                      // List<String> myfirmList = [];
-                      // myfirmList.add("firmware_versions");
-                      //
-                      // List<AttributeKvEntry> faultresponser;
-                      //
-                      // faultresponser = (await tbClient
-                      //     .getAttributeService()
-                      //     .getFirmAttributeKvEntries(regionid, myfirmList));
+                    // List<String> myfirmList = [];
+                    // myfirmList.add("firmware_versions");
+                    //
+                    // List<AttributeKvEntry> faultresponser;
+                    //
+                    // faultresponser = (await tbClient
+                    //     .getAttributeService()
+                    //     .getFirmAttributeKvEntries(regionid, myfirmList));
 
-                      // List<String> myreplacefirmList = [];
-                      // myreplacefirmList.add("firmware_versions");
-                      //
-                      // List<AttributeKvEntry> relacefaultresponser;
-                      //
-                      // relacefaultresponser = (await tbClient
-                      //     .getAttributeService()
-                      //     .getAttributeallKvEntries(
-                      //         response.id!.id!, myreplacefirmList));
+                    // List<String> myreplacefirmList = [];
+                    // myreplacefirmList.add("firmware_versions");
+                    //
+                    // List<AttributeKvEntry> relacefaultresponser;
+                    //
+                    // relacefaultresponser = (await tbClient
+                    //     .getAttributeService()
+                    //     .getAttributeallKvEntries(
+                    //         response.id!.id!, myreplacefirmList));
 
-                      // if (faultresponser.length != 0) {
-                      //   var firmwaredetails =
-                      //       faultresponser.first.getValue().toString();
-                      //
-                      //   final decoded = jsonDecode(firmwaredetails) as Map;
-                      //   var firmware_versions = decoded['firmware_version'];
-                      //   var compatable_versions = decoded[FirmwareVersion];
-                      //
-                      //   if (compatable_versions
-                      //       .toString()
-                      //       .contains(relacefaultresponser.first.getValue())) {
-                      versionCompatability = true;
-                      //   } else {
-                      //     versionCompatability = false;
-                      //   }
-                      // }
+                    // if (faultresponser.length != 0) {
+                    //   var firmwaredetails =
+                    //       faultresponser.first.getValue().toString();
+                    //
+                    //   final decoded = jsonDecode(firmwaredetails) as Map;
+                    //   var firmware_versions = decoded['firmware_version'];
+                    //   var compatable_versions = decoded[FirmwareVersion];
+                    //
+                    //   if (compatable_versions
+                    //       .toString()
+                    //       .contains(relacefaultresponser.first.getValue())) {
+                    versionCompatability = true;
+                    //   } else {
+                    //     versionCompatability = false;
+                    //   }
+                    // }
 
-                      if (versionCompatability == true) {
-                        if (relationDetails.length.toString() == "0") {
-                          newdeviceCredentials = await tbClient
+                    if (versionCompatability == true) {
+                      if (relationDetails.length.toString() == "0") {
+                        newdeviceCredentials = await tbClient
+                            .getDeviceService()
+                            .getDeviceCredentialsByDeviceId(
+                            response.id!.id.toString())
+                        as DeviceCredentials;
+
+                        if (newdeviceCredentials != null) {
+                          var newQRID =
+                          newdeviceCredentials.credentialsId.toString();
+
+                          newdeviceCredentials.credentialsId = newQRID + "L";
+                          var credresponse = await tbClient
+                              .getDeviceService()
+                              .saveDeviceCredentials(newdeviceCredentials);
+
+                          response.name = deviceName + "99";
+                          var devresponse = await tbClient
+                              .getDeviceService()
+                              .saveDevice(response);
+
+                          // Old Device Updations
+                          Device Olddevicedetails = null as Device;
+                          Olddevicedetails = await tbClient
+                              .getDeviceService()
+                              .getTenantDevice(Olddevicename) as Device;
+
+                          if (Olddevicedetails != null) {
+                            var Old_Device_Name = Olddevicedetails.name;
+
+                            var relationDetails = await tbClient
+                                .getEntityRelationService()
+                                .findInfoByTo(Olddevicedetails.id!);
+
+                            // if(relationDetails.isNotEmpty) {
+                            //   var relation_response = await tbClient
+                            //       .getEntityRelationService()
+                            //       .deleteDeviceRelation(
+                            //       relationDetails
+                            //           .elementAt(0)
+                            //           .from
+                            //           .id!,
+                            //       Olddevicedetails.id!.id!);
+                            // }
+
+                            olddeviceCredentials = await tbClient
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                Olddevicedetails.id!.id.toString())
+                            as DeviceCredentials;
+
+                            if (olddeviceCredentials != null) {
+                              var oldQRID = olddeviceCredentials.credentialsId
+                                  .toString();
+
+                              olddeviceCredentials.credentialsId =
+                                  oldQRID + "L";
+                              var old_cred_response = await tbClient
                                   .getDeviceService()
-                                  .getDeviceCredentialsByDeviceId(
-                                      response.id!.id.toString())
-                              as DeviceCredentials;
+                                  .saveDeviceCredentials(
+                                  olddeviceCredentials);
 
-                          if (newdeviceCredentials != null) {
-                            var newQRID =
-                                newdeviceCredentials.credentialsId.toString();
+                              Olddevicedetails.name = Olddevicename + "99";
+                              var old_dev_response = await tbClient
+                                  .getDeviceService()
+                                  .saveDevice(Olddevicedetails);
 
-                            newdeviceCredentials.credentialsId = newQRID + "L";
-                            var credresponse = await tbClient
-                                .getDeviceService()
-                                .saveDeviceCredentials(newdeviceCredentials);
+                              olddeviceCredentials.credentialsId = newQRID;
+                              var oldcredresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDeviceCredentials(
+                                  olddeviceCredentials);
 
-                            response.name = deviceName + "99";
-                            var devresponse = await tbClient
-                                .getDeviceService()
-                                .saveDevice(response);
+                              response.name = Old_Device_Name;
+                              response.label = Old_Device_Name;
+                              var olddevresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDevice(response);
 
-                            // Old Device Updations
-                            Device Olddevicedetails = null as Device;
-                            Olddevicedetails = await tbClient
-                                .getDeviceService()
-                                .getTenantDevice(Olddevicename) as Device;
+                              final old_body_req = {
+                                'boardNumber': Old_Device_Name,
+                                'ieeeAddress': oldQRID,
+                                'latitude': Lattitude,
+                                'longitude': Longitude,
+                                'landmark': address,
+                              };
 
-                            if (Olddevicedetails != null) {
-                              var Old_Device_Name = Olddevicedetails.name;
+                              var up_attribute = (await tbClient
+                                  .getAttributeService()
+                                  .saveDeviceAttributes(response.id!.id!,
+                                  "SERVER_SCOPE", old_body_req));
 
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
+                              // New Device Updations
 
-                              // if(relationDetails.isNotEmpty) {
-                              //   var relation_response = await tbClient
-                              //       .getEntityRelationService()
-                              //       .deleteDeviceRelation(
-                              //       relationDetails
-                              //           .elementAt(0)
-                              //           .from
-                              //           .id!,
-                              //       Olddevicedetails.id!.id!);
+                              Olddevicedetails.name = new_Device_Name;
+                              Olddevicedetails.label = new_Device_Name;
+                              var up_devresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDevice(Olddevicedetails);
+
+                              newdeviceCredentials.credentialsId = oldQRID;
+                              var up_credresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDeviceCredentials(
+                                  newdeviceCredentials);
+
+                              final new_body_req = {
+                                'boardNumber': new_Device_Name,
+                                'ieeeAddress': newQRID,
+                                'latitude': Lattitude,
+                                'longitude': Longitude,
+                                'landmark': address,
+                              };
+
+                              // DBHelper dbHelper = DBHelper();
+                              // List<Ward> warddetails = await dbHelper
+                              //     .ward_basedDetails(SelectedWard);
+                              // if (warddetails.length != "0") {
+                              //   warddetails.first.wardid;
+                              //
+                              //   Map<String, dynamic> fromId = {
+                              //     'entityType': 'ASSET',
+                              //     'id': warddetails.first.wardid
+                              //   };
+                              //
+                              //   Map<String, dynamic> toId = {
+                              //     'entityType': 'DEVICE',
+                              //     'id': Olddevicedetails.id!.id
+                              //   };
+                              //
+                              //   EntityRelation entityRelation =
+                              //       EntityRelation(
+                              //           from: EntityId.fromJson(fromId),
+                              //           to: EntityId.fromJson(toId),
+                              //           type: "Contains",
+                              //           typeGroup: RelationTypeGroup.COMMON);
+                              //
+                              //   Future<EntityRelation> entityRelations =
+                              //       tbClient
+                              //           .getEntityRelationService()
+                              //           .saveRelation(entityRelation);
                               // }
 
-                              olddeviceCredentials = await tbClient
-                                      .getDeviceService()
-                                      .getDeviceCredentialsByDeviceId(
-                                          Olddevicedetails.id!.id.toString())
-                                  as DeviceCredentials;
-
-                              if (olddeviceCredentials != null) {
-                                var oldQRID = olddeviceCredentials.credentialsId
-                                    .toString();
-
-                                olddeviceCredentials.credentialsId =
-                                    oldQRID + "L";
-                                var old_cred_response = await tbClient
-                                    .getDeviceService()
-                                    .saveDeviceCredentials(
-                                        olddeviceCredentials);
-
-                                Olddevicedetails.name = Olddevicename + "99";
-                                var old_dev_response = await tbClient
-                                    .getDeviceService()
-                                    .saveDevice(Olddevicedetails);
-
-                                olddeviceCredentials.credentialsId = newQRID;
-                                var oldcredresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDeviceCredentials(
-                                        olddeviceCredentials);
-
-                                response.name = Old_Device_Name;
-                                response.label = Old_Device_Name;
-                                var olddevresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDevice(response);
-
-                                final old_body_req = {
-                                  'boardNumber': Old_Device_Name,
-                                  'ieeeAddress': oldQRID,
-                                  'latitude': Lattitude,
-                                  'longitude': Longitude,
-                                  'landmark': address,
-                                };
-
-                                var up_attribute = (await tbClient
+                              try {
+                                var up_newdevice_attribute = (await tbClient
                                     .getAttributeService()
-                                    .saveDeviceAttributes(response.id!.id!,
-                                        "SERVER_SCOPE", old_body_req));
-
-                                // New Device Updations
-
-                                Olddevicedetails.name = new_Device_Name;
-                                Olddevicedetails.label = new_Device_Name;
-                                var up_devresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDevice(Olddevicedetails);
-
-                                newdeviceCredentials.credentialsId = oldQRID;
-                                var up_credresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDeviceCredentials(
-                                        newdeviceCredentials);
-
-                                final new_body_req = {
-                                  'boardNumber': new_Device_Name,
-                                  'ieeeAddress': newQRID,
-                                  'latitude': Lattitude,
-                                  'longitude': Longitude,
-                                  'landmark': address,
-                                };
-
-                                // DBHelper dbHelper = DBHelper();
-                                // List<Ward> warddetails = await dbHelper
-                                //     .ward_basedDetails(SelectedWard);
-                                // if (warddetails.length != "0") {
-                                //   warddetails.first.wardid;
-                                //
-                                //   Map<String, dynamic> fromId = {
-                                //     'entityType': 'ASSET',
-                                //     'id': warddetails.first.wardid
-                                //   };
-                                //
-                                //   Map<String, dynamic> toId = {
-                                //     'entityType': 'DEVICE',
-                                //     'id': Olddevicedetails.id!.id
-                                //   };
-                                //
-                                //   EntityRelation entityRelation =
-                                //       EntityRelation(
-                                //           from: EntityId.fromJson(fromId),
-                                //           to: EntityId.fromJson(toId),
-                                //           type: "Contains",
-                                //           typeGroup: RelationTypeGroup.COMMON);
-                                //
-                                //   Future<EntityRelation> entityRelations =
-                                //       tbClient
-                                //           .getEntityRelationService()
-                                //           .saveRelation(entityRelation);
-                                // }
-
-                                try {
-                                  var up_newdevice_attribute = (await tbClient
-                                      .getAttributeService()
-                                      .saveDeviceAttributes(
-                                          Olddevicedetails.id!.id!,
-                                          "SERVER_SCOPE",
-                                          new_body_req));
-                                } catch (e) {
-                                  FlutterLogs.logInfo("devicelist_page",
-                                      "device_list", "logMessage");
-                                }
-
-                                List<String> myList = [];
-                                myList.add(response.id!.id!);
-
-                                try {
-                                  var remove_response = await tbClient
-                                      .getEntityGroupService()
-                                      .removeEntitiesFromEntityGroup(
-                                          DevicecurrentFolderName, myList);
-                                } catch (e) {
-                                  FlutterLogs.logInfo("devicelist_page",
-                                      "device_list", "logMessage");
-                                }
-                                try {
-                                  var add_response = await tbClient
-                                      .getEntityGroupService()
-                                      .addEntitiesToEntityGroup(
-                                          DevicemoveFolderName, myList);
-                                } catch (e) {
-                                  FlutterLogs.logInfo("devicelist_page",
-                                      "device_list", "logMessage");
-                                }
-                                pr.hide();
-                                callReplacementComplete(
-                                    context, imageFile, deviceName);
+                                    .saveDeviceAttributes(
+                                    Olddevicedetails.id!.id!,
+                                    "SERVER_SCOPE",
+                                    new_body_req));
+                              } catch (e) {
+                                FlutterLogs.logInfo("devicelist_page",
+                                    "device_list", "logMessage");
                               }
-                            } else {
-                              FlutterLogs.logInfo("devicelist_page",
-                                  "device_list", "logMessage");
+
+                              List<String> myList = [];
+                              myList.add(response.id!.id!);
+
+                              try {
+                                var remove_response = await tbClient
+                                    .getEntityGroupService()
+                                    .removeEntitiesFromEntityGroup(
+                                    DevicecurrentFolderName, myList);
+                              } catch (e) {
+                                FlutterLogs.logInfo("devicelist_page",
+                                    "device_list", "logMessage");
+                              }
+                              try {
+                                var add_response = await tbClient
+                                    .getEntityGroupService()
+                                    .addEntitiesToEntityGroup(
+                                    DevicemoveFolderName, myList);
+                              } catch (e) {
+                                FlutterLogs.logInfo("devicelist_page",
+                                    "device_list", "logMessage");
+                              }
                               pr.hide();
-                              calltoast(deviceName);
-
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen()));
-                            }
-                          }
-                        } else {
-                          // New Device Updations
-                          newdeviceCredentials = await tbClient
-                                  .getDeviceService()
-                                  .getDeviceCredentialsByDeviceId(
-                                      response.id!.id.toString())
-                              as DeviceCredentials;
-
-                          var relation_response = await tbClient
-                              .getEntityRelationService()
-                              .deleteDeviceRelation(
-                                  relationDetails.elementAt(0).from.id!,
-                                  response.id!.id!);
-
-                          if (newdeviceCredentials != null) {
-                            var newQRID =
-                                newdeviceCredentials.credentialsId.toString();
-
-                            newdeviceCredentials.credentialsId = newQRID + "L";
-                            var credresponse = await tbClient
-                                .getDeviceService()
-                                .saveDeviceCredentials(newdeviceCredentials);
-
-                            response.name = deviceName + "99";
-                            var devresponse = await tbClient
-                                .getDeviceService()
-                                .saveDevice(response);
-
-                            var relation_response = await tbClient
-                                .getEntityRelationService()
-                                .deleteDeviceRelation(
-                                relationDetails
-                                    .elementAt(0)
-                                    .from
-                                    .id!,
-                                response.id!.id!);
-
-                            // Old Device Updations
-
-                            Device Olddevicedetails = null as Device;
-                            Olddevicedetails = await tbClient
-                                .getDeviceService()
-                                .getTenantDevice(Olddevicename) as Device;
-
-                            if (Olddevicedetails != null) {
-                              var Old_Device_Name = Olddevicedetails.name;
-
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if(relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                    relationDetails
-                                        .elementAt(0)
-                                        .from
-                                        .id!,
-                                    response.id!.id!);
-                              }
-
-                              olddeviceCredentials = await tbClient
-                                      .getDeviceService()
-                                      .getDeviceCredentialsByDeviceId(
-                                          Olddevicedetails.id!.id.toString())
-                                  as DeviceCredentials;
-
-                              if (olddeviceCredentials != null) {
-                                var oldQRID = olddeviceCredentials.credentialsId
-                                    .toString();
-
-                                olddeviceCredentials.credentialsId =
-                                    oldQRID + "L";
-                                var old_cred_response = await tbClient
-                                    .getDeviceService()
-                                    .saveDeviceCredentials(
-                                        olddeviceCredentials);
-
-                                Olddevicedetails.name = Olddevicename + "99";
-                                var old_dev_response = await tbClient
-                                    .getDeviceService()
-                                    .saveDevice(Olddevicedetails);
-
-                                olddeviceCredentials.credentialsId = newQRID;
-                                var oldcredresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDeviceCredentials(
-                                        olddeviceCredentials);
-
-                                response.name = Old_Device_Name;
-                                response.label = Old_Device_Name;
-                                var olddevresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDevice(response);
-
-                                List<String> myfirmList = [];
-                                myfirmList.add("lattitude");
-
-                                List<AttributeKvEntry> latt_faultresponser;
-
-                                latt_faultresponser = (await tbClient
-                                    .getAttributeService()
-                                    .getFirmAttributeKvEntries(
-                                        regionid, myfirmList));
-
-                                if (latt_faultresponser.first
-                                    .getValue()
-                                    .toString()
-                                    .isNotEmpty) {
-                                } else {
-                                  final old_bodyW_req = {
-                                    'lattitude': Lattitude,
-                                    'longitude': Longitude,
-                                    'landmark': address,
-                                  };
-
-                                  var up_attribute = (await tbClient
-                                      .getAttributeService()
-                                      .saveDeviceAttributes(response.id!.id!,
-                                          "SERVER_SCOPE", old_bodyW_req));
-                                }
-
-                                final old_body_req = {
-                                  'boardNumber': Old_Device_Name,
-                                  'ieeeAddress': oldQRID,
-                                };
-
-                                var up_attribute = (await tbClient
-                                    .getAttributeService()
-                                    .saveDeviceAttributes(response.id!.id!,
-                                        "SERVER_SCOPE", old_body_req));
-
-                                // New Device Updations
-
-                                Olddevicedetails.name = new_Device_Name;
-                                Olddevicedetails.label = new_Device_Name;
-                                var up_devresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDevice(Olddevicedetails);
-
-                                newdeviceCredentials.credentialsId = oldQRID;
-                                var up_credresponse = await tbClient
-                                    .getDeviceService()
-                                    .saveDeviceCredentials(
-                                        newdeviceCredentials);
-
-                                final new_body_req = {
-                                  'boardNumber': new_Device_Name,
-                                  'ieeeAddress': newQRID,
-                                };
-                                try {
-                                  var up_newdevice_attribute = (await tbClient
-                                      .getAttributeService()
-                                      .saveDeviceAttributes(
-                                          Olddevicedetails.id!.id!,
-                                          "SERVER_SCOPE",
-                                          new_body_req));
-                                } catch (e) {
-                                  FlutterLogs.logInfo("devicelist_page",
-                                      "device_list", "logMessage");
-                                }
-
-                                List<String> myList = [];
-                                myList.add(response.id!.id!);
-
-                                try {
-                                  var remove_response = tbClient
-                                      .getEntityGroupService()
-                                      .removeEntitiesFromEntityGroup(
-                                          DevicecurrentFolderName, myList);
-                                } catch (e) {
-                                  FlutterLogs.logInfo("devicelist_page",
-                                      "device_list", "logMessage");
-                                }
-                                try {
-                                  var add_response = tbClient
-                                      .getEntityGroupService()
-                                      .addEntitiesToEntityGroup(
-                                          DevicemoveFolderName, myList);
-                                } catch (e) {
-                                  FlutterLogs.logInfo("devicelist_page",
-                                      "device_list", "logMessage");
-                                }
-
-                                pr.hide();
-                                Navigator.of(context, rootNavigator: true)
-                                    .pop('dialog');
-                                callReplacementComplete(
-                                    context, imageFile, deviceName);
-                              }
-                            } else {
-                              FlutterLogs.logInfo("devicelist_page",
-                                  "device_list", "logMessage");
-                              pr.hide();
-                              calltoast(deviceName);
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                              callReplacementComplete(
+                                  context, imageFile, deviceName);
                             }
                           } else {
-                            FlutterLogs.logInfo(
-                                "devicelist_page", "device_list", "logMessage");
+                            FlutterLogs.logInfo("devicelist_page",
+                                "device_list", "logMessage");
                             pr.hide();
-                            callstoast("Unable to Fetch Device Credentials");
+                            calltoast(deviceName);
+
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
@@ -1017,29 +806,232 @@ class replaceilmState extends State<replaceilm> {
                           }
                         }
                       } else {
-                        FlutterLogs.logInfo(
-                            "devicelist_page", "device_list", "logMessage");
-                        //Firmware Version Validation
-                        pr.hide();
-                        Fluttertoast.showToast(
-                            msg:
-                                " Device is not compatible with this Project "+ SelectedRegion  +" Kindly try another one.",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.white,
-                            textColor: Colors.black,
-                            fontSize: 16.0);
+                        // New Device Updations
+                        newdeviceCredentials = await tbClient
+                            .getDeviceService()
+                            .getDeviceCredentialsByDeviceId(
+                            response.id!.id.toString())
+                        as DeviceCredentials;
 
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                dashboard_screen()));
+                        var relation_response = await tbClient
+                            .getEntityRelationService()
+                            .deleteDeviceRelation(
+                            relationDetails.elementAt(0).from.id!,
+                            response.id!.id!);
+
+                        if (newdeviceCredentials != null) {
+                          var newQRID =
+                          newdeviceCredentials.credentialsId.toString();
+
+                          newdeviceCredentials.credentialsId = newQRID + "L";
+                          var credresponse = await tbClient
+                              .getDeviceService()
+                              .saveDeviceCredentials(newdeviceCredentials);
+
+                          response.name = deviceName + "99";
+                          var devresponse = await tbClient
+                              .getDeviceService()
+                              .saveDevice(response);
+
+                          var relation_response = await tbClient
+                              .getEntityRelationService()
+                              .deleteDeviceRelation(
+                              relationDetails
+                                  .elementAt(0)
+                                  .from
+                                  .id!,
+                              response.id!.id!);
+
+                          // Old Device Updations
+
+                          Device Olddevicedetails = null as Device;
+                          Olddevicedetails = await tbClient
+                              .getDeviceService()
+                              .getTenantDevice(Olddevicename) as Device;
+
+                          if (Olddevicedetails != null) {
+                            var Old_Device_Name = Olddevicedetails.name;
+
+                            var relationDetails = await tbClient
+                                .getEntityRelationService()
+                                .findInfoByTo(Olddevicedetails.id!);
+
+                            if(relationDetails.isNotEmpty) {
+                              var relation_response = await tbClient
+                                  .getEntityRelationService()
+                                  .deleteDeviceRelation(
+                                  relationDetails
+                                      .elementAt(0)
+                                      .from
+                                      .id!,
+                                  response.id!.id!);
+                            }
+
+                            olddeviceCredentials = await tbClient
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                Olddevicedetails.id!.id.toString())
+                            as DeviceCredentials;
+
+                            if (olddeviceCredentials != null) {
+                              var oldQRID = olddeviceCredentials.credentialsId
+                                  .toString();
+
+                              olddeviceCredentials.credentialsId =
+                                  oldQRID + "L";
+                              var old_cred_response = await tbClient
+                                  .getDeviceService()
+                                  .saveDeviceCredentials(
+                                  olddeviceCredentials);
+
+                              Olddevicedetails.name = Olddevicename + "99";
+                              var old_dev_response = await tbClient
+                                  .getDeviceService()
+                                  .saveDevice(Olddevicedetails);
+
+                              olddeviceCredentials.credentialsId = newQRID;
+                              var oldcredresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDeviceCredentials(
+                                  olddeviceCredentials);
+
+                              response.name = Old_Device_Name;
+                              response.label = Old_Device_Name;
+                              var olddevresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDevice(response);
+
+                              List<String> myfirmList = [];
+                              myfirmList.add("lattitude");
+
+                              List<AttributeKvEntry> latt_faultresponser;
+
+                              latt_faultresponser = (await tbClient
+                                  .getAttributeService()
+                                  .getFirmAttributeKvEntries(
+                                  regionid, myfirmList));
+
+                              if (latt_faultresponser.first
+                                  .getValue()
+                                  .toString()
+                                  .isNotEmpty) {
+                              } else {
+                                final old_bodyW_req = {
+                                  'lattitude': Lattitude,
+                                  'longitude': Longitude,
+                                  'landmark': address,
+                                };
+
+                                var up_attribute = (await tbClient
+                                    .getAttributeService()
+                                    .saveDeviceAttributes(response.id!.id!,
+                                    "SERVER_SCOPE", old_bodyW_req));
+                              }
+
+                              final old_body_req = {
+                                'boardNumber': Old_Device_Name,
+                                'ieeeAddress': oldQRID,
+                              };
+
+                              var up_attribute = (await tbClient
+                                  .getAttributeService()
+                                  .saveDeviceAttributes(response.id!.id!,
+                                  "SERVER_SCOPE", old_body_req));
+
+                              // New Device Updations
+
+                              Olddevicedetails.name = new_Device_Name;
+                              Olddevicedetails.label = new_Device_Name;
+                              var up_devresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDevice(Olddevicedetails);
+
+                              newdeviceCredentials.credentialsId = oldQRID;
+                              var up_credresponse = await tbClient
+                                  .getDeviceService()
+                                  .saveDeviceCredentials(
+                                  newdeviceCredentials);
+
+                              final new_body_req = {
+                                'boardNumber': new_Device_Name,
+                                'ieeeAddress': newQRID,
+                              };
+                              try {
+                                var up_newdevice_attribute = (await tbClient
+                                    .getAttributeService()
+                                    .saveDeviceAttributes(
+                                    Olddevicedetails.id!.id!,
+                                    "SERVER_SCOPE",
+                                    new_body_req));
+                              } catch (e) {
+                                FlutterLogs.logInfo("devicelist_page",
+                                    "device_list", "logMessage");
+                              }
+
+                              List<String> myList = [];
+                              myList.add(response.id!.id!);
+
+                              try {
+                                var remove_response = tbClient
+                                    .getEntityGroupService()
+                                    .removeEntitiesFromEntityGroup(
+                                    DevicecurrentFolderName, myList);
+                              } catch (e) {
+                                FlutterLogs.logInfo("devicelist_page",
+                                    "device_list", "logMessage");
+                              }
+                              try {
+                                var add_response = tbClient
+                                    .getEntityGroupService()
+                                    .addEntitiesToEntityGroup(
+                                    DevicemoveFolderName, myList);
+                              } catch (e) {
+                                FlutterLogs.logInfo("devicelist_page",
+                                    "device_list", "logMessage");
+                              }
+
+                              pr.hide();
+                              Navigator.of(context, rootNavigator: true)
+                                  .pop('dialog');
+                              callReplacementComplete(
+                                  context, imageFile, deviceName);
+                            }
+                          } else {
+                            FlutterLogs.logInfo("devicelist_page",
+                                "device_list", "logMessage");
+                            pr.hide();
+                            calltoast(deviceName);
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        dashboard_screen()));
+                          }
+                        } else {
+                          FlutterLogs.logInfo(
+                              "devicelist_page", "device_list", "logMessage");
+                          pr.hide();
+                          callstoast("Unable to Fetch Device Credentials");
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      dashboard_screen()));
+                        }
                       }
                     } else {
                       FlutterLogs.logInfo(
                           "devicelist_page", "device_list", "logMessage");
+                      //Firmware Version Validation
                       pr.hide();
-                      callstoast("Unable to find device attributes");
+                      Fluttertoast.showToast(
+                          msg:
+                          " Device is not compatible with this Project "+ SelectedRegion  +" Kindly try another one.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.white,
+                          textColor: Colors.black,
+                          fontSize: 16.0);
+
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
                               dashboard_screen()));
@@ -1048,15 +1040,16 @@ class replaceilmState extends State<replaceilm> {
                     FlutterLogs.logInfo(
                         "devicelist_page", "device_list", "logMessage");
                     pr.hide();
-                    callstoast("Unable to Find Related Devices");
+                    callstoast("Unable to find device attributes");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) =>
+                            dashboard_screen()));
                   }
                 } else {
                   FlutterLogs.logInfo(
                       "devicelist_page", "device_list", "logMessage");
                   pr.hide();
-                  callstoast("Unable to find current Device Folder Details");
+                  callstoast("Unable to Find Related Devices");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
@@ -1064,7 +1057,7 @@ class replaceilmState extends State<replaceilm> {
                 FlutterLogs.logInfo(
                     "devicelist_page", "device_list", "logMessage");
                 pr.hide();
-                callstoast("Unable to find Device Folder Details");
+                callstoast("Unable to find current Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
@@ -1072,10 +1065,18 @@ class replaceilmState extends State<replaceilm> {
               FlutterLogs.logInfo(
                   "devicelist_page", "device_list", "logMessage");
               pr.hide();
-              callstoast("Unable to find Selected Device Details");
+              callstoast("Unable to find Device Folder Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
+          } else {
+            FlutterLogs.logInfo(
+                "devicelist_page", "device_list", "logMessage");
+            pr.hide();
+            callstoast("Unable to find Selected Device Details");
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => dashboard_screen()));
+          }
           // } else {
           //   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           //   pr.hide();

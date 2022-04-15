@@ -59,7 +59,7 @@ dependencies:
   poly_geofence_service: any
   firebase_core: any
   firebase_crashlytics: 2.5.1
-
+  flutter_flavor: ^3.0.3
   #  geocoding: 1.0.5
 
   # The following adds the Cupertino Icons font to your application.

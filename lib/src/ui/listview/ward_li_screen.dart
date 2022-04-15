@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
@@ -173,7 +174,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
     } else {
       results = _allUsers!
           .where((user) =>
-              user.toLowerCase().contains(enteredKeyword.toLowerCase()))
+          user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
       // we use the toLowerCase() method to make it case-insensitive
     }
@@ -191,10 +192,10 @@ class ward_li_screen_state extends State<ward_li_screen> {
         pr.show();
         try {
           var sharedPreferences =
-              await SharedPreferences.getInstance() as SharedPreferences;
+          await SharedPreferences.getInstance() as SharedPreferences;
           sharedPreferences.setString("SelectedWard", selectedWard);
 
-          var tbClient = await ThingsboardClient(serverUrl);
+          var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           relatedDevices!.clear();
@@ -233,8 +234,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 var assetrelatedwardid;
                 for (int j = 0; j < AssetDevices!.length; j++) {
                   List<EntityRelationInfo> relationdevicelist = await tbClient
-                          .getEntityRelationService()
-                          .findInfoByAssetFrom(AssetDevices!.elementAt(j));
+                      .getEntityRelationService()
+                      .findInfoByAssetFrom(AssetDevices!.elementAt(j));
 
                   for (int k = 0; k < relationdevicelist.length; k++) {
                     if (relationdevicelist.length != 0) {
@@ -259,7 +260,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     vresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
                     if (vresponser != null) {
                       if (vresponser.first.getValue().toString() == "true") {
@@ -297,7 +298,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     sresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
                     if (sresponser != null) {
                       if (sresponser.first.getValue().toString() == "true") {
@@ -338,7 +339,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     kresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
                     if (kresponser != null) {
                       if (kresponser.first.getValue().toString() == "true") {
@@ -435,83 +436,83 @@ class ward_li_screen_state extends State<ward_li_screen> {
   Widget build(BuildContext context) {
     return Container(
         child: Scaffold(
-      backgroundColor: thbDblue,
-      body: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "Select Ward",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 25.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            TextField(
-              onChanged: (value) => _runFilter(value),
-              style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: "Montserrat",
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-              decoration: const InputDecoration(
-                labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
-                labelText: 'Search',
-                suffixIcon: Icon(
-                  Icons.search,
-                  color: Colors.white,
+          backgroundColor: thbDblue,
+          body: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const Text(
+                  "Select Ward",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-            ),
-            Expanded(
-              child: _foundUsers!.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _foundUsers!.length,
-                      itemBuilder: (context, index) => Card(
-                        key: ValueKey(_foundUsers),
-                        color: Colors.white,
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: ListTile(
-                          onTap: () {
-                            setState(() {
-                              selectedWard =
-                                  _foundUsers!.elementAt(index).toString();
-                              loadLocalData(context);
-                            });
-                          },
-                          title: Text(_foundUsers!.elementAt(index),
-                              style: const TextStyle(
-                                  fontSize: 22.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: thbDblue)),
-                        ),
-                      ),
-                    )
-                  : const Text(
-                  app_no_results,
-                      style: TextStyle(fontSize: 24),
+                TextField(
+                  onChanged: (value) => _runFilter(value),
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
+                    labelText: 'Search',
+                    suffixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white,
                     ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _foundUsers!.isNotEmpty
+                      ? ListView.builder(
+                    itemCount: _foundUsers!.length,
+                    itemBuilder: (context, index) => Card(
+                      key: ValueKey(_foundUsers),
+                      color: Colors.white,
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        onTap: () {
+                          setState(() {
+                            selectedWard =
+                                _foundUsers!.elementAt(index).toString();
+                            loadLocalData(context);
+                          });
+                        },
+                        title: Text(_foundUsers!.elementAt(index),
+                            style: const TextStyle(
+                                fontSize: 22.0,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.bold,
+                                color: thbDblue)),
+                      ),
+                    ),
+                  )
+                      : const Text(
+                    app_no_results,
+                    style: TextStyle(fontSize: 24),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
