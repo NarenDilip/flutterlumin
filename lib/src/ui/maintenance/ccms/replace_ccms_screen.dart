@@ -120,7 +120,7 @@ class replaceccmsState extends State<replaceccms> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -167,7 +167,7 @@ class replaceccmsState extends State<replaceccms> {
                   Container(
                       width: double.infinity,
                       child: TextButton(
-                          child: Text("Complete Replacement",
+                          child: Text(app_com_replace,
                               style: const TextStyle(
                                   fontSize: 18.0,
                                   fontFamily: "Montserrat",
@@ -195,11 +195,10 @@ class replaceccmsState extends State<replaceccms> {
                               showActionAlertDialog(
                                   context, DeviceName, newDeviceName);
                             } else {
-
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      "Image not captured successfully! Please try again!",
+                                  app_device_image_cap,
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -226,7 +225,7 @@ class replaceccmsState extends State<replaceccms> {
   showActionAlertDialog(context, OldDevice, NewDevice) {
     // set up the buttons
     Widget cancelButton = TextButton(
-      child: Text("Cancel",
+      child: Text(app_dialog_cancel,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
@@ -237,28 +236,26 @@ class replaceccmsState extends State<replaceccms> {
       },
     );
     Widget continueButton = TextButton(
-      child: Text("Replace",
+      child: Text(app_dialog_replace,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: Colors.green)),
-      onPressed: () {
-      },
+      onPressed: () {},
     );
 
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("Luminator",
+      title: Text(app_display_name,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: thbDblue)),
-
       content: RichText(
         text: new TextSpan(
-          text: 'Would you like to replace ',
+          text: app_dial_replace,
           style: const TextStyle(
               fontSize: 16.0,
               fontFamily: "Montserrat",
@@ -273,7 +270,7 @@ class replaceccmsState extends State<replaceccms> {
                     fontWeight: FontWeight.bold,
                     color: Colors.red)),
             new TextSpan(
-                text: ' With ',
+                text: app_dial_replace_with,
                 style: const TextStyle(
                     fontSize: 16.0,
                     fontFamily: "Montserrat",
@@ -329,15 +326,17 @@ class replaceccmsState extends State<replaceccms> {
             } else if (response.type == Gw_deviceType) {
             } else {
               pr.hide();
-              calltoast("Device Details Not Found");
+              calltoast(app_dev_sel_details_one +
+                  deviceName +
+                  app_dev_sel_details_two);
             }
           } else {
             pr.hide();
             calltoast(deviceName);
           }
         } catch (e) {
-          FlutterLogs.logInfo(
-              "CCMS_replacement_page", "CCMS_remove", "Unable to find Device Details");
+          /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+              "Unable to find Device Details");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -575,8 +574,8 @@ class replaceccmsState extends State<replaceccms> {
                                   };
 
                                   DBHelper dbHelper = DBHelper();
-                                  List<Ward> warddetails =
-                                  await dbHelper.ward_basedDetails(SelectedWard);
+                                  List<Ward> warddetails = await dbHelper
+                                      .ward_basedDetails(SelectedWard);
                                   if (warddetails.length != "0") {
                                     warddetails.first.wardid;
 
@@ -590,16 +589,18 @@ class replaceccmsState extends State<replaceccms> {
                                       'id': response.id!.id
                                     };
 
-                                    EntityRelation entityRelation = EntityRelation(
-                                        from: EntityId.fromJson(fromId),
-                                        to: EntityId.fromJson(toId),
-                                        type: "Contains",
-                                        typeGroup: RelationTypeGroup.COMMON);
+                                    EntityRelation entityRelation =
+                                        EntityRelation(
+                                            from: EntityId.fromJson(fromId),
+                                            to: EntityId.fromJson(toId),
+                                            type: "Contains",
+                                            typeGroup:
+                                                RelationTypeGroup.COMMON);
 
-                                    Future<
-                                        EntityRelation> entityRelations = tbClient
-                                        .getEntityRelationService()
-                                        .saveRelation(entityRelation);
+                                    Future<EntityRelation> entityRelations =
+                                        tbClient
+                                            .getEntityRelationService()
+                                            .saveRelation(entityRelation);
                                   }
 
                                   var up_attribute = (await tbClient
@@ -807,7 +808,7 @@ class replaceccmsState extends State<replaceccms> {
                               }
                             } else {
                               pr.hide();
-                              callstoast("Unable to Fetch Device Credentials");
+                              callstoast(app_dev_find_dev_cred);
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
@@ -817,8 +818,9 @@ class replaceccmsState extends State<replaceccms> {
                         } else {
                           pr.hide();
                           Fluttertoast.showToast(
-                              msg:
-                                  "Device is not compatible with this Project "+ SelectedRegion +" Kindly try another one.",
+                              msg: app_dev_not_compat_one +
+                                  SelectedRegion +
+                                  app_dev_not_compat_two,
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
@@ -836,40 +838,41 @@ class replaceccmsState extends State<replaceccms> {
                       }
                     } else {
                       pr.hide();
-                      callstoast("Unable to find device attributes");
+                      callstoast(app_dev_find_dev_attr);
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
                               dashboard_screen()));
                     }
                   } else {
                     pr.hide();
-                    callstoast("Unable to Find Related Devices");
+                    callstoast(app_dev_find_relation_details);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
                   pr.hide();
-                  callstoast("Unable to find current Device Folder Details");
+                  callstoast(app_dev_current_unable_folder_details);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
                 pr.hide();
-                callstoast("Unable to find Device Folder Details");
+                callstoast(app_dev_unable_folder_details);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
               pr.hide();
-              callstoast("Unable to find Selected Device Details");
+              callstoast(app_dev_sel_details_one +
+                  DeviceName +
+                  app_dev_sel_details_two);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
             pr.hide();
             Fluttertoast.showToast(
-                msg:
-                    "Image not captured successfully! Please try again!",
+                msg: app_device_image_cap,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -878,8 +881,8 @@ class replaceccmsState extends State<replaceccms> {
                 fontSize: 16.0);
           }
         } catch (e) {
-          FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
-              "CCMS Replacement Device Replacement Exception");
+          /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+              "CCMS Replacement Device Replacement Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -945,7 +948,7 @@ class replaceccmsState extends State<replaceccms> {
       pr.hide();
       if (response.statusCode.toString() == "200") {
         Fluttertoast.showToast(
-            msg: "Device Replacement Completed",
+            msg: app_dev_repl_comp,
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,
@@ -958,11 +961,11 @@ class replaceccmsState extends State<replaceccms> {
       } else {}
       return response;
     } catch (e) {
-      FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
-          "Passing Image Base64 to Local Basket");
+      /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+          "Passing Image Base64 to Local Basket");*/
       pr.hide();
       Fluttertoast.showToast(
-          msg: "Device Replacement Image Upload Error",
+          msg: app_dev_img_upload_error,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,

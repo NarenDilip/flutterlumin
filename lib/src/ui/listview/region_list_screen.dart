@@ -127,7 +127,7 @@ class region_list_screen_state extends State<region_list_screen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -215,7 +215,7 @@ class region_list_screen_state extends State<region_list_screen> {
                       ),
                     )
                   : const Text(
-                      'No results found',
+                device_no_result,
                       style: TextStyle(fontSize: 24),
                     ),
             ),
@@ -228,7 +228,7 @@ class region_list_screen_state extends State<region_list_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo("regionlist_page", "region_list", "Details Fetching Exception with Server Error");
+    /*FlutterLogs.logInfo("regionlist_page", "region_list", "Details Fetching Exception with Server Error");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
@@ -353,10 +353,10 @@ class region_list_screen_state extends State<region_list_screen> {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => zone_li_screen()));
               } else {
-                FlutterLogs.logInfo("regionlist_page", "region_list", "No Zone Details Found");
+                /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Zone Details Found");*/
                 pr.hide();
                 Fluttertoast.showToast(
-                    msg: "No Zones releated to this Region",
+                    msg: app_reg_nozones,
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -365,10 +365,10 @@ class region_list_screen_state extends State<region_list_screen> {
                     fontSize: 16.0);
               }
             } else {
-              FlutterLogs.logInfo("regionlist_page", "region_list", "No Region Details Found");
+              /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Region Details Found");*/
               pr.hide();
               Fluttertoast.showToast(
-                  msg: "Unable to find Region Details",
+                  msg: app_reg_notfound,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -377,13 +377,13 @@ class region_list_screen_state extends State<region_list_screen> {
                   fontSize: 16.0);
             }
           } else {
-            FlutterLogs.logInfo("regionlist_page", "region_list", "No Details Found");
+            /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Details Found");*/
             pr.hide();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => zone_li_screen()));
           }
         } catch (e) {
-          FlutterLogs.logInfo("regionlist_page", "region_list", "Region List Fetching Exception");
+          /*FlutterLogs.logInfo("regionlist_page", "region_list", "Region List Fetching Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -398,9 +398,9 @@ class region_list_screen_state extends State<region_list_screen> {
           }
         }
       } else {
-        FlutterLogs.logInfo("regionlist_page", "region_list", "No Network");
+        /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Network");*/
         Fluttertoast.showToast(
-            msg: "No Network. Please try again later",
+            msg: app_no_network,
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,

@@ -89,7 +89,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
   static Completer _completer = new Completer<String>();
 
   late Timer _timer;
-  int _start = 20;
+  int _start = 5;
 
   // final Location locations = Location();
   // LocationData? _location;

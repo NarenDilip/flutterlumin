@@ -64,7 +64,7 @@ class LoginForm extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -97,7 +97,7 @@ class LoginForm extends StatelessWidget {
                   const SizedBox(
                     width: double.infinity,
                     child: Text(
-                      "Log-In with User email and Password",
+                      app_log_email,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 18.0,
@@ -113,9 +113,9 @@ class LoginForm extends StatelessWidget {
                     controller: _emailController,
                     validator: (email) {
                       if (email!.isEmpty) {
-                        return "Please enter the email";
+                        return app_no_email;
                       } else if (!EmailValidator.validate(email)) {
-                        return "Please enter the validate email";
+                        return app_validate_email;
                       }
                     },
                     onSaved: (email) => user.username = email!,
@@ -129,7 +129,7 @@ class LoginForm extends StatelessWidget {
                     controller: passwordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return "Please enter the password";
+                        return app_validate_pass;
                       }
                     },
                     onChanged: (value) {},
@@ -146,6 +146,14 @@ class LoginForm extends StatelessWidget {
                       }
                     },
                     key: null,
+                  ),
+                  const SizedBox(height: 60),
+                  Center(
+                      child:Text("Version 2.0.1",style: const TextStyle(
+                          fontSize: 15.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: invListBackgroundColor))
                   ),
                 ],
               )))),
@@ -169,7 +177,7 @@ class LoginForm extends StatelessWidget {
           }else{
             pr.hide();
             Fluttertoast.showToast(
-                msg: "Invalid credentials, Please try again.",
+                msg: app_usr_invalid_cred,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -181,7 +189,7 @@ class LoginForm extends StatelessWidget {
           // Navigator.pop(context);
           pr.hide();
           Fluttertoast.showToast(
-              msg: "Invalid credentials, Please try again.",
+              msg: app_usr_invalid_cred,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -243,7 +251,7 @@ class LoginForm extends StatelessWidget {
         } else {
           // FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           pr.hide();
-          calltoast("Region Details found");
+          calltoast(app_no_regions);
         }
       }
     });

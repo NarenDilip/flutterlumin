@@ -126,7 +126,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -380,11 +380,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
-              FlutterLogs.logInfo("wardlist_page", "ward_list",
-                  "No Ward Details Relations found");
+              /*FlutterLogs.logInfo("wardlist_page", "ward_list",
+                  "No Ward Details Relations found");*/
               pr.hide();
               Fluttertoast.showToast(
-                  msg: "No Devices Directly Related to Ward",
+                  msg: app_no_ward_relation,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -403,8 +403,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
             }
           }
         } catch (e) {
-          FlutterLogs.logInfo(
-              "wardlist_page", "ward_list", "No Ward Details found Exception");
+          /*FlutterLogs.logInfo(
+              "wardlist_page", "ward_list", "No Ward Details found Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -418,7 +418,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
           }
         }
       } else {
-        FlutterLogs.logInfo("wardlist_page", "ward_list", "No Network");
+        /*FlutterLogs.logInfo("wardlist_page", "ward_list", "No Network");*/
         Fluttertoast.showToast(
             msg: no_network,
             toastLength: Toast.LENGTH_SHORT,
@@ -504,7 +504,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       ),
                     )
                   : const Text(
-                      'No results found',
+                  app_no_results,
                       style: TextStyle(fontSize: 24),
                     ),
             ),
@@ -517,8 +517,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo(
-        "wardlist_page", "ward_list", "Ward Details Exception with server");
+    /*FlutterLogs.logInfo(
+        "wardlist_page", "ward_list", "Ward Details Exception with server");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

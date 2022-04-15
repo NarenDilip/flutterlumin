@@ -17,6 +17,7 @@ import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,8 +27,6 @@ import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
-
-import 'ilm_maintenance_screen.dart';
 
 class replaceilm extends StatefulWidget {
   const replaceilm() : super();
@@ -42,6 +41,7 @@ class replaceilmState extends State<replaceilm> {
   var imageFile;
   String faultyStatus = "0";
   late ProgressDialog pr;
+  String address = "";
 
   var _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
@@ -440,6 +440,17 @@ class replaceilmState extends State<replaceilm> {
     });
   }
 
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates));
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
+
   @override
   Future<Device?> ilm_main_fetchSmartDeviceDetails(
       String Olddevicename,
@@ -460,6 +471,15 @@ class replaceilmState extends State<replaceilm> {
         String Lattitude = prefs.getString("deviceLatitude").toString();
         String Longitude = prefs.getString("deviceLongitude").toString();
         var versionCompatability = false;
+
+        var latter = double.parse(Lattitude);
+        var longer = double.parse(Longitude);
+
+        _getAddress(latter, longer).then((value) {
+          setState(() {
+            address = value;
+          });
+        });
 
         pr.show();
         try {
@@ -501,6 +521,7 @@ class replaceilmState extends State<replaceilm> {
                 currentdeviceresponse = await tbClient
                     .getEntityGroupService()
                     .getEntityGroupsForFolderEntity(response.id!.id!);
+
 
                 if (currentdeviceresponse != null) {
                   var firstdetails = await tbClient
@@ -621,6 +642,21 @@ class replaceilmState extends State<replaceilm> {
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
 
+                              var relationDetails = await tbClient
+                                  .getEntityRelationService()
+                                  .findInfoByTo(Olddevicedetails.id!);
+
+                              // if(relationDetails.isNotEmpty) {
+                              //   var relation_response = await tbClient
+                              //       .getEntityRelationService()
+                              //       .deleteDeviceRelation(
+                              //       relationDetails
+                              //           .elementAt(0)
+                              //           .from
+                              //           .id!,
+                              //       Olddevicedetails.id!.id!);
+                              // }
+
                               olddeviceCredentials = await tbClient
                                       .getDeviceService()
                                       .getDeviceCredentialsByDeviceId(
@@ -659,7 +695,8 @@ class replaceilmState extends State<replaceilm> {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
                                   'latitude': Lattitude,
-                                  'longitude': Longitude
+                                  'longitude': Longitude,
+                                  'landmark': address,
                                 };
 
                                 var up_attribute = (await tbClient
@@ -684,36 +721,39 @@ class replaceilmState extends State<replaceilm> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
+                                  'landmark': address,
                                 };
 
-                                DBHelper dbHelper = DBHelper();
-                                List<Ward> warddetails = await dbHelper
-                                    .ward_basedDetails(SelectedWard);
-                                if (warddetails.length != "0") {
-                                  warddetails.first.wardid;
-
-                                  Map<String, dynamic> fromId = {
-                                    'entityType': 'ASSET',
-                                    'id': warddetails.first.wardid
-                                  };
-
-                                  Map<String, dynamic> toId = {
-                                    'entityType': 'DEVICE',
-                                    'id': response.id!.id
-                                  };
-
-                                  EntityRelation entityRelation =
-                                      EntityRelation(
-                                          from: EntityId.fromJson(fromId),
-                                          to: EntityId.fromJson(toId),
-                                          type: "Contains",
-                                          typeGroup: RelationTypeGroup.COMMON);
-
-                                  Future<EntityRelation> entityRelations =
-                                      tbClient
-                                          .getEntityRelationService()
-                                          .saveRelation(entityRelation);
-                                }
+                                // DBHelper dbHelper = DBHelper();
+                                // List<Ward> warddetails = await dbHelper
+                                //     .ward_basedDetails(SelectedWard);
+                                // if (warddetails.length != "0") {
+                                //   warddetails.first.wardid;
+                                //
+                                //   Map<String, dynamic> fromId = {
+                                //     'entityType': 'ASSET',
+                                //     'id': warddetails.first.wardid
+                                //   };
+                                //
+                                //   Map<String, dynamic> toId = {
+                                //     'entityType': 'DEVICE',
+                                //     'id': Olddevicedetails.id!.id
+                                //   };
+                                //
+                                //   EntityRelation entityRelation =
+                                //       EntityRelation(
+                                //           from: EntityId.fromJson(fromId),
+                                //           to: EntityId.fromJson(toId),
+                                //           type: "Contains",
+                                //           typeGroup: RelationTypeGroup.COMMON);
+                                //
+                                //   Future<EntityRelation> entityRelations =
+                                //       tbClient
+                                //           .getEntityRelationService()
+                                //           .saveRelation(entityRelation);
+                                // }
 
                                 try {
                                   var up_newdevice_attribute = (await tbClient
@@ -792,6 +832,15 @@ class replaceilmState extends State<replaceilm> {
                                 .getDeviceService()
                                 .saveDevice(response);
 
+                            var relation_response = await tbClient
+                                .getEntityRelationService()
+                                .deleteDeviceRelation(
+                                relationDetails
+                                    .elementAt(0)
+                                    .from
+                                    .id!,
+                                response.id!.id!);
+
                             // Old Device Updations
 
                             Device Olddevicedetails = null as Device;
@@ -801,6 +850,21 @@ class replaceilmState extends State<replaceilm> {
 
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
+
+                              var relationDetails = await tbClient
+                                  .getEntityRelationService()
+                                  .findInfoByTo(Olddevicedetails.id!);
+
+                              if(relationDetails.isNotEmpty) {
+                                var relation_response = await tbClient
+                                    .getEntityRelationService()
+                                    .deleteDeviceRelation(
+                                    relationDetails
+                                        .elementAt(0)
+                                        .from
+                                        .id!,
+                                    response.id!.id!);
+                              }
 
                               olddeviceCredentials = await tbClient
                                       .getDeviceService()
@@ -854,6 +918,7 @@ class replaceilmState extends State<replaceilm> {
                                   final old_bodyW_req = {
                                     'lattitude': Lattitude,
                                     'longitude': Longitude,
+                                    'landmark': address,
                                   };
 
                                   var up_attribute = (await tbClient

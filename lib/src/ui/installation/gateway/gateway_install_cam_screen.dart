@@ -135,7 +135,7 @@ class gwcaminstallState extends State<gwcaminstall> {
             });
             Fluttertoast.showToast(
                 msg:
-                    "Fetching your location",
+                app_fetch_loc,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -151,7 +151,7 @@ class gwcaminstallState extends State<gwcaminstall> {
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
                 msg:
-                "Your current location does not appear to be in the selected Ward",
+                app_loc_ward,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -357,7 +357,7 @@ class gwcaminstallState extends State<gwcaminstall> {
       CallCoordinates(context);
     } else {
       Fluttertoast.showToast(
-          msg: "GeoFence Availability is not found with this Ward",
+          msg: app_geofence_nfound,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -396,7 +396,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -446,7 +446,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                       child: Container(
                           width: double.infinity,
                           child: TextButton(
-                              child: Text("Complete Installation",
+                              child: Text(app_com_install,
                                   style: const TextStyle(
                                       fontSize: 18.0,
                                       fontFamily: "Montserrat",
@@ -478,7 +478,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                                   pr.hide();
                                   Fluttertoast.showToast(
                                       msg:
-                                          "Image not captured successfully! Please try again!",
+                                      app_device_image_cap,
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.BOTTOM,
                                       timeInSecForIosWeb: 1,
@@ -519,7 +519,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     } else {
       visibility = false;
       Fluttertoast.showToast(
-          msg: "GeoFence Availability is not found with this Ward",
+          msg: app_geofence_nfound,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -615,10 +615,10 @@ class gwcaminstallState extends State<gwcaminstall> {
                     }*/
 
                   } catch (e) {
-                    FlutterLogs.logInfo(
+                    /*FlutterLogs.logInfo(
                         "gw_installation_page",
                         "gw_installation",
-                        "Unable to Find Firmware version of Device");
+                        "Unable to Find Firmware version of Device");*/
                     var message = toThingsboardError(e, context);
                   }
 
@@ -769,14 +769,14 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 pr.hide();
                               } else {
                                 // Navigator.pop(context);
-                                FlutterLogs.logInfo(
+                                /*FlutterLogs.logInfo(
                                     "gw_installation_page",
                                     "gw_installation",
-                                    "Gateway Device No Folder Found Exception");
+                                    "Gateway Device No Folder Found Exception");*/
                                 callPolygonStop();
                                 pr.hide();
                                 Fluttertoast.showToast(
-                                    msg: "Unable to Find Folder Details",
+                                    msg: app_unable_folder,
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.BOTTOM,
                                     timeInSecForIosWeb: 1,
@@ -810,14 +810,14 @@ class gwcaminstallState extends State<gwcaminstall> {
                           }
                         } else {
                           callPolygonStop();
-                          FlutterLogs.logInfo(
+                         /* FlutterLogs.logInfo(
                               "gw_installation_page",
                               "gw_installation",
-                              "Gateway Device Not Authorized Exception");
+                              "Gateway Device Not Authorized Exception");*/
                           pr.hide();
                           Fluttertoast.showToast(
                               msg:
-                              "Device is not compatible with this Project "+ SelectedRegion +" Kindly try another one",
+                              app_compat_one + SelectedRegion + app_compat_two,
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
@@ -835,7 +835,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         pr.hide();
                         Fluttertoast.showToast(
                             msg:
-                                "Fetching your location",
+                            app_fetch_loc,
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -848,7 +848,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                              "Please select Region to start Installation.",
+                          app_reg_selec,
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -858,12 +858,12 @@ class gwcaminstallState extends State<gwcaminstall> {
                     }
                   } else {
                     // Navigator.pop(context);
-                    FlutterLogs.logInfo("gw_installation_page",
-                        "gw_installation", "Gateway Device Faulty Exception");
+                    /*FlutterLogs.logInfo("gw_installation_page",
+                        "gw_installation", "Gateway Device Faulty Exception");*/
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
-                            "Unable to Install. Device appears to be Faulty. Kindly try another one.",
+                        app_device_faulty,
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -875,11 +875,11 @@ class gwcaminstallState extends State<gwcaminstall> {
                   }
                 } else {
                   // Navigator.pop(context);
-                  FlutterLogs.logInfo("gw_installation_page", "gw_installation",
-                      "Gateway Device Invalid Credentials Exception");
+                  /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                      "Gateway Device Invalid Credentials Exception");*/
                   pr.hide();
                   Fluttertoast.showToast(
-                      msg: "Invalid Device Credentials",
+                      msg: app_device_invalid_credentials,
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.BOTTOM,
                       timeInSecForIosWeb: 1,
@@ -897,12 +897,12 @@ class gwcaminstallState extends State<gwcaminstall> {
               }
             } else {
               // Navigator.pop(context);
-              FlutterLogs.logInfo("gw_installation_page", "gw_installation",
-                  "Gateway Device Invalid Image Exception");
+              /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                  "Gateway Device Invalid Image Exception");*/
               pr.hide();
               Fluttertoast.showToast(
                   msg:
-                      " Image not captured successfully! Please try again!",
+                  app_device_image_cap,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -913,8 +913,8 @@ class gwcaminstallState extends State<gwcaminstall> {
           } catch (e) {
             callPolygonStop();
             // Navigator.pop(context);
-            FlutterLogs.logInfo("gw_installation_page", "gw_installation",
-                "Gateway Device Installation Exception");
+            /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                "Gateway Device Installation Exception");*/
             pr.hide();
             var message = toThingsboardError(e, context);
             if (message == session_expired) {
@@ -995,7 +995,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      "Installed Successfully",
+                      app_dev_inst_success,
                       style: const TextStyle(
                           fontSize: 22.0,
                           fontFamily: "Montserrat",
@@ -1052,10 +1052,10 @@ class gwcaminstallState extends State<gwcaminstall> {
       return response;
     } catch (e) {
       callPolygonStop();
-      FlutterLogs.logInfo("gw_installation_page", "gw_installation",
-          "Gateway Device Captured Image Upload Error");
+      /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+          "Gateway Device Captured Image Upload Error");*/
       Fluttertoast.showToast(
-          msg: "Device Installation Image Upload Error",
+          msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -1069,8 +1069,8 @@ class gwcaminstallState extends State<gwcaminstall> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo("gw_installation_page", "gw_installation",
-        "Gateway Device Installation Server Issue");
+    /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+        "Gateway Device Installation Server Issue");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

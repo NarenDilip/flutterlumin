@@ -92,7 +92,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -223,7 +223,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                       ),
                     )
                   : const Text(
-                      'No results found',
+                app_no_results,
                       style: TextStyle(fontSize: 24),
                     ),
             ),

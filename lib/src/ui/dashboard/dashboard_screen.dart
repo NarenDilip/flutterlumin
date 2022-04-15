@@ -126,7 +126,7 @@ class dashboard_screenState extends State<dashboard_screen> {
             builder: (ctx) => AlertDialog(
               insetPadding: EdgeInsets.symmetric(horizontal: 0),
               backgroundColor: Colors.white,
-              title: Text(device_name,
+              title: Text(app_display_name,
                   style: const TextStyle(
                       fontSize: 25.0,
                       fontFamily: "Montserrat",
@@ -442,49 +442,56 @@ class dashboard_screenState extends State<dashboard_screen> {
                     prefs.setString('devicetimeStamp',
                         atresponser.elementAt(0).getLastUpdateTs().toString());
 
-                    List<String> myLister = [];
-                    myLister.add("landmark");
+                    try {
 
-                    responserse = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myLister));
+                      List<String> myLister = [];
+                      myLister.add("landmark");
 
-                    if (responserse.isNotEmpty) {
-                      prefs.setString(
-                          'location', responserse.first.getValue().toString());
-                      prefs.setString('deviceName', deviceName);
+                      responserse = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myLister));
+
+                      if (responserse.isNotEmpty) {
+                        prefs.setString(
+                            'location',
+                            responserse.first.getValue().toString());
+                        prefs.setString('deviceName', deviceName);
+                      }
+                      // myLister.add("location");
+
+                      List<String> LampmyList = [];
+                      LampmyList.add("lampWatts");
+
+                      List<AttributeKvEntry> lampatresponser;
+
+                      lampatresponser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, LampmyList));
+
+                      if (lampatresponser.isNotEmpty) {
+                        prefs.setString('deviceWatts',
+                            lampatresponser.first.getValue().toString());
+                      }
+
+                      List<String> myList = [];
+                      myList.add("lattitude");
+                      myList.add("longitude");
+
+                      List<BaseAttributeKvEntry> responser;
+
+                      responser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myList))
+                      as List<BaseAttributeKvEntry>;
+
+                      prefs.setString('deviceLatitude',
+                          responser.first.kv.getValue().toString());
+                      prefs.setString('deviceLongitude',
+                          responser.last.kv.getValue().toString());
+
+                    }catch(e){
+                      var message = toThingsboardError(e, context);
                     }
-                    // myLister.add("location");
-
-                    List<String> LampmyList = [];
-                    LampmyList.add("lampWatts");
-
-                    List<AttributeKvEntry> lampatresponser;
-
-                    lampatresponser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, LampmyList));
-
-                    if (lampatresponser.isNotEmpty) {
-                      prefs.setString('deviceWatts',
-                          lampatresponser.first.getValue().toString());
-                    }
-
-                    List<String> myList = [];
-                    myList.add("lattitude");
-                    myList.add("longitude");
-
-                    List<BaseAttributeKvEntry> responser;
-
-                    responser = (await tbClient
-                            .getAttributeService()
-                            .getAttributeKvEntries(response.id!, myList))
-                        as List<BaseAttributeKvEntry>;
-
-                    prefs.setString('deviceLatitude',
-                        responser.first.kv.getValue().toString());
-                    prefs.setString('deviceLongitude',
-                        responser.last.kv.getValue().toString());
 
                     pr.hide();
                     if (response.type == ilm_deviceType) {

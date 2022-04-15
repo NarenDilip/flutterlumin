@@ -1124,7 +1124,7 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: const Text(device_name,
+      title: const Text(app_display_name,
           style: TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",

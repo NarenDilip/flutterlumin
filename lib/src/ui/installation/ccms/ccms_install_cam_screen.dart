@@ -440,7 +440,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       child: Container(
                           width: double.infinity,
                           child: TextButton(
-                              child: Text("Complete Installation",
+                              child: Text(app_com_install,
                                   style: const TextStyle(
                                       fontSize: 18.0,
                                       fontFamily: "Montserrat",
@@ -849,7 +849,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                          "Please select Region to start Installation",
+                          app_reg_selec,
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -859,12 +859,12 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                     }
                   } else {
                     // Navigator.pop(context);
-                    FlutterLogs.logInfo("ccms_installation_page",
-                        "ccms_installation", "CCMS Device Faulty Exception");
+                   /* FlutterLogs.logInfo("ccms_installation_page",
+                        "ccms_installation", "CCMS Device Faulty Exception");*/
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
-                            "Unable to Install. Device appears to be Faulty. Kindly try another one",
+                        app_device_faulty,
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -876,11 +876,11 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                   }
                 } else {
                   // Navigator.pop(context);
-                  FlutterLogs.logInfo("ccms_installation_page",
-                      "ccms_installation", "CCMS Device Credentials Exception");
+                  /*FlutterLogs.logInfo("ccms_installation_page",
+                      "ccms_installation", "CCMS Device Credentials Exception");*/
                   pr.hide();
                   Fluttertoast.showToast(
-                      msg: "Invalid Device Credentials",
+                      msg: app_device_invalid_credentials,
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.BOTTOM,
                       timeInSecForIosWeb: 1,
@@ -898,12 +898,12 @@ class ccmscaminstallState extends State<ccmscaminstall> {
               }
             } else {
               // Navigator.pop(context);
-              FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
-                  "CCMS Device Image Exception");
+              /*FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+                  "CCMS Device Image Exception");*/
               pr.hide();
               Fluttertoast.showToast(
                   msg:
-                      "Image not captured successfully! Please try again!",
+                  app_device_image_cap,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -913,8 +913,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
             }
           } catch (e) {
             callPolygonStop();
-            FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
-                "CCMS Device Installation Exception");
+            /*FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+                "CCMS Device Installation Exception");*/
             // Navigator.pop(context);
             pr.hide();
             var message = toThingsboardError(e, context);
@@ -935,7 +935,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       });
     } else {
       Fluttertoast.showToast(
-          msg: "Kindly Enable App Location Permission",
+          msg: app_loc_per,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -1051,10 +1051,10 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       return response;
     } catch (e) {
       callPolygonStop();
-      FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
-          "CCMS Device Image Upload Error");
+     /* FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+          "CCMS Device Image Upload Error");*/
       Fluttertoast.showToast(
-          msg: "Device Installation Image Upload Error",
+          msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -1068,8 +1068,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
-        "CCMS Device Installation Server Issue");
+    /*FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
+        "CCMS Device Installation Server Issue");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

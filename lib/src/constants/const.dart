@@ -26,8 +26,8 @@ const darkgreen = Color(0xff146e00);
 
 const splashscreen_text = "LUMINATOR";
 
-const serverUrl = "http://iotpro.io:8077";
-// const serverUrl = "https://schnelliot.in/";
+// const serverUrl = "http://iotpro.io:8077";
+const serverUrl = "https://schnelliot.in/";
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
 // const app_username = "smartLumi@gmail.com";
@@ -74,7 +74,7 @@ const device_selec_regions = "Please select Region to start Installation.";
 const app_logout = "Are you sure you want to Logout?";
 const device_no_entry = "Please Enter Device";
 const device_no_result = 'No results found';
-const device_name = "Luminator";
+const app_display_name = "Luminator";
 const app_logout_msg = "Are you sure you want to exit Luminator?";
 const app_logout_no = "NO";
 const app_logout_yes = "YES";
@@ -91,6 +91,54 @@ const app_geofence_nfound ="GeoFence Availability is not found with this Ward";
 const app_unable_folder ="Unable to Find Folder Details";
 const app_compat_one ="Device is not compatible with this Project.";
 const app_compat_two =" Kindly try another one.";
+const app_com_install ="Complete Installation";
+const app_com_replace ="Complete Replacement";
+const app_device_faulty ="Unable to Install. Device appears to be Faulty. Kindly try another one";
+const app_device_invalid_credentials ="Invalid Device Credentials";
+const app_device_image_cap ="Image not captured successfully! Please try again!";
+const app_loc_per ="Kindly Enable App Location Permission";
+const app_dev_img_uperror ="Device Installation Image Upload Error";
+const app_dev_inst_success = "Installed Successfully";
+const app_dev_cred_improper = "Device Credentials are improper, please check and retry";
+const app_dev_nfound_one = "Unable to find device";
+const app_dev_nfound_two = "Kindly try another device";
+const app_reg_nozones = "No Zones releated to this Region";
+const app_reg_notfound= "Unable to find Region Details";
+const app_no_network = "Please check your Mobile Internet Connectivity";
+const app_no_ward_relation = "No Devices Directly Related to Ward";
+const app_no_results = 'No results found';
+const app_no_regions = "Region details is not accessed for you, please contact your manager";
+const app_usr_invalid_cred = "Invalid credentials, Please try again.";
+const app_log_email = "Log-In with User email and Password";
+const app_no_email = "Please enter the email";
+const app_validate_email = "Please enter the validate email";
+const app_validate_pass = "Please enter the password";
+
+const app_dev_offline_mode = "Device in Offline Mode";
+const app_dev_loc_alert = 'Luminator Location Alert';
+const app_dev_range_alert = 'Your are not in the Nearest Range to Controll or Access the Device';
+const app_close_btn = 'Close';
+const app_dev_on = "Device ON Successfully";
+const app_dev_off = "Device Off Successfully";
+const app_unab_procs = "Unable to Process, Please try again";
+const app_qr_duplicate = "Duplicate QR Code";
+const app_qr_invalid = "Invalid QR Code";
+const app_dialog_cancel = "Cancel";
+const app_dialog_replace = "Replace";
+const app_dial_replace = 'Would you like to replace ';
+const app_dial_replace_with = ' With ';
+const app_dev_group_nfud = "Device EntityGroup Not Found";
+const app_dev_not_compat_one = "Device is not compatible with this Project ";
+const app_dev_not_compat_two = " Kindly try another one.";
+const app_dev_img_upload_error = "Device Replacement Image Upload Error";
+const app_dev_repl_comp = "Device Replacement Completed";
+const app_dev_sel_details_one = "Selected Device Details";
+const app_dev_sel_details_two = "Not Found";
+const app_dev_unable_folder_details = "Unable to find Device Folder Details";
+const app_dev_current_unable_folder_details = "Unable to find current Device Folder Details";
+const app_dev_find_relation_details = "Unable to Find Related Devices";
+const app_dev_find_dev_attr = "Unable to find device attributes";
+const app_dev_find_dev_cred = "Unable to Fetch Device Credentials";
 
 
 

@@ -88,7 +88,7 @@ class replacementccmsState extends State<replacementccms> {
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
-          setLogsStatus(
+        setLogsStatus(
             status: "logsExported: ${call.arguments.toString()}", append: true);
 
         // Notify Future with value
@@ -115,7 +115,7 @@ class replacementccmsState extends State<replacementccms> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -162,7 +162,7 @@ class replacementccmsState extends State<replacementccms> {
                   Container(
                       width: double.infinity,
                       child: TextButton(
-                          child: const Text("Complete Replacement",
+                          child: const Text(app_com_replace,
                               style: TextStyle(
                                   fontSize: 18.0,
                                   fontFamily: "Montserrat",
@@ -186,8 +186,7 @@ class replacementccmsState extends State<replacementccms> {
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
-                                  msg:
-                                      "Image not captured successfully! Please try again!",
+                                  msg: app_device_image_cap,
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -238,11 +237,10 @@ class replacementccmsState extends State<replacementccms> {
 
           if (imageFile != null) {
             if (response != null) {
-
               DBHelper dbHelper = DBHelper();
               var regionid;
-              List<Region> regiondetails = await dbHelper
-                  .region_name_regionbasedDetails(SelectedRegion);
+              List<Region> regiondetails =
+                  await dbHelper.region_name_regionbasedDetails(SelectedRegion);
               if (regiondetails.length != "0") {
                 regionid = regiondetails.first.regionid;
               }
@@ -259,13 +257,11 @@ class replacementccmsState extends State<replacementccms> {
 
                 if (faultresponser.length != 0) {
                   var firmwaredetails =
-                  faultresponser.first.getValue().toString();
+                      faultresponser.first.getValue().toString();
                   final decoded = jsonDecode(firmwaredetails) as Map;
                   var firmware_versions = decoded['firmware_version'];
 
-                  if (firmware_versions
-                      .toString()
-                      .contains(FirmwareVersion)) {
+                  if (firmware_versions.toString().contains(FirmwareVersion)) {
                     versionCompatability = true;
                   } else {
                     versionCompatability = false;
@@ -275,13 +271,13 @@ class replacementccmsState extends State<replacementccms> {
                 var message = toThingsboardError(e, context);
               }
 
-              if(versionCompatability == true) {
+              if (versionCompatability == true) {
                 if (faultyStatus == "2") {
                   Map data = {'faulty': "true"};
                   var saveAttributes = await tbClient
                       .getAttributeService()
                       .saveDeviceAttributes(
-                      response.id!.id!, "SERVER_SCOPE", data);
+                          response.id!.id!, "SERVER_SCOPE", data);
                 }
 
                 var relationDetails = await tbClient
@@ -295,15 +291,10 @@ class replacementccmsState extends State<replacementccms> {
 
                 if (entitygroups != null) {
                   for (int i = 0; i < entitygroups.length; i++) {
-                    if (entitygroups
-                        .elementAt(i)
-                        .name == CCMSserviceFolderName) {
+                    if (entitygroups.elementAt(i).name ==
+                        CCMSserviceFolderName) {
                       DevicemoveFolderName =
-                          entitygroups
-                              .elementAt(i)
-                              .id!
-                              .id!
-                              .toString();
+                          entitygroups.elementAt(i).id!.id!.toString();
                     }
                   }
 
@@ -313,33 +304,27 @@ class replacementccmsState extends State<replacementccms> {
                       .getEntityGroupsForFolderEntity(response.id!.id!);
 
                   if (currentdeviceresponse != null) {
-                    if (currentdeviceresponse.last.id
-                        .toString()
-                        .isNotEmpty) {
+                    if (currentdeviceresponse.last.id.toString().isNotEmpty) {
                       var firstdetails = await tbClient
                           .getEntityGroupService()
                           .getEntityGroup(currentdeviceresponse.first.id!);
                       if (firstdetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                        currentdeviceresponse.first.id!;
+                            currentdeviceresponse.first.id!;
                       }
                       var seconddetails = await tbClient
                           .getEntityGroupService()
                           .getEntityGroup(currentdeviceresponse.last.id!);
                       if (seconddetails!.name.toString() != "All") {
                         DevicecurrentFolderName =
-                        currentdeviceresponse.last.id!;
+                            currentdeviceresponse.last.id!;
                       }
 
                       var relation_response = await tbClient
                           .getEntityRelationService()
                           .deleteDeviceRelation(
-                          relationDetails
-                              .elementAt(0)
-                              .from
-                              .id!,
-                          response.id!.id!);
-
+                              relationDetails.elementAt(0).from.id!,
+                              response.id!.id!);
 
                       List<String> myList = [];
                       myList.add(response.id!.id!);
@@ -348,15 +333,14 @@ class replacementccmsState extends State<replacementccms> {
                         var remove_response = await tbClient
                             .getEntityGroupService()
                             .removeEntitiesFromEntityGroup(
-                            DevicecurrentFolderName, myList);
+                                DevicecurrentFolderName, myList);
                       } catch (e) {}
                       try {
                         var add_response = await tbClient
                             .getEntityGroupService()
                             .addEntitiesToEntityGroup(
-                            DevicemoveFolderName, myList);
-                      } catch (e) {
-                      }
+                                DevicemoveFolderName, myList);
+                      } catch (e) {}
 
                       final bytes = File(imageFile!.path).readAsBytesSync();
                       String img64 = base64Encode(bytes);
@@ -364,18 +348,20 @@ class replacementccmsState extends State<replacementccms> {
                       postRequest(context, img64, DeviceName);
                       pr.hide();
                     } else {
-                      FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Device Not Found Exception");
+                      /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Device Not Found Exception");*/
                       pr.hide();
-                      calltoast("Device is not Found");
+                      calltoast(
+                          app_dev_nfound_one + DeviceName + app_dev_nfound_two);
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
                               dashboard_screen()));
                     }
                   } else {
-                    FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "No Device Groups Found");
+                    /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+                        "No Device Groups Found");*/
                     pr.hide();
-                    calltoast("Device EntityGroup Not Found");
+                    calltoast(app_dev_group_nfud);
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) => dashboard_screen()));
@@ -387,12 +373,14 @@ class replacementccmsState extends State<replacementccms> {
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (BuildContext context) => dashboard_screen()));
                 }
-              }else{
-                FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Not authorized to Install");
+              } else {
+                /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+                    "Not authorized to Install");*/
                 pr.hide();
                 Fluttertoast.showToast(
-                    msg:
-                    "Device is not compatible with this Project "+ SelectedRegion + " Kindly try another one.",
+                    msg: app_dev_not_compat_one +
+                        SelectedRegion +
+                        app_dev_not_compat_two,
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -401,8 +389,7 @@ class replacementccmsState extends State<replacementccms> {
                     fontSize: 16.0);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) =>
-                        dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
               pr.hide();
@@ -412,11 +399,11 @@ class replacementccmsState extends State<replacementccms> {
                   builder: (BuildContext context) => dashboard_screen()));
             }
           } else {
-            FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Image Base64 Exception");
+            /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+                "Image Base64 Exception");*/
             pr.hide();
             Fluttertoast.showToast(
-                msg:
-                    "Image not captured successfully! Please try again!",
+                msg: app_device_image_cap,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -425,7 +412,8 @@ class replacementccmsState extends State<replacementccms> {
                 fontSize: 16.0);
           }
         } catch (e) {
-          FlutterLogs.logInfo("ccms_replacement_page", "ccms_remove", "CCMS Replacement Device Exception Occurs");
+          /*FlutterLogs.logInfo("ccms_replacement_page", "ccms_remove",
+              "CCMS Replacement Device Exception Occurs");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -484,10 +472,11 @@ class replacementccmsState extends State<replacementccms> {
       } else {}
       return response;
     } catch (e) {
-      FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Passing Image Base64 to Local Basket");
+      /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
+          "Passing Image Base64 to Local Basket");*/
       pr.hide();
       Fluttertoast.showToast(
-          msg: "Device Replacement Image Upload Error",
+          msg: app_dev_img_upload_error,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,

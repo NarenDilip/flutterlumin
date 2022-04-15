@@ -1548,6 +1548,8 @@ class device_list_screen_state extends State<device_list_screen> {
                             .getLastUpdateTs()
                             .toString());
 
+                    try {
+
                     List<String> myLister = [];
                     myLister.add("landmark");
 
@@ -1591,6 +1593,10 @@ class device_list_screen_state extends State<device_list_screen> {
                         responser.first.kv.getValue().toString());
                     prefs.setString('deviceLongitude',
                         responser.last.kv.getValue().toString());
+
+                    }catch(e){
+                      var message = toThingsboardError(e, context);
+                    }
 
                     pr.hide();
                     if (response.type == ilm_deviceType) {
@@ -1793,7 +1799,7 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text(device_name,
+      title: Text(app_display_name,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",

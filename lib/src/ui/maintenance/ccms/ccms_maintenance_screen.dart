@@ -457,7 +457,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
           visibility = true;
           viewvisibility = false;
           Fluttertoast.showToast(
-              msg: "GeoFence Availability is not found with this Ward",
+              msg: app_geofence_nfound,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -507,7 +507,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -862,16 +862,6 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                           const SizedBox(
                                             height: 15,
                                           ),
-                                          Visibility(
-                                            visible: viewvisibility,
-                                            child: Text(
-                                                'Your Not in adequate Range to Access & Controll of Devices',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                    fontSize: 22,
-                                                    color: Colors.redAccent,
-                                                    fontFamily: "Montserrat")),
-                                          ),
                                           const SizedBox(
                                             height: 15,
                                           ),
@@ -918,7 +908,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                           } else {
                                                             Fluttertoast.showToast(
                                                                 msg:
-                                                                    "Device in Offline Mode",
+                                                                app_dev_offline_mode,
                                                                 toastLength: Toast
                                                                     .LENGTH_SHORT,
                                                                 gravity:
@@ -970,7 +960,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                         } else {
                                                           Fluttertoast.showToast(
                                                               msg:
-                                                                  "Device in Offline Mode",
+                                                              app_dev_offline_mode,
                                                               toastLength: Toast
                                                                   .LENGTH_SHORT,
                                                               gravity:
@@ -1115,15 +1105,15 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             visible: visibility,
             child: AlertDialog(
               elevation: 10,
-              title: const Text('Luminator Location Alert'),
+              title: const Text(app_dev_loc_alert),
               content: const Text(
-                  'Your are not in the Nearest Range to Controll or Access the Device'),
+                  app_dev_range_alert),
               actions: [
                 TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Close'))
+                    child: const Text(app_close_btn))
               ],
             ),
           );
@@ -1138,7 +1128,7 @@ Future<void> callONRPCCall(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1173,7 +1163,7 @@ Future<void> callONRPCCall(context) async {
 
         if (response["lamp"].toString() == "1") {
           Fluttertoast.showToast(
-              msg: "Device ON Successfully",
+              msg: app_dev_on,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -1182,14 +1172,14 @@ Future<void> callONRPCCall(context) async {
               fontSize: 16.0);
           pr.hide();
         } else {
-          FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-              "Device Connectivity Issue");
+          /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+              "Device Connectivity Issue");*/
           pr.hide();
-          calltoast("Unable to Process, Please try again");
+          calltoast(app_unab_procs);
         }
       } catch (e) {
-        FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-            "ON/RPC Device Connectivity Issue Exception");
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "ON/RPC Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1198,7 +1188,7 @@ Future<void> callONRPCCall(context) async {
             callONRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1214,7 +1204,7 @@ Future<void> callOFFRPCCall(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1247,7 +1237,7 @@ Future<void> callOFFRPCCall(context) async {
         if (response["lamp"].toString() == "0") {
           pr.hide();
           Fluttertoast.showToast(
-              msg: "Device Off Successfully",
+              msg: app_dev_off,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -1255,14 +1245,14 @@ Future<void> callOFFRPCCall(context) async {
               textColor: Colors.black,
               fontSize: 16.0);
         } else {
-          FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-              "Device Connectivity Issue");
+         /* FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+              "Device Connectivity Issue");*/
           pr.hide();
-          calltoast("Unable to Process, Please try again");
+          calltoast(app_unab_procs);
         }
       } catch (e) {
-        FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-            "OFF/RPC Device Connectivity Issue Exception");
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "OFF/RPC Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1271,7 +1261,7 @@ Future<void> callOFFRPCCall(context) async {
             callOFFRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1287,7 +1277,7 @@ Future<void> callMCBTrip(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1331,8 +1321,8 @@ Future<void> callMCBTrip(context) async {
 
         pr.hide();
       } catch (e) {
-        FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-            "MCB/Device Connectivity Issue Exception");
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "MCB/Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1341,7 +1331,7 @@ Future<void> callMCBTrip(context) async {
             getLiveRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1357,7 +1347,7 @@ Future<void> getLiveRPCCall(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1391,8 +1381,8 @@ Future<void> getLiveRPCCall(context) async {
         pr.hide();
 
       } catch (e) {
-        FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-            "Device Connectivity Issue Exception");
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1401,7 +1391,7 @@ Future<void> getLiveRPCCall(context) async {
             getLiveRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1418,7 +1408,7 @@ Future<void> replaceCCMS(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1450,16 +1440,16 @@ Future<void> replaceCCMS(context) async {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => replaceccms()));
           } else {
-            FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-                "Duplicate QR Found for Execution");
+            /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+                "Duplicate QR Found for Execution");*/
             pr.hide();
-            calltoast("Duplicate QR Code");
+            calltoast(app_qr_duplicate);
           }
         } else {
-          FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-              "Invalid QR Found for Execution");
+          /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+              "Invalid QR Found for Execution");*/
           pr.hide();
-          calltoast("Invalid QR Code");
+          calltoast(app_qr_invalid);
         }
       });
     } else {
@@ -1475,7 +1465,7 @@ Future<void> removeCCMS(context) async {
 showActionAlertDialog(context, OldDevice, NewDevice) {
   // set up the buttons
   Widget cancelButton = TextButton(
-    child: Text("Cancel",
+    child: Text(app_dialog_cancel,
         style: const TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
@@ -1486,7 +1476,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
     },
   );
   Widget continueButton = TextButton(
-    child: Text("Replace",
+    child: Text(app_dialog_replace,
         style: const TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
@@ -1501,7 +1491,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text("Luminator",
+    title: Text(app_display_name,
         style: const TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
@@ -1510,7 +1500,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 
     content: RichText(
       text: new TextSpan(
-        text: 'Would you like to replace ',
+        text: app_dial_replace,
         style: const TextStyle(
             fontSize: 16.0,
             fontFamily: "Montserrat",
@@ -1525,7 +1515,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
           new TextSpan(
-              text: ' With ',
+              text: app_dial_replace_with,
               style: const TextStyle(
                   fontSize: 16.0,
                   fontFamily: "Montserrat",
@@ -1589,8 +1579,8 @@ Future<void> callDeviceCurrentStatus(context) async {
 Future<ThingsboardError> toThingsboardError(error, context,
     [StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
-  FlutterLogs.logInfo(
-      "ccms_maintenance_page", "ccms_maintenance", "Server Error");
+  /*FlutterLogs.logInfo(
+      "ccms_maintenance_page", "ccms_maintenance", "Server Error");*/
   if (error.message == "Session expired!") {
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
@@ -1668,13 +1658,13 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",
+      title: Text(app_display_name,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: liorange)),
-      content: Text("Are you sure you want to Logout?",
+      content: Text(app_logout,
           style: const TextStyle(
               fontSize: 18.0,
               fontFamily: "Montserrat",
@@ -1685,7 +1675,7 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",
+          child: Text(app_logout_no,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1693,7 +1683,7 @@ Future<void> callLogoutoption(BuildContext context) async {
                   color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',
+          child: Text(app_logout_yes,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1721,8 +1711,8 @@ Future<void> callLogoutoption(BuildContext context) async {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (BuildContext context) => splash_screen()));
             } catch (e) {
-              FlutterLogs.logInfo(
-                  "ccms_maintenance_page", "ccms_maintenance", "DB Error");
+              /*FlutterLogs.logInfo(
+                  "ccms_maintenance_page", "ccms_maintenance", "DB Error");*/
             }
           },
         ),
