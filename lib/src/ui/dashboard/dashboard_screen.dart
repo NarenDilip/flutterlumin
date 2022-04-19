@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -21,8 +22,10 @@ import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart'
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/gateway/gateway_install_cam_screen.dart';
@@ -47,6 +50,12 @@ class dashboard_screenState extends State<dashboard_screen> {
   var logStatus = '';
   static Completer _completer = new Completer<String>();
 
+  late final PackageInfo _packageInfo;
+  late final String enforcedBuildNumber;
+  late final bool forceUpdate;
+  final RemoteConfig remoteConfig = RemoteConfig.instance;
+  late bool visibility = false;
+
   @override
   // TODO: implement context
   BuildContext get context => super.context;
@@ -54,7 +63,100 @@ class dashboard_screenState extends State<dashboard_screen> {
   @override
   void initState() {
     super.initState();
-    setUpLogs();
+    // setUpLogs();
+    _initPackageInfo();
+    _enforcedVersion();
+  }
+
+  Future<void> launchAppStore() async {
+    /// Depending on where you are putting this method you might need
+    /// to pass a reference from your _packageInfo.
+    final appPackageName = _packageInfo.packageName;
+
+    if (Platform.isAndroid) {
+      await launch(
+          "https://play.google.com/store/apps/details?id=$appPackageName");
+    } else if (Platform.isIOS) {
+      await launch("market://details?id=$appPackageName");
+    }
+  }
+
+  Future<void> _initPackageInfo() async {
+    // PackageInfo _packageInfo = await PackageInfo.fromPlatform();
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _packageInfo = info;
+    });
+  }
+
+  Future<void> _enforcedVersion() async {
+    final RemoteConfig remoteConfig = RemoteConfig.instance;
+    await remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(seconds: 10),
+      minimumFetchInterval: Duration.zero,
+    ));
+    await remoteConfig.fetchAndActivate();
+    setState(() {
+      enforcedBuildNumber = remoteConfig.getString('version_code');
+      visibility = remoteConfig.getBool('force_update');
+    });
+    if (int.parse(_packageInfo.buildNumber) <= int.parse(enforcedBuildNumber)) {
+      //How to force update?
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: Text('New version available',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 22.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black)),
+          content: Text('Please update app to new version',
+              textAlign: TextAlign.left,
+              style: const TextStyle(
+              fontSize: 20.0,
+              fontFamily: "Montserrat",
+              fontWeight: FontWeight.normal,
+              color: Colors.black)),
+          actions: <Widget>[
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Visibility(visible: visibility, child: Container(
+                  child: Text('Not Now',
+                      style: const TextStyle(
+                          fontSize: 18.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red)),
+                ))),
+            TextButton(
+                child: Text('Update',
+                    style: const TextStyle(
+                        fontSize: 18.0,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green)),
+                onPressed: () async {
+                  launchAppStore();
+                })
+          ],
+          // actions: [
+          //   TextButton(
+          //     onPressed: launchAppStore,
+          //     child: Text('Update',style: const TextStyle(
+          //         fontSize: 18.0,
+          //         fontFamily: "Montserrat",
+          //         fontWeight: FontWeight.normal,
+          //         color: Colors.green)),
+          //   ),
+          // ],
+        ),
+      );
+    }
   }
 
   final List<Widget> _widgetOptions = <Widget>[
@@ -185,7 +287,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                       : 10.0,
                   decoration: BoxDecoration(
                       borderRadius:
-                      BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                          BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
                       color: Colors.white),
                 ),
               )
@@ -271,7 +373,7 @@ class dashboard_screenState extends State<dashboard_screen> {
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-                (route) => true).then((value) async {
+            (route) => true).then((value) async {
           if (value != null) {
             // if (value.toString().length == 6) {
             fetchGWDeviceDetails(value, context);
@@ -310,7 +412,8 @@ class dashboard_screenState extends State<dashboard_screen> {
           pr.show();
           Device response;
           String? SelectedRegion;
-          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          var tbClient =
+              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           SelectedRegion = prefs.getString("SelectedRegion").toString();
@@ -444,7 +547,6 @@ class dashboard_screenState extends State<dashboard_screen> {
                         atresponser.elementAt(0).getLastUpdateTs().toString());
 
                     try {
-
                       List<String> myLister = [];
                       myLister.add("landmark");
 
@@ -453,8 +555,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                           .getAttributeKvEntries(response.id!, myLister));
 
                       if (responserse.isNotEmpty) {
-                        prefs.setString(
-                            'location',
+                        prefs.setString('location',
                             responserse.first.getValue().toString());
                         prefs.setString('deviceName', deviceName);
                       }
@@ -481,16 +582,15 @@ class dashboard_screenState extends State<dashboard_screen> {
                       List<BaseAttributeKvEntry> responser;
 
                       responser = (await tbClient
-                          .getAttributeService()
-                          .getAttributeKvEntries(response.id!, myList))
-                      as List<BaseAttributeKvEntry>;
+                              .getAttributeService()
+                              .getAttributeKvEntries(response.id!, myList))
+                          as List<BaseAttributeKvEntry>;
 
                       prefs.setString('deviceLatitude',
                           responser.first.kv.getValue().toString());
                       prefs.setString('deviceLongitude',
                           responser.last.kv.getValue().toString());
-
-                    }catch(e){
+                    } catch (e) {
                       var message = toThingsboardError(e, context);
                     }
 
@@ -506,7 +606,7 @@ class dashboard_screenState extends State<dashboard_screen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const CCMSMaintenanceScreen()),
+                                const CCMSMaintenanceScreen()),
                       );
                     } else if (response.type == Gw_deviceType) {
                       Navigator.push(
@@ -566,7 +666,7 @@ class dashboard_screenState extends State<dashboard_screen> {
             //"" No Device Found
           }
         } catch (e) {
-          FirebaseCrashlytics.instance.crash();
+          // FirebaseCrashlytics.instance.crash();
           // FlutterLogs.logInfo(
           //     "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
           pr.hide();

@@ -149,7 +149,7 @@ class LoginForm extends StatelessWidget {
                       ),
                       const SizedBox(height: 60),
                       Center(
-                          child:Text("Version 2.0.1",style: const TextStyle(
+                          child:Text(app_version,style: const TextStyle(
                               fontSize: 15.0,
                               fontFamily: "Montserrat",
                               fontWeight: FontWeight.bold,

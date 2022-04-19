@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +16,19 @@ class Utility {
   static Future<bool> isConnected() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
-      return true;
+      try {
+        final result = await InternetAddress.lookup('iotpro.io');
+        return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      } on SocketException catch (_) {
+        return false;
+      }
     } else if (connectivityResult == ConnectivityResult.wifi) {
-      return true;
+      try {
+        final result = await InternetAddress.lookup('iotpro.io');
+        return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      } on SocketException catch (_) {
+        return false;
+      }
     }
     return false;
   }

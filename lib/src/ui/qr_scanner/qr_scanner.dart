@@ -34,6 +34,14 @@ class _QRState extends State<QRScreen> {
             child: QRView(
               key: qrKey,
               onQRViewCreated: _onQRViewCreated,
+              overlay: QrScannerOverlayShape(
+                //customizing scan area
+                borderWidth: 10,
+                borderColor: Colors.teal,
+                borderLength: 20,
+                borderRadius: 10,
+                cutOutSize: MediaQuery.of(context).size.width * 0.8,
+              ),
             ),
           ),
           Expanded(
