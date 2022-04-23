@@ -544,41 +544,41 @@ class replacegwState extends State<replacegw> {
                         regionid = regiondetails.first.regionid;
                       }
 
-                      List<String> myfirmList = [];
-                      myfirmList.add("firmware_versions");
-
-                      List<AttributeKvEntry> faultresponser;
-
-                      faultresponser = (await tbClient
-                          .getAttributeService()
-                          .getFirmAttributeKvEntries(regionid, myfirmList));
-
-                      List<String> myreplacefirmList = [];
-                      myreplacefirmList.add("firmware_versions");
-
-                      List<AttributeKvEntry> relacefaultresponser;
-
-                      relacefaultresponser = (await tbClient
-                          .getAttributeService()
-                          .getAttributeallKvEntries(
-                          response.id!.id!, myreplacefirmList));
-
-                      if (faultresponser.length != 0) {
-                        var firmwaredetails =
-                        faultresponser.first.getValue().toString();
-
-                        final decoded = jsonDecode(firmwaredetails) as Map;
-                        var firmware_versions = decoded['firmware_version'];
-                        var compatable_versions = decoded[FirmwareVersion];
-
-                        if (compatable_versions
-                            .toString()
-                            .contains(relacefaultresponser.first.getValue())) {
+                      // List<String> myfirmList = [];
+                      // myfirmList.add("firmware_versions");
+                      //
+                      // List<AttributeKvEntry> faultresponser;
+                      //
+                      // faultresponser = (await tbClient
+                      //     .getAttributeService()
+                      //     .getFirmAttributeKvEntries(regionid, myfirmList));
+                      //
+                      // List<String> myreplacefirmList = [];
+                      // myreplacefirmList.add("firmware_versions");
+                      //
+                      // List<AttributeKvEntry> relacefaultresponser;
+                      //
+                      // relacefaultresponser = (await tbClient
+                      //     .getAttributeService()
+                      //     .getAttributeallKvEntries(
+                      //     response.id!.id!, myreplacefirmList));
+                      //
+                      // if (faultresponser.length != 0) {
+                      //   var firmwaredetails =
+                      //   faultresponser.first.getValue().toString();
+                      //
+                      //   final decoded = jsonDecode(firmwaredetails) as Map;
+                      //   var firmware_versions = decoded['firmware_version'];
+                      //   var compatable_versions = decoded[FirmwareVersion];
+                      //
+                      //   if (compatable_versions
+                      //       .toString()
+                      //       .contains(relacefaultresponser.first.getValue())) {
                           versionCompatability = true;
-                        } else {
-                          versionCompatability = false;
-                        }
-                      }
+                      //   } else {
+                      //     versionCompatability = false;
+                      //   }
+                      // }
 
                       if (versionCompatability == true) {
                         if (relationDetails.length.toString() == "0") {

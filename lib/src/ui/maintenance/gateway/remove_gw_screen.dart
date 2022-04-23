@@ -264,31 +264,31 @@ class replacementgwState extends State<replacementgw> {
                 regionid = regiondetails.first.regionid;
               }
 
-              try {
-                List<String> myfirmList = [];
-                myfirmList.add("firmware_versions");
-
-                List<AttributeKvEntry> faultresponser;
-
-                faultresponser = (await tbClient
-                    .getAttributeService()
-                    .getFirmAttributeKvEntries(regionid, myfirmList));
-
-                if (faultresponser.length != 0) {
-                  var firmwaredetails =
-                  faultresponser.first.getValue().toString();
-                  final decoded = jsonDecode(firmwaredetails) as Map;
-                  var firmware_versions = decoded['firmware_version'];
-
-                  if (firmware_versions.toString().contains(FirmwareVersion)) {
+              // try {
+              //   List<String> myfirmList = [];
+              //   myfirmList.add("firmware_versions");
+              //
+              //   List<AttributeKvEntry> faultresponser;
+              //
+              //   faultresponser = (await tbClient
+              //       .getAttributeService()
+              //       .getFirmAttributeKvEntries(regionid, myfirmList));
+              //
+              //   if (faultresponser.length != 0) {
+              //     var firmwaredetails =
+              //     faultresponser.first.getValue().toString();
+              //     final decoded = jsonDecode(firmwaredetails) as Map;
+              //     var firmware_versions = decoded['firmware_version'];
+              //
+              //     if (firmware_versions.toString().contains(FirmwareVersion)) {
                     versionCompatability = true;
-                  } else {
-                    versionCompatability = false;
-                  }
-                }
-              } catch (e) {
-                var message = toThingsboardError(e, context);
-              }
+              //     } else {
+              //       versionCompatability = false;
+              //     }
+              //   }
+              // } catch (e) {
+              //   var message = toThingsboardError(e, context);
+              // }
 
               if (versionCompatability == true) {
                 if (faultyStatus == "2") {
