@@ -100,7 +100,7 @@ class dashboard_screenState extends State<dashboard_screen> {
       enforcedBuildNumber = remoteConfig.getString('version_code');
       visibility = remoteConfig.getBool('force_update');
     });
-    if (int.parse(_packageInfo.buildNumber) <= int.parse(enforcedBuildNumber)) {
+    if (int.parse(_packageInfo.buildNumber) < int.parse(enforcedBuildNumber)) {
       //How to force update?
       showDialog(
         context: context,
