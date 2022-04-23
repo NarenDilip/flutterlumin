@@ -81,6 +81,11 @@ android {
             resValue "string", "app_name", "Luminator 2.0"
         }
     }
+
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
 }
 
 flutter {
