@@ -541,7 +541,7 @@ class gwcaminstallState extends State<gwcaminstall> {
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
-    var versionCompatability = false;
+    var versionCompatability = true;
 
     var status = await Permission.location.status;
     if (status.isGranted) {
@@ -608,9 +608,9 @@ class gwcaminstallState extends State<gwcaminstall> {
 
                       if (firmware_versions
                           .toString()
-                          .contains(FirmwareVersion)) {
+                          .contains(FirmwareVersion)) {*/
                         versionCompatability = true;
-                      } else {
+                      /*} else {
                         versionCompatability = false;
                       }
                     }*/

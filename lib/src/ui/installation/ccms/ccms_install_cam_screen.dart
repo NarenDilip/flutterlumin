@@ -546,7 +546,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
-    var versionCompatability = false;
+    var versionCompatability = true;
 
     var status = await Permission.location.status;
     if (status.isGranted) {
