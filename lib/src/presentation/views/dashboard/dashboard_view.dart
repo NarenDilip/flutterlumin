@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/domain/repository/device_repository.dart';
+import 'package:flutterlumin/src/presentation/blocs/product_device_list_cubit.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/projects_dashboard_view.dart';
 import 'package:flutterlumin/src/presentation/views/devices/search_devices.dart';
 import 'package:flutterlumin/src/presentation/views/profile/profile_view.dart';
@@ -20,7 +23,10 @@ class _DashboardAppState extends State<DashboardView> {
   List<Widget> tabPages = [
     const ProjectDashboard(),
     map_view_screen(),
-    const SearchDevicesView(),
+    BlocProvider<ProductDeviceCubit>(
+      create: (context) => ProductDeviceCubit(DeviceRepository()),
+      child: const SearchDevicesView(),
+    ),
     const ProfileView(),
   ];
 
