@@ -303,7 +303,7 @@ class replacementccmsState extends State<replacementccms> {
                     if (entitygroups
                         .elementAt(i)
                         .name ==
-                        CCMSserviceFolderName) {
+                        FlavorConfig.instance.variables["CCMSserviceFolderName"]) {
                       DevicemoveFolderName =
                           entitygroups
                               .elementAt(i)
