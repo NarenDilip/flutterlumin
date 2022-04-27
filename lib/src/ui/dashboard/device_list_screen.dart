@@ -1147,24 +1147,6 @@ class device_list_screen_state extends State<device_list_screen> {
       String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        late ProgressDialog pr;
-        pr = ProgressDialog(context,
-            type: ProgressDialogType.Normal, isDismissible: false);
-        pr.style(
-          message: 'Please wait ..',
-          borderRadius: 20.0,
-          backgroundColor: Colors.lightBlueAccent,
-          elevation: 10.0,
-          messageTextStyle: const TextStyle(
-              color: Colors.white,
-              fontFamily: "Montserrat",
-              fontSize: 19.0,
-              fontWeight: FontWeight.w600),
-          progressWidget: const CircularProgressIndicator(
-              backgroundColor: Colors.lightBlueAccent,
-              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-              strokeWidth: 3.0),
-        );
         pr.show();
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
@@ -1191,9 +1173,10 @@ class device_list_screen_state extends State<device_list_screen> {
             }
 
             setState(() {
+              pr.hide();
               _foundUsers = _foundUsers;
             });
-            pr.hide();
+
           } else {
             pr.hide();
             calltoast(searchNumber);
@@ -1215,7 +1198,6 @@ class device_list_screen_state extends State<device_list_screen> {
           }
         }
       } else {
-        pr.hide();
         calltoast(no_network);
       }
     });
@@ -1225,24 +1207,6 @@ class device_list_screen_state extends State<device_list_screen> {
       String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        late ProgressDialog pr;
-        pr = ProgressDialog(context,
-            type: ProgressDialogType.Normal, isDismissible: false);
-        pr.style(
-          message: 'Please wait ..',
-          borderRadius: 20.0,
-          backgroundColor: Colors.lightBlueAccent,
-          elevation: 10.0,
-          messageTextStyle: const TextStyle(
-              color: Colors.white,
-              fontFamily: "Montserrat",
-              fontSize: 19.0,
-              fontWeight: FontWeight.w600),
-          progressWidget: const CircularProgressIndicator(
-              backgroundColor: Colors.lightBlueAccent,
-              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-              strokeWidth: 3.0),
-        );
         pr.show();
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
@@ -1270,9 +1234,9 @@ class device_list_screen_state extends State<device_list_screen> {
             }
 
             setState(() {
+              pr.hide();
               _ccmsfoundUsers = _ccmsfoundUsers;
             });
-            pr.hide();
           } else {
             pr.hide();
             calltoast(searchNumber);
@@ -1290,7 +1254,6 @@ class device_list_screen_state extends State<device_list_screen> {
           }
         }
       } else {
-        pr.hide();
         calltoast(no_network);
       }
     });
@@ -1300,24 +1263,6 @@ class device_list_screen_state extends State<device_list_screen> {
       String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
       if (value) {
-        late ProgressDialog pr;
-        pr = ProgressDialog(context,
-            type: ProgressDialogType.Normal, isDismissible: false);
-        pr.style(
-          message: 'Please wait ..',
-          borderRadius: 20.0,
-          backgroundColor: Colors.lightBlueAccent,
-          elevation: 10.0,
-          messageTextStyle: const TextStyle(
-              color: Colors.white,
-              fontFamily: "Montserrat",
-              fontSize: 19.0,
-              fontWeight: FontWeight.w600),
-          progressWidget: const CircularProgressIndicator(
-              backgroundColor: Colors.lightBlueAccent,
-              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-              strokeWidth: 3.0),
-        );
         pr.show();
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
@@ -1345,9 +1290,10 @@ class device_list_screen_state extends State<device_list_screen> {
             }
 
             setState(() {
+              pr.hide();
               _gwfoundUsers = _gwfoundUsers;
             });
-            pr.hide();
+
           } else {
             pr.hide();
             calltoast(searchNumber);
@@ -1368,7 +1314,6 @@ class device_list_screen_state extends State<device_list_screen> {
           }
         }
       } else {
-        pr.hide();
         calltoast(no_network);
       }
     });
@@ -1381,24 +1326,6 @@ class device_list_screen_state extends State<device_list_screen> {
       BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        late ProgressDialog pr;
-        pr = ProgressDialog(context,
-            type: ProgressDialogType.Normal, isDismissible: false);
-        pr.style(
-          message: 'Please wait ..',
-          borderRadius: 20.0,
-          backgroundColor: Colors.lightBlueAccent,
-          elevation: 10.0,
-          messageTextStyle: const TextStyle(
-              color: Colors.white,
-              fontFamily: "Montserrat",
-              fontSize: 19.0,
-              fontWeight: FontWeight.w600),
-          progressWidget: const CircularProgressIndicator(
-              backgroundColor: Colors.lightBlueAccent,
-              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-              strokeWidth: 3.0),
-        );
         pr.show();
         try {
           _relationdevices!.clear();
@@ -1438,9 +1365,10 @@ class device_list_screen_state extends State<device_list_screen> {
                 }
               }
               setState(() {
+                pr.hide();
                 _foundUsers = _foundUsers;
               });
-              pr.hide();
+
             } else {
               /*FlutterLogs.logInfo("devicelist_page", "device_list",
                   "No Relation Occurs and cause Exception");*/
@@ -1482,24 +1410,6 @@ class device_list_screen_state extends State<device_list_screen> {
       var gofenceValidation = false;
       if (value) {
         try {
-          late ProgressDialog pr;
-          pr = ProgressDialog(context,
-              type: ProgressDialogType.Normal, isDismissible: false);
-          pr.style(
-            message: 'Please wait ..',
-            borderRadius: 20.0,
-            backgroundColor: Colors.lightBlueAccent,
-            elevation: 10.0,
-            messageTextStyle: const TextStyle(
-                color: Colors.white,
-                fontFamily: "Montserrat",
-                fontSize: 19.0,
-                fontWeight: FontWeight.w600),
-            progressWidget: const CircularProgressIndicator(
-                backgroundColor: Colors.lightBlueAccent,
-                valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-                strokeWidth: 3.0),
-          );
           pr.show();
           Device response;
           String? SelectedRegion;
