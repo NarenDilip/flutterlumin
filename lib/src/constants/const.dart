@@ -59,7 +59,7 @@ const Gw_deviceType = "Gateway";
 
 const session_expired = "Session expired!";
 
-const app_version= "Version 2.0.1";
+const app_version= "Version 2.2";
 
 // const smart_Username = "developer@schnellenergy.com";
 // const smart_Password = "schnell";
