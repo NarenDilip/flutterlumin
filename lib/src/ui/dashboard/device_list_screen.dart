@@ -1178,7 +1178,9 @@ class device_list_screen_state extends State<device_list_screen> {
             });
 
           } else {
-            pr.hide();
+            setState(() {
+              pr.hide();
+            });
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -1238,7 +1240,9 @@ class device_list_screen_state extends State<device_list_screen> {
               _ccmsfoundUsers = _ccmsfoundUsers;
             });
           } else {
-            pr.hide();
+            setState(() {
+              pr.hide();
+            });
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -1295,7 +1299,9 @@ class device_list_screen_state extends State<device_list_screen> {
             });
 
           } else {
-            pr.hide();
+            setState(() {
+              pr.hide();
+            });
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -1372,13 +1378,17 @@ class device_list_screen_state extends State<device_list_screen> {
             } else {
               /*FlutterLogs.logInfo("devicelist_page", "device_list",
                   "No Relation Occurs and cause Exception");*/
-              pr.hide();
+              setState(() {
+                pr.hide();
+              });
               calltoast(polenumber);
             }
           } else {
             /*FlutterLogs.logInfo("devicelist_page", "device_list",
                 "No Device Found for execution");*/
-            pr.hide();
+            setState(() {
+              pr.hide();
+            });
             calltoast(polenumber);
           }
         } catch (e) {
