@@ -493,7 +493,15 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      imageFile = pickedFile;
+      if(pickedFile != null) {
+        imageFile = pickedFile;
+      }else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => dashboard_screen()),
+        );
+      }
     });
   }
 
@@ -541,6 +549,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
     String SelectedRegion = prefs.getString('SelectedRegion').toString();
+    String SelectedZone = prefs.getString('SelectedZone').toString();
     String deviceName = prefs.getString('deviceName').toString();
     String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
@@ -678,7 +687,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               'location': address,
                               'slatitude': Lattitude.toString(),
                               'slongitude': Longitude.toString(),
-                              'accuracy': accuracy.toString()
+                              'accuracy': accuracy.toString(),
+                              'zoneName': SelectedZone,
+                              'wardName': SelectedWard,
                             };
 
                             var saveAttributes = await tbClient

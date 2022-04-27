@@ -499,7 +499,15 @@ class gwcaminstallState extends State<gwcaminstall> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      imageFile = pickedFile;
+      if(pickedFile != null) {
+        imageFile = pickedFile;
+      }else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => dashboard_screen()),
+        );
+      }
     });
   }
 
@@ -536,6 +544,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
     String SelectedRegion = prefs.getString('SelectedRegion').toString();
+    String SelectedZone = prefs.getString('SelectedZone').toString();
     String deviceName = prefs.getString('deviceName').toString();
     String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
@@ -677,7 +686,9 @@ class gwcaminstallState extends State<gwcaminstall> {
                               'landmark': address,
                               'lattitude': Lattitude.toString(),
                               'longitude': Longitude.toString(),
-                              'accuracy': accuracy.toString()
+                              'accuracy': accuracy.toString(),
+                              'zoneName': SelectedZone,
+                              'wardName': SelectedWard,
                             };
 
                             var saveAttributes = await tbClient

@@ -38,7 +38,7 @@ const no_network = "Please check your Mobile Internet Connectivity";
 const user_email = "User Email";
 const user_password = "Password";
 const validate_email = "Please enter the validate email";
-const sign_in = "Start Process";
+const sign_in = "Login";
 const qr_text = "SCAN QR CODE";
 
 const devILMDeviceInstallationFolder = "lumismartLights";
@@ -59,7 +59,7 @@ const Gw_deviceType = "Gateway";
 
 const session_expired = "Session expired!";
 //test
-const app_version= "Version 2.2";
+const app_version= "Version 2.2.1";
 
 // const smart_Username = "developer@schnellenergy.com";
 // const smart_Password = "schnell";

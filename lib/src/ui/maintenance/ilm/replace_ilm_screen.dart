@@ -29,6 +29,8 @@ import '../../../localdb/model/ward_model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
+import 'ilm_maintenance_screen.dart';
+
 class replaceilm extends StatefulWidget {
   const replaceilm() : super();
 
@@ -242,7 +244,15 @@ class replaceilmState extends State<replaceilm> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      imageFile = pickedFile;
+      if(pickedFile != null) {
+        imageFile = pickedFile;
+      }else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MaintenanceScreen()),
+        );
+      }
     });
   }
 
@@ -468,6 +478,7 @@ class replaceilmState extends State<replaceilm> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String SelectedRegion = prefs.getString('SelectedRegion').toString();
         String SelectedWard = prefs.getString('SelectedWard').toString();
+        String SelectedZone = prefs.getString('SelectedZone').toString();
         String FirmwareVersion = prefs.getString("firmwareVersion").toString();
         String Lattitude = prefs.getString("deviceLatitude").toString();
         String Longitude = prefs.getString("deviceLongitude").toString();
@@ -698,6 +709,8 @@ class replaceilmState extends State<replaceilm> {
                                 'latitude': Lattitude,
                                 'longitude': Longitude,
                                 'landmark': address,
+                                'zoneName': SelectedZone,
+                                'wardName': SelectedWard,
                               };
 
                               var up_attribute = (await tbClient
@@ -725,6 +738,8 @@ class replaceilmState extends State<replaceilm> {
                                 'latitude': Lattitude,
                                 'longitude': Longitude,
                                 'landmark': address,
+                                'zoneName': SelectedZone,
+                                'wardName': SelectedWard,
                               };
 
                               // DBHelper dbHelper = DBHelper();

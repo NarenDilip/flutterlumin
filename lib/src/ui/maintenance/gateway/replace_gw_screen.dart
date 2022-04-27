@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/entity_group_id.dart';
@@ -25,6 +27,7 @@ import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
+import 'gw_maintenance_screen.dart';
 
 class replacegw extends StatefulWidget {
   const replacegw() : super();
@@ -239,7 +242,15 @@ class replacegwState extends State<replacegw> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      imageFile = pickedFile;
+      if(pickedFile != null) {
+        imageFile = pickedFile;
+      }else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GWMaintenanceScreen()),
+        );
+      }
     });
   }
 
@@ -450,6 +461,9 @@ class replacegwState extends State<replacegw> {
         String SelectedRegion = prefs.getString('SelectedRegion').toString();
         String SelectedWard = prefs.getString('SelectedWard').toString();
         String FirmwareVersion = prefs.getString("firmwareVersion").toString();
+        String Lattitude = prefs.getString("deviceLatitude").toString();
+        String Longitude = prefs.getString("deviceLongitude").toString();
+        String SelectedZone = prefs.getString('SelectedZone').toString();
         var versionCompatability = false;
         pr.show();
         try {
@@ -648,6 +662,10 @@ class replacegwState extends State<replacegw> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
+                                  'zoneName': SelectedZone,
+                                  'wardName': SelectedWard,
                                 };
 
                                 DBHelper dbHelper = DBHelper();
@@ -701,6 +719,10 @@ class replacegwState extends State<replacegw> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
+                                  'zoneName': SelectedZone,
+                                  'wardName': SelectedWard,
                                 };
 
                                 try {
@@ -997,6 +1019,81 @@ class replacegwState extends State<replacegw> {
         backgroundColor: Colors.white,
         textColor: Colors.black,
         fontSize: 16.0);
+  }
+
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
   }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {

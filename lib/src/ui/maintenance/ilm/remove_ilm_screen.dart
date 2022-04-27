@@ -227,7 +227,15 @@ class replacementilmState extends State<replacementilm> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      imageFile = pickedFile;
+      if(pickedFile != null) {
+        imageFile = pickedFile;
+      }else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MaintenanceScreen()),
+        );
+      }
     });
   }
 
