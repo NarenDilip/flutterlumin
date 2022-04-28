@@ -56,7 +56,7 @@ android {
         applicationId "com.schnell.flutterlumin"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 17
+        versionCode 18
         versionName flutterVersionName
     }
 

@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -142,8 +143,54 @@ class region_list_screen_state extends State<region_list_screen> {
           valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
           strokeWidth: 3.0),
     );
-
-    return Container(
+    return WillPopScope(
+        onWillPop: () async {
+          final result = await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              insetPadding: EdgeInsets.symmetric(horizontal: 0),
+              backgroundColor: Colors.white,
+              title: Text(app_display_name,
+                  style: const TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: liorange)),
+              content: Text(app_logout_msg,
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black)),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text(app_logout_no,
+                      style: const TextStyle(
+                          fontSize: 25.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green)),
+                ),
+                TextButton(
+                  child: Text(app_logout_yes,
+                      style: const TextStyle(
+                          fontSize: 25.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red)),
+                  onPressed: () {
+                    SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                  },
+                ),
+              ],
+            ),
+          );
+          return result;
+        },
+    child: Container(
         child: Scaffold(
           backgroundColor: thbDblue,
           body: Padding(
@@ -223,7 +270,7 @@ class region_list_screen_state extends State<region_list_screen> {
               ],
             ),
           ),
-        ));
+        )));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,

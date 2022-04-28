@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
+import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
+import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,7 +55,22 @@ class splash_screenState extends State<splash_screen> {
                 if (token == "null") {
                   return login_screen();
                 } else {
-                  return dashboard_screen();
+                  var selectedRegion = prefs.getString("SelectedRegion").toString();
+                  var SelectedZone = prefs.getString("SelectedZone").toString();
+                  var SelectedWard = prefs.getString("SelectedWard").toString();
+                  if(selectedRegion == "null"){
+                    return region_list_screen();
+                  }else{
+                    if(SelectedZone == "null"){
+                      return zone_li_screen();
+                    }else{
+                      if(SelectedWard == "null") {
+                        return ward_li_screen();
+                      }else{
+                        return dashboard_screen();
+                      }
+                    }
+                  }
                 }
               })));
     } catch (e) {}
@@ -87,20 +105,24 @@ class splash_screenState extends State<splash_screen> {
                 SizedBox(
                   height: 40,
                 ),
-                Text(splashscreen_text,
+                DefaultTextStyle(
+                    style: TextStyle(decoration: TextDecoration.none),
+                    child :Text(splashscreen_text,
                     style: TextStyle(
                         color: thbDblue,
                         fontSize: 38,
                         fontWeight: FontWeight.bold,
-                        fontFamily: "Montserrat")),
+                        fontFamily: "Montserrat"))),
                 const SizedBox(height: 60),
-                Center(
+                DefaultTextStyle(
+                    style: TextStyle(decoration: TextDecoration.none),
+                    child : Center(
                     child:Text(app_version,style: const TextStyle(
                         fontSize: 15.0,
                         fontFamily: "Montserrat",
                         fontWeight: FontWeight.bold,
                         color: invListBackgroundColor))
-                ),
+                )),
               ],
             )));
   }

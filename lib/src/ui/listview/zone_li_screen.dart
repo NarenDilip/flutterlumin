@@ -11,6 +11,7 @@ import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/zone_model.dart';
+import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -152,7 +153,13 @@ class zone_li_screen_state extends State<zone_li_screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return WillPopScope(
+        onWillPop: () async {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => region_list_screen()));
+      return true;
+    },
+    child: Container(
         child: Scaffold(
           backgroundColor: thbDblue,
           body: Padding(
@@ -231,7 +238,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
               ],
             ),
           ),
-        ));
+        )));
   }
 
   void callWardDetailsFinder(BuildContext context, selectedZone) {
@@ -350,7 +357,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
-    FlutterLogs.logInfo("zonelist_page", "zone_list", "Zone Details Exception with server");
+    // FlutterLogs.logInfo("zonelist_page", "zone_list", "Zone Details Exception with server");
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {

@@ -18,6 +18,7 @@ import 'package:flutterlumin/src/thingsboard/model/relation_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/telemetry_models.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
+import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -434,7 +435,13 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return WillPopScope(
+        onWillPop: () async {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => zone_li_screen()));
+          return true;
+        },
+    child: Container(
         child: Scaffold(
           backgroundColor: thbDblue,
           body: Padding(
@@ -512,7 +519,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
               ],
             ),
           ),
-        ));
+        )));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
