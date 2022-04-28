@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,28 +6,31 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/zone_list_view.dart';
+import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
+import 'package:flutterlumin/src/thingsboard/model/model.dart';
+import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../data/model/zone_model.dart';
-import '../../thingsboard/error/thingsboard_error.dart';
-import '../../thingsboard/model/model.dart';
-import '../../thingsboard/thingsboard_client_base.dart';
-import '../../utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
-class region_list_screen extends StatefulWidget {
+class RegionListScreen extends StatefulWidget {
+  const RegionListScreen({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
-    return region_list_screen_state();
+    return RegionListScreenState();
   }
 }
 
-class region_list_screen_state extends State<region_list_screen> {
+class RegionListScreenState extends State<RegionListScreen> {
   // return Scaffold(body: regionListview());
   List<String>? _allUsers = [];
   List<String>? _foundUsers = [];
@@ -58,7 +62,7 @@ class region_list_screen_state extends State<region_list_screen> {
 
   void loadDetails() async {
     var sharedPreferences =
-        await SharedPreferences.getInstance() as SharedPreferences;
+    await SharedPreferences.getInstance() as SharedPreferences;
     sharedPreferences.setString("SelectedRegion", selectedZone);
   }
 
@@ -70,7 +74,7 @@ class region_list_screen_state extends State<region_list_screen> {
     } else {
       results = _allUsers!
           .where((user) =>
-              user.toLowerCase().contains(enteredKeyword.toLowerCase()))
+          user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
       // we use the toLowerCase() method to make it case-insensitive
     }
@@ -99,84 +103,84 @@ class region_list_screen_state extends State<region_list_screen> {
 
     return Container(
         child: Scaffold(
-      backgroundColor: lightGrey,
-      body: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "Select Region",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 20.0,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            TextField(
-              onChanged: (value) => _runFilter(value),
-              style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: 'Roboto',
-                  color: Colors.black),
-              decoration: const InputDecoration(
-                labelStyle: TextStyle(fontSize: 20.0, color: Colors.black),
-                labelText: 'Search',
-                suffixIcon: Icon(
-                  Icons.search,
-                  color: Colors.black,
+          backgroundColor: lightGrey,
+          body: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
+                const Text(
+                  "Select Region",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 20.0,
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-            ),
-            Expanded(
-              child: _foundUsers!.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _foundUsers!.length,
-                      itemBuilder: (context, index) => Card(
-                        key: ValueKey(_foundUsers),
-                        color: Colors.white,
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: ListTile(
-                          onTap: () {
-                            setState(() {
-                              selectedZone =
-                                  _foundUsers!.elementAt(index).toString();
-                              loadDetails();
-                            });
-
-                            callZoneDetailsFinder(context, selectedZone);
-                          },
-                          title: Text(_foundUsers!.elementAt(index),
-                              style: const TextStyle(
-                                  fontSize: 20.0,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.bold,
-                                  color: thbDblue)),
-                        ),
-                      ),
-                    )
-                  : const Text(
-                      'No results found',
-                      style: TextStyle(fontSize: 24),
+                TextField(
+                  onChanged: (value) => _runFilter(value),
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: 'Roboto',
+                      color: Colors.black),
+                  decoration: const InputDecoration(
+                    labelStyle: TextStyle(fontSize: 20.0, color: Colors.black),
+                    labelText: 'Search',
+                    suffixIcon: Icon(
+                      Icons.search,
+                      color: Colors.black,
                     ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _foundUsers!.isNotEmpty
+                      ? ListView.builder(
+                    itemCount: _foundUsers!.length,
+                    itemBuilder: (context, index) => Card(
+                      key: ValueKey(_foundUsers),
+                      color: Colors.white,
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        onTap: () {
+                          setState(() {
+                            selectedZone =
+                                _foundUsers!.elementAt(index).toString();
+                            loadDetails();
+                          });
+
+                          callZoneDetailsFinder(context, selectedZone);
+                        },
+                        title: Text(_foundUsers!.elementAt(index),
+                            style: const TextStyle(
+                                fontSize: 20.0,
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.bold,
+                                color: thbDblue)),
+                      ),
+                    ),
+                  )
+                      : const Text(
+                    'No results found',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
@@ -186,7 +190,7 @@ class region_list_screen_state extends State<region_list_screen> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => region_list_screen()));
+            builder: (BuildContext context) => RegionListScreen()));
       }
     } else {
       if (error is DioError) {
@@ -266,13 +270,13 @@ class region_list_screen_state extends State<region_list_screen> {
           prefs.setString("SelectedRegion", selectedZone);
 
           DBHelper dbHelper = new DBHelper();
-          List<ZoneResponse> details = await dbHelper
-              .zone_regionbasedDetails(selectedZone) as List<ZoneResponse>;
+          List<Zone> details = await dbHelper
+              .zone_regionbasedDetails(selectedZone) as List<Zone>;
           if (details.isEmpty) {
             // dbHelper.zone_delete();
 
             List<Region> regiondetails =
-                await dbHelper.region_name_regionbasedDetails(selectedZone);
+            await dbHelper.region_name_regionbasedDetails(selectedZone);
             if (regiondetails.length != 0) {
               Map<String, dynamic> fromId = {
                 'entityType': 'ASSET',
@@ -298,13 +302,13 @@ class region_list_screen_state extends State<region_list_screen> {
                   if (asset.name != null) {
                     // var regionname = selectedZone.split("-");
                     ZoneResponse zone =
-                        new ZoneResponse(j, asset.id!.id, asset.name, selectedZone);
+                    ZoneResponse(j, asset.id!.id, asset.name, selectedZone) ;
                     dbHelper.zone_add(zone);
                   }
                 }
                 pr.hide();
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => zone_li_screen()));
+                    builder: (BuildContext context) => ZoneListScreen()));
               } else {
                 pr.hide();
                 Fluttertoast.showToast(
@@ -330,7 +334,7 @@ class region_list_screen_state extends State<region_list_screen> {
           } else {
             pr.hide();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => zone_li_screen()));
+                builder: (BuildContext context) => ZoneListScreen()));
           }
         } catch (e) {
           pr.hide();
@@ -339,11 +343,11 @@ class region_list_screen_state extends State<region_list_screen> {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => region_list_screen()));
+                  builder: (BuildContext context) => RegionListScreen()));
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => region_list_screen()));
+                builder: (BuildContext context) => RegionListScreen()));
             // Navigator.pop(context);
           }
         }

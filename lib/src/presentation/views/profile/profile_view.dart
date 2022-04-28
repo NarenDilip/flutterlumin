@@ -32,21 +32,8 @@ class _ProfileState extends State<ProfileView> {
             const EdgeInsets.only(left: 30, top: 20, right: 30, bottom: 20),
             child: Column(
               children: <Widget>[
-                const SizedBox(
-                  height: 20,
-                ),
-                Container(
-                  padding: const EdgeInsets.only(left: 14, top: 20, right: 20),
-                  child: const Align(
-                    alignment: Alignment.center,
-                    child: CircleAvatar(
-                      radius: 40, // Image radius
-                      backgroundImage: NetworkImage("https://i.imgur.com/BoN9kdC.png"),
-                    ),
-                  ),
-                ),
                 SizedBox(height: 20,),
-                const Text("Developer", style: TextStyle(fontSize: 24, fontFamily: "Roboto"),)
+                const Text("Marked Devices", style: TextStyle(fontSize: 24, fontFamily: "Roboto"),)
               ],
             ),
           ),

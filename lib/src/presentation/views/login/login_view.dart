@@ -5,6 +5,7 @@ import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
 import 'package:flutterlumin/src/models/loginrequester.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/region_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
@@ -310,7 +311,7 @@ void callRegionDetails(BuildContext context, ProgressDialog progressDialog) {
         await tbClient.getAssetService().getZoneTenantAssets(pageLink);
         progressDialog.hide();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => const DashboardView()));
+            builder: (BuildContext context) => const RegionListScreen()));
       } else {
         progressDialog.hide();
         calltoast("Region Details found");

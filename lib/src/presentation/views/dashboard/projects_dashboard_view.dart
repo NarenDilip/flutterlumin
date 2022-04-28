@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/widgets/dashboard_app_bar_view.dart';
 import 'package:flutterlumin/src/presentation/widgets/project_card_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,7 +54,7 @@ class _ProjectDashboardState extends State<ProjectDashboard> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(children: <Widget>[
-        const AppBarWidget(title: "Dashboard",),
+        const DashboardAppBarWidget(title: "",),
         ProjectCard(
           projectName: "ILM",
           cardBottomColor: lightBlueCardColor,

@@ -19,11 +19,11 @@ class ProductDeviceCubit extends Cubit<DevicesState> {
   }
 
   Future<void> getCCMSDevices(
-      String productSearchString, List<String> relationDevices) async {
+      String productSearchString) async {
     try {
       emit(LoadingState());
       final deviceResponse = await repository.fetchCCMSDevices(
-          productSearchString, relationDevices);
+          productSearchString);
       emit(LoadedState(deviceResponse));
     } catch (e) {
       emit(ErrorState());
@@ -31,11 +31,11 @@ class ProductDeviceCubit extends Cubit<DevicesState> {
   }
 
   Future<void> getPoleDevices(
-      String productSearchString, List<String> relationDevices) async {
+      String productSearchString) async {
     try {
       emit(LoadingState());
       final deviceResponse = await repository.fetchPoleDevices(
-          productSearchString, relationDevices);
+          productSearchString);
       emit(LoadedState(deviceResponse));
     } catch (e) {
       emit(ErrorState());

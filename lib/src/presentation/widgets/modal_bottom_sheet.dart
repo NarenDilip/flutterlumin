@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
-import 'package:flutterlumin/src/localdb/model/zone_model.dart';
+import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
@@ -50,7 +50,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString("selected_region", selectedZone);
           DBHelper dbHelper = DBHelper();
-          List<Zone> details = await dbHelper
+          List<ZoneResponse> details = await dbHelper
               .zone_regionbasedDetails(selectedZone);
           if (details.isEmpty) {
             List<Region> regionDetails =
@@ -72,8 +72,8 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                       .getAssetService()
                       .getAsset(zones!.elementAt(j).toString()) as Asset;
                   if (asset.name != null) {
-                    Zone zone =
-                    Zone(j, asset.id!.id, asset.name, selectedZone);
+                    ZoneResponse zone =
+                    ZoneResponse(j, asset.id!.id, asset.name, selectedZone);
                     dbHelper.zone_add(zone);
                   }
                 }

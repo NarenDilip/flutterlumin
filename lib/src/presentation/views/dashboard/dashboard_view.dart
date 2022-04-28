@@ -22,11 +22,11 @@ class _DashboardAppState extends State<DashboardView> {
   late PageController _pageController;
   List<Widget> tabPages = [
     const ProjectDashboard(),
-    map_view_screen(),
     BlocProvider<ProductDeviceCubit>(
       create: (context) => ProductDeviceCubit(DeviceRepository()),
       child: const SearchDevicesView(),
     ),
+    map_view_screen(),
     const ProfileView(),
   ];
 
@@ -34,9 +34,10 @@ class _DashboardAppState extends State<DashboardView> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
-   /* Future.delayed(Duration.zero, () {
+  /* Future.delayed(Duration.zero, () {
       _modalBottomSheetMenu(context);
     });*/
+
   }
 
   @override
@@ -59,18 +60,18 @@ class _DashboardAppState extends State<DashboardView> {
             selectedColor: kPrimaryColor,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.location_searching),
-            title: const Text("Location"),
-            selectedColor: kPrimaryColor,
-          ),
-          SalomonBottomBarItem(
             icon: const Icon(Icons.add_chart),
             title: const Text("Devices"),
             selectedColor: kPrimaryColor,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.person),
-            title: const Text("Profile"),
+            icon: const Icon(Icons.location_searching),
+            title: const Text("Location"),
+            selectedColor: kPrimaryColor,
+          ),
+          SalomonBottomBarItem(
+            icon: const Icon(Icons.bookmark),
+            title: const Text("Favorites"),
             selectedColor: kPrimaryColor,
           ),
         ],
@@ -79,6 +80,11 @@ class _DashboardAppState extends State<DashboardView> {
         children: tabPages,
         onPageChanged: onPageChanged,
         controller: _pageController,
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kPrimaryColor,
+        child: const Icon(Icons.qr_code),
+        onPressed: () {},
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/presentation/views/login/login_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
+import 'package:flutterlumin/src/ui/login/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class splash_screen extends StatefulWidget {

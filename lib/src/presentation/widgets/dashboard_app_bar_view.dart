@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/ward_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/zone_list_view.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AppBarWidget extends StatefulWidget {
+class DashboardAppBarWidget extends StatefulWidget {
   final String title;
-  const AppBarWidget({
+  const DashboardAppBarWidget({
     Key? key, required this.title
   }) : super(key: key);
 
   @override
-  State<AppBarWidget> createState() => _AppBarWidgetState();
+  State<DashboardAppBarWidget> createState() => _DashboardAppBarWidgetState();
 }
 
-class _AppBarWidgetState extends State<AppBarWidget> {
+class _DashboardAppBarWidgetState extends State<DashboardAppBarWidget> {
 
   String selectedRegion ='';
   String selectedZone ='';
@@ -50,18 +52,30 @@ class _AppBarWidgetState extends State<AppBarWidget> {
           ),
         ),
         padding: const EdgeInsets.only(left: 10, top: 30, right: 10,bottom: 20),
-        child: Column(children: <Widget>[
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: <Widget>[
           const SizedBox(
             height: 10,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              const Image(
-                  image: AssetImage("assets/icons/logo.png"),
-                  height: 30,
-                  width: 30),
-              Text(widget.title,
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => const WardList()));
+                },
+                child: Icon(Icons.filter_center_focus, color: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(6),
+                  primary: Colors.grey, // <-- Button color
+                  onPrimary: Colors.blue, // <-- Splash color
+                ),
+              ),
+              Text(selectedWard,
                 style: const TextStyle(
                     fontSize: 20,
                     fontFamily: 'Roboto',
@@ -74,38 +88,8 @@ class _AppBarWidgetState extends State<AppBarWidget> {
               ),
             ],
           ),
-          const SizedBox(
-            height: 16,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              CategoryWidget(
-                categoryName: "Region",
-                selectedItem:selectedRegion ,
-                itemPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => region_list_screen()));
-                },
-              ),
-              CategoryWidget(
-                categoryName: "Zone",
-                selectedItem: selectedZone,
-                itemPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => zone_li_screen()));
-                },
-              ),
-              CategoryWidget(
-                categoryName: "Ward",
-                selectedItem: selectedWard,
-                itemPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => ward_li_screen()));
-                },
-              ),
-            ],
-          ),
+
+          
         ]));
   }
 }

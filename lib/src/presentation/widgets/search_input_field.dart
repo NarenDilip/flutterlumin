@@ -14,16 +14,17 @@ class SearchInputField extends StatelessWidget {
       controller: searchInputController,
       decoration: const InputDecoration(
         hintText: 'Enter product number',
-        hintStyle: TextStyle(color: Colors.grey, fontFamily: 'Roboto'),
-        fillColor: Colors.grey,
+        hintStyle: TextStyle(color: Colors.black, fontFamily: 'Roboto'),
+        fillColor: Colors.white,
+        filled: true,
         contentPadding: EdgeInsets.all(10.0),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(width: 1.0, style: BorderStyle.solid),
+          borderSide: BorderSide(width: 1.0, color: Colors.grey,style: BorderStyle.solid),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(width: 1.0, style: BorderStyle.solid),
+          borderSide: BorderSide(width: 1.0, color: Colors.grey, style: BorderStyle.solid),
         ),
       ),
     );

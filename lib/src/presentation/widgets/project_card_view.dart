@@ -116,7 +116,7 @@ class ProjectCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Container(
               height: 34,
               color: cardBottomColor,
