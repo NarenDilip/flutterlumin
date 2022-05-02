@@ -9,7 +9,7 @@ import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
 import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/ward_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/ward_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
@@ -196,8 +196,6 @@ class ZoneListScreenState extends State<ZoneListScreen> {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
-          // Utility.progressDialog(context);
-          pr.show();
           var tbClient = await ThingsboardClient(serverUrl);
           tbClient.smart_init();
 
@@ -240,11 +238,9 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                     dbHelper.ward_add(ward);
                   }
                 }
-                pr.hide();
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => const WardList()));
               } else {
-                pr.hide();
                 Fluttertoast.showToast(
                     msg: "No Wards releated to this zone",
                     toastLength: Toast.LENGTH_SHORT,
@@ -255,7 +251,6 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                     fontSize: 16.0);
               }
             } else {
-              pr.hide();
               Fluttertoast.showToast(
                   msg: "Unable to find Region Details",
                   toastLength: Toast.LENGTH_SHORT,
@@ -266,12 +261,10 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                   fontSize: 16.0);
             }
           } else {
-            pr.hide();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => const WardList()));
           }
         } catch (e) {
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);

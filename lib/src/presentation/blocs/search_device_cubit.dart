@@ -7,23 +7,20 @@ class ProductDeviceCubit extends Cubit<DevicesState> {
 
   ProductDeviceCubit(this.repository) : super(InitialState());
 
-  void getILMDevices(String productSearchString) async {
-    try {
-      emit(LoadingState());
-      final deviceResponse =
-          await repository.fetchILMDevices(productSearchString);
-      emit(LoadedState(deviceResponse));
-    } catch (e) {
-      emit(ErrorState());
+
+  Future<void> searchProduct(String productSearchString, String productType) async {
+    if(productType != "pole"){
+      getDevices(productSearchString, productType);
+    }else{
+      getPoleDevices(productSearchString);
     }
   }
 
-  Future<void> getCCMSDevices(
-      String productSearchString) async {
+  Future<void> getDevices(String productSearchString, String productType) async {
     try {
       emit(LoadingState());
-      final deviceResponse = await repository.fetchCCMSDevices(
-          productSearchString);
+      final deviceResponse =
+          await repository.fetchDevices(productSearchString, productType);
       emit(LoadedState(deviceResponse));
     } catch (e) {
       emit(ErrorState());

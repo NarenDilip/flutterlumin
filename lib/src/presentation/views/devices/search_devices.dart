@@ -1,12 +1,12 @@
 import 'package:cupertino_radio_choice/cupertino_radio_choice.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_segment/flutter_advanced_segment.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_state.dart';
-import 'package:flutterlumin/src/presentation/blocs/product_device_list_cubit.dart';
-import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
-import 'package:flutterlumin/src/presentation/widgets/device_search_list_view.dart';
-import 'package:flutterlumin/src/presentation/widgets/search_button.dart';
+import 'package:flutterlumin/src/presentation/blocs/search_device_cubit.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/views/devices/device_list_view.dart';
 import 'package:flutterlumin/src/presentation/widgets/search_input_field.dart';
 
 class SearchDevicesView extends StatefulWidget {
@@ -20,15 +20,19 @@ class _SearchDevicesState extends State<SearchDevicesView> {
   static final Map<String, String> productMap = {
     'ilm': 'ILM',
     'ccms': 'CCMS',
-    'pole': 'Pole',
-    'gateway': 'Gateway',
+    'gateway': 'GW',
   };
   String _selectedProduct = productMap.keys.first;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController searchInputController = TextEditingController();
+  final controller = ValueNotifier('all');
   @override
   void initState() {
     super.initState();
+   searchProduct();
+   controller.addListener(() {
+
+   });
   }
 
   @override
@@ -50,35 +54,32 @@ class _SearchDevicesState extends State<SearchDevicesView> {
               children: <Widget>[
                 Form(
                     key: _formKey,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Flexible(
-                            child: SearchInputField(
-                              searchInputController: searchInputController,
-                            )),
-                        const SizedBox(
-                          width: 10,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            Flexible(
+                                child: SearchInputField(
+                                  searchInputController: searchInputController,
+                                )),
+                          ],
                         ),
-                        SearchViewButton(
-                          searchButtonClicked: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              FocusScope.of(context).requestFocus(FocusNode());
-                              searchProduct();
-                            }
+                        const SizedBox(
+                          height: 14,
+                        ),
+                        AdvancedSegment(
+                          controller: controller, // AdvancedSegmentController
+                          segments: { // Map<String, String>
+                            'ilm': 'ILM',
+                            'ccms': 'CCMS',
+                            'pole': 'Pole',
+                            'gateway': 'Gateway',
                           },
                         ),
                       ],
-                    )),
-                const SizedBox(
-                  height: 20,
+                    )
                 ),
-                CupertinoRadioChoice(
-                    choices: productMap,
-                    selectedColor: lightBlueViewColor,
-                    onChange: onProductSelected,
-                    initialKeyValue: _selectedProduct),
               ],
             ),
           ),
@@ -96,7 +97,11 @@ class _SearchDevicesState extends State<SearchDevicesView> {
                 final deviceResponse = state.deviceResponse;
                 if(deviceResponse.errorMessage != ""){
                   return Container(
-                    child: Text(deviceResponse.errorMessage),
+                    child: Text(deviceResponse.errorMessage, style: const TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Roboto',
+                      color: Colors.red,
+                    ),),
                   );
                 }else{
                   return DeviceListView(devices: deviceResponse.deviceList);
@@ -115,25 +120,12 @@ class _SearchDevicesState extends State<SearchDevicesView> {
     setState(() {
       _selectedProduct = productKey;
     });
+    searchProduct();
   }
 
   void searchProduct(){
-    switch(_selectedProduct){
-      case "ilm" : {
-        final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
-        productDeviceCubit.getILMDevices(searchInputController.text);
-      }
-      break;
-      case "ccms" : {
-        final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
-        productDeviceCubit.getCCMSDevices(searchInputController.text);
-      }
-      break;
-      case "pole" : {
-        final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
-        productDeviceCubit.getPoleDevices(searchInputController.text);
-      }
-      break;
-    }
+    final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
+    productDeviceCubit.searchProduct(searchInputController.text, _selectedProduct);
   }
+
 }

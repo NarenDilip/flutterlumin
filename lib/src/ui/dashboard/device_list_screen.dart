@@ -1090,7 +1090,7 @@ class device_list_screen_state extends State<device_list_screen> {
                       pr.hide();
                       Scaffold.of(context).openEndDrawer();
                       Fluttertoast.showToast(
-                          msg:
+                            msg:
                               "Device Currently in Faulty State Unable to Install.",
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,

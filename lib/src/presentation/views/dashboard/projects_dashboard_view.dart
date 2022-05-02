@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
-import 'package:flutterlumin/src/presentation/widgets/dashboard_app_bar_view.dart';
-import 'package:flutterlumin/src/presentation/widgets/project_card_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/project_card_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProjectDashboard extends StatefulWidget {

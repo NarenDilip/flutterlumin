@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/ward_list_view.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/zone_list_view.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/presentation/views/ward/ward_list_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardAppBarWidget extends StatefulWidget {

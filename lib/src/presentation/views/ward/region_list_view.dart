@@ -9,7 +9,7 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/zone_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/zone_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
@@ -36,7 +36,6 @@ class RegionListScreenState extends State<RegionListScreen> {
   List<String>? _foundUsers = [];
   List<String>? relatedzones = [];
   String selectedZone = "0";
-  late ProgressDialog pr;
 
   @override
   initState() {
@@ -87,20 +86,6 @@ class RegionListScreenState extends State<RegionListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    pr = ProgressDialog(context,
-        type: ProgressDialogType.Normal, isDismissible: false);
-    pr.style(
-      progress: 50.0,
-      message: "Please wait...",
-      progressWidget: Container(
-          padding: const EdgeInsets.all(8.0), child: const CircularProgressIndicator()),
-      maxProgress: 100.0,
-      progressTextStyle: const TextStyle(
-          color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
-      messageTextStyle: const TextStyle(
-          color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
-    );
-
     return Container(
         child: Scaffold(
           backgroundColor: lightGrey,
@@ -262,22 +247,21 @@ class RegionListScreenState extends State<RegionListScreen> {
       if (value) {
         // Utility.progressDialog(context);
         try {
-          pr.show();
           var tbClient = await ThingsboardClient(serverUrl);
           tbClient.smart_init();
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString("SelectedRegion", selectedZone);
 
-          DBHelper dbHelper = new DBHelper();
-          List<Zone> details = await dbHelper
-              .zone_regionbasedDetails(selectedZone) as List<Zone>;
+          DBHelper dbHelper = DBHelper();
+          List<ZoneResponse> details = await dbHelper
+              .zone_regionbasedDetails(selectedZone);
           if (details.isEmpty) {
             // dbHelper.zone_delete();
 
             List<Region> regiondetails =
             await dbHelper.region_name_regionbasedDetails(selectedZone);
-            if (regiondetails.length != 0) {
+            if (regiondetails.isNotEmpty) {
               Map<String, dynamic> fromId = {
                 'entityType': 'ASSET',
                 'id': regiondetails.first.regionid
@@ -306,11 +290,9 @@ class RegionListScreenState extends State<RegionListScreen> {
                     dbHelper.zone_add(zone);
                   }
                 }
-                pr.hide();
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => ZoneListScreen()));
               } else {
-                pr.hide();
                 Fluttertoast.showToast(
                     msg: "No Zones releated to this Region",
                     toastLength: Toast.LENGTH_SHORT,
@@ -321,7 +303,6 @@ class RegionListScreenState extends State<RegionListScreen> {
                     fontSize: 16.0);
               }
             } else {
-              pr.hide();
               Fluttertoast.showToast(
                   msg: "Unable to find Region Details",
                   toastLength: Toast.LENGTH_SHORT,
@@ -332,12 +313,10 @@ class RegionListScreenState extends State<RegionListScreen> {
                   fontSize: 16.0);
             }
           } else {
-            pr.hide();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => ZoneListScreen()));
           }
         } catch (e) {
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);

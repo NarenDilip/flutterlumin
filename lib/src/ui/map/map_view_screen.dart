@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
 import 'package:flutterlumin/src/ui/chevron/chevron.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/map/location_map.dart';

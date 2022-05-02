@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/domain/repository/device_repository.dart';
-import 'package:flutterlumin/src/presentation/blocs/product_device_list_cubit.dart';
+import 'package:flutterlumin/src/presentation/blocs/search_device_cubit.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/projects_dashboard_view.dart';
 import 'package:flutterlumin/src/presentation/views/devices/search_devices.dart';
-import 'package:flutterlumin/src/presentation/views/profile/profile_view.dart';
+import 'package:flutterlumin/src/presentation/views/settings/settings_view.dart';
 import 'package:flutterlumin/src/presentation/widgets/modal_bottom_sheet.dart';
 import 'package:flutterlumin/src/ui/map/map_view_screen.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
@@ -27,7 +27,7 @@ class _DashboardAppState extends State<DashboardView> {
       child: const SearchDevicesView(),
     ),
     map_view_screen(),
-    const ProfileView(),
+    const SettingsScreen(),
   ];
 
   @override
@@ -61,17 +61,17 @@ class _DashboardAppState extends State<DashboardView> {
           ),
           SalomonBottomBarItem(
             icon: const Icon(Icons.add_chart),
-            title: const Text("Devices"),
+            title: const Text("Search"),
             selectedColor: kPrimaryColor,
           ),
           SalomonBottomBarItem(
             icon: const Icon(Icons.location_searching),
-            title: const Text("Location"),
+            title: const Text("Locate"),
             selectedColor: kPrimaryColor,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.bookmark),
-            title: const Text("Favorites"),
+            icon: const Icon(Icons.settings),
+            title: const Text("Settings"),
             selectedColor: kPrimaryColor,
           ),
         ],

@@ -2,28 +2,28 @@ import 'package:equatable/equatable.dart';
 import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/data/model/device_response.dart';
 
-abstract class DevicesState extends Equatable {}
+abstract class DeviceInfoState extends Equatable {}
 
-class InitialState extends DevicesState {
+class InitialState extends DeviceInfoState {
   @override
   List<Object> get props => [];
 }
 
-class LoadingState extends DevicesState {
+class LoadingState extends DeviceInfoState {
   @override
   List<Object> get props => [];
 }
 
-class LoadedState extends DevicesState {
+class LoadedState extends DeviceInfoState {
   LoadedState(this.deviceResponse);
 
-  final DeviceResponse deviceResponse;
+  final ProductDevice deviceResponse;
 
   @override
   List<Object> get props => [deviceResponse];
 }
 
-class ErrorState extends DevicesState {
+class ErrorState extends DeviceInfoState {
   @override
   List<Object> get props => [];
 }

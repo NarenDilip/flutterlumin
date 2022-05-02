@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
 
 class DeviceLocationView extends StatefulWidget {
   const DeviceLocationView({Key? key}) : super(key: key);

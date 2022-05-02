@@ -52,7 +52,6 @@ class DeviceService {
   Future<PageData<Device>> getTenantDevices(PageLink pageLink,
       {String type = '', RequestConfig? requestConfig}) async {
     var queryParams = pageLink.toQueryParameters();
-    queryParams['type'] = "lumiNode";
     var response = await _tbClient.get<Map<String, dynamic>>(
         '/api/tenant/devices',
         queryParameters: queryParams,
@@ -77,6 +76,17 @@ class DeviceService {
       {String type = '', RequestConfig? requestConfig}) async {
     var queryParams = pageLink.toQueryParameters();
     queryParams['type'] = "CCMS";
+    var response = await _tbClient.get<Map<String, dynamic>>(
+        '/api/tenant/devices',
+        queryParameters: queryParams,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return _tbClient.compute(parseDevicePageData, response.data!);
+  }
+
+  Future<PageData<Device>> getgwTenantDevices(PageLink pageLink,
+      {String type = '', RequestConfig? requestConfig}) async {
+    var queryParams = pageLink.toQueryParameters();
+    queryParams['type'] = "Gateway";
     var response = await _tbClient.get<Map<String, dynamic>>(
         '/api/tenant/devices',
         queryParameters: queryParams,

@@ -8,9 +8,9 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/region_list_view.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/zone_list_view.dart';
-import 'package:flutterlumin/src/presentation/widgets/app_bar_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/region_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/zone_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/asset_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
@@ -19,8 +19,6 @@ import 'package:flutterlumin/src/thingsboard/model/id/device_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/relation_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/telemetry_models.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -57,7 +55,6 @@ class WardListState extends State<WardList> {
   String selectedZone = "0";
   String selectedWard = "0";
   String selectedRegion = "0";
-  late ProgressDialog pr;
 
   @override
   initState() {
@@ -104,7 +101,6 @@ class WardListState extends State<WardList> {
     Utility.isConnected().then((value) async {
       if (value) {
         // Utility.progressDialog(context);
-        pr.show();
         try {
           var sharedPreferences =
               await SharedPreferences.getInstance() as SharedPreferences;
@@ -288,14 +284,10 @@ class WardListState extends State<WardList> {
                         'gw_nc_count', int.parse(gw_noncomdevice));
                   }
                 }
-
-                // Navigator.pop(context);
-                pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => DashboardView()));
               }
             } else {
-              pr.hide();
               Fluttertoast.showToast(
                   msg: "No Devices Directly Related to Ward",
                   toastLength: Toast.LENGTH_SHORT,
@@ -309,14 +301,11 @@ class WardListState extends State<WardList> {
               sharedPreferences.setString('activeCount', "0");
               sharedPreferences.setString('nonactiveCount', "0");
               sharedPreferences.setString('ncCount', "0");
-
-              pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => DashboardView()));
             }
           }
         } catch (e) {
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);

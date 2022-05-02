@@ -5,7 +5,7 @@ import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
 import 'package:flutterlumin/src/models/loginrequester.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/region_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/region_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';

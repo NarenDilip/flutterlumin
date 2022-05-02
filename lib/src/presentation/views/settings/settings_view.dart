@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 
-class ProfileView extends StatefulWidget {
-  const ProfileView({Key? key}) : super(key: key);
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
 
   @override
   _ProfileState createState() => _ProfileState();
 }
 
-class _ProfileState extends State<ProfileView> {
+class _ProfileState extends State<SettingsScreen> {
 
 
   @override
@@ -33,7 +33,7 @@ class _ProfileState extends State<ProfileView> {
             child: Column(
               children: <Widget>[
                 SizedBox(height: 20,),
-                const Text("Marked Devices", style: TextStyle(fontSize: 24, fontFamily: "Roboto"),)
+                const Text("Settings", style: TextStyle(fontSize: 24, fontFamily: "Roboto"),)
               ],
             ),
           ),
