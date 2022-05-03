@@ -126,7 +126,7 @@ class CategoryWidget extends StatelessWidget {
     return GestureDetector(
         onTap: itemPressed,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
             height: 40,
             width: 100,

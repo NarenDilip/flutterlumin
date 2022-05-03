@@ -32,8 +32,8 @@ class _DeviceListViewState extends State<DeviceListView> {
             return Column(
               children: <Widget>[
                 ListTile(
-                  leading: const Icon(
-                    Icons.highlight,
+                  leading: Icon(
+                    widget.devices[index].icon,
                     color: kPrimaryColor,
                     size: 40.0,
                   ),
@@ -44,7 +44,7 @@ class _DeviceListViewState extends State<DeviceListView> {
                   ),
                   subtitle: Text(widget.devices[index].name),
                   onTap: () {
-                      isDeviceInstalled(widget.devices[index].name);
+                      isDeviceInstalled(widget.devices![index]);
                     }
                 ),
               ],
@@ -56,12 +56,12 @@ class _DeviceListViewState extends State<DeviceListView> {
     ));
   }
 
-  Future<void> isDeviceInstalled(String deviceName) async {
+  Future<void> isDeviceInstalled(ProductDevice device) async {
     var tbClient = ThingsboardClient(serverUrl);
     tbClient.smart_init();
     var response = (await tbClient
         .getDeviceService()
-        .getTenantDevice(deviceName)) as Device;
+        .getTenantDevice(device.name)) as Device;
     var relationDetails = await tbClient
         .getEntityRelationService()
         .findInfoByTo(response.id!);
@@ -77,7 +77,7 @@ class _DeviceListViewState extends State<DeviceListView> {
     }else{
       Navigator.of(context).push(MaterialPageRoute(
           builder: (BuildContext context) =>
-              DeviceDetailDataView(productDeviceName: deviceName,)));
+              DeviceDetailDataView(productDevice: device,)));
     }
   }
 

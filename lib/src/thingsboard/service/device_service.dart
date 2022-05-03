@@ -59,6 +59,17 @@ class DeviceService {
     return _tbClient.compute(parseDevicePageData, response.data!);
   }
 
+  Future<PageData<Device>> getTenantProductDevices(PageLink pageLink, String productType,
+      {String type = '', RequestConfig? requestConfig}) async {
+    var queryParams = pageLink.toQueryParameters();
+    queryParams['type'] = productType;
+    var response = await _tbClient.get<Map<String, dynamic>>(
+        '/api/tenant/devices',
+        queryParameters: queryParams,
+        options: defaultHttpOptionsFromConfig(requestConfig));
+    return _tbClient.compute(parseDevicePageData, response.data!);
+  }
+
   Future<Device?> getTenantDevice(String deviceName,
       {RequestConfig? requestConfig}) async {
     return nullIfNotFound(

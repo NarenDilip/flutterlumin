@@ -342,9 +342,9 @@ class replacegwState extends State<replacegw> {
               .getDeviceService()
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
-            if (response.type == ilm_deviceType) {
-            } else if (response.type == ccms_deviceType) {
-            } else if (response.type == Gw_deviceType) {
+            if (response.type == ilmDeviceType) {
+            } else if (response.type == ccmsDeviceType) {
+            } else if (response.type == gatewayDeviceType) {
               ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
                   response.id!.id.toString(), context, imageFile);
             } else {

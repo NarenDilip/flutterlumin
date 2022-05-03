@@ -986,11 +986,11 @@ class device_list_screen_state extends State<device_list_screen> {
               .getDeviceService()
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
-            if (response.type == ilm_deviceType) {
+            if (response.type == ilmDeviceType) {
               fetchSmartDeviceDetails(
                   deviceName, response.id!.id.toString(), context);
-            } else if (response.type == ccms_deviceType) {
-            } else if (response.type == Gw_deviceType) {
+            } else if (response.type == ccmsDeviceType) {
+            } else if (response.type == gatewayDeviceType) {
             } else {
               calltoast("Device Details Not Found");
               pr.hide();

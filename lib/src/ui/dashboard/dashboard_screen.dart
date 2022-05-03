@@ -270,13 +270,13 @@ class dashboard_screenState extends State<dashboard_screen> {
               .getDeviceService()
               .getTenantDevice(deviceName) as Device;
           if (response != null) {
-            if (response.type == ilm_deviceType) {
+            if (response.type == ilmDeviceType) {
               fetchSmartDeviceDetails(
                   deviceName, response.id!.id.toString(), context);
-            } else if (response.type == ccms_deviceType) {
+            } else if (response.type == ccmsDeviceType) {
               fetchCCMSDeviceDetails(
                   deviceName, response.id!.id.toString(), context);
-            } else if (response.type == Gw_deviceType) {
+            } else if (response.type == gatewayDeviceType) {
               fetchGWDeviceDetails(
                   deviceName, response.id!.id.toString(), context);
             } else {

@@ -342,11 +342,11 @@ class replaceilmState extends State<replaceilm> {
               .getDeviceService()
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
-            if (response.type == ilm_deviceType) {
+            if (response.type == ilmDeviceType) {
               ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
                   response.id!.id.toString(), context, imageFile);
-            } else if (response.type == ccms_deviceType) {
-            } else if (response.type == Gw_deviceType) {
+            } else if (response.type == ccmsDeviceType) {
+            } else if (response.type == gatewayDeviceType) {
             } else {
               pr.hide();
               calltoast("Device Details Not Found");

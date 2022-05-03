@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/domain/repository/device_detail_repository.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_detail_cubit.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_info_state.dart';
@@ -9,8 +10,8 @@ import 'package:flutterlumin/src/presentation/views/devices/device_detail_view.d
 import 'package:latlong/latlong.dart';
 
 class DeviceDetailDataView extends StatefulWidget {
-  const DeviceDetailDataView({Key? key, required this.productDeviceName}) : super(key: key);
-  final String productDeviceName;
+  const DeviceDetailDataView({Key? key, required this.productDevice}) : super(key: key);
+  final ProductDevice productDevice;
   @override
   _DeviceDetailState createState() => _DeviceDetailState();
 }
@@ -34,7 +35,7 @@ class _DeviceDetailState extends State<DeviceDetailDataView> {
       backgroundColor: lightGrey,
       body:  BlocProvider<DeviceDetailCubit>(
         create: (context) => DeviceDetailCubit(DeviceDetailRepository()),
-        child: DeviceDetailView(productDeviceName: widget.productDeviceName,))
+        child: DeviceDetailView(productDevice: widget.productDevice,))
     );
   }
 

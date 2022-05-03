@@ -1,4 +1,3 @@
-import 'package:cupertino_radio_choice/cupertino_radio_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_segment/flutter_advanced_segment.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,22 +16,17 @@ class SearchDevicesView extends StatefulWidget {
 }
 
 class _SearchDevicesState extends State<SearchDevicesView> {
-  static final Map<String, String> productMap = {
-    'ilm': 'ILM',
-    'ccms': 'CCMS',
-    'gateway': 'GW',
-  };
-  String _selectedProduct = productMap.keys.first;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController searchInputController = TextEditingController();
-  final controller = ValueNotifier('all');
+  final deviceTypeController = ValueNotifier('ilm');
+
   @override
   void initState() {
     super.initState();
-   searchProduct();
-   controller.addListener(() {
-
-   });
+    searchProduct("");
+    deviceTypeController.addListener(() {
+      searchProduct(deviceTypeController.value);
+    });
   }
 
   @override
@@ -46,10 +40,12 @@ class _SearchDevicesState extends State<SearchDevicesView> {
       backgroundColor: lightGrey,
       body: Column(
         children: <Widget>[
-          const AppBarWidget(title: "Devices",),
+          const AppBarWidget(
+            title: "Devices",
+          ),
           Container(
             padding:
-            const EdgeInsets.only(left: 16, top: 20, right: 16, bottom: 20),
+                const EdgeInsets.only(left: 16, top: 20, right: 16, bottom: 20),
             child: Column(
               children: <Widget>[
                 Form(
@@ -61,25 +57,30 @@ class _SearchDevicesState extends State<SearchDevicesView> {
                           children: <Widget>[
                             Flexible(
                                 child: SearchInputField(
-                                  searchInputController: searchInputController,
-                                )),
+                              searchInputController: searchInputController,
+                              onSearchButtonClicked: () {
+                                deviceTypeController.value = "all";
+                                searchProduct("");
+                              },
+                            )),
                           ],
                         ),
                         const SizedBox(
                           height: 14,
                         ),
                         AdvancedSegment(
-                          controller: controller, // AdvancedSegmentController
-                          segments: { // Map<String, String>
-                            'ilm': 'ILM',
-                            'ccms': 'CCMS',
-                            'pole': 'Pole',
-                            'gateway': 'Gateway',
+                          controller: deviceTypeController,
+                          // AdvancedSegmentController
+                          segments: const {
+                            // Map<String, String>
+                            'all': 'All',
+                            ilmDeviceType: 'ILM',
+                            ccmsDeviceType: 'CCMS',
+                            gatewayDeviceType: 'Gateway',
                           },
                         ),
                       ],
-                    )
-                ),
+                    )),
               ],
             ),
           ),
@@ -95,15 +96,16 @@ class _SearchDevicesState extends State<SearchDevicesView> {
                 );
               } else if (state is LoadedState) {
                 final deviceResponse = state.deviceResponse;
-                if(deviceResponse.errorMessage != ""){
-                  return Container(
-                    child: Text(deviceResponse.errorMessage, style: const TextStyle(
+                if (deviceResponse.errorMessage != "") {
+                  return Text(
+                    deviceResponse.errorMessage,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontFamily: 'Roboto',
                       color: Colors.red,
-                    ),),
+                    ),
                   );
-                }else{
+                } else {
                   return DeviceListView(devices: deviceResponse.deviceList);
                 }
               } else {
@@ -116,16 +118,9 @@ class _SearchDevicesState extends State<SearchDevicesView> {
     );
   }
 
-  void onProductSelected(String productKey) {
-    setState(() {
-      _selectedProduct = productKey;
-    });
-    searchProduct();
-  }
-
-  void searchProduct(){
+  void searchProduct(String deviceType) {
     final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
-    productDeviceCubit.searchProduct(searchInputController.text, _selectedProduct);
+    productDeviceCubit.getDevices(searchInputController.text, deviceType);
+    FocusManager.instance.primaryFocus?.unfocus();
   }
-
 }

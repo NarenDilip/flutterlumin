@@ -64,9 +64,9 @@ const CCMSserviceFolderName = "forRepairCCMS";
 const GWserviceFolderName = "forRepairGateway";
 // const CCMSserviceFolderName = "forServiceCCMS";
 
-const ilm_deviceType = "lumiNode";
-const ccms_deviceType = "CCMS";
-const Gw_deviceType = "Gateway";
+const ilmDeviceType = "lumiNode";
+const ccmsDeviceType = "CCMS";
+const gatewayDeviceType = "Gateway";
 
 const session_expired = "Session expired!";
 

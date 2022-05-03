@@ -560,7 +560,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                     .getDeviceCredentialsByDeviceId(response.id!.id!))
                 as DeviceCredentials;
 
-            if (response.type == ilm_deviceType) {
+            if (response.type == ilmDeviceType) {
               if (deviceCredentials.credentialsId.length == 16) {
                 fetchSmartDeviceDetails(
                     deviceName, response.id!.id.toString(), context);
@@ -576,7 +576,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                     textColor: Colors.black,
                     fontSize: 16.0);
               }
-            } else if (response.type == ccms_deviceType) {
+            } else if (response.type == ccmsDeviceType) {
               if (deviceCredentials.credentialsId.length == 15) {
                 fetchCCMSDeviceDetails(
                     deviceName, response.id!.id.toString(), context);
@@ -592,7 +592,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                     textColor: Colors.black,
                     fontSize: 16.0);
               }
-            } else if (response.type == Gw_deviceType) {
+            } else if (response.type == gatewayDeviceType) {
               if (deviceCredentials.credentialsId.length == 15) {
                 fetchGWDeviceDetails(
                     deviceName, response.id!.id.toString(), context);

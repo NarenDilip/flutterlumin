@@ -67,7 +67,7 @@ class _DashboardAppBarWidgetState extends State<DashboardAppBarWidget> {
                 style: ElevatedButton.styleFrom(
                   shape: const CircleBorder(),
                   padding: const EdgeInsets.all(6),
-                  primary: Colors.grey, // <-- Button color
+                  primary: Colors.blue, // <-- Button color
                   onPrimary: Colors.blue, // <-- Splash color
                 ),
               ),

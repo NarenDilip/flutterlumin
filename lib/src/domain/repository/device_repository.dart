@@ -15,7 +15,6 @@ import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 class DeviceRepository {
-
   Future<DeviceResponse> fetchDevices(
       String productSearchString, String productType) async {
     DeviceResponse deviceResponse = DeviceResponse();
@@ -27,15 +26,32 @@ class DeviceRepository {
     pageLink.pageSize = 100;
     pageLink.textSearch = searchNumber;
     PageData<Device> deviceListResponse;
-    deviceListResponse =
-    (await tbClient.getDeviceService().getTenantDevices(pageLink));
+    if (productType != "all") {
+      deviceListResponse = (await tbClient
+          .getDeviceService()
+          .getTenantProductDevices(pageLink, productType));
+    } else {
+      deviceListResponse =
+          (await tbClient.getDeviceService().getTenantDevices(pageLink));
+    }
     if (deviceListResponse.totalElements != 0) {
       List<ProductDevice>? deviceList = [];
       for (int i = 0; i < deviceListResponse.data.length; i++) {
         ProductDevice productDevice = ProductDevice();
         productDevice.name = deviceListResponse.data.elementAt(i).name;
         productDevice.type = deviceListResponse.data.elementAt(i).type;
-        deviceList.add(productDevice);
+        if(productDevice.type == gatewayDeviceType){
+          productDevice.icon = Icons.hub_outlined;
+        }else if(productDevice.type == ccmsDeviceType){
+          productDevice.icon = Icons.offline_bolt_outlined;
+        }else if(productDevice.type == ilmDeviceType){
+          productDevice.icon = Icons.light_outlined;
+        }else{
+          productDevice.icon = Icons.tungsten_outlined;
+        }
+        if(productDevice.icon != Icons.tungsten_outlined){
+          deviceList.add(productDevice);
+        }
       }
       deviceResponse.deviceList = deviceList;
     } else {
@@ -43,7 +59,6 @@ class DeviceRepository {
     }
     return deviceResponse;
   }
-
 
   Future<DeviceResponse> fetchPoleDevices(String productSearchString) async {
     final List<String>? relationDevices = [];

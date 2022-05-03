@@ -7,7 +7,6 @@ class ProductDeviceCubit extends Cubit<DevicesState> {
 
   ProductDeviceCubit(this.repository) : super(InitialState());
 
-
   Future<void> searchProduct(String productSearchString, String productType) async {
     if(productType != "pole"){
       getDevices(productSearchString, productType);

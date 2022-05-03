@@ -1,6 +1,6 @@
 import 'package:flutterlumin/src/data/model/device.dart';
 
-class DeviceResponse{
+class DeviceDetailResponse{
 
   late List<ProductDevice> deviceList;
   String errorMessage='';
