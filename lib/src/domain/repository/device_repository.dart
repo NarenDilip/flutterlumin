@@ -15,48 +15,59 @@ import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 class DeviceRepository {
-  Future<DeviceResponse> fetchDevices(
-      String productSearchString, String productType) async {
+  Future<DeviceResponse> fetchDevices(String productSearchString,
+      String productType, BuildContext context) async {
     DeviceResponse deviceResponse = DeviceResponse();
-    var tbClient = ThingsboardClient(serverUrl);
-    tbClient.smart_init();
-    String searchNumber = productSearchString.replaceAll(" ", "");
-    PageLink pageLink = PageLink(100);
-    pageLink.page = 0;
-    pageLink.pageSize = 100;
-    pageLink.textSearch = searchNumber;
-    PageData<Device> deviceListResponse;
-    if (productType != "all") {
-      deviceListResponse = (await tbClient
-          .getDeviceService()
-          .getTenantProductDevices(pageLink, productType));
-    } else {
-      deviceListResponse =
-          (await tbClient.getDeviceService().getTenantDevices(pageLink));
-    }
-    if (deviceListResponse.totalElements != 0) {
-      List<ProductDevice>? deviceList = [];
-      for (int i = 0; i < deviceListResponse.data.length; i++) {
-        ProductDevice productDevice = ProductDevice();
-        productDevice.name = deviceListResponse.data.elementAt(i).name;
-        productDevice.type = deviceListResponse.data.elementAt(i).type;
-        if(productDevice.type == gatewayDeviceType){
-          productDevice.icon = Icons.hub_outlined;
-        }else if(productDevice.type == ccmsDeviceType){
-          productDevice.icon = Icons.offline_bolt_outlined;
-        }else if(productDevice.type == ilmDeviceType){
-          productDevice.icon = Icons.light_outlined;
-        }else{
-          productDevice.icon = Icons.tungsten_outlined;
+    try {
+      var tbClient = ThingsboardClient(serverUrl);
+      tbClient.smart_init();
+      String searchNumber = productSearchString.replaceAll(" ", "");
+      PageLink pageLink = PageLink(100);
+      pageLink.page = 0;
+      pageLink.pageSize = 100;
+      pageLink.textSearch = searchNumber;
+      PageData<Device> deviceListResponse;
+      if (productType != "all") {
+        deviceListResponse = (await tbClient
+            .getDeviceService()
+            .getTenantProductDevices(pageLink, productType));
+      } else {
+        deviceListResponse =
+            (await tbClient.getDeviceService().getTenantDevices(pageLink));
+      }
+      if (deviceListResponse.totalElements != 0) {
+        List<ProductDevice>? deviceList = [];
+        for (int i = 0; i < deviceListResponse.data.length; i++) {
+          ProductDevice productDevice = ProductDevice();
+          productDevice.name = deviceListResponse.data.elementAt(i).name;
+          productDevice.type = deviceListResponse.data.elementAt(i).type;
+          if (productDevice.type == gatewayDeviceType) {
+            productDevice.icon = Icons.hub_outlined;
+          } else if (productDevice.type == ccmsDeviceType) {
+            productDevice.icon = Icons.offline_bolt_outlined;
+          } else if (productDevice.type == ilmDeviceType) {
+            productDevice.icon = Icons.light_outlined;
+          } else {
+            productDevice.icon = Icons.tungsten_outlined;
+          }
+          if (productDevice.icon != Icons.tungsten_outlined) {
+            deviceList.add(productDevice);
+          }
         }
-        if(productDevice.icon != Icons.tungsten_outlined){
-          deviceList.add(productDevice);
+        deviceResponse.deviceList = deviceList;
+      } else {
+        deviceResponse.errorMessage = "No devices found";
+      }
+    } catch (e) {
+      var message = toThingsboardError(e, context);
+      if (message == session_expired) {
+        var status = loginThingsboard.callThingsboardLogin(context);
+        if (status == true) {
+          fetchDevices(productSearchString, productType, context);
         }
       }
-      deviceResponse.deviceList = deviceList;
-    } else {
-      deviceResponse.errorMessage = "No devices found";
     }
+
     return deviceResponse;
   }
 

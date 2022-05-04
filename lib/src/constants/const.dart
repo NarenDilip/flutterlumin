@@ -45,7 +45,7 @@ const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 // const app_username = "smartLumi@gmail.com";
 // const app_password = "smartLumi";
 
-const no_network = "Please check your Mobile Internet Connectivity";
+const no_network = "Connection not available. Please check your connection";
 const user_email = "User Email";
 const user_password = "Password";
 const validate_email = "Please enter the validate email";

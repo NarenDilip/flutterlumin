@@ -7,6 +7,7 @@ import 'package:flutterlumin/src/presentation/blocs/search_device_cubit.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
 import 'package:flutterlumin/src/presentation/views/devices/device_list_view.dart';
 import 'package:flutterlumin/src/presentation/widgets/search_input_field.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SearchDevicesView extends StatefulWidget {
   const SearchDevicesView({Key? key}) : super(key: key);
@@ -91,8 +92,13 @@ class _SearchDevicesState extends State<SearchDevicesView> {
                   child: CircularProgressIndicator(),
                 );
               } else if (state is ErrorState) {
-                return const Center(
-                  child: Icon(Icons.close),
+                return Text(
+                  state.errorMessage,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Roboto',
+                    color: Colors.red,
+                  ),
                 );
               } else if (state is LoadedState) {
                 final deviceResponse = state.deviceResponse;
@@ -120,7 +126,8 @@ class _SearchDevicesState extends State<SearchDevicesView> {
 
   void searchProduct(String deviceType) {
     final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
-    productDeviceCubit.getDevices(searchInputController.text, deviceType);
+    productDeviceCubit.getDevices(
+        searchInputController.text, deviceType, context);
     FocusManager.instance.primaryFocus?.unfocus();
   }
 }

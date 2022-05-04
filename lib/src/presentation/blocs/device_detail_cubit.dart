@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterlumin/src/domain/repository/device_detail_repository.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_info_state.dart';
 import 'package:intl/intl.dart';
+import 'package:flutterlumin/src/constants/const.dart';
+import '../../constants/const.dart';
+import '../../utils/utility.dart';
 
 class DeviceDetailCubit extends Cubit<DeviceInfoState> {
   final DeviceDetailRepository repository;
@@ -22,7 +25,40 @@ class DeviceDetailCubit extends Cubit<DeviceInfoState> {
       }
       emit(LoadedState(deviceResponse));
     } catch (e) {
-      emit(ErrorState());
+      emit(ErrorState(""));
     }
+  }
+
+  Future<void> requestLiveData(BuildContext context) async{
+    emit(LoadingState());
+    Utility.isConnected().then((value) async {
+      if (value) {
+        final response = await repository.getLiveRPCCall(context);
+      } else {
+        emit(ErrorState(no_network));
+      }
+    });
+  }
+
+  Future<void> updateDeviceStatus(BuildContext context, bool status) async{
+    emit(LoadingState());
+    Utility.isConnected().then((value) async {
+      if (value) {
+        final response = await repository.changeDeviceStatus(context, status);
+      } else {
+        emit(ErrorState(no_network));
+      }
+    });
+  }
+
+  Future<void> initiateMCBTrip(BuildContext context, int status) async{
+    emit(LoadingState());
+    Utility.isConnected().then((value) async {
+      if (value) {
+        final response = await repository.initiateMCBTrip(context, status);
+      } else {
+        emit(ErrorState(no_network));
+      }
+    });
   }
 }

@@ -24,6 +24,9 @@ class LoadedState extends DevicesState {
 }
 
 class ErrorState extends DevicesState {
+  ErrorState(this.errorMessage);
+  final String errorMessage;
+
   @override
   List<Object> get props => [];
 }
