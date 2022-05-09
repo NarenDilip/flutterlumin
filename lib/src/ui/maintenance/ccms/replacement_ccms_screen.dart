@@ -16,7 +16,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../dashboard/dashboard_screen.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
 class replacementccms extends StatefulWidget {
@@ -82,7 +82,7 @@ class replacementccmsState extends State<replacementccms> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -272,28 +272,28 @@ class replacementccmsState extends State<replacementccms> {
                     calltoast("Device is not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => DashboardView()));
                   }
                 } else {
                   pr.hide();
                   calltoast("Device EntityGroup Not Found");
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => DashboardView()));
                 }
               } else {
                 pr.hide();
                 calltoast(deviceName);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               pr.hide();
               calltoast(deviceName);
 
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+               Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => DashboardView()));
             }
           } else {
             pr.hide();
@@ -318,7 +318,7 @@ class replacementccmsState extends State<replacementccms> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       }
@@ -361,7 +361,7 @@ class replacementccmsState extends State<replacementccms> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       } else {}
       return response;
     } catch (e) {

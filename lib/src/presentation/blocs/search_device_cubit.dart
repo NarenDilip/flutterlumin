@@ -6,10 +6,10 @@ import 'package:flutterlumin/src/presentation/blocs/device_state.dart';
 
 import '../../utils/utility.dart';
 
-class ProductDeviceCubit extends Cubit<DevicesState> {
+class SearchDeviceCubit extends Cubit<DevicesState> {
   final DeviceRepository repository;
 
-  ProductDeviceCubit(this.repository) : super(InitialState());
+  SearchDeviceCubit(this.repository) : super(InitialState());
 
   Future<void> getDevices(String productSearchString, String productType,
       BuildContext context) async {
@@ -29,14 +29,4 @@ class ProductDeviceCubit extends Cubit<DevicesState> {
     }
   }
 
-  Future<void> getPoleDevices(String productSearchString) async {
-    try {
-      emit(LoadingState());
-      final deviceResponse =
-          await repository.fetchPoleDevices(productSearchString);
-      emit(LoadedState(deviceResponse));
-    } catch (e) {
-      emit(ErrorState(""));
-    }
-  }
 }

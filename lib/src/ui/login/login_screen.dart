@@ -11,13 +11,14 @@ import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../presentation/views/dashboard/dashboard_view.dart';
 
 class login_screen extends StatefulWidget {
   @override
@@ -167,7 +168,7 @@ class LoginForm extends StatelessWidget {
             prefs.setString('password', user.password);
             callRegionDetails(context);
             // Navigator.of(context).pushReplacement(MaterialPageRoute(
-            //     builder: (BuildContext context) => dashboard_screen()));
+            //     builder: (BuildContext context) => DashboardView()));
           }else{
             // Navigator.pop(context);
             pr.hide();
@@ -289,8 +290,8 @@ class LoginForm extends StatelessWidget {
             //   }
             //   Navigator.pop(context);
           pr.hide();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+               Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => DashboardView()));
             // } else {
             //   Navigator.pop(context);
             //   calltoast("Ward Details found");

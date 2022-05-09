@@ -77,11 +77,10 @@ class _DashboardAppBarWidgetState extends State<DashboardAppBarWidget> {
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.bold),
               ),
-              const CircleAvatar(
-                radius: 16, // Image radius
-                backgroundImage:
-                    NetworkImage("https://i.imgur.com/BoN9kdC.png"),
-              ),
+              const Image(
+                  image: AssetImage("assets/icons/logo.png"),
+                  height: 30,
+                  width: 30),
             ],
           ),
 

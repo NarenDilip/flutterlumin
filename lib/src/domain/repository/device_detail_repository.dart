@@ -9,13 +9,12 @@ import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class DeviceDetailRepository {
-  Future<ProductDevice> fetchDeviceInformation(String deviceName, BuildContext context) async {
+  Future<ProductDevice> fetchDeviceInformation(
+      String deviceName, BuildContext context) async {
     ProductDevice productDevice = ProductDevice();
     var tbClient = ThingsboardClient(serverUrl);
     tbClient.smart_init();
@@ -27,6 +26,7 @@ class DeviceDetailRepository {
     var deviceResponse = (await tbClient
         .getAttributeService()
         .getAttributeKvEntries(response.id!, myList));
+    productDevice.id = response.id!.id.toString();
     if (deviceResponse.isNotEmpty) {
       productDevice.deviceStatus = deviceResponse.first.getValue().toString();
       productDevice.deviceTimeStamp =
@@ -54,11 +54,15 @@ class DeviceDetailRepository {
       locationMap.add("latitude");
       locationMap.add("longitude");
       List<BaseAttributeKvEntry> latLongLocationDataResponse;
-      latLongLocationDataResponse = (await tbClient.getAttributeService().getAttributeKvEntries(
-          response.id!, locationMap)) as List<BaseAttributeKvEntry>;
+      latLongLocationDataResponse = (await tbClient
+              .getAttributeService()
+              .getAttributeKvEntries(response.id!, locationMap))
+          as List<BaseAttributeKvEntry>;
       if (latLongLocationDataResponse.isNotEmpty) {
-        productDevice.latitude = latLongLocationDataResponse.first.kv.getValue().toString();
-        productDevice.longitude = latLongLocationDataResponse.last.kv.getValue().toString();
+        productDevice.latitude =
+            latLongLocationDataResponse.first.kv.getValue().toString();
+        productDevice.longitude =
+            latLongLocationDataResponse.last.kv.getValue().toString();
       }
     } catch (e) {
       var message = toThingsboardError(e, context);
@@ -72,7 +76,7 @@ class DeviceDetailRepository {
     var tbClient = ThingsboardClient(serverUrl);
     tbClient.smart_init();
     final Map<String, Object> jsonData;
-    String version="0";
+    String version = "0";
     if (version == "0") {
       jsonData = {"method": "get", "params": 0};
     } else {
@@ -88,10 +92,9 @@ class DeviceDetailRepository {
     return response;
   }
 
-  Future<void> changeDeviceStatus(BuildContext context, bool deviceStatus) async{
+  Future<dynamic> changeDeviceStatus(BuildContext context, bool deviceStatus,
+      ProductDevice productDevice) async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String deviceID = prefs.getString('deviceId').toString();
       var tbClient = ThingsboardClient(serverUrl);
       tbClient.smart_init();
       final jsonData = {
@@ -100,7 +103,7 @@ class DeviceDetailRepository {
       };
       var response = await tbClient
           .getDeviceService()
-          .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+          .handleTwoWayDeviceRPCRequest(productDevice.id, jsonData)
           .timeout(const Duration(minutes: 2));
       return response;
     } catch (e) {
@@ -108,7 +111,7 @@ class DeviceDetailRepository {
       if (message == session_expired) {
         var status = loginThingsboard.callThingsboardLogin(context);
         if (status == true) {
-          //changeDeviceStatus(context, status);
+          changeDeviceStatus(context, deviceStatus, productDevice);
         }
       } else {
         //calltoast("Unable to Process");
@@ -116,7 +119,7 @@ class DeviceDetailRepository {
     }
   }
 
-  Future<void> initiateMCBTrip(BuildContext context, int status) async{
+  Future<void> initiateMCBTrip(BuildContext context, int status) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String deviceID = prefs.getString('deviceId').toString();
@@ -157,8 +160,6 @@ class DeviceDetailRepository {
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
       }
     } else {
       if (error is DioError) {

@@ -100,12 +100,10 @@ class WardListState extends State<WardList> {
   loadLocalData(context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         try {
           var sharedPreferences =
               await SharedPreferences.getInstance() as SharedPreferences;
           sharedPreferences.setString("SelectedWard", selectedWard);
-
           var tbClient = await ThingsboardClient(serverUrl);
           tbClient.smart_init();
 
@@ -122,13 +120,11 @@ class WardListState extends State<WardList> {
           response = await tbClient
               .getAssetService()
               .getTenantAsset(selectedWard) as Asset;
-
           var relatedDeviceId;
           if (response != null) {
             List<EntityRelationInfo> wardlist = await tbClient
                 .getEntityRelationService()
-                .findInfoByAssetFrom(response.id!) as List<EntityRelationInfo>;
-
+                .findInfoByAssetFrom(response.id!);
             if (wardlist.length != 0) {
               for (int i = 0; i < wardlist.length; i++) {
                 if (wardlist.elementAt(i).to.entityType.name != "DEVICE") {
@@ -140,14 +136,11 @@ class WardListState extends State<WardList> {
                   break;
                 }
               }
-
               var assetrelatedwardid;
               for (int j = 0; j < AssetDevices!.length; j++) {
                 List<EntityRelationInfo> relationdevicelist = await tbClient
                         .getEntityRelationService()
-                        .findInfoByAssetFrom(AssetDevices!.elementAt(j))
-                    as List<EntityRelationInfo>;
-
+                        .findInfoByAssetFrom(AssetDevices!.elementAt(j));
                 for (int k = 0; k < relationdevicelist.length; k++) {
                   if (relationdevicelist.length != 0) {
                     assetrelatedwardid = relationdevicelist.elementAt(k).to;
@@ -203,7 +196,8 @@ class WardListState extends State<WardList> {
                         'ilm_off_count', nonactiveDevices!.length);
                     sharedPreferences.setInt(
                         'ilm_nc_count', int.parse(noncomdevice));
-                  } else if (data_response.type == "CCMS") {
+                  }
+                  else if (data_response.type == "CCMS") {
                     List<AttributeKvEntry> responser;
                     responser = await tbClient
                         .getAttributeService()
@@ -243,7 +237,8 @@ class WardListState extends State<WardList> {
                         'ccms_off_count', ccms_nonactiveDevices!.length);
                     sharedPreferences.setInt(
                         'ccms_nc_count', int.parse(ccms_noncomdevice));
-                  } else if (data_response.type == "Gateway") {
+                  }
+                  else if (data_response.type == "Gateway") {
                     List<AttributeKvEntry> responser;
                     responser = await tbClient
                         .getAttributeService()
@@ -428,6 +423,7 @@ class WardListState extends State<WardList> {
                             setState(() {
                               selectedWard =
                                   _foundUsers!.elementAt(index).toString();
+
                               loadLocalData(context);
                             });
                             Navigator.of(context).pushReplacement(MaterialPageRoute(
@@ -452,6 +448,12 @@ class WardListState extends State<WardList> {
         ),
       ),
     ));
+  }
+
+  Future<void> updateWard() async{
+    var sharedPreferences =
+        await SharedPreferences.getInstance() as SharedPreferences;
+    sharedPreferences.setString("SelectedWard", selectedWard);
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,

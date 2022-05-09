@@ -85,7 +85,7 @@ class _SearchDevicesState extends State<SearchDevicesView> {
               ],
             ),
           ),
-          BlocBuilder<ProductDeviceCubit, DevicesState>(
+          BlocBuilder<SearchDeviceCubit, DevicesState>(
             builder: (context, state) {
               if (state is LoadingState) {
                 return const Center(
@@ -125,7 +125,7 @@ class _SearchDevicesState extends State<SearchDevicesView> {
   }
 
   void searchProduct(String deviceType) {
-    final productDeviceCubit = BlocProvider.of<ProductDeviceCubit>(context);
+    final productDeviceCubit = BlocProvider.of<SearchDeviceCubit>(context);
     productDeviceCubit.getDevices(
         searchInputController.text, deviceType, context);
     FocusManager.instance.primaryFocus?.unfocus();

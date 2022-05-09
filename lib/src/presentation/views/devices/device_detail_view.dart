@@ -31,14 +31,32 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
     super.initState();
   }
 
-  void updateDeviceStatus(bool deviceStatus) {
+  void updateDeviceStatus(bool deviceStatus, ProductDevice productDevice) {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
-    productDeviceCubit.updateDeviceStatus(context, deviceStatus);
+    productDeviceCubit.updateDeviceStatus(context, deviceStatus, productDevice);
   }
 
   void getLive() {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
     productDeviceCubit.requestLiveData(context);
+  }
+
+  void showWarningPopup(ProductDevice productDevice, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(productDevice.name),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: const Text("Okay"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -68,6 +86,11 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
       ),
       body: BlocBuilder<DeviceDetailCubit, DeviceInfoState>(
         builder: (context, state) {
+          if (state is LoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
           if (state is LoadingState) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -231,257 +254,222 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                           ),
                         ),
                       ),
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(color: lightGrey, width: 2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 40, top: 14, bottom: 14, right: 40),
-                          child: Column(
-                            children: <Widget>[
-                              IntrinsicHeight(
-                                child: Expanded(
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Column(
+                      Visibility(
+                          visible: widget.productDevice.type == ilmDeviceType ||
+                              widget.productDevice.type == ccmsDeviceType,
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              side:
+                                  const BorderSide(color: lightGrey, width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 40, top: 14, bottom: 14, right: 40),
+                              child: Column(
+                                children: <Widget>[
+                                  IntrinsicHeight(
+                                    child: Expanded(
+                                      child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          FlutterSwitch(
-                                            width: 100.0,
-                                            height: 55.0,
-                                            toggleSize: 45.0,
-                                            value: deviceStatus,
-                                            borderRadius: 30.0,
-                                            padding: 2.0,
-                                            inactiveToggleColor:
-                                                Color(0xFF6E40C9),
-                                            activeToggleColor:
-                                                Color(0xFF2F363D),
-                                            inactiveSwitchBorder: Border.all(
-                                              color: Color(0xFF3C1E70),
-                                              width: 6.0,
-                                            ),
-                                            activeSwitchBorder: Border.all(
-                                              color: Color(0xFFD1D5DA),
-                                              width: 6.0,
-                                            ),
-                                            inactiveColor: Color(0xFF271052),
-                                            activeColor: Colors.white,
-                                            inactiveIcon: const Icon(
-                                              Icons.nightlight_round,
-                                              color: Color(0xFFF8E3A1),
-                                            ),
-                                            activeIcon: const Icon(
-                                              Icons.wb_sunny,
-                                              color: Color(0xFFFFDF5D),
-                                            ),
-                                            onToggle: (val) {
-                                              updateDeviceStatus(deviceStatus);
-                                              setState(() {
-                                                deviceStatus = val;
-                                              });
-                                            },
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text(
-                                            deviceStatus == false
-                                                ? "OFF"
-                                                : "ON",
-                                            style: TextStyle(
-                                              fontSize: 22,
-                                              fontFamily: 'Roboto',
-                                              color: deviceStatus == false
-                                                  ? Colors.red
-                                                  : Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: const [
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          VerticalDivider(
-                                            color: Colors.black26,
-                                            thickness: .2,
-                                          ),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                        ],
-                                      ),
-                                      Visibility(
-                                          visible: widget.productDevice.type ==
-                                                  ccmsDeviceType
-                                              ? true
-                                              : false,
-                                          child: Column(
+                                          Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
                                               FlutterSwitch(
-                                                width: 60.0,
+                                                width: 100.0,
                                                 height: 55.0,
                                                 toggleSize: 45.0,
-                                                value: mcbTripStatus,
+                                                value: deviceStatus,
                                                 borderRadius: 30.0,
                                                 padding: 2.0,
                                                 inactiveToggleColor:
-                                                    Colors.white,
+                                                    Color(0xFF6E40C9),
                                                 activeToggleColor:
                                                     Color(0xFF2F363D),
                                                 inactiveSwitchBorder:
                                                     Border.all(
-                                                  color: Colors.grey,
+                                                  color: Color(0xFF3C1E70),
                                                   width: 6.0,
                                                 ),
                                                 activeSwitchBorder: Border.all(
                                                   color: Color(0xFFD1D5DA),
                                                   width: 6.0,
                                                 ),
-                                                inactiveColor: Colors.grey,
+                                                inactiveColor:
+                                                    Color(0xFF271052),
                                                 activeColor: Colors.white,
                                                 inactiveIcon: const Icon(
-                                                  Icons.get_app_outlined,
-                                                  color: Colors.black,
+                                                  Icons.nightlight_round,
+                                                  color: Color(0xFFF8E3A1),
                                                 ),
                                                 activeIcon: const Icon(
-                                                  Icons.publish_outlined,
-                                                  color: Colors.red,
+                                                  Icons.wb_sunny,
+                                                  color: Color(0xFFFFDF5D),
                                                 ),
                                                 onToggle: (val) {
+                                                  updateDeviceStatus(
+                                                      deviceStatus,
+                                                      state.deviceResponse);
                                                   setState(() {
-                                                    mcbTripStatus = val;
+                                                    deviceStatus = val;
                                                   });
                                                 },
                                               ),
                                               const SizedBox(
                                                 height: 10,
                                               ),
-                                              const Text(
-                                                "MCB",
+                                              Text(
+                                                deviceStatus == false
+                                                    ? "OFF"
+                                                    : "ON",
                                                 style: TextStyle(
                                                   fontSize: 22,
                                                   fontFamily: 'Roboto',
-                                                  color: Colors.blueAccent,
+                                                  color: deviceStatus == false
+                                                      ? Colors.red
+                                                      : Colors.green,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ],
-                                          )),
-                                      Column(
-                                        children: const [
-                                          SizedBox(
-                                            width: 10,
                                           ),
-                                          VerticalDivider(
-                                            color: Colors.black26,
-                                            thickness: .2,
+                                          Column(
+                                            children: const [
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              VerticalDivider(
+                                                color: Colors.black26,
+                                                thickness: .2,
+                                              ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(
-                                            width: 10,
+                                          Visibility(
+                                              visible:
+                                                  widget.productDevice.type ==
+                                                          ccmsDeviceType
+                                                      ? true
+                                                      : false,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  FlutterSwitch(
+                                                    width: 60.0,
+                                                    height: 55.0,
+                                                    toggleSize: 45.0,
+                                                    value: mcbTripStatus,
+                                                    borderRadius: 30.0,
+                                                    padding: 2.0,
+                                                    inactiveToggleColor:
+                                                        Colors.white,
+                                                    activeToggleColor:
+                                                        Color(0xFF2F363D),
+                                                    inactiveSwitchBorder:
+                                                        Border.all(
+                                                      color: Colors.grey,
+                                                      width: 6.0,
+                                                    ),
+                                                    activeSwitchBorder:
+                                                        Border.all(
+                                                      color: Color(0xFFD1D5DA),
+                                                      width: 6.0,
+                                                    ),
+                                                    inactiveColor: Colors.grey,
+                                                    activeColor: Colors.white,
+                                                    inactiveIcon: const Icon(
+                                                      Icons.get_app_outlined,
+                                                      color: Colors.black,
+                                                    ),
+                                                    activeIcon: const Icon(
+                                                      Icons.publish_outlined,
+                                                      color: Colors.red,
+                                                    ),
+                                                    onToggle: (val) {
+                                                      setState(() {
+                                                        mcbTripStatus = val;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  const Text(
+                                                    "MCB",
+                                                    style: TextStyle(
+                                                      fontSize: 22,
+                                                      fontFamily: 'Roboto',
+                                                      color: Colors.blueAccent,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              )),
+                                          Column(
+                                            children: const [
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              VerticalDivider(
+                                                color: Colors.black26,
+                                                thickness: .2,
+                                              ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                            ],
                                           ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              getLive();
+                                            },
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                RawMaterialButton(
+                                                  onPressed: () {},
+                                                  elevation: 2.0,
+                                                  fillColor: Colors.lightBlue,
+                                                  child: const Icon(
+                                                    Icons.sync,
+                                                    color: Colors.white,
+                                                    size: 24.0,
+                                                  ),
+                                                  padding: EdgeInsets.all(15.0),
+                                                  shape: CircleBorder(),
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                const Text(
+                                                  "LIVE",
+                                                  style: TextStyle(
+                                                    fontSize: 22,
+                                                    fontFamily: 'Roboto',
+                                                    color: Colors.blueAccent,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
                                         ],
                                       ),
-                                      GestureDetector(
-                                        onTap: (){
-                                          getLive();
-                                        },
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            RawMaterialButton(
-                                              onPressed: () {},
-                                              elevation: 2.0,
-                                              fillColor: Colors.lightBlue,
-                                              child: const Icon(
-                                                Icons.sync,
-                                                color: Colors.white,
-                                                size: 24.0,
-                                              ),
-                                              padding: EdgeInsets.all(15.0),
-                                              shape: CircleBorder(),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            const Text(
-                                              "LIVE",
-                                              style: TextStyle(
-                                                fontSize: 22,
-                                                fontFamily: 'Roboto',
-                                                color: Colors.blueAccent,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                              /*const SizedBox(
-                                height: 10,
-                              ),
-                              const Text(
-                                "DEVICE REPLACEMENT",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontFamily: 'Roboto',
-                                  color: Colors.blueAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              IntrinsicHeight(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        ActionButton(
-                                          labelName: "SHOOTING CAP",
-                                          itemPressed: () {},
-                                        )
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        ActionButton(
-                                          labelName: "ILM",
-                                          itemPressed: () {},
-                                        )
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),*/
-                            ],
-                          ),
-                        ),
-                      ),
+                            ),
+                          )),
                       Card(
                         shape: RoundedRectangleBorder(
                           side: const BorderSide(color: lightGrey, width: 2),
@@ -502,7 +490,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 16,
                               ),
                               IntrinsicHeight(
@@ -575,52 +563,6 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                   ),
                                 ),
                               ),
-                              /*const SizedBox(
-                                height: 10,
-                              ),
-                              const Text(
-                                "DEVICE REPLACEMENT",
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontFamily: 'Roboto',
-                                  color: Colors.blueAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              IntrinsicHeight(
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        ActionButton(
-                                          labelName: "SHOOTING CAP",
-                                          itemPressed: () {},
-                                        )
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        ActionButton(
-                                          labelName: "ILM",
-                                          itemPressed: () {},
-                                        )
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),*/
                             ],
                           ),
                         ),

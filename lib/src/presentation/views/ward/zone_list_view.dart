@@ -38,7 +38,6 @@ class ZoneListScreenState extends State<ZoneListScreen> {
   String selectedRegion = "0";
   String selectedZone = "0";
   List<String>? relatedzones = [];
-  late ProgressDialog pr;
 
   @override
   initState() {
@@ -196,6 +195,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
+          // Utility.progressDialog(context);
           var tbClient = await ThingsboardClient(serverUrl);
           tbClient.smart_init();
 
@@ -204,7 +204,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
 
           DBHelper dbHelper = new DBHelper();
           List<Ward> ward =
-          await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
+          await dbHelper.ward_zonebasedDetails(selectedZone);
           if (ward.isEmpty) {
             // dbHelper.ward_delete();
 
@@ -239,7 +239,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                   }
                 }
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => const WardList()));
+                    builder: (BuildContext context) => WardList()));
               } else {
                 Fluttertoast.showToast(
                     msg: "No Wards releated to this zone",
@@ -262,7 +262,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => const WardList()));
+                builder: (BuildContext context) => WardList()));
           }
         } catch (e) {
           var message = toThingsboardError(e, context);
@@ -270,7 +270,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => const ZoneListScreen()));
+                  builder: (BuildContext context) => ZoneListScreen()));
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(

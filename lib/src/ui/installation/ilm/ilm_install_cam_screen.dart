@@ -24,10 +24,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../localdb/db_helper.dart';
 
 import '../../../localdb/model/ward_model.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
-import '../../dashboard/dashboard_screen.dart';
 
 import 'package:poly_geofence_service/models/lat_lng.dart';
 import 'package:poly_geofence_service/models/poly_geofence.dart';
@@ -263,7 +263,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -515,7 +515,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        DashboardView()));
                           }
                         } else {
                           // Navigator.pop(context);
@@ -524,7 +524,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      DashboardView()));
                         }
                       } else {
                         // Navigator.pop(context);
@@ -532,7 +532,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                         calltoast(deviceName);
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                             builder: (BuildContext context) =>
-                                dashboard_screen()));
+                                DashboardView()));
                       }
                     } else {
                       // Navigator.pop(context);
@@ -573,21 +573,21 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                       textColor: Colors.black,
                       fontSize: 16.0);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => DashboardView()));
                 }
               } else {
                 // Navigator.pop(context);
                 pr.hide();
                 calltoast(deviceName);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               // Navigator.pop(context);
               pr.hide();
               calltoast(deviceName);
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+               Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => DashboardView()));
             }
           } else {
             // Navigator.pop(context);
@@ -615,7 +615,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             calltoast(deviceName);
             // Navigator.pop(context);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       }
@@ -751,7 +751,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
       if (response.statusCode.toString() == "200") {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
         showMyDialog(context);
       } else {}
       return response;
@@ -775,7 +775,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {

@@ -20,7 +20,6 @@ import '../../thingsboard/thingsboard_client_base.dart';
 import '../../utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
-import '../dashboard/dashboard_screen.dart';
 
 class zone_li_screen extends StatefulWidget {
   @override

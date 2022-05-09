@@ -14,6 +14,11 @@ class LoadingState extends DeviceInfoState {
   List<Object> get props => [];
 }
 
+class ProgressState extends DeviceInfoState {
+  @override
+  List<Object> get props => [];
+}
+
 class LoadedState extends DeviceInfoState {
   LoadedState(this.deviceResponse);
 
@@ -21,6 +26,14 @@ class LoadedState extends DeviceInfoState {
 
   @override
   List<Object> get props => [deviceResponse];
+}
+
+class SuccessState extends DeviceInfoState {
+  SuccessState(this.message);
+  final String message;
+
+  @override
+  List<Object> get props => [];
 }
 
 class ErrorState extends DeviceInfoState {

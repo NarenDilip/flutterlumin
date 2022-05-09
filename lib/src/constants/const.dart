@@ -46,6 +46,8 @@ const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 // const app_password = "smartLumi";
 
 const no_network = "Connection not available. Please check your connection";
+const onMessage = "Device ON Successfully";
+const offMessage = "Device OFF Successfully";
 const user_email = "User Email";
 const user_password = "Password";
 const validate_email = "Please enter the validate email";
@@ -78,3 +80,8 @@ const session_expired = "Session expired!";
 
 const device_toast_msg = "Given Device ";
 const device_toast_notfound = " Not Found";
+const app_display_name = "Luminator";
+const app_logout_msg = "Are you sure you want to exit Luminator?";
+const app_logout_no = "NO";
+const app_logout_yes = "YES";
+const app_logout = "Are you sure you want to Logout?";

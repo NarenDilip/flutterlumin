@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/presentation/blocs/projects_detail_cubit.dart';
+import 'package:flutterlumin/src/presentation/blocs/projects_state.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_app_bar_view.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/project_card_view.dart';
@@ -29,57 +32,65 @@ class _ProjectDashboardState extends State<ProjectDashboard> {
   @override
   void initState() {
     super.initState();
-    getDeviceCount();
-  }
-
-  Future<void> getDeviceCount() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      ilmTotalCount = prefs.getInt("ilm_total_count")!;
-      ccmsTotalCount = prefs.getInt("ccms_total_count")!;
-      gatewayTotalCount = prefs.getInt("gw_total_count")!;
-      ilmOnCount = prefs.getInt("ilm_on_count")!;
-      ccmsOnCount = prefs.getInt("ccms_on_count")!;
-      gwOnCount = prefs.getInt("gw_on_count")!;
-      ilmOffCount = prefs.getInt("ilm_off_count")!;
-      ccmsOffCount = prefs.getInt("ccms_off_count")!;
-      gwOffCount = prefs.getInt("gw_off_count")!;
-      ilmNcCount = prefs.getInt("ilm_nc_count")!;
-      ccmsNcCount = prefs.getInt("ccms_nc_count")!;
-      gwNcCount = prefs.getInt("gw_nc_count")!;
-    });
+    final projectsCubit = BlocProvider.of<ProjectDetailCubit>(context);
+    projectsCubit.getProjectDetail(context);
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(children: <Widget>[
-        const DashboardAppBarWidget(title: "",),
-        ProjectCard(
-          projectName: "ILM",
-          cardBottomColor: lightBlueCardColor,
-          totalCount: ilmTotalCount,
-          onCount: ilmOnCount,
-          offCount: ilmOffCount,
-          ncCount: ilmNcCount,
-        ),
-        ProjectCard(
-          projectName: "CCMS",
-          cardBottomColor: lightGreenCardColor,
-          totalCount: ccmsTotalCount,
-          onCount: ccmsOnCount,
-          offCount: ccmsOffCount,
-          ncCount: ccmsNcCount,
-        ),
-        ProjectCard(
-          projectName: "GATEWAY",
-          cardBottomColor: lightPinkCardColor,
-          totalCount: gatewayTotalCount,
-          onCount: gwOnCount,
-          offCount: gwOffCount,
-          ncCount: gwNcCount,
-        ),
-      ]),
+    return BlocBuilder<ProjectDetailCubit, ProjectsState>(
+      builder: (context, state) {
+        if (state is LoadingState) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is ErrorState) {
+          return Text(
+            state.errorMessage,
+            style: const TextStyle(
+              fontSize: 20,
+              fontFamily: 'Roboto',
+              color: Colors.red,
+            ),
+          );
+        }
+        else if (state is LoadedState) {
+          var projectData = state.response;
+            return SingleChildScrollView(
+              child: Column(children: <Widget>[
+                const DashboardAppBarWidget(title: "",),
+                ProjectCard(
+                  projectName: "ILM",
+                  cardBottomColor: lightBlueCardColor,
+                  totalCount: projectData.ilmTotalCount,
+                  onCount: projectData.ilmOnCount,
+                  offCount: projectData.ilmOffCount,
+                  ncCount: projectData.ilmNcCount,
+                ),
+                ProjectCard(
+                  projectName: "CCMS",
+                  cardBottomColor: lightGreenCardColor,
+                  totalCount: projectData.ccmsTotalCount,
+                  onCount: projectData.ccmsOnCount,
+                  offCount: projectData.ccmsOffCount,
+                  ncCount: projectData.ccmsNcCount,
+                ),
+                ProjectCard(
+                  projectName: "GATEWAY",
+                  cardBottomColor: lightPinkCardColor,
+                  totalCount: projectData.gatewayTotalCount,
+                  onCount: projectData.gatewayOnCount,
+                  offCount: projectData.gatewayOffCount,
+                  ncCount: projectData.gatewayNcCount,
+                ),
+              ]),
+            );
+        } else {
+          return Container();
+        }
+      },
     );
+
   }
 }
