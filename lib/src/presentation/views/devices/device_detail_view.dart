@@ -1,13 +1,28 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_detail_cubit.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_info_state.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:latlong/latlong.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../thingsboard/thingsboard_client_base.dart';
+import '../../../ui/maintenance/ccms/ccms_maintenance_screen.dart';
+import '../../../ui/maintenance/ccms/replace_ccms_screen.dart';
+import '../../../ui/maintenance/ccms/replacement_ccms_screen.dart';
+import '../../../ui/maintenance/gateway/replace_gw_screen.dart';
+import '../../../ui/maintenance/gateway/replacement_gw_screen.dart';
+import '../../../ui/maintenance/ilm/replace_ilm_screen.dart';
+import '../../../ui/maintenance/ilm/replacement_ilm_screen.dart';
+import '../../../ui/qr_scanner/qr_scanner.dart';
+import '../../../utils/utility.dart';
 
 class DeviceDetailView extends StatefulWidget {
   const DeviceDetailView({
@@ -27,14 +42,14 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
   @override
   void initState() {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
-    productDeviceCubit.getDeviceDetail(widget.productDevice.name, context);
+    productDeviceCubit.getDeviceDetail(widget.productDevice, context);
     super.initState();
   }
 
-  void updateDeviceStatus(bool deviceStatus, ProductDevice productDevice) {
+  /* void updateDeviceStatus(bool deviceStatus, ProductDevice productDevice) {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
     productDeviceCubit.updateDeviceStatus(context, deviceStatus, productDevice);
-  }
+  }*/
 
   void getLive() {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
@@ -312,6 +327,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                                 ),
                                                 onToggle: (val) {
                                                   updateDeviceStatus(
+                                                      context,
                                                       deviceStatus,
                                                       state.deviceResponse);
                                                   setState(() {
@@ -436,7 +452,10 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 RawMaterialButton(
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    getLiveRPCCall(context,
+                                                        state.deviceResponse);
+                                                  },
                                                   elevation: 2.0,
                                                   fillColor: Colors.lightBlue,
                                                   child: const Icon(
@@ -481,15 +500,20 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                               left: 20, top: 14, bottom: 14, right: 20),
                           child: Column(
                             children: <Widget>[
-                              const Text(
-                                "REPLACEMENT",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontFamily: 'Roboto',
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              Visibility(
+                                  visible:
+                                      widget.productDevice.type == ilmDeviceType
+                                          ? true
+                                          : false,
+                                  child: const Text(
+                                    "REPLACEMENT",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontFamily: 'Roboto',
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )),
                               const SizedBox(
                                 height: 16,
                               ),
@@ -502,30 +526,42 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Row(
-                                        children: [
-                                          const Text(
-                                            "SHORTING CAP",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontFamily: 'Roboto',
-                                              color: Colors.blueAccent,
-                                              fontWeight: FontWeight.bold,
+                                      GestureDetector(
+                                        onTap: () {
+                                          removeDevice(
+                                              context, widget.productDevice);
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              widget.productDevice.type ==
+                                                      ilmDeviceType
+                                                  ? "SHORTING CAP"
+                                                  : "REPLACE",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontFamily: 'Roboto',
+                                                color: Colors.blueAccent,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          RawMaterialButton(
-                                            onPressed: () {},
-                                            elevation: 2.0,
-                                            fillColor: Colors.deepOrange,
-                                            child: const Icon(
-                                              Icons.sync_lock_outlined,
-                                              color: Colors.white,
-                                              size: 24.0,
+                                            RawMaterialButton(
+                                              onPressed: () {
+                                                removeDevice(context,
+                                                    widget.productDevice);
+                                              },
+                                              elevation: 2.0,
+                                              fillColor: Colors.deepOrange,
+                                              child: const Icon(
+                                                Icons.sync_lock_outlined,
+                                                color: Colors.white,
+                                                size: 24.0,
+                                              ),
+                                              padding: EdgeInsets.all(15.0),
+                                              shape: CircleBorder(),
                                             ),
-                                            padding: EdgeInsets.all(15.0),
-                                            shape: CircleBorder(),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                       const VerticalDivider(
                                         color: Colors.black26,
@@ -534,31 +570,43 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                       const SizedBox(
                                         width: 10,
                                       ),
-                                      Row(
-                                        children: [
-                                          const Text(
-                                            "ILM",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontFamily: 'Roboto',
-                                              color: Colors.blueAccent,
-                                              fontWeight: FontWeight.bold,
+                                      GestureDetector(
+                                        onTap: () {
+                                          replaceDevice(
+                                              context, widget.productDevice);
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              widget.productDevice.type ==
+                                                      ilmDeviceType
+                                                  ? "ILM"
+                                                  : "REMOVE",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontFamily: 'Roboto',
+                                                color: Colors.blueAccent,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          RawMaterialButton(
-                                            onPressed: () {},
-                                            elevation: 2.0,
-                                            fillColor: Colors.deepOrange,
-                                            child: const Icon(
-                                              Icons.cloud_sync_outlined,
-                                              color: Colors.white,
-                                              size: 24.0,
+                                            RawMaterialButton(
+                                              onPressed: () {
+                                                replaceDevice(context,
+                                                    widget.productDevice);
+                                              },
+                                              elevation: 2.0,
+                                              fillColor: Colors.deepOrange,
+                                              child: const Icon(
+                                                Icons.cloud_sync_outlined,
+                                                color: Colors.white,
+                                                size: 24.0,
+                                              ),
+                                              padding: EdgeInsets.all(15.0),
+                                              shape: CircleBorder(),
                                             ),
-                                            padding: EdgeInsets.all(15.0),
-                                            shape: CircleBorder(),
-                                          ),
-                                        ],
-                                      ),
+                                          ],
+                                        ),
+                                      )
                                     ],
                                   ),
                                 ),
@@ -579,4 +627,336 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
       ),
     );
   }
+}
+
+Future<void> updateDeviceStatus(
+    context, deviceStatus, ProductDevice productDevice) async {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      late ProgressDialog pr;
+      pr = ProgressDialog(context,
+          type: ProgressDialogType.Normal, isDismissible: false);
+      pr.style(
+        message: 'Please wait ..',
+        borderRadius: 20.0,
+        backgroundColor: Colors.lightBlueAccent,
+        elevation: 10.0,
+        messageTextStyle: const TextStyle(
+            color: Colors.white,
+            fontFamily: "Montserrat",
+            fontSize: 19.0,
+            fontWeight: FontWeight.w600),
+        progressWidget: const CircularProgressIndicator(
+            backgroundColor: Colors.lightBlueAccent,
+            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+            strokeWidth: 3.0),
+      );
+      pr.show();
+      // Utility.progressDialog(context);
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+
+        if (productDevice.type == ilmDeviceType) {
+          final jsonData = {
+            "method": "ctrl",
+            "params": {"lamp": deviceStatus == true ? 1 : 0, "mode": 2}
+          };
+          updateOnOffStatus(tbClient, jsonData, productDevice, pr);
+        } else if (productDevice.type == ccmsDeviceType ||
+            productDevice.type == gatewayDeviceType) {
+          final jsonData = {
+            "method": "ctrl",
+            "params": {"lamp": deviceStatus == true ? 1 : 0}
+          };
+          updateOnOffStatus(tbClient, jsonData, productDevice, pr);
+        }
+      } catch (e) {
+        FlutterLogs.logInfo("devicelist_page", "ilm_maintenance", "logMessage");
+        pr.hide();
+        // Navigator.pop(context);
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+          if (status == true) {
+            callONRPCCall(context);
+          }
+        } else {
+          calltoast("Unable to Process");
+        }
+      }
+    } else {
+      calltoast(no_network);
+    }
+  });
+}
+
+Future<void> updateOnOffStatus(ThingsboardClient tbClient, jsonData,
+    ProductDevice productDevice, ProgressDialog pr) async {
+  var response = await tbClient
+      .getDeviceService()
+      .handleTwoWayDeviceRPCRequest(productDevice.id, jsonData)
+      .timeout(Duration(minutes: 2));
+
+  if (response["lamp"].toString() == "1") {
+    Fluttertoast.showToast(
+        msg: "Device ON Successfully",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+    pr.hide();
+    // Navigator.pop(context);
+  } else {
+    pr.hide();
+    // Navigator.pop(context);
+    calltoast("Unable to Process, Please try again");
+  }
+}
+
+Future<void> getLiveRPCCall(context, ProductDevice productDevice) async {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      late ProgressDialog pr;
+      pr = ProgressDialog(context,
+          type: ProgressDialogType.Normal, isDismissible: false);
+      pr.style(
+        message: 'Please wait ..',
+        borderRadius: 20.0,
+        backgroundColor: Colors.lightBlueAccent,
+        elevation: 10.0,
+        messageTextStyle: const TextStyle(
+            color: Colors.white,
+            fontFamily: "Montserrat",
+            fontSize: 19.0,
+            fontWeight: FontWeight.w600),
+        progressWidget: const CircularProgressIndicator(
+            backgroundColor: Colors.lightBlueAccent,
+            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+            strokeWidth: 3.0),
+      );
+      pr.show();
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+        // type: String
+        final jsonData;
+        if (productDevice.type == ilmDeviceType) {
+          var version = prefs.getString("version").toString();
+          if (version == "0") {
+            jsonData = {"method": "get", "params": 0};
+          } else {
+            jsonData = {
+              "method": "get",
+              "params": {"rpcType": 2, "value": 0}
+            };
+          }
+          updateLiveCall(tbClient, jsonData, productDevice.id, pr);
+        } else if (productDevice.type == ccmsDeviceType) {
+          jsonData = {
+            "method": "get",
+            "params": {"value": 0}
+          };
+          updateLiveCall(tbClient, jsonData, productDevice.id, pr);
+        } else if (productDevice.type == gatewayDeviceType) {
+          jsonData = {
+            "method": "get",
+            "params": {"value": 0}
+          };
+          updateLiveCall(tbClient, jsonData, productDevice.id, pr);
+        }
+      } catch (e) {
+        FlutterLogs.logInfo("devicelist_page", "ilm_maintenance",
+            "ILM Device Maintenance Exception");
+        pr.hide();
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+          if (status == true) {
+            getLiveRPCCall(context, productDevice);
+          }
+        } else {
+          calltoast("Unable to Process");
+        }
+      }
+    } else {
+      calltoast(no_network);
+    }
+  });
+}
+
+Future<void> callMCBTrip(context, ProductDevice productDevice) async {
+  Utility.isConnected().then((value) async {
+    late ProgressDialog pr;
+    if (value) {
+
+      pr = ProgressDialog(context,
+          type: ProgressDialogType.Normal, isDismissible: false);
+      pr.style(
+        message: app_pls_wait,
+        borderRadius: 20.0,
+        backgroundColor: Colors.lightBlueAccent,
+        elevation: 10.0,
+        messageTextStyle: const TextStyle(
+            color: Colors.white,
+            fontFamily: "Montserrat",
+            fontSize: 19.0,
+            fontWeight: FontWeight.w600),
+        progressWidget: const CircularProgressIndicator(
+            backgroundColor: Colors.lightBlueAccent,
+            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+            strokeWidth: 3.0),
+      );
+      pr.show();
+      try {
+        var tbClient = ThingsboardClient(serverUrl);
+        tbClient.smart_init();
+        final jsonData;
+
+        jsonData = {"method": "clr", "params": "8"};
+
+        var response = await tbClient
+            .getDeviceService()
+            .handleOneWayDeviceRPCRequest(productDevice.id, jsonData)
+            .timeout(const Duration(minutes: 5));
+
+        final jsonDatat;
+
+        jsonDatat = {
+          "method": "set",
+          "params": {'rostat': 0, 'yostat': 0, 'bostat': 0}
+        };
+
+        var responsee = await tbClient
+            .getDeviceService()
+            .handleOneWayDeviceRPCRequest(
+            productDevice.id, jsonDatat)
+            .timeout(const Duration(minutes: 5));
+
+        pr.hide();
+      } catch (e) {
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "MCB/Device Connectivity Issue Exception");*/
+        pr.hide();
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+          if (status == true) {
+            callMCBTrip(context,productDevice);
+          }
+        } else {
+          calltoast(app_unab_procs);
+        }
+      }
+    } else {
+      calltoast(no_network);
+    }
+  });
+}
+
+Future<void> updateLiveCall(ThingsboardClient tbClient, jsonData,
+    String deviceIdDetails, ProgressDialog pr) async {
+  var response = await tbClient
+      .getDeviceService()
+      .handleOneWayDeviceRPCRequest(deviceIdDetails.toString(), jsonData)
+      .timeout(const Duration(minutes: 5));
+  pr.hide();
+}
+
+Future<void> removeDevice(context, ProductDevice productDevice) async {
+  if (productDevice.type == ilmDeviceType) {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+  } else if (productDevice.type == ccmsDeviceType) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (BuildContext context) => replacementccms()));
+  } else if (productDevice.type == gatewayDeviceType) {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (BuildContext context) => replacementgw()));
+  }
+}
+
+Future<void> replaceDevice(context, ProductDevice productDevice) async {
+  Utility.isConnected().then((value) async {
+    if (value) {
+      late ProgressDialog pr;
+      try {
+        pr = ProgressDialog(context,
+            type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white,
+              fontFamily: "Montserrat",
+              fontSize: 19.0,
+              fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(
+              backgroundColor: Colors.lightBlueAccent,
+              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        // String OlddeviceID = prefs.getString('deviceId').toString();
+        String OlddeviceName = prefs.getString('deviceName').toString();
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
+            (route) => true).then((value) async {
+          if (value != null) {
+            if (OlddeviceName.toString() != value.toString()) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('newDevicename', value);
+
+              pr.hide();
+              // showActionAlertDialog(context,OlddeviceName,value);
+
+              if (productDevice.type == ilmDeviceType) {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => replaceilm()));
+              } else if (productDevice.type == ccmsDeviceType) {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => replaceccms()));
+              } else if (productDevice.type == gatewayDeviceType) {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => replacegw()));
+              }
+            } else {
+              FlutterLogs.logInfo(
+                  "ilm_maintenance", "ilm_maintenance", "Duplicate QR Code");
+              pr.hide();
+              calltoast("Duplicate QR Code");
+            }
+          } else {
+            FlutterLogs.logInfo(
+                "ilm_maintenance_page", "ilm_maintenance", "Invalid QR Code");
+            pr.hide();
+            calltoast("Invalid QR Code");
+          }
+        });
+      } catch (e) {
+        FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance",
+            "ILM  Device Maintenance Exception");
+        pr.hide();
+        var message = toThingsboardError(e, context);
+        if (message == session_expired) {
+          var status = loginThingsboard.callThingsboardLogin(context);
+        } else {
+          calltoast("Device Replacement Issue");
+        }
+      }
+    } else {
+      calltoast(no_network);
+    }
+  });
 }

@@ -36,11 +36,12 @@ class _ProfileState extends State<SettingsScreen> {
             child: Column(
               children: <Widget>[
                 SizedBox(
-                  height: 20,
+                  height: 40,
                 ),
                 const Text(
                   "Settings",
-                  style: TextStyle(fontSize: 24, fontFamily: "Roboto"),
+                  style: TextStyle(fontSize: 30, fontFamily: "Roboto", color: Colors.black54,
+                    fontWeight: FontWeight.bold,),
                 ),
                 SizedBox(
                   height: 30,
@@ -67,7 +68,7 @@ class _ProfileState extends State<SettingsScreen> {
                             Icon(
                               Icons.logout,
                               color: Colors.red,
-                              size: 24.0,
+                              size: 34.0,
                             ),
                             SizedBox(
                               width: 10,
@@ -75,7 +76,7 @@ class _ProfileState extends State<SettingsScreen> {
                             Text(
                               "Logout",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 24,
                                 fontFamily: 'Roboto',
                                 color: Colors.black54,
                                 fontWeight: FontWeight.bold,
@@ -97,7 +98,7 @@ class _ProfileState extends State<SettingsScreen> {
                             Icon(
                               Icons.lock_open,
                               color: Colors.blue,
-                              size: 24.0,
+                              size: 34.0,
                             ),
                             SizedBox(
                               width: 10,
@@ -105,7 +106,7 @@ class _ProfileState extends State<SettingsScreen> {
                             Text(
                               "Change password",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 24,
                                 fontFamily: 'Roboto',
                                 color: Colors.black54,
                                 fontWeight: FontWeight.bold,
@@ -126,7 +127,7 @@ class _ProfileState extends State<SettingsScreen> {
                             Icon(
                               Icons.verified_user,
                               color: Colors.blue,
-                              size: 24.0,
+                              size: 34.0,
                             ),
                             SizedBox(
                               width: 10,
@@ -134,7 +135,7 @@ class _ProfileState extends State<SettingsScreen> {
                             Text(
                               "Profile",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 24,
                                 fontFamily: 'Roboto',
                                 color: Colors.black54,
                                 fontWeight: FontWeight.bold,

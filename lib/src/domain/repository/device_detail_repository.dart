@@ -14,13 +14,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class DeviceDetailRepository {
   Future<ProductDevice> fetchDeviceInformation(
-      String deviceName, BuildContext context) async {
-    ProductDevice productDevice = ProductDevice();
+      ProductDevice productDevice, BuildContext context) async {
     var tbClient = ThingsboardClient(serverUrl);
     tbClient.smart_init();
     var response = (await tbClient
         .getDeviceService()
-        .getTenantDevice(deviceName)) as Device;
+        .getTenantDevice(productDevice.name)) as Device;
     List<String> myList = [];
     myList.add("active");
     var deviceResponse = (await tbClient

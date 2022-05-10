@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -10,9 +12,21 @@ import 'package:flutterlumin/src/presentation/blocs/search_device_cubit.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/projects_dashboard_view.dart';
 import 'package:flutterlumin/src/presentation/views/devices/search_devices.dart';
 import 'package:flutterlumin/src/presentation/views/settings/settings_view.dart';
-import 'package:flutterlumin/src/presentation/widgets/modal_bottom_sheet.dart';
 import 'package:flutterlumin/src/ui/map/map_view_screen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../data/model/device.dart';
+import '../../../thingsboard/error/thingsboard_error.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import '../../../thingsboard/model/model.dart';
+import '../../../thingsboard/thingsboard_client_base.dart';
+import '../../../ui/installation/ccms/ccms_install_cam_screen.dart';
+import '../../../ui/installation/gateway/gateway_install_cam_screen.dart';
+import '../../../ui/installation/ilm/ilm_install_cam_screen.dart';
+import '../../../ui/qr_scanner/qr_scanner.dart';
+import '../../../utils/utility.dart';
+import '../devices/device_detail_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({Key? key}) : super(key: key);
@@ -41,9 +55,6 @@ class _DashboardAppState extends State<DashboardView> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
-    /* Future.delayed(Duration.zero, () {
-      _modalBottomSheetMenu(context);
-    });*/
   }
 
   @override
@@ -95,7 +106,9 @@ class _DashboardAppState extends State<DashboardView> {
           floatingActionButton: FloatingActionButton(
             backgroundColor: kPrimaryColor,
             child: const Icon(Icons.qr_code),
-            onPressed: () {},
+            onPressed: () {
+              deviceFetcher(context);
+            },
           ),
         ));
   }
@@ -117,8 +130,8 @@ class _DashboardAppState extends State<DashboardView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Luminator",
-                      style: const TextStyle(
+                  const Text("Luminator",
+                      style: TextStyle(
                           fontSize: 24,
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.bold)),
@@ -140,15 +153,15 @@ class _DashboardAppState extends State<DashboardView> {
                       const SizedBox(width: 15),
                       Expanded(
                           child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("No",
-                            style: TextStyle(color: Colors.black)),
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.white,
-                        ),
-                      ))
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("No",
+                                style: TextStyle(color: Colors.black)),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white,
+                            ),
+                          ))
                     ],
                   )
                 ],
@@ -158,63 +171,322 @@ class _DashboardAppState extends State<DashboardView> {
         });
   }
 
-  void _modalBottomSheetMenu(BuildContext context) {
-    showModalBottomSheet(
-        isScrollControlled: true,
-        context: context,
-        builder: (builder) {
-          return const FilterBottomSheet();
+  Future<void> deviceFetcher(BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
+                (route) => true).then((value) async {
+          if (value != null) {
+            // if (value.toString().length == 6) {
+            fetchGWDeviceDetails(value, context);
+          } else {
+            Fluttertoast.showToast(
+                msg: device_qr_nt_found,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
         });
+      } else {
+        // FlutterLogs.logInfo("Dashboard_Page", "Dashboard", "No Network");
+        Fluttertoast.showToast(
+            msg: no_network,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+    });
   }
-}
 
-class SearchButton extends StatelessWidget {
-  const SearchButton({
-    Key? key,
-  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-        child: Text("APPLY".toUpperCase(),
-            style: const TextStyle(fontSize: 14, fontFamily: 'Roboto')),
-        style: ButtonStyle(
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-            backgroundColor: MaterialStateProperty.all<Color>(kPrimaryColor),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                    side: BorderSide(color: kPrimaryColor)))),
-        onPressed: () => {Navigator.pop(context)});
+  Future<Device?> fetchGWDeviceDetails(
+      String deviceName, BuildContext context) async {
+    Utility.isConnected().then((value) async {
+      if (value) {
+        try {
+          Device response;
+          String? SelectedRegion;
+          var tbClient =
+          ThingsboardClient(serverUrl);
+          tbClient.smart_init();
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          SelectedRegion = prefs.getString("SelectedRegion").toString();
+          if (SelectedRegion.toString() != "Region") {
+            if (SelectedRegion.toString() != "null") {
+              response = (await tbClient
+                  .getDeviceService()
+                  .getTenantDevice(deviceName)) as Device;
+              if (response.toString().isNotEmpty) {
+                prefs.setString('deviceId', response.id!.id!.toString());
+                prefs.setString('DeviceDetails', response.id!.id!.toString());
+                prefs.setString('deviceName', deviceName);
+                var relationDetails = await tbClient
+                    .getEntityRelationService()
+                    .findInfoByTo(response.id!);
+                List<AttributeKvEntry> responserse;
+                prefs.setString('geoFence', "false");
+                if (relationDetails.length.toString() == "0") {
+                  if (response.type == ilmDeviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ilmcaminstall()),
+                    );
+                  } else if (response.type == ccmsDeviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ccmscaminstall()),
+                    );
+                  } else if (response.type == gatewayDeviceType) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const gwcaminstall()),
+                    );
+                  }
+                } else {
+                  List<String> firstmyList = [];
+                  firstmyList.add("lmp");
+                  try {
+                    List<TsKvEntry> faultresponser;
+                    faultresponser = await tbClient
+                        .getAttributeService()
+                        .getselectedLatestTimeseries(response.id!.id!, "lmp");
+                    if (faultresponser.isNotEmpty) {
+                      prefs.setString('faultyStatus',
+                          faultresponser.first.getValue().toString());
+                    }
+                  } catch (e) {
+                    var message = toThingsboardError(e, context);
+                    // FlutterLogs.logInfo("Luminator 2.0", "dashboard_page", "");
+                  }
+                  List<String> myList = [];
+                  myList.add("active");
+                  List<AttributeKvEntry> atresponser;
+                  atresponser = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, myList));
+                  if (atresponser.isNotEmpty) {
+                    prefs.setString('deviceStatus',
+                        atresponser.first.getValue().toString());
+                    prefs.setString('devicetimeStamp',
+                        atresponser.elementAt(0).getLastUpdateTs().toString());
+                    try {
+                      List<String> myLister = [];
+                      myLister.add("landmark");
+                      responserse = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myLister));
+                      if (responserse.isNotEmpty) {
+                        prefs.setString('location',
+                            responserse.first.getValue().toString());
+                        prefs.setString('deviceName', deviceName);
+                      }
+                      // myLister.add("location");
+                      List<String> LampmyList = [];
+                      LampmyList.add("lampWatts");
+                      List<AttributeKvEntry> lampatresponser;
+                      lampatresponser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, LampmyList));
+                      if (lampatresponser.isNotEmpty) {
+                        prefs.setString('deviceWatts',
+                            lampatresponser.first.getValue().toString());
+                      }
+                      List<String> myList = [];
+                      myList.add("lattitude");
+                      myList.add("longitude");
+                      List<BaseAttributeKvEntry> responser;
+                      responser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myList))
+                      as List<BaseAttributeKvEntry>;
+                      prefs.setString('deviceLatitude',
+                          responser.first.kv.getValue().toString());
+                      prefs.setString('deviceLongitude',
+                          responser.last.kv.getValue().toString());
+                    } catch (e) {
+                      var message = toThingsboardError(e, context);
+                    }
+                    if (response.type == ilmDeviceType ||
+                        response.type == ccmsDeviceType ||
+                        response.type == gatewayDeviceType) {
+                      ProductDevice productDevice = ProductDevice();
+                      productDevice.name = deviceName;
+                      productDevice.type = response.type;
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  DeviceDetailView(productDevice: productDevice,
+                                  )));
+                    }
+                  } else {
+                    // FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+                    //     "No attributes key found");
+                    refreshPage(context);
+                    //"" No Active attribute found
+                  }
+                }
+                /*} else {
+                  FlutterLogs.logInfo(
+                      "Dashboard_Page", "Dashboard", "No version attributes key found");
+                  pr.hide();
+                  refreshPage(context);
+                  //"" No Firmware Device Found
+                }*/
+              } else {
+                // FlutterLogs.logInfo(
+                //     "Dashboard_Page", "Dashboard", "No Device Details Found");
+                refreshPage(context);
+                //"" No Device Found
+              }
+            } else {
+              Fluttertoast.showToast(
+                  msg: device_selec_regions,
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
+              refreshPage(context);
+              //"" No Device Found
+            }
+          } else {
+            Fluttertoast.showToast(
+                msg: device_selec_regions,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+            refreshPage(context);
+            //"" No Device Found
+          }
+        } catch (e) {
+          // FirebaseCrashlytics.instance.crash();
+          // FlutterLogs.logInfo(
+          //     "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");
+          var message = toThingsboardError(e, context);
+          if (message == session_expired) {
+            var status = loginThingsboard.callThingsboardLogin(context);
+            if (status == true) {
+              fetchGWDeviceDetails(deviceName, context);
+            }
+          } else {
+            refreshPage(context);
+            Fluttertoast.showToast(
+                msg: device_toast_msg + deviceName + device_toast_notfound,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+        }
+      }
+    });
+  }
+
+  void hideKeyboard(BuildContext context) {
+    FocusScopeNode currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
+  }
+
+  void refreshPage(context) {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (BuildContext context) => DashboardView()));
+  }
+
+  Future<ThingsboardError> toThingsboardError(error, context,
+      [StackTrace? stackTrace]) async {
+    ThingsboardError? tbError;
+    // FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
+    //     "Global Error " + error.message.toString());
+    if (error.message == "Session expired!") {
+      var status = loginThingsboard.callThingsboardLogin(context);
+      if (status == true) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => DashboardView()));
+      }
+    } else {
+      if (error is DioError) {
+        if (error.response != null && error.response!.data != null) {
+          var data = error.response!.data;
+          if (data is ThingsboardError) {
+            tbError = data;
+          } else if (data is Map<String, dynamic>) {
+            tbError = ThingsboardError.fromJson(data);
+          } else if (data is String) {
+            try {
+              tbError = ThingsboardError.fromJson(jsonDecode(data));
+            } catch (_) {}
+          }
+        } else if (error.error != null) {
+          if (error.error is ThingsboardError) {
+            tbError = error.error;
+          } else if (error.error is SocketException) {
+            tbError = ThingsboardError(
+                error: error,
+                message: 'Unable to connect',
+                errorCode: ThingsBoardErrorCode.general);
+          } else {
+            tbError = ThingsboardError(
+                error: error,
+                message: error.error.toString(),
+                errorCode: ThingsBoardErrorCode.general);
+          }
+        }
+        if (tbError == null &&
+            error.response != null &&
+            error.response!.statusCode != null) {
+          var httpStatus = error.response!.statusCode!;
+          var message = (httpStatus.toString() +
+              ': ' +
+              (error.response!.statusMessage != null
+                  ? error.response!.statusMessage!
+                  : 'Unknown'));
+          tbError = ThingsboardError(
+              error: error,
+              message: message,
+              errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+              status: httpStatus);
+        }
+      } else if (error is ThingsboardError) {
+        tbError = error;
+      }
+    }
+    tbError ??= ThingsboardError(
+        error: error,
+        message: error.toString(),
+        errorCode: ThingsBoardErrorCode.general);
+
+    var errorStackTrace;
+    if (tbError.error is Error) {
+      errorStackTrace = tbError.error.stackTrace;
+    }
+
+    tbError.stackTrace = stackTrace ??
+        tbError.getStackTrace() ??
+        errorStackTrace ??
+        StackTrace.current;
+
+    return tbError;
   }
 }
 
-class CategoryInputField extends StatelessWidget {
-  final String category;
-
-  const CategoryInputField({Key? key, required this.category})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      textInputAction: TextInputAction.next,
-      keyboardType: TextInputType.emailAddress,
-      validator: (value) => null,
-      decoration: InputDecoration(
-        hintText: category,
-        contentPadding: const EdgeInsets.all(0.0),
-        hintStyle: const TextStyle(color: Colors.grey, fontFamily: 'Roboto'),
-        fillColor: lightGrey,
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(color: lightGrey, width: 2),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(color: lightGrey),
-        ),
-      ),
-    );
-  }
-}

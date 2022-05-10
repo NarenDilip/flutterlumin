@@ -13,7 +13,7 @@ class DeviceDetailCubit extends Cubit<DeviceInfoState> {
 
   DeviceDetailCubit(this.repository) : super(InitialState());
 
-  Future<void> getDeviceDetail(String device, BuildContext context) async {
+  Future<void> getDeviceDetail(ProductDevice device, BuildContext context) async {
     try {
       emit(LoadingState());
       final deviceResponse =
