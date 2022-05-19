@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/presentation/views/ward/region_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/ward_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/zone_list_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppBarWidget extends StatefulWidget {
@@ -85,7 +85,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                 selectedItem:selectedRegion ,
                 itemPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => region_list_screen()));
+                      builder: (BuildContext context) => RegionListScreen()));
                 },
               ),
               CategoryWidget(
@@ -93,7 +93,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                 selectedItem: selectedZone,
                 itemPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => zone_li_screen()));
+                      builder: (BuildContext context) => ZoneListScreen()));
                 },
               ),
               CategoryWidget(
@@ -101,7 +101,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                 selectedItem: selectedWard,
                 itemPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => ward_li_screen()));
+                      builder: (BuildContext context) => WardList()));
                 },
               ),
             ],

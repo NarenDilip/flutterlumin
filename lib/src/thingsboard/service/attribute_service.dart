@@ -101,7 +101,7 @@ class AttributeService {
   }
 
   Future<List<TsKvEntry>> getselectedLatestTimeseries(
-      String entityId, String keys,
+      String entityId, String key,
       {bool useStrictDataTypes = true, RequestConfig? requestConfig}) async {
     var response = await _tbClient.get<Map<String, dynamic>>(
         '/api/plugins/telemetry/DEVICE/$entityId/values/timeseries',

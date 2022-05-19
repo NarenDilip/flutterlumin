@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/data/model/zone_model.dart';
@@ -234,7 +237,6 @@ class zone_li_screen_state extends State<zone_li_screen> {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
-          // Utility.progressDialog(context);
           pr.show();
           var tbClient = await ThingsboardClient(serverUrl);
           tbClient.smart_init();
@@ -242,14 +244,16 @@ class zone_li_screen_state extends State<zone_li_screen> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString("SelectedZone", selectedZone);
 
+          var regionname = selectedZone.split("-");
+
           DBHelper dbHelper = new DBHelper();
+          dbHelper.ward_delete(regionname[0].toString());
           List<Ward> ward =
-              await dbHelper.ward_zonebasedDetails(selectedZone) as List<Ward>;
+          await dbHelper.ward_zonebasedDetails(selectedZone);
           if (ward.isEmpty) {
-            // dbHelper.ward_delete();
 
             List<ZoneResponse> regiondetails =
-                await dbHelper.zone_zonebasedDetails(selectedZone);
+            await dbHelper.zone_zonebasedDetails(selectedZone);
             if (regiondetails.length != 0) {
               Map<String, dynamic> fromId = {
                 'entityType': 'ASSET',
@@ -272,7 +276,10 @@ class zone_li_screen_state extends State<zone_li_screen> {
                   if (asset.name != null) {
                     var regionname = selectedZone.split("-");
 
-                    Ward ward = Ward(j, asset.id!.id, asset.name, selectedZone,
+                    var rng = new Random();
+                    var code = rng.nextInt(900000) + 100000;
+
+                    Ward ward = Ward(j+code+0, asset.id!.id, asset.name, selectedZone,
                         regionname[0].toString());
 
                     dbHelper.ward_add(ward);
@@ -282,6 +289,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => ward_li_screen()));
               } else {
+                FlutterLogs.logInfo("zonelist_page", "zone_list", "Ward Details Relation Nof Found Exception");
                 pr.hide();
                 Fluttertoast.showToast(
                     msg: "No Wards releated to this zone",
@@ -293,6 +301,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                     fontSize: 16.0);
               }
             } else {
+              FlutterLogs.logInfo("zonelist_page", "zone_list", "Region Details Not found Exception");
               pr.hide();
               Fluttertoast.showToast(
                   msg: "Unable to find Region Details",
@@ -309,6 +318,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
                 builder: (BuildContext context) => ward_li_screen()));
           }
         } catch (e) {
+          FlutterLogs.logInfo("zonelist_page", "zone_list", "Zone Details not found Exception");
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -320,10 +330,10 @@ class zone_li_screen_state extends State<zone_li_screen> {
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => const DashboardView()));
-            // Navigator.pop(context);
           }
         }
       } else {
+        FlutterLogs.logInfo("zonelist_page", "zone_list", "No Network");
         Fluttertoast.showToast(
             msg: "No Network. Please try again later",
             toastLength: Toast.LENGTH_SHORT,

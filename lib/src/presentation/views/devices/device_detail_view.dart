@@ -112,7 +112,12 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
             );
           } else if (state is ErrorState) {
             return const Center(
-              child: Icon(Icons.close),
+             child: Text("Unable to fetch the data",  style: TextStyle(
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),),
             );
           } else if (state is LoadedState) {
             return Column(
@@ -298,7 +303,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                                 width: 100.0,
                                                 height: 55.0,
                                                 toggleSize: 45.0,
-                                                value: deviceStatus,
+                                                value: state.deviceResponse.deviceStatus,
                                                 borderRadius: 30.0,
                                                 padding: 2.0,
                                                 inactiveToggleColor:
@@ -328,24 +333,21 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                                 onToggle: (val) {
                                                   updateDeviceStatus(
                                                       context,
-                                                      deviceStatus,
+                                                      !state.deviceResponse.deviceStatus,
                                                       state.deviceResponse);
-                                                  setState(() {
-                                                    deviceStatus = val;
-                                                  });
                                                 },
                                               ),
                                               const SizedBox(
                                                 height: 10,
                                               ),
                                               Text(
-                                                deviceStatus == false
+                                                state.deviceResponse.deviceStatus == false
                                                     ? "OFF"
                                                     : "ON",
                                                 style: TextStyle(
                                                   fontSize: 22,
                                                   fontFamily: 'Roboto',
-                                                  color: deviceStatus == false
+                                                  color: state.deviceResponse.deviceStatus == false
                                                       ? Colors.red
                                                       : Colors.green,
                                                   fontWeight: FontWeight.bold,
@@ -412,6 +414,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                                       setState(() {
                                                         mcbTripStatus = val;
                                                       });
+                                                      callMCBTrip(context, state.deviceResponse);
                                                     },
                                                   ),
                                                   const SizedBox(
@@ -637,19 +640,16 @@ Future<void> updateDeviceStatus(
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
+        progress: 50.0,
+        message: "Please wait...",
+        progressWidget: Container(
+            padding: const EdgeInsets.all(8.0),
+            child: const CircularProgressIndicator()),
+        maxProgress: 100.0,
+        progressTextStyle: const TextStyle(
+            color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
         messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
+            color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
       );
       pr.show();
       // Utility.progressDialog(context);
@@ -711,7 +711,18 @@ Future<void> updateOnOffStatus(ThingsboardClient tbClient, jsonData,
         fontSize: 16.0);
     pr.hide();
     // Navigator.pop(context);
-  } else {
+  } else if (response["lamp"].toString() == "0") {
+    Fluttertoast.showToast(
+        msg: "Device OFF Successfully",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+    pr.hide();
+    // Navigator.pop(context);
+  }else {
     pr.hide();
     // Navigator.pop(context);
     calltoast("Unable to Process, Please try again");
@@ -725,19 +736,16 @@ Future<void> getLiveRPCCall(context, ProductDevice productDevice) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
+        progress: 50.0,
+        message: "Please wait...",
+        progressWidget: Container(
+            padding: const EdgeInsets.all(8.0),
+            child: const CircularProgressIndicator()),
+        maxProgress: 100.0,
+        progressTextStyle: const TextStyle(
+            color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
         messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
+            color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
       );
       pr.show();
       try {
@@ -794,54 +802,42 @@ Future<void> callMCBTrip(context, ProductDevice productDevice) async {
   Utility.isConnected().then((value) async {
     late ProgressDialog pr;
     if (value) {
-
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: app_pls_wait,
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
+        progress: 50.0,
+        message: "Please wait...",
+        progressWidget: Container(
+            padding: const EdgeInsets.all(8.0),
+            child: const CircularProgressIndicator()),
+        maxProgress: 100.0,
+        progressTextStyle: const TextStyle(
+            color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
         messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
+            color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
       );
       pr.show();
       try {
         var tbClient = ThingsboardClient(serverUrl);
         tbClient.smart_init();
         final jsonData;
-
         jsonData = {"method": "clr", "params": "8"};
-
         var response = await tbClient
             .getDeviceService()
             .handleOneWayDeviceRPCRequest(productDevice.id, jsonData)
             .timeout(const Duration(minutes: 5));
-
         final jsonDatat;
-
         jsonDatat = {
           "method": "set",
           "params": {'rostat': 0, 'yostat': 0, 'bostat': 0}
         };
-
         var responsee = await tbClient
             .getDeviceService()
             .handleOneWayDeviceRPCRequest(
             productDevice.id, jsonDatat)
             .timeout(const Duration(minutes: 5));
-
         pr.hide();
       } catch (e) {
-        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
-            "MCB/Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -889,26 +885,20 @@ Future<void> replaceDevice(context, ProductDevice productDevice) async {
         pr = ProgressDialog(context,
             type: ProgressDialogType.Normal, isDismissible: false);
         pr.style(
-          message: 'Please wait ..',
-          borderRadius: 20.0,
-          backgroundColor: Colors.lightBlueAccent,
-          elevation: 10.0,
+          progress: 50.0,
+          message: "Please wait...",
+          progressWidget: Container(
+              padding: const EdgeInsets.all(8.0),
+              child: const CircularProgressIndicator()),
+          maxProgress: 100.0,
+          progressTextStyle: const TextStyle(
+              color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
           messageTextStyle: const TextStyle(
-              color: Colors.white,
-              fontFamily: "Montserrat",
-              fontSize: 19.0,
-              fontWeight: FontWeight.w600),
-          progressWidget: const CircularProgressIndicator(
-              backgroundColor: Colors.lightBlueAccent,
-              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-              strokeWidth: 3.0),
+              color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
         );
         pr.show();
-
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        // String OlddeviceID = prefs.getString('deviceId').toString();
         String OlddeviceName = prefs.getString('deviceName').toString();
-
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
@@ -917,10 +907,7 @@ Future<void> replaceDevice(context, ProductDevice productDevice) async {
             if (OlddeviceName.toString() != value.toString()) {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.setString('newDevicename', value);
-
               pr.hide();
-              // showActionAlertDialog(context,OlddeviceName,value);
-
               if (productDevice.type == ilmDeviceType) {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => replaceilm()));

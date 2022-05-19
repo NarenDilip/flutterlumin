@@ -13,11 +13,9 @@ import 'package:flutterlumin/src/presentation/views/ward/ward_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -229,12 +227,10 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                   Asset asset = await tbClient
                       .getAssetService()
                       .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
-                  if (asset.name != null) {
+                  if ( asset != null) {
                     var regionname = selectedZone.split("-");
-
                     Ward ward = Ward(j, asset.id!.id, asset.name, selectedZone,
                         regionname[0].toString());
-
                     dbHelper.ward_add(ward);
                   }
                 }

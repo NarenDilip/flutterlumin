@@ -27,10 +27,27 @@ class DeviceDetailRepository {
         .getAttributeKvEntries(response.id!, myList));
     productDevice.id = response.id!.id.toString();
     if (deviceResponse.isNotEmpty) {
-      productDevice.deviceStatus = deviceResponse.first.getValue().toString();
+      productDevice.deviceActiveStatus = deviceResponse.first.getValue();
       productDevice.deviceTimeStamp =
           deviceResponse.elementAt(0).getLastUpdateTs().toString();
     }
+    var deviceStatusParam = '';
+    if (productDevice.type == ilmDeviceType) {
+      deviceStatusParam = 'lmp';
+    } else if (productDevice.type == ccmsDeviceType) {
+      deviceStatusParam = 'lamp';
+    }
+   /* if (productDevice.type != gatewayDeviceType) {
+      List<TsKvEntry> faultresponser;
+      faultresponser = await tbClient
+          .getAttributeService()
+          .getselectedLatestTimeseries(response.id!.id!, deviceStatusParam);
+      if (faultresponser.isNotEmpty) {
+        var deviceStatus = faultresponser.first.getValue();
+        productDevice.deviceStatus = deviceStatus == 0 ? false : true;
+      }
+    }*/
+
     try {
       List<String> myLister = [];
       myLister.add("landmark");
@@ -65,6 +82,14 @@ class DeviceDetailRepository {
       }
     } catch (e) {
       var message = toThingsboardError(e, context);
+      if (message == session_expired) {
+        var status = loginThingsboard.callThingsboardLogin(context);
+        if (status == true) {
+          fetchDeviceInformation(productDevice,context);
+        }
+      } else {
+        //calltoast("Unable to Process");
+      }
     }
     return productDevice;
   }
@@ -158,8 +183,7 @@ class DeviceDetailRepository {
     ThingsboardError? tbError;
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
-      if (status == true) {
-      }
+      if (status == true) {}
     } else {
       if (error is DioError) {
         if (error.response != null && error.response!.data != null) {

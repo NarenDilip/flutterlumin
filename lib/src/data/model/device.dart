@@ -6,7 +6,8 @@ class ProductDevice {
   late String type;
   IconData? icon;
   late bool isInstalled;
-  late String deviceStatus;
+  late bool deviceActiveStatus = false;
+  late bool deviceStatus = false;
   String deviceTimeStamp = "";
   String location = "";
   String watts = "";
