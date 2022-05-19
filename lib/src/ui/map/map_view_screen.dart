@@ -4,15 +4,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
-import 'package:flutterlumin/src/ui/chevron/chevron.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
-import 'package:flutterlumin/src/ui/map/location_map.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+
 import 'package:flutterlumin/src/ui/point/edge.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'location_map.dart';
 
 class map_view_screen extends StatefulWidget {
   @override
@@ -25,6 +25,7 @@ class map_view_screen_state extends State<map_view_screen> {
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
+
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -88,6 +89,45 @@ class map_view_screen_state extends State<map_view_screen> {
             body: Container(
                 color: thbDblue,
                 child: Column(children: [
+                  Container(
+                    height: 100,
+                    decoration: const BoxDecoration(
+                        color: thbDblue,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(0.0),
+                            topRight: Radius.circular(0.0),
+                            bottomLeft: Radius.circular(0.0),
+                            bottomRight: Radius.circular(0.0))),
+                    child: Stack(
+                      children: [
+                        Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: Text('Map View',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 25.0,
+                                  fontFamily: "Aqua",
+                                  color: Colors.white)),
+                        ),
+                        Positioned(
+                          right: 10,
+                          top: 20,
+                          bottom: 0,
+                          child: IconButton(
+                            color: Colors.red,
+                            icon: Icon(
+                              Icons.logout_outlined,
+                              size: 35,
+                            ),
+                            onPressed: () {
+                              callLogoutoption(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Expanded(
                       child: Container(
                           decoration: const BoxDecoration(
@@ -97,25 +137,183 @@ class map_view_screen_state extends State<map_view_screen> {
                                   topRight: Radius.circular(35.0),
                                   bottomLeft: Radius.circular(0.0),
                                   bottomRight: Radius.circular(0.0))),
-                          child: Column(
-                              mainAxisSize: MainAxisSize.min,
+                          child:
+                              Column(mainAxisSize: MainAxisSize.min, children: <
+                                  Widget>[
+                            SizedBox(height: 5),
+                          new Wrap(
+                              spacing: 8.0, // gap between adjacent chips
+                              runSpacing: 4.0, // gap between lines
+                              direction: Axis.horizontal, // main axis (rows or columns)
                               children: <Widget>[
-                                const AppBarWidget(title: "Location",),
-                                const SizedBox(height: 5),
-                                Expanded(
-                                    child: Container(
-                                        color: Colors.grey,
-                                        child: Stack(
-                                          children: [
-                                            LocationWidget(
-                                              initialLabel: 0,
-                                              onToggle: (index) {
-                                                // print('switched to: $index');
-                                              },
+                            Container(
+                                child: Padding(
+                                    padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.center,
+                                            child: Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 5.0),
+                                              child: Point(
+                                                triangleHeight: 25.0,
+                                                edge: Edge.RIGHT,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (BuildContext
+                                                                    context) =>
+                                                                region_list_screen()));
+                                                    setState(() {});
+                                                  },
+                                                  child: Container(
+                                                    color: thbDblue,
+                                                    height: 40.0,
+                                                    child: Center(
+                                                        child: Text("  "+'$SelectedRegion'+"      ",
+                                                          style: const TextStyle(
+                                                              fontSize: 14.0,
+                                                              fontFamily:
+                                                                  "Aqua",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
                                             ),
-                                          ],
-                                        )))
-                              ])))
+                                          ),
+                                          Align(
+                                            alignment: Alignment.center,
+                                            child: Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 5.0),
+                                              child: Point(
+                                                triangleHeight: 25.0,
+                                                edge: Edge.RIGHT,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (BuildContext
+                                                                    context) =>
+                                                                zone_li_screen()));
+                                                    setState(() {});
+                                                  },
+                                                  child: Container(
+                                                    color: thbDblue,
+                                                    height: 40.0,
+                                                    child: Center(
+                                                      child: Text("  "+'$SelectedZone'+"      ",
+                                                          style: const TextStyle(
+                                                              fontSize: 14.0,
+                                                              fontFamily:
+                                                                  "Aqua",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: Alignment.center,
+                                            child: Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 5.0),
+                                              child: Point(
+                                                triangleHeight: 25.0,
+                                                edge: Edge.RIGHT,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (BuildContext
+                                                                    context) =>
+                                                                ward_li_screen()));
+                                                    setState(() {});
+                                                  },
+                                                  child: Container(
+                                                    color: thbDblue,
+                                                    height: 40.0,
+                                                    child: Center(
+                                                      child: Text("  "+'$SelectedWard'+"      ",
+                                                          style: const TextStyle(
+                                                              fontSize: 14.0,
+                                                              fontFamily:
+                                                                  "Aqua",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: Colors
+                                                                  .white)),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          // TextButton(
+                                          //     child: Text('$SelectedWard',
+                                          //         style: const TextStyle(
+                                          //             fontSize: 18.0,
+                                          //             fontFamily: "Montserrat",
+                                          //             fontWeight: FontWeight
+                                          //                 .bold,
+                                          //             color: Colors.white)),
+                                          //     style: ButtonStyle(
+                                          //         padding: MaterialStateProperty
+                                          //             .all<EdgeInsets>(
+                                          //             EdgeInsets.all(20)),
+                                          //         backgroundColor:
+                                          //         MaterialStateProperty.all(
+                                          //             thbDblue),
+                                          //         shape: MaterialStateProperty
+                                          //             .all<
+                                          //             RoundedRectangleBorder>(
+                                          //             RoundedRectangleBorder(
+                                          //               borderRadius:
+                                          //               BorderRadius
+                                          //                   .circular(18.0),
+                                          //             ))),
+                                          //     onPressed: () {
+                                          //       // Navigator.of(context).push(
+                                          //       //     MaterialPageRoute(
+                                          //       //         builder: (
+                                          //       //             BuildContext
+                                          //       //             context) =>
+                                          //       //             ward_li_screen()));
+                                          //       setState(() {});
+                                          //     })
+                                        ]))),]),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Expanded(
+                                child: Container(
+                                    color: Colors.grey,
+                                    child: Stack(
+                                      children: [
+                                        LocationWidget(
+                                          initialLabel: 0,
+                                          onToggle: (index) {
+                                            // print('switched to: $index');
+                                          },
+                                        ),
+                                      ],
+                                    )))
+                          ])))
                 ]))));
   }
 
@@ -142,15 +340,15 @@ class map_view_screen_state extends State<map_view_screen> {
             },
             child: Text("NO",
                 style: const TextStyle(
-                    fontSize: 18.0, fontFamily: "Aqua", color: darkgreen)),
+                    fontSize: 18.0,
+                    fontFamily: "Aqua",
+                    color: darkgreen)),
           ),
           TextButton(
-            child: Text('YES',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 18.0,
-                  fontFamily: "Aqua",
-                )),
+            child: Text('YES', style: TextStyle(color: Colors.red,
+              fontSize: 18.0,
+              fontFamily: "Aqua",
+            )),
             onPressed: () {
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
             },

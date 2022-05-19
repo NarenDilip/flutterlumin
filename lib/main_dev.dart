@@ -4,24 +4,24 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/ui/splash_screen.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 
 Future<void> main() async {
+
   FlavorConfig(
-    name: "PROD",
+    name: "DEV",
     color: Colors.red,
     location: BannerLocation.topStart,
     variables: {
-      "ILMDeviceInstallationFolder": ILMDeviceInstallationFolder,
-      "ILMserviceFolderName": ILMserviceFolderName,
-      "CCMSserviceFolderName": CCMSserviceFolderName,
-      "GWserviceFolderName": GWserviceFolderName,
-      "baseUrl": prodBaseUrl,
+      "ILMDeviceInstallationFolder": devILMDeviceInstallationFolder,
+      "ILMserviceFolderName": devILMserviceFolderName,
+      "CCMSserviceFolderName": devCCMSserviceFolderName,
+      "GWserviceFolderName": devGWserviceFolderName,
+      "baseUrl": devBaseUrl,
     },
   );
-
   SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +31,7 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
+
 class MyApp extends StatelessWidget {
   const MyApp({Key key}) : super(key: key);
 
@@ -39,7 +40,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Luminator',
-        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           // This is the theme of your application.
           //

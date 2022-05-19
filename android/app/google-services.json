@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "828243446204",
+    "project_id": "luminator-1f595",
+    "storage_bucket": "luminator-1f595.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828243446204:android:e4c7be8df4774a03c603b9",
+        "android_client_info": {
+          "package_name": "com.schnell.flutterlumin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "828243446204-7nfo5t865g0dsnjpl7251tu0vqic1efe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB2RkPfYt1q-IWh9awspJRFEj7AWDUnec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "828243446204-7nfo5t865g0dsnjpl7251tu0vqic1efe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

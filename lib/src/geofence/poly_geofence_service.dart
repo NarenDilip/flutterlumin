@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as dev;
+import 'dart:html';
 
 import 'package:fl_location/fl_location.dart';
 import 'package:flutter/foundation.dart';

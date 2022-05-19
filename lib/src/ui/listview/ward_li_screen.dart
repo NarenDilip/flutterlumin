@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,16 +6,19 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/thingsboard/model/asset_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/asset_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/device_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/relation_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/telemetry_models.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
+import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -26,6 +30,10 @@ import '../../thingsboard/model/model.dart';
 import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
 class ward_li_screen extends StatefulWidget {
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   State<StatefulWidget> createState() {
     return ward_li_screen_state();
@@ -55,10 +63,63 @@ class ward_li_screen_state extends State<ward_li_screen> {
   String selectedWard = "0";
   late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
   @override
   initState() {
     // at the beginning, all users are shown
     loadDetails();
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
   }
 
   void loadDetails() async {
@@ -67,22 +128,27 @@ class ward_li_screen_state extends State<ward_li_screen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      progress: 50.0,
-      message: "Please wait...",
-      progressWidget: Container(
-          padding: const EdgeInsets.all(8.0), child: const CircularProgressIndicator()),
-      maxProgress: 100.0,
-      progressTextStyle: const TextStyle(
-          color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.w400),
+      message: app_pls_wait,
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
       messageTextStyle: const TextStyle(
-          color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
     );
 
     var sharedPreferences = await SharedPreferences.getInstance();
     selectedZone = sharedPreferences.getString("SelectedZone").toString();
 
     if (selectedZone != "0") {
-      List<Ward> wards = await dbHelper.ward_getDetails() as List<Ward>;
+      List<Ward> wardser = await dbHelper.ward_getDetails();
+      List<Ward> wards = await dbHelper.ward_regionbasedDetails(selectedZone);
       // wards = (await dbHelper.ward_zonebasedDetails(selectedZone)) as List<Ward>;
       // wards.then((data) {
       for (int i = 0; i < wards.length; i++) {
@@ -109,7 +175,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
     } else {
       results = _allUsers!
           .where((user) =>
-              user.toLowerCase().contains(enteredKeyword.toLowerCase()))
+          user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
       // we use the toLowerCase() method to make it case-insensitive
     }
@@ -127,10 +193,10 @@ class ward_li_screen_state extends State<ward_li_screen> {
         pr.show();
         try {
           var sharedPreferences =
-              await SharedPreferences.getInstance() as SharedPreferences;
+          await SharedPreferences.getInstance() as SharedPreferences;
           sharedPreferences.setString("SelectedWard", selectedWard);
 
-          var tbClient = await ThingsboardClient(serverUrl);
+          var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           relatedDevices!.clear();
@@ -151,11 +217,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
           if (response != null) {
             List<EntityRelationInfo> wardlist = await tbClient
                 .getEntityRelationService()
-                .findInfoByAssetFrom(response.id!) as List<EntityRelationInfo>;
+                .findInfoByAssetFrom(response.id!);
 
             if (wardlist.length != 0) {
               for (int i = 0; i < wardlist.length; i++) {
-                if (wardlist.elementAt(i).to.entityType.name != "DEVICE") {
+                if (wardlist.elementAt(i).to.entityType.index != 6) {
                   relatedDeviceId = wardlist.elementAt(i).to;
                   AssetDevices?.add(relatedDeviceId);
                 } else {
@@ -165,20 +231,21 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 }
               }
 
-              var assetrelatedwardid;
-              for (int j = 0; j < AssetDevices!.length; j++) {
-                List<EntityRelationInfo> relationdevicelist = await tbClient
-                        .getEntityRelationService()
-                        .findInfoByAssetFrom(AssetDevices!.elementAt(j))
-                    as List<EntityRelationInfo>;
+              try {
+                var assetrelatedwardid;
+                for (int j = 0; j < AssetDevices!.length; j++) {
+                  List<EntityRelationInfo> relationdevicelist = await tbClient
+                      .getEntityRelationService()
+                      .findInfoByAssetFrom(AssetDevices!.elementAt(j));
 
-                for (int k = 0; k < relationdevicelist.length; k++) {
-                  if (relationdevicelist.length != 0) {
-                    assetrelatedwardid = relationdevicelist.elementAt(k).to;
-                    relatedDevices?.add(assetrelatedwardid);
+                  for (int k = 0; k < relationdevicelist.length; k++) {
+                    if (relationdevicelist.length != 0) {
+                      assetrelatedwardid = relationdevicelist.elementAt(k).to;
+                      relatedDevices?.add(assetrelatedwardid);
+                    }
                   }
                 }
-              }
+              } catch (e) {}
 
               if (relatedDevices != null) {
                 for (int k = 0; k < relatedDevices!.length; k++) {
@@ -190,16 +257,16 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       relatedDevices!.elementAt(k).id.toString())) as Device;
 
                   if (data_response.type == "lumiNode") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> vresponser;
+                    vresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (vresponser != null) {
+                      if (vresponser.first.getValue().toString() == "true") {
                         activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (vresponser.first.getValue().toString() ==
                           "false") {
                         nonactiveDevices!.add(relatedDevices!.elementAt(k));
                       } else {
@@ -220,24 +287,24 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       noncomdevice = ncdevices.toString();
                     }
 
-                    sharedPreferences.setInt(
-                        'ilm_total_count', totalval);
-                    sharedPreferences.setInt(
-                        'ilm_on_count', activeDevice!.length);
-                    sharedPreferences.setInt(
-                        'ilm_off_count', nonactiveDevices!.length);
-                    sharedPreferences.setInt('ilm_nc_count', int.parse(noncomdevice));
+                    sharedPreferences.setString(
+                        'totalCount', totalval.toString());
+                    sharedPreferences.setString(
+                        'activeCount', activeDevice!.length.toString());
+                    sharedPreferences.setString(
+                        'nonactiveCount', nonactiveDevices!.length.toString());
+                    sharedPreferences.setString('ncCount', noncomdevice);
                   } else if (data_response.type == "CCMS") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> sresponser;
+                    sresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (sresponser != null) {
+                      if (sresponser.first.getValue().toString() == "true") {
                         ccms_activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (sresponser.first.getValue().toString() ==
                           "false") {
                         ccms_nonactiveDevices!
                             .add(relatedDevices!.elementAt(k));
@@ -260,29 +327,27 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       ccms_noncomdevice = ccms_ncdevices.toString();
                     }
 
-                    sharedPreferences.setInt(
-                        'ccms_total_count', ccms_totalval);
-                    sharedPreferences.setInt('ccms_on_count',
-                        ccms_activeDevice!.length);
-                    sharedPreferences.setInt('ccms_off_count',
-                        ccms_nonactiveDevices!.length);
-                    sharedPreferences.setInt(
-                        'ccms_nc_count', int.parse(ccms_noncomdevice));
-
+                    sharedPreferences.setString(
+                        'ccms_totalCount', ccms_totalval.toString());
+                    sharedPreferences.setString('ccms_activeCount',
+                        ccms_activeDevice!.length.toString());
+                    sharedPreferences.setString('ccms_nonactiveCount',
+                        ccms_nonactiveDevices!.length.toString());
+                    sharedPreferences.setString(
+                        'ccms_ncCount', ccms_noncomdevice);
                   } else if (data_response.type == "Gateway") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> kresponser;
+                    kresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
                         relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (kresponser != null) {
+                      if (kresponser.first.getValue().toString() == "true") {
                         gw_activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (kresponser.first.getValue().toString() ==
                           "false") {
-                        gw_nonactiveDevices!
-                            .add(relatedDevices!.elementAt(k));
+                        gw_nonactiveDevices!.add(relatedDevices!.elementAt(k));
                       } else {
                         gw_ncDevices!.add(relatedDevices!.elementAt(k));
                       }
@@ -291,8 +356,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     var gw_totalval = gw_activeDevice!.length +
                         gw_nonactiveDevices!.length +
                         gw_ncDevices!.length;
-                    var gw_parttotalval = gw_activeDevice!.length +
-                        gw_nonactiveDevices!.length;
+                    var gw_parttotalval =
+                        gw_activeDevice!.length + gw_nonactiveDevices!.length;
                     var gw_ncdevices = gw_parttotalval - gw_totalval;
                     var gw_noncomdevice = "";
                     if (gw_ncdevices.toString().contains("-")) {
@@ -302,27 +367,26 @@ class ward_li_screen_state extends State<ward_li_screen> {
                       gw_noncomdevice = gw_ncdevices.toString();
                     }
 
-                    sharedPreferences.setInt(
-                        'gw_total_count', gw_totalval);
-                    sharedPreferences.setInt('gw_on_count',
-                        gw_activeDevice!.length);
-                    sharedPreferences.setInt('gw_off_count',
-                        gw_nonactiveDevices!.length);
-                    sharedPreferences.setInt(
-                        'gw_nc_count', int.parse(gw_noncomdevice));
-
+                    sharedPreferences.setString(
+                        'gw_totalCount', gw_totalval.toString());
+                    sharedPreferences.setString(
+                        'gw_activeCount', gw_activeDevice!.length.toString());
+                    sharedPreferences.setString('gw_nonactiveCount',
+                        gw_nonactiveDevices!.length.toString());
+                    sharedPreferences.setString('gw_ncCount', gw_noncomdevice);
                   }
                 }
 
-                // Navigator.pop(context);
                 pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => DashboardView()));
+                    builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
+              /*FlutterLogs.logInfo("wardlist_page", "ward_list",
+                  "No Ward Details Relations found");*/
               pr.hide();
               Fluttertoast.showToast(
-                  msg: "No Devices Directly Related to Ward",
+                  msg: app_no_ward_relation,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -337,10 +401,12 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
               pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => DashboardView()));
+                  builder: (BuildContext context) => dashboard_screen()));
             }
           }
         } catch (e) {
+          /*FlutterLogs.logInfo(
+              "wardlist_page", "ward_list", "No Ward Details found Exception");*/
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -350,11 +416,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => DashboardView()));
-            // Navigator.pop(context);
+                builder: (BuildContext context) => dashboard_screen()));
           }
         }
       } else {
+        /*FlutterLogs.logInfo("wardlist_page", "ward_list", "No Network");*/
         Fluttertoast.showToast(
             msg: no_network,
             toastLength: Toast.LENGTH_SHORT,
@@ -369,122 +435,98 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        // onWillPop: () async {
-        //   final result = await showDialog(
-        //     context: context,
-        //     builder: (ctx) =>
-        //         AlertDialog(
-        //           title: Text("Luminator"),
-        //           content: Text("Are you sure you want to exit?"),
-        //           actions: <Widget>[
-        //             TextButton(
-        //               onPressed: () {
-        //                 Navigator.of(ctx).pop();
-        //               },
-        //               child: Text("NO"),
-        //             ),
-        //             TextButton(
-        //               child: Text('YES', style: TextStyle(color: Colors.red)),
-        //               onPressed: () {
-        //                 // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        //               },
-        //             ),
-        //           ],
-        //         ),
-        //   );
-        //   return result;
-        // },
+    return WillPopScope(
+        onWillPop: () async {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => zone_li_screen()));
+          return true;
+        },
+    child: Container(
         child: Scaffold(
-      backgroundColor: lightGrey,
-      body: Padding(
-        padding: const EdgeInsets.all(30),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              "Select Ward",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 20.0,
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            TextField(
-              onChanged: (value) => _runFilter(value),
-              style: const TextStyle(
-                  fontSize: 18.0,
-                  fontFamily: 'Roboto',
-                  color: Colors.black),
-              decoration: const InputDecoration(
-                labelStyle: TextStyle(fontSize: 20.0, color: Colors.black),
-                labelText: 'Search',
-                suffixIcon: Icon(
-                  Icons.search,
-                  color: Colors.black,
+          backgroundColor: thbDblue,
+          body: Padding(
+            padding: const EdgeInsets.all(30),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 20,
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
+                const Text(
+                  "Select Ward",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 25.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black),
+                const SizedBox(
+                  height: 20,
                 ),
-              ),
-            ),
-            Expanded(
-              child: _foundUsers!.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _foundUsers!.length,
-                      itemBuilder: (context, index) => Card(
-                        key: ValueKey(_foundUsers),
-                        color: Colors.white,
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: ListTile(
-                          // leading: Text(
-                          //   _foundUsers[index]["id"].toString(),
-                          //   style: const TextStyle(
-                          //       fontSize: 24.0,
-                          //       fontFamily: "Montserrat",
-                          //       fontWeight: FontWeight.normal,
-                          //       color: Colors.black),
-                          // ),
-                          onTap: () {
-                            setState(() {
-                              selectedWard =
-                                  _foundUsers!.elementAt(index).toString();
-                              loadLocalData(context);
-                            });
-                          },
-                          title: Text(_foundUsers!.elementAt(index),
-                              style: const TextStyle(
-                                  fontSize: 22.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: thbDblue)),
-                        ),
-                      ),
-                    )
-                  : const Text(
-                      'No results found',
-                      style: TextStyle(fontSize: 24),
+                TextField(
+                  onChanged: (value) => _runFilter(value),
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelStyle: TextStyle(fontSize: 20.0, color: Colors.white),
+                    labelText: 'Search',
+                    suffixIcon: Icon(
+                      Icons.search,
+                      color: Colors.white,
                     ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _foundUsers!.isNotEmpty
+                      ? ListView.builder(
+                    itemCount: _foundUsers!.length,
+                    itemBuilder: (context, index) => Card(
+                      key: ValueKey(_foundUsers),
+                      color: Colors.white,
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        onTap: () {
+                          setState(() {
+                            selectedWard =
+                                _foundUsers!.elementAt(index).toString();
+                            loadLocalData(context);
+                          });
+                        },
+                        title: Text(_foundUsers!.elementAt(index),
+                            style: const TextStyle(
+                                fontSize: 22.0,
+                                fontFamily: "Montserrat",
+                                fontWeight: FontWeight.bold,
+                                color: thbDblue)),
+                      ),
+                    ),
+                  )
+                      : const Text(
+                    app_no_results,
+                    style: TextStyle(fontSize: 24),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        )));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    /*FlutterLogs.logInfo(
+        "wardlist_page", "ward_list", "Ward Details Exception with server");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
@@ -556,11 +598,3 @@ class ward_li_screen_state extends State<ward_li_screen> {
     return tbError;
   }
 }
-//
-// void callNavigator(context) {
-//   if (Navigator.canPop(context)) {
-//     Navigator.pop(context);
-//   } else {
-//     SystemNavigator.pop();
-//   }
-// }

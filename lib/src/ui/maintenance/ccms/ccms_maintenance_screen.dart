@@ -6,37 +6,37 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/replace_ccms_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/replacement_ccms_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/replacement_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/remove_ccms_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/replace_ccms_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/remove_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
-import '../../../presentation/views/dashboard/dashboard_view.dart';
-import '../../../utils/toogle_button.dart';
+import '../../../utils/ccmstoogle_button.dart';
 import '../../splash_screen.dart';
-
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class CCMSMaintenanceScreen extends StatefulWidget {
   const CCMSMaintenanceScreen() : super();
@@ -53,38 +53,42 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   bool clickedCentreFAB = false;
   var LampactiveStatus;
 
-  // String Lampwatts = "0";
   String DeviceName = "0";
   String DeviceStatus = "0";
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
   String faultyStatus = "0";
+  String FirmwareVersion = "0";
   String timevalue = "0";
   String location = "0";
 
-  // String version = "0";
+  double difference = 0;
+  late Timer _timer;
+  int _start = 20;
+
   late ProgressDialog pr;
 
   String Lattitude = "0";
   String Longitude = "0";
-  late bool visibility = true;
+  late bool visibility = false;
   late bool viewvisibility = true;
 
-  // LocationData? currentLocation;
   String? _error;
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
+  var counter = 0;
   String address = "";
   var accuvalue;
   var addvalue;
   List<double>? _latt = [];
-
+  String geoFence = "false";
+  var caclsss = 0;
   final _streamController = StreamController<PolyGeofence>();
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
 
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
       interval: 5000,
@@ -116,51 +120,156 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     _streamController.sink.add(polyGeofence);
   }
 
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
-
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
+    accuracy = location.accuracy;
 
-    if (accuracy <= 5) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('deviceLatitude', location.latitude.toString());
+    prefs.setString('deviceLongitude', location.longitude.toString());
+
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
+
+    if (geoFence == "true") {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
         var insideArea = _checkIfValidMarker(
             LatLng(location.latitude, location.longitude),
             _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
-
-        Fluttertoast.showToast(
-            msg:
-            "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                insideArea!.toString(),
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-
-        Geolocator geolocator = new Geolocator();
-        var difference = await geolocator.distanceBetween(
-            double.parse(Lattitude),
-            double.parse(Longitude),
-            location!.latitude!,
-            location!.longitude!);
-
-        if (difference <= 5.0) {
-          visibility = true;
-          _polyGeofenceService.stop();
+        if (insideArea == true) {
+          if (accuracy <= 10) {
+            Geolocator geolocator = new Geolocator();
+            difference = (await geolocator.distanceBetween(
+                double.parse(Lattitude),
+                double.parse(Longitude),
+                location.latitude,
+                location.longitude));
+            difference = difference;
+            if (difference <= 50.0) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+                difference = difference;
+              });
+              callPolygonStop();
+            } else {
+              callPolygonStop();
+            }
+          } else {
+            setState(() {
+              visibility = false;
+              viewvisibility = true;
+            });
+          }
         } else {
-          visibility = false;
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => dashboard_screen()));
+          setState(() {
+            visibility = false;
+          });
+          callPolygonStop();
         }
       }
     } else {
-      visibility = false;
+      if (accuracy <= 10) {
+        Geolocator geolocator = new Geolocator();
+        difference = (await geolocator.distanceBetween(double.parse(Lattitude),
+            double.parse(Longitude), location.latitude, location.longitude));
+        difference = difference;
 
+        if (difference <= 50.0) {
+          _timer.cancel();
+          callPolygonStop();
+          setState(() {
+            visibility = true;
+            viewvisibility = false;
+            difference = difference;
+          });
+        }
+      }
     }
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      Geolocator geolocator = new Geolocator();
+      var difference = await geolocator.distanceBetween(double.parse(Lattitude),
+          double.parse(Longitude), location.latitude, location.longitude);
+      if (difference <= 50.0) {
+        setState(() {
+          visibility = true;
+          viewvisibility = false;
+        });
+      } else {
+        setState(() {
+          visibility = false;
+          viewvisibility = false;
+        });
+      }
+    }
+  }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          timer.cancel();
+          callPolygonStop();
+          if (accuracy <= 20) {
+            if (difference <= 50) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+            } else {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+              // _controll_dialog_show(context, difference, true);
+            }
+          } else {
+            // timer.cancel();
+            // callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+            if (difference <= 50) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+            } else {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+              // _controll_dialog_show(context, difference, true);
+            }
+          }
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
   }
 
   Future<void> callPolygons() async {}
@@ -206,10 +315,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     return true;
   }
 
-
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // Lampwatts = prefs.getString('deviceWatts').toString();
     DeviceName = prefs.getString('deviceName').toString();
     DeviceStatus = prefs.getString('deviceStatus').toString();
     SelectedRegion = prefs.getString("SelectedRegion").toString();
@@ -217,15 +324,14 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
     location = prefs.getString("location").toString();
-    // version = prefs.getString("version").toString();
+    geoFence = prefs.getString('geoFence').toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
     prefs.setString('Maintenance', "Yes");
-
+    FirmwareVersion = prefs.getString("firmwareVersion").toString();
     Lattitude = prefs.getString('deviceLatitude').toString();
     Longitude = prefs.getString('deviceLongitude').toString();
 
     setState(() {
-      // Lampwatts = Lampwatts;
       DeviceName = DeviceName;
       DeviceStatus = DeviceStatus;
       SelectedRegion = SelectedRegion;
@@ -237,6 +343,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       faultyStatus = faultyStatus;
       Lattitude = Lattitude;
       Longitude = Longitude;
+      FirmwareVersion = FirmwareVersion;
+      geoFence = geoFence;
 
       if (timevalue != null) {
         date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
@@ -266,7 +374,6 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   @override
   void initState() {
     super.initState();
-    // Lampwatts = "";
     DeviceName = "";
     DeviceStatus = "";
     getSharedPrefs();
@@ -280,59 +387,111 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       _polyGeofenceService.addStreamErrorListener(_onError);
       _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
     });
-    // _listenLocation();
+
+    CallGeoFenceListener(context);
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    var status = await Permission.location.status;
+    if (status.isGranted) {
+      try {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        var geoFence = prefs.getString('geoFence').toString();
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          _polyGeofenceService.start();
+          _polyGeofenceService.addPolyGeofenceStatusChangeListener(
+              _onPolyGeofenceStatusChanged);
+          _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+          _polyGeofenceService.addLocationServicesStatusChangeListener(
+              _onLocationServicesStatusChanged);
+          _polyGeofenceService.addStreamErrorListener(_onError);
+          _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+        });
+        if (geoFence == "true") {
+          CallCoordinates(context);
+          setState(() {
+            visibility = true;
+          });
+        } else {
+          visibility = true;
+          viewvisibility = false;
+          Fluttertoast.showToast(
+              msg: app_geofence_nfound,
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
+        }
+      } catch (e) {}
+    } else {
+      Permission.locationAlways.request();
+    }
+  }
+
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+    }
   }
 
   void toggle() {
     setState(() => _isOn = !_isOn);
   }
-
-  // Future<void> _listenLocation() async {
-  //   // pr.show();
-  //   _locationSubscription =
-  //       locations.onLocationChanged.handleError((dynamic err) {
-  //     if (err is PlatformException) {
-  //       setState(() {
-  //         _error = err.code;
-  //       });
-  //     }
-  //     _locationSubscription?.cancel();
-  //     setState(() {
-  //       _locationSubscription = null;
-  //     });
-  //   }).listen((LocationData currentLocation) {
-  //     setState(() async {
-  //       _error = null;
-  //       _location = currentLocation;
-  //       _latt!.add(_location!.latitude!);
-  //       lattitude = _location!.latitude!;
-  //       longitude = _location!.longitude!;
-  //       accuracy = _location!.accuracy!;
-  //
-  //       // if (accuracy <= 7) {
-  //       //   _locationSubscription?.cancel();
-  //       setState(() {
-  //         viewvisibility = false;
-  //         // _locationSubscription = null;
-  //       });
-  //       accuvalue = accuracy.toString().split(".");
-  //       // distanceCalculation(context);
-  //
-  //       Geolocator geolocator = new Geolocator();
-  //       var difference = await geolocator.distanceBetween(
-  //           double.parse(Lattitude),
-  //           double.parse(Longitude),
-  //           _location!.latitude!,
-  //           _location!.longitude!);
-  //       if (difference <= 5.0) {
-  //         visibility = true;
-  //       } else {
-  //         visibility = false;
-  //       }
-  //       // }
-  //     });
-  //   });
-  // }
 
   BuildContext get context => super.context;
 
@@ -349,7 +508,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -366,8 +525,9 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
 
     return WillPopScope(
       onWillPop: () async {
+        callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => DashboardView()));
+            builder: (BuildContext context) => dashboard_screen()));
         return true;
       },
       child: Scaffold(
@@ -389,7 +549,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                     : 10.0,
                 decoration: BoxDecoration(
                     borderRadius:
-                        BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                    BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
                     color: Colors.white),
               ),
             ),
@@ -414,7 +574,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                           child: Text('CCMS Maintanance',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                  fontSize: 25.0,
+                                  fontSize: 20.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white)),
@@ -446,494 +606,487 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                 topRight: Radius.circular(35.0),
                                 bottomLeft: Radius.circular(0.0),
                                 bottomRight: Radius.circular(0.0))),
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          child:
-                              Column(mainAxisSize: MainAxisSize.min, children: <
-                                  Widget>[
-                            Container(
-                                child: Padding(
-                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                              child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 5.0),
-                                        child: Point(
-                                          triangleHeight: 25.0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          ward_li_screen()));
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              color: thbDblue,
-                                              width: 120.0,
-                                              height: 50.0,
-                                              child: Center(
-                                                child: Text('$SelectedRegion',
-                                                    style: const TextStyle(
-                                                        fontSize: 16.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
-                                              ),
+                        child: ListView(
+                            padding: EdgeInsets.only(left: 10, right: 10),
+                            children: <Widget>[
+                              SizedBox(height: 5),
+                              Wrap(
+                                  spacing: 8.0,
+                                  // gap between adjacent chips
+                                  runSpacing: 4.0,
+                                  // gap between lines
+                                  direction: Axis.horizontal,
+                                  // main axis (rows or columns)
+                                  children: <Widget>[
+                                    Container(
+                                        child: Padding(
+                                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                          child: Row(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Padding(
+                                                    padding:
+                                                    EdgeInsets.only(left: 5.0),
+                                                    child: Point(
+                                                      triangleHeight: 25.0,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                  context) =>
+                                                                      ward_li_screen()));
+                                                          setState(() {});
+                                                        },
+                                                        child: Container(
+                                                          color: thbDblue,
+                                                          height: 40.0,
+                                                          child: Center(
+                                                            child: Text(
+                                                                '  $SelectedRegion  ',
+                                                                style: const TextStyle(
+                                                                    fontSize: 16.0,
+                                                                    fontFamily:
+                                                                    "Montserrat",
+                                                                    fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                    color: Colors
+                                                                        .white)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Padding(
+                                                    padding:
+                                                    EdgeInsets.only(left: 5.0),
+                                                    child: Point(
+                                                      triangleHeight: 25.0,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                  context) =>
+                                                                      zone_li_screen()));
+                                                          setState(() {});
+                                                        },
+                                                        child: Container(
+                                                          color: thbDblue,
+                                                          height: 40.0,
+                                                          child: Center(
+                                                            child: Text(
+                                                                '  $SelectedZone  ',
+                                                                style: const TextStyle(
+                                                                    fontSize: 16.0,
+                                                                    fontFamily:
+                                                                    "Montserrat",
+                                                                    fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                    color: Colors
+                                                                        .white)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Padding(
+                                                    padding:
+                                                    EdgeInsets.only(left: 5.0),
+                                                    child: Point(
+                                                      triangleHeight: 25.0,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                  context) =>
+                                                                      ward_li_screen()));
+                                                          setState(() {});
+                                                        },
+                                                        child: Container(
+                                                          color: thbDblue,
+                                                          height: 40.0,
+                                                          child: Center(
+                                                            child: Text(
+                                                                '  $SelectedWard  ',
+                                                                style: const TextStyle(
+                                                                    fontSize: 16.0,
+                                                                    fontFamily:
+                                                                    "Montserrat",
+                                                                    fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                    color: Colors
+                                                                        .white)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ]),
+                                        )),
+                                    const SizedBox(
+                                      height: 15,
+                                    ),
+                                    Wrap(
+                                        spacing: 8.0,
+                                        // gap between adjacent chips
+                                        runSpacing: 4.0,
+                                        // gap between lines
+                                        direction: Axis.horizontal,
+                                        // main axis (rows or columns)
+                                        children: <Widget>[
+                                          Container(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                5, 10, 2, 0),
+                                            decoration: const BoxDecoration(
+                                                color: thbDblue,
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(35.0))),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  children: <Widget>[
+                                                    Container(
+                                                      padding: const EdgeInsets
+                                                          .fromLTRB(5, 0, 0, 0),
+                                                      width: width / 3,
+                                                      height: 45,
+                                                      alignment:
+                                                      Alignment.centerLeft,
+                                                      decoration: const BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  15.0))),
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$DeviceName',
+                                                          style: TextStyle(
+                                                              color: Colors
+                                                                  .deepOrange,
+                                                              fontSize: 26,
+                                                              fontFamily:
+                                                              "Montserrat",
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .bold),
+                                                        ),
+                                                      ),
+                                                    ), //Container
+                                                    SizedBox(
+                                                      width: 15,
+                                                    ), //SizedBox
+                                                    Container(
+                                                        width: width / 2.05,
+                                                        height: 25,
+                                                        child: Text(
+                                                          "$location",
+                                                          style: const TextStyle(
+                                                              fontSize: 18,
+                                                              fontFamily:
+                                                              "Montserrat",
+                                                              color:
+                                                              Colors.white,
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .bold),
+                                                        ) //BoxDecoration
+                                                    ) //Container
+                                                  ], //<Widget>[]
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                                Row(
+                                                  children: <Widget>[
+                                                    Container(
+                                                        width: width / 3,
+                                                        height: 25,
+                                                        child: Text(
+                                                          "Last Comm @ ",
+                                                          style: const TextStyle(
+                                                              fontSize: 16,
+                                                              color:
+                                                              Colors.white,
+                                                              fontFamily:
+                                                              "Montserrat"),
+                                                        )), //Container
+                                                    SizedBox(
+                                                      width: 5,
+                                                    ), //SizedBox
+                                                    Container(
+                                                        width: width / 2.05,
+                                                        height: 25,
+                                                        child: Text(
+                                                          "$date",
+                                                          style: const TextStyle(
+                                                              fontSize: 18,
+                                                              color:
+                                                              Colors.white,
+                                                              fontFamily:
+                                                              "Montserrat",
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .bold),
+                                                        ) //BoxDecoration
+                                                    ) //Container
+                                                  ], //<Widget>[]
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 5.0),
-                                        child: Point(
-                                          triangleHeight: 25.0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          zone_li_screen()));
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              color: thbDblue,
-                                              width: 120.0,
-                                              height: 50.0,
-                                              child: Center(
-                                                child: Text('$SelectedZone',
-                                                    style: const TextStyle(
-                                                        fontSize: 16.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                            children: [
+                                              const Expanded(
+                                                  flex: 2,
+                                                  child: CCMSToggleButtonn()),
+                                              const SizedBox(
+                                                width: 15,
                                               ),
+                                              Expanded(
+                                                  flex: 2,
+                                                  child: InkWell(
+                                                      child: Container(
+                                                        height: 90,
+                                                        decoration: const BoxDecoration(
+                                                            color:
+                                                            Colors.orange,
+                                                            borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    50.0))),
+                                                        child: const Center(
+                                                          child: Text(
+                                                              'GET LIVE',
+                                                              style: TextStyle(
+                                                                  fontSize: 18,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontFamily:
+                                                                  "Montserrat")),
+                                                        ),
+                                                      ),
+                                                      onTap: () {
+                                                        if (visibility ==
+                                                            true) {
+                                                          if ('$DeviceStatus' !=
+                                                              "false") {
+                                                            getLiveRPCCall(
+                                                                context);
+                                                          } else {
+                                                            Fluttertoast.showToast(
+                                                                msg:
+                                                                app_dev_offline_mode,
+                                                                toastLength: Toast
+                                                                    .LENGTH_SHORT,
+                                                                gravity:
+                                                                ToastGravity
+                                                                    .BOTTOM,
+                                                                timeInSecForIosWeb:
+                                                                1);
+                                                          }
+                                                        } else {
+                                                          _show(context, true);
+                                                        }
+                                                      })),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Expanded(
+                                                  flex: 2,
+                                                  child: InkWell(
+                                                    child: Container(
+                                                      height: 90,
+                                                      decoration: const BoxDecoration(
+                                                          color:
+                                                          Colors.lightBlue,
+                                                          borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50.0))),
+                                                      child: const Center(
+                                                        child: Text('MCB TRIP',
+                                                            style: TextStyle(
+                                                                fontSize: 18,
+                                                                color: Colors
+                                                                    .white,
+                                                                fontFamily:
+                                                                "Montserrat")),
+                                                      ),
+                                                    ),
+                                                    onTap: () {
+                                                      if (visibility == true) {
+                                                        if ('$DeviceStatus' !=
+                                                            "false") {
+                                                          callMCBTrip(context);
+                                                        } else {
+                                                          Fluttertoast.showToast(
+                                                              msg:
+                                                              app_dev_offline_mode,
+                                                              toastLength: Toast
+                                                                  .LENGTH_SHORT,
+                                                              gravity:
+                                                              ToastGravity
+                                                                  .BOTTOM,
+                                                              timeInSecForIosWeb:
+                                                              1);
+                                                        }
+                                                      } else {
+                                                        _show(context, true);
+                                                      }
+                                                    },
+                                                  )),
+                                              const SizedBox(
+                                                width: 15,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                5, 5, 5, 5),
+                                            decoration: const BoxDecoration(
+                                                color: Colors.black12,
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(18.0))),
+                                            child: Column(
+                                              children: [
+                                                const SizedBox(
+                                                  height: 15,
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceAround,
+                                                  children: [
+                                                    Expanded(
+                                                        flex: 2,
+                                                        child: InkWell(
+                                                          child: Container(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            height: 90,
+                                                            decoration: const BoxDecoration(
+                                                                color: Colors
+                                                                    .deepOrange,
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                    .circular(
+                                                                    50.0))),
+                                                            child: const Text(
+                                                                'REMOVE',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                    18,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontFamily:
+                                                                    "Montserrat")),
+                                                          ),
+                                                          onTap: () {
+                                                            if (visibility ==
+                                                                true) {
+                                                              removeCCMS(
+                                                                  context);
+                                                            } else {
+                                                              _show(context,
+                                                                  true);
+                                                            }
+                                                          },
+                                                        )),
+                                                    const SizedBox(
+                                                      width: 15,
+                                                    ),
+                                                    Expanded(
+                                                        flex: 2,
+                                                        child: InkWell(
+                                                            child: Container(
+                                                              alignment:
+                                                              Alignment
+                                                                  .center,
+                                                              height: 90,
+                                                              decoration: const BoxDecoration(
+                                                                  color: Colors
+                                                                      .green,
+                                                                  borderRadius:
+                                                                  BorderRadius.all(
+                                                                      Radius.circular(
+                                                                          50.0))),
+                                                              child: const Text(
+                                                                  'REPLACE',
+                                                                  textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                      18,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontFamily:
+                                                                      "Montserrat")),
+                                                            ),
+                                                            onTap: () {
+                                                              if (visibility ==
+                                                                  true) {
+                                                                replaceCCMS(
+                                                                    context);
+                                                              } else {
+                                                                _show(context,
+                                                                    true);
+                                                              }
+                                                            })),
+                                                  ],
+                                                ),
+                                                const SizedBox(
+                                                  height: 15,
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 5.0),
-                                        child: Point(
-                                          triangleHeight: 25.0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          ward_li_screen()));
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              color: thbDblue,
-                                              width: 120.0,
-                                              height: 50.0,
-                                              child: Center(
-                                                child: Text('$SelectedWard',
-                                                    style: const TextStyle(
-                                                        fontSize: 16.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                        ])
                                   ]),
-                            )),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
-                              decoration: const BoxDecoration(
-                                  color: thbDblue,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(35.0))),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: <Widget>[
-                                      Container(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            5, 0, 0, 0),
-                                        width: width / 3,
-                                        height: 45,
-                                        alignment: Alignment.centerLeft,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(15.0))),
-                                        child: Center(
-                                          child: Text(
-                                            '$DeviceName',
-                                            style: TextStyle(
-                                                color: Colors.deepOrange,
-                                                fontSize: 26,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ), //Container
-                                      SizedBox(
-                                        width: 15,
-                                      ), //SizedBox
-                                      Container(
-                                          width: width / 2.05,
-                                          height: 25,
-                                          child: Text(
-                                            "$location",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontFamily: "Montserrat",
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold),
-                                          ) //BoxDecoration
-                                          ) //Container
-                                    ], //<Widget>[]
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  // Row(
-                                  //   children: <Widget>[
-                                  //     Container(
-                                  //         width: width / 3,
-                                  //         height: 25,
-                                  //         child: Text(
-                                  //           "Lamp watts",
-                                  //           style: const TextStyle(
-                                  //               fontSize: 16,
-                                  //               fontFamily: "Montserrat",
-                                  //               color: Colors.white),
-                                  //         )), //Container
-                                  //     SizedBox(
-                                  //       width: 5,
-                                  //     ), //SizedBox
-                                  //     Container(
-                                  //         width: width / 2.05,
-                                  //         height: 25,
-                                  //         child: Text(
-                                  //           "$Lampwatts",
-                                  //           style: const TextStyle(
-                                  //               fontSize: 18,
-                                  //               color: Colors.white,
-                                  //               fontFamily: "Montserrat",
-                                  //               fontWeight: FontWeight.bold),
-                                  //         ) //BoxDecoration
-                                  //         ) //Container
-                                  //   ], //<Widget>[]
-                                  //   mainAxisAlignment: MainAxisAlignment.center,
-                                  // ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Container(
-                                          width: width / 3,
-                                          height: 25,
-                                          child: Text(
-                                            "Last Comm @ ",
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.white,
-                                                fontFamily: "Montserrat"),
-                                          )), //Container
-                                      SizedBox(
-                                        width: 5,
-                                      ), //SizedBox
-                                      Container(
-                                          width: width / 2.05,
-                                          height: 25,
-                                          child: Text(
-                                            "$date",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                color: Colors.white,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold),
-                                          ) //BoxDecoration
-                                          ) //Container
-                                    ], //<Widget>[]
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  // Column(
-                                  //   children: [
-                                  //     Container(
-                                  //       alignment: Alignment.topLeft,
-                                  //       padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
-                                  //       height: 40,
-                                  //       child: Text(
-                                  //         'Last Comm @',
-                                  //         style: TextStyle(
-                                  //             fontSize: 18, fontFamily: "Montserrat"),
-                                  //       ),
-                                  //     ),
-                                  //     Container(
-                                  //       padding: const EdgeInsets.all(8),
-                                  //       height: 40,
-                                  //       child: Text(
-                                  //         '$date',
-                                  //         style: TextStyle(
-                                  //             fontSize: 16,
-                                  //             fontWeight: FontWeight.bold,
-                                  //             fontFamily: "Montserrat"),
-                                  //       ),
-                                  //     ),
-                                  //     // Expanded(
-                                  //     //   child: Container(
-                                  //     //     alignment: Alignment.centerRight,
-                                  //     //     padding: EdgeInsets.all(6),
-                                  //     //     child: IconButton(
-                                  //     //       icon: const Icon(
-                                  //     //         Icons.arrow_drop_down,
-                                  //     //       ),
-                                  //     //       iconSize: 50,
-                                  //     //       color: Colors.black,
-                                  //     //       splashColor: Colors.purple,
-                                  //     //       onPressed: () {
-                                  //     //         // showDialog(context, date);
-                                  //     //       },
-                                  //     //     ),
-                                  //     //   ),
-                                  //     // ),
-                                  //   ],
-                                  // ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Visibility(
-                              visible: viewvisibility,
-                              child: Text(
-                                  'Your Not in adequate Range to Access & Controll of Devices',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.redAccent,
-                                      fontFamily: "Montserrat")),
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                const Expanded(flex: 2, child: ToggleButtonn()),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                Expanded(
-                                    flex: 2,
-                                    child: InkWell(
-                                        child: Container(
-                                          height: 90,
-                                          decoration: const BoxDecoration(
-                                              color: Colors.orange,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(50.0))),
-                                          child: const Center(
-                                            child: Text('GET LIVE',
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    color: Colors.white,
-                                                    fontFamily: "Montserrat")),
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          if (visibility == true) {
-                                            if ('$DeviceStatus' != "false") {
-                                              getLiveRPCCall(context);
-                                            } else {
-                                              Fluttertoast.showToast(
-                                                  msg: "Device in Offline Mode",
-                                                  toastLength:
-                                                      Toast.LENGTH_SHORT,
-                                                  gravity: ToastGravity.BOTTOM,
-                                                  timeInSecForIosWeb: 1);
-                                            }
-                                          } else {
-                                            _show(context, true);
-                                          }
-                                        })),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Expanded(
-                                    flex: 2,
-                                    child: InkWell(
-                                      child: Container(
-                                        height: 90,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.lightBlue,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0))),
-                                        child: const Center(
-                                          child: Text('MCB TRIP',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontFamily: "Montserrat")),
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        if (visibility == true) {
-                                          if ('$DeviceStatus' != "false") {
-                                            callMCBTrip(context);
-                                          } else {
-                                            Fluttertoast.showToast(
-                                                msg: "Device in Offline Mode",
-                                                toastLength: Toast.LENGTH_SHORT,
-                                                gravity: ToastGravity.BOTTOM,
-                                                timeInSecForIosWeb: 1);
-                                          }
-                                        } else {
-                                          _show(context, true);
-                                        }
-                                      },
-                                    )),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                // Expanded(
-                                //     flex: 2,
-                                //     child: InkWell(
-                                //       child: Container(
-                                //         height: 90,
-                                //         decoration: const BoxDecoration(
-                                //             color: Colors.lightGreen,
-                                //             borderRadius: BorderRadius.all(
-                                //                 Radius.circular(50.0))),
-                                //         child: const Center(
-                                //           child: Text('MCB CLEAR',
-                                //               style: TextStyle(
-                                //                   fontSize: 18,
-                                //                   color: Colors.white,
-                                //                   fontFamily: "Montserrat")),
-                                //         ),
-                                //       ),
-                                //       onTap: () {},
-                                //     )),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                              decoration: const BoxDecoration(
-                                  color: Colors.black12,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(18.0))),
-                              child: Column(
-                                children: [
-                                  const SizedBox(
-                                    height: 15,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Expanded(
-                                          flex: 2,
-                                          child: InkWell(
-                                            child: Container(
-                                              alignment: Alignment.center,
-                                              height: 90,
-                                              decoration: const BoxDecoration(
-                                                  color: Colors.deepOrange,
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(
-                                                              50.0))),
-                                              child: const Text('REMOVE',
-                                                  style: TextStyle(
-                                                      fontSize: 18,
-                                                      color: Colors.white,
-                                                      fontFamily:
-                                                          "Montserrat")),
-                                            ),
-                                            onTap: () {
-                                              if (visibility == true) {
-                                                removeCCMS(context);
-                                              } else {
-                                                _show(context, true);
-                                              }
-                                            },
-                                          )),
-                                      const SizedBox(
-                                        width: 15,
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: InkWell(
-                                              child: Container(
-                                                alignment: Alignment.center,
-                                                height: 90,
-                                                decoration: const BoxDecoration(
-                                                    color: Colors.green,
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                50.0))),
-                                                child: const Text('REPLACE',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontSize: 18,
-                                                        color: Colors.white,
-                                                        fontFamily:
-                                                            "Montserrat")),
-                                              ),
-                                              onTap: () {
-                                                if (visibility = true) {
-                                                  replaceCCMS(context);
-                                                } else {
-                                                  _show(context, true);
-                                                }
-                                              })),
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 15,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ]),
-                        )),
+                            ])),
                   )
                 ],
               ),
@@ -953,15 +1106,15 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             visible: visibility,
             child: AlertDialog(
               elevation: 10,
-              title: const Text('Luminator Location Alert'),
+              title: const Text(app_dev_loc_alert),
               content: const Text(
-                  'Your are not in the Nearest Range to Controll or Access the Device'),
+                  app_dev_range_alert),
               actions: [
                 TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Close'))
+                    child: const Text(app_close_btn))
               ],
             ),
           );
@@ -976,7 +1129,7 @@ Future<void> callONRPCCall(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -994,25 +1147,24 @@ Future<void> callONRPCCall(context) async {
       // Utility.progressDialog(context);
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
 
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
         final jsonData = {
           "method": "ctrl",
           "params": {"lamp": 1}
         };
-        // final parsedJson = jsonDecode(jsonData);
 
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(Duration(minutes: 2));
 
         if (response["lamp"].toString() == "1") {
           Fluttertoast.showToast(
-              msg: "Device ON Successfully",
+              msg: app_dev_on,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -1020,15 +1172,16 @@ Future<void> callONRPCCall(context) async {
               textColor: Colors.black,
               fontSize: 16.0);
           pr.hide();
-          // Navigator.pop(context);
         } else {
+          /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+              "Device Connectivity Issue");*/
           pr.hide();
-          // Navigator.pop(context);
-          calltoast("Unable to Process, Please try again");
+          calltoast(app_unab_procs);
         }
       } catch (e) {
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "ON/RPC Device Connectivity Issue Exception");*/
         pr.hide();
-        // Navigator.pop(context);
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
@@ -1036,7 +1189,7 @@ Future<void> callONRPCCall(context) async {
             callONRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1052,7 +1205,7 @@ Future<void> callOFFRPCCall(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1069,26 +1222,23 @@ Future<void> callOFFRPCCall(context) async {
       pr.show();
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
 
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
-        // type: String
         final jsonData = {
           "method": "ctrl",
           "params": {"lamp": 0}
         };
-        // final parsedJson = jsonDecode(jsonData);
-
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(const Duration(minutes: 2));
 
         if (response["lamp"].toString() == "0") {
           pr.hide();
           Fluttertoast.showToast(
-              msg: "Device Off Successfully",
+              msg: app_dev_off,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -1096,10 +1246,14 @@ Future<void> callOFFRPCCall(context) async {
               textColor: Colors.black,
               fontSize: 16.0);
         } else {
+          /* FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+              "Device Connectivity Issue");*/
           pr.hide();
-          calltoast("Unable to Process, Please try again");
+          calltoast(app_unab_procs);
         }
       } catch (e) {
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "OFF/RPC Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1108,7 +1262,7 @@ Future<void> callOFFRPCCall(context) async {
             callOFFRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1124,7 +1278,7 @@ Future<void> callMCBTrip(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1141,18 +1295,16 @@ Future<void> callMCBTrip(context) async {
       pr.show();
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
-        var tbClient = ThingsboardClient(serverUrl);
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
-        // type: String
         final jsonData;
 
         jsonData = {"method": "clr", "params": "8"};
 
-        // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(deviceID, jsonData)
+            .handleOneWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
 
         final jsonDatat;
@@ -1164,18 +1316,14 @@ Future<void> callMCBTrip(context) async {
 
         var responsee = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(deviceID, jsonDatat)
+            .handleOneWayDeviceRPCRequest(
+            DeviceIdDetails!.toString(), jsonDatat)
             .timeout(const Duration(minutes: 5));
 
         pr.hide();
-        // if(response.) {
-        //   calltoast("Device ON Sucessfully");
-        //   Navigator.pop(context);
-        // }else {
-        //   calltoast("Unable to Process, Please try again");
-        //   Navigator.pop(context);
-        // }
       } catch (e) {
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "MCB/Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1184,7 +1332,7 @@ Future<void> callMCBTrip(context) async {
             getLiveRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1200,7 +1348,7 @@ Future<void> getLiveRPCCall(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1217,10 +1365,9 @@ Future<void> getLiveRPCCall(context) async {
       pr.show();
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
-        var tbClient = ThingsboardClient(serverUrl);
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
-        // type: String
         final jsonData;
 
         jsonData = {
@@ -1228,20 +1375,15 @@ Future<void> getLiveRPCCall(context) async {
           "params": {"value": 0}
         };
 
-        // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(deviceID, jsonData)
+            .handleOneWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
         pr.hide();
-        // if(response.) {
-        //   calltoast("Device ON Sucessfully");
-        //   Navigator.pop(context);
-        // }else {
-        //   calltoast("Unable to Process, Please try again");
-        //   Navigator.pop(context);
-        // }
+
       } catch (e) {
+        /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+            "Device Connectivity Issue Exception");*/
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1250,7 +1392,7 @@ Future<void> getLiveRPCCall(context) async {
             getLiveRPCCall(context);
           }
         } else {
-          calltoast("Unable to Process");
+          calltoast(app_unab_procs);
         }
       }
     } else {
@@ -1260,9 +1402,6 @@ Future<void> getLiveRPCCall(context) async {
 }
 
 Future<void> replaceCCMS(context) async {
-  // Navigator.pop(context);
-  // Navigator.of(context).pushReplacement(
-  //     MaterialPageRoute(builder: (BuildContext context) => replaceilm()));
 
   Utility.isConnected().then((value) async {
     if (value) {
@@ -1270,7 +1409,7 @@ Future<void> replaceCCMS(context) async {
       pr = ProgressDialog(context,
           type: ProgressDialogType.Normal, isDismissible: false);
       pr.style(
-        message: 'Please wait ..',
+        message: app_pls_wait,
         borderRadius: 20.0,
         backgroundColor: Colors.lightBlueAccent,
         elevation: 10.0,
@@ -1292,23 +1431,26 @@ Future<void> replaceCCMS(context) async {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-          (route) => true).then((value) async {
+              (route) => true).then((value) async {
         if (value != null) {
           if (OlddeviceName.toString() != value.toString()) {
             SharedPreferences prefs = await SharedPreferences.getInstance();
             prefs.setString('newDevicename', value);
 
             pr.hide();
-            // showActionAlertDialog(context,OlddeviceName,value);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => replaceccms()));
           } else {
+            /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+                "Duplicate QR Found for Execution");*/
             pr.hide();
-            calltoast("Duplicate QR Code");
+            calltoast(app_qr_duplicate);
           }
         } else {
+          /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
+              "Invalid QR Found for Execution");*/
           pr.hide();
-          calltoast("Invalid QR Code");
+          calltoast(app_qr_invalid);
         }
       });
     } else {
@@ -1316,568 +1458,15 @@ Future<void> replaceCCMS(context) async {
     }
   });
 }
-
-@override
-Future<Device?> ilm_main_fetchDeviceDetails(
-    String OlddeviceName, String deviceName, BuildContext context) async {
-  Utility.isConnected().then((value) async {
-    if (value) {
-      late ProgressDialog pr;
-      pr = ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
-        messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
-      );
-      pr.show();
-      try {
-        Device response;
-        Future<List<EntityGroupInfo>> deviceResponse;
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-        response = await tbClient.getDeviceService().getTenantDevice(deviceName)
-            as Device;
-        if (response.name.isNotEmpty) {
-          if (response.type == ilmDeviceType) {
-            ilm_main_fetchSmartDeviceDetails(
-                OlddeviceName, deviceName, response.id!.id.toString(), context);
-          } else if (response.type == ccmsDeviceType) {
-          } else if (response.type == gatewayDeviceType) {
-          } else {
-            pr.hide();
-            calltoast("Device Details Not Found");
-          }
-        } else {
-          pr.hide();
-          calltoast(deviceName);
-        }
-      } catch (e) {
-        pr.hide();
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            ilm_main_fetchDeviceDetails(OlddeviceName, deviceName, context);
-          }
-        } else {
-          calltoast(deviceName);
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
-
 Future<void> removeCCMS(context) async {
-  // SharedPreferences prefs = await SharedPreferences.getInstance();
-  // String deviceID = prefs.getString('deviceId').toString();
-  // String deviceName = prefs.getString('deviceName').toString();
-  //
-  // var DevicecurrentFolderName = "";
-  // var DevicemoveFolderName = "";
-  //
-  // Utility.isConnected().then((value) async {
-  //   if (value) {
-  //     Utility.progressDialog(context);
-  //     try {
-  //       var tbClient = ThingsboardClient(serverUrl);
-  //       tbClient.smart_init();
-  //
-  //       Device response;
-  //       response = (await tbClient
-  //           .getDeviceService()
-  //           .getTenantDevice(deviceName)) as Device;
-  //
-  //       if (response != null) {
-  //         var relationDetails = await tbClient
-  //             .getEntityRelationService()
-  //             .findInfoByTo(response.id!);
-  //
-  //         List<EntityGroupInfo> entitygroups;
-  //         entitygroups = await tbClient
-  //             .getEntityGroupService()
-  //             .getEntityGroupsByFolderType();
-  //
-  //         if (entitygroups != null) {
-  //           for (int i = 0; i < entitygroups.length; i++) {
-  //             if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-  //               DevicemoveFolderName =
-  //                   entitygroups.elementAt(i).id!.id!.toString();
-  //             }
-  //           }
-  //
-  //           List<EntityGroupId> currentdeviceresponse;
-  //           currentdeviceresponse = await tbClient
-  //               .getEntityGroupService()
-  //               .getEntityGroupsForFolderEntity(response.id!.id!);
-  //
-  //           if (currentdeviceresponse != null) {
-  //             if (currentdeviceresponse.last.id.toString().isNotEmpty) {
-  //
-  //               var firstdetails = await tbClient
-  //                   .getEntityGroupService()
-  //                   .getEntityGroup(currentdeviceresponse.first.id!);
-  //               if (firstdetails!.name.toString() != "All") {
-  //                 DevicecurrentFolderName = currentdeviceresponse.first.id!;
-  //               }
-  //               var seconddetails = await tbClient
-  //                   .getEntityGroupService()
-  //                   .getEntityGroup(currentdeviceresponse.last.id!);
-  //               if (seconddetails!.name.toString() != "All") {
-  //                 DevicecurrentFolderName = currentdeviceresponse.last.id!;
-  //               }
-  //
-  //               var relation_response = await tbClient
-  //                   .getEntityRelationService()
-  //                   .deleteDeviceRelation(relationDetails.elementAt(0).from.id!,
-  //                       response.id!.id!);
-  //
-  //               // DevicecurrentFolderName =
-  //               //     currentdeviceresponse.last.id.toString();
-  //
-  //               List<String> myList = [];
-  //               myList.add(response.id!.id!);
-  //
-  //               var remove_response = tbClient
-  //                   .getEntityGroupService()
-  //                   .removeEntitiesFromEntityGroup(
-  //                       DevicecurrentFolderName, myList);
-  //
-  //               var add_response = tbClient
-  //                   .getEntityGroupService()
-  //                   .addEntitiesToEntityGroup(DevicemoveFolderName, myList);
-  //
-  // Navigator.pop(context);
   Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (BuildContext context) => replacementccms()));
-  //             } else {
-  //               calltoast("Device is not Found");
-  //               Navigator.pop(context);
-  //             }
-  //           } else {
-  //             calltoast("Device EntityGroup Not Found");
-  //             Navigator.pop(context);
-  //           }
-  //         } else {
-  //           calltoast(deviceName);
-  //           Navigator.pop(context);
-  //         }
-  //       } else {
-  //         calltoast(deviceName);
-  //         Navigator.pop(context);
-  //       }
-  //     } catch (e) {
-  //       var message = toThingsboardError(e, context);
-  //       if (message == session_expired) {
-  //         var status = loginThingsboard.callThingsboardLogin(context);
-  //         if (status == true) {
-  //           replaceILM(context);
-  //         }
-  //       } else {
-  //         calltoast(deviceName);
-  //         Navigator.pop(context);
-  //       }
-  //     }
-  //   }
-  // });
-}
-
-@override
-Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
-    String deviceName, String deviceid, BuildContext context) async {
-  var DevicecurrentFolderName = "";
-  var DevicemoveFolderName = "";
-
-  Utility.isConnected().then((value) async {
-    if (value) {
-      late ProgressDialog pr;
-      pr = ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
-        messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
-      );
-      pr.show();
-      try {
-        Device response;
-        Future<List<EntityGroupInfo>> deviceResponse;
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-
-        response = (await tbClient
-            .getDeviceService()
-            .getTenantDevice(deviceName)) as Device;
-
-        if (response != null) {
-          var new_Device_Name = response.name;
-
-          List<EntityGroupInfo> entitygroups;
-          entitygroups = await tbClient
-              .getEntityGroupService()
-              .getEntityGroupsByFolderType();
-
-          if (entitygroups != null) {
-            for (int i = 0; i < entitygroups.length; i++) {
-              if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-                DevicemoveFolderName =
-                    entitygroups.elementAt(i).id!.id!.toString();
-              }
-            }
-
-            List<EntityGroupId> currentdeviceresponse;
-            currentdeviceresponse = await tbClient
-                .getEntityGroupService()
-                .getEntityGroupsForFolderEntity(response.id!.id!);
-
-            if (currentdeviceresponse != null) {
-              var firstdetails = await tbClient
-                  .getEntityGroupService()
-                  .getEntityGroup(currentdeviceresponse.first.id!);
-              if (firstdetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.first.id!;
-              }
-              var seconddetails = await tbClient
-                  .getEntityGroupService()
-                  .getEntityGroup(currentdeviceresponse.last.id!);
-              if (seconddetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.last.id!;
-              }
-
-              var relationDetails = await tbClient
-                  .getEntityRelationService()
-                  .findInfoByTo(response.id!);
-
-              if (relationDetails != null) {
-                List<String> myList = [];
-                myList.add("lampWatts");
-                myList.add("active");
-
-                List<BaseAttributeKvEntry> responser;
-
-                responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<BaseAttributeKvEntry>;
-
-                if (responser != null) {
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  prefs.setString(
-                      'deviceStatus', responser.first.kv.getValue().toString());
-                  prefs.setString(
-                      'deviceWatts', responser.last.kv.getValue().toString());
-
-                  prefs.setString('deviceId', deviceid);
-                  prefs.setString('deviceName', deviceName);
-
-                  DeviceCredentials? newdeviceCredentials;
-                  DeviceCredentials? olddeviceCredentials;
-
-                  if (relationDetails.length.toString() == "0") {
-                    newdeviceCredentials = await tbClient
-                        .getDeviceService()
-                        .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString()) as DeviceCredentials;
-
-                    if (newdeviceCredentials != null) {
-                      var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
-
-                      newdeviceCredentials.credentialsId = newQRID + "L";
-                      var credresponse = await tbClient
-                          .getDeviceService()
-                          .saveDeviceCredentials(newdeviceCredentials);
-
-                      response.name = deviceName + "99";
-                      var devresponse = await tbClient
-                          .getDeviceService()
-                          .saveDevice(response);
-
-                      // Old Device Updations
-                      Device Olddevicedetails = null as Device;
-                      Olddevicedetails = await tbClient
-                          .getDeviceService()
-                          .getTenantDevice(Olddevicename) as Device;
-
-                      if (Olddevicedetails != null) {
-                        var Old_Device_Name = Olddevicedetails.name;
-
-                        olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                    Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
-
-                        if (olddeviceCredentials != null) {
-                          var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
-
-                          olddeviceCredentials.credentialsId = oldQRID + "L";
-                          var old_cred_response = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          Olddevicedetails.name = Olddevicename + "99";
-                          var old_dev_response = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          olddeviceCredentials.credentialsId = newQRID;
-                          var oldcredresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          response.name = Old_Device_Name;
-                          response.label = Old_Device_Name;
-                          var olddevresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(response);
-
-                          final old_body_req = {
-                            'boardNumber': Old_Device_Name,
-                            'ieeeAddress': oldQRID,
-                          };
-
-                          var up_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
-
-                          // New Device Updations
-
-                          Olddevicedetails.name = new_Device_Name;
-                          Olddevicedetails.label = new_Device_Name;
-                          var up_devresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          newdeviceCredentials.credentialsId = oldQRID;
-                          var up_credresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(newdeviceCredentials);
-
-                          final new_body_req = {
-                            'boardNumber': new_Device_Name,
-                            'ieeeAddress': newQRID,
-                          };
-
-                          var up_newdevice_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                                  "SERVER_SCOPE", new_body_req));
-
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
-
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                                  DevicecurrentFolderName, myList);
-
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                                  DevicemoveFolderName, myList);
-
-                          pr.hide();
-                          callDashboard(context);
-                        }
-                      } else {
-                        pr.hide();
-                        calltoast(deviceName);
-                      }
-                    }
-                  } else {
-                    // New Device Updations
-                    newdeviceCredentials = await tbClient
-                        .getDeviceService()
-                        .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString()) as DeviceCredentials;
-
-                    var relation_response = await tbClient
-                        .getEntityRelationService()
-                        .deleteDeviceRelation(
-                            relationDetails.elementAt(0).from.id!,
-                            response.id!.id!);
-
-                    if (newdeviceCredentials != null) {
-                      var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
-
-                      newdeviceCredentials.credentialsId = newQRID + "L";
-                      var credresponse = await tbClient
-                          .getDeviceService()
-                          .saveDeviceCredentials(newdeviceCredentials);
-
-                      response.name = deviceName + "99";
-                      var devresponse = await tbClient
-                          .getDeviceService()
-                          .saveDevice(response);
-
-                      // Old Device Updations
-
-                      Device Olddevicedetails = null as Device;
-                      Olddevicedetails = await tbClient
-                          .getDeviceService()
-                          .getTenantDevice(Olddevicename) as Device;
-
-                      if (Olddevicedetails != null) {
-                        var Old_Device_Name = Olddevicedetails.name;
-
-                        olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                    Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
-
-                        if (olddeviceCredentials != null) {
-                          var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
-
-                          olddeviceCredentials.credentialsId = oldQRID + "L";
-                          var old_cred_response = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          Olddevicedetails.name = Olddevicename + "99";
-                          var old_dev_response = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          olddeviceCredentials.credentialsId = newQRID;
-                          var oldcredresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          response.name = Old_Device_Name;
-                          response.label = Old_Device_Name;
-                          var olddevresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(response);
-
-                          final old_body_req = {
-                            'boardNumber': Old_Device_Name,
-                            'ieeeAddress': oldQRID,
-                          };
-
-                          var up_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
-
-                          // New Device Updations
-
-                          Olddevicedetails.name = new_Device_Name;
-                          Olddevicedetails.label = new_Device_Name;
-                          var up_devresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          newdeviceCredentials.credentialsId = oldQRID;
-                          var up_credresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(newdeviceCredentials);
-
-                          final new_body_req = {
-                            'boardNumber': new_Device_Name,
-                            'ieeeAddress': newQRID,
-                          };
-
-                          var up_newdevice_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                                  "SERVER_SCOPE", new_body_req));
-
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
-
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                                  DevicecurrentFolderName, myList);
-
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                                  DevicemoveFolderName, myList);
-
-                          pr.hide();
-                          callDashboard(context);
-                        }
-                      } else {
-                        pr.hide();
-                        calltoast(deviceName);
-                      }
-                    } else {
-                      pr.hide();
-                      calltoast(deviceName);
-                    }
-                  }
-                } else {
-                  pr.hide();
-                  calltoast(deviceName);
-                }
-              } else {
-                pr.hide();
-                calltoast(deviceName);
-              }
-            } else {
-              pr.hide();
-              calltoast(deviceName);
-            }
-          } else {
-            pr.hide();
-            calltoast(deviceName);
-          }
-        } else {
-          pr.hide();
-          calltoast(deviceName);
-        }
-      } catch (e) {
-        pr.hide();
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context);
-          }
-        } else {
-          calltoast(deviceName);
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
 }
 
 showActionAlertDialog(context, OldDevice, NewDevice) {
   // set up the buttons
   Widget cancelButton = TextButton(
-    child: Text("Cancel",
+    child: Text(app_dialog_cancel,
         style: const TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
@@ -1888,7 +1477,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
     },
   );
   Widget continueButton = TextButton(
-    child: Text("Replace",
+    child: Text(app_dialog_replace,
         style: const TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
@@ -1897,13 +1486,13 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
     onPressed: () {
       late Future<Device?> entityFuture;
       // Utility.progressDialog(context);
-      entityFuture = ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice);
+      replaceCCMS(context);
     },
   );
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text("Luminator",
+    title: Text(app_display_name,
         style: const TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
@@ -1912,7 +1501,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 
     content: RichText(
       text: new TextSpan(
-        text: 'Would you like to replace ',
+        text: app_dial_replace,
         style: const TextStyle(
             fontSize: 16.0,
             fontFamily: "Montserrat",
@@ -1927,7 +1516,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
           new TextSpan(
-              text: ' With ',
+              text: app_dial_replace_with,
               style: const TextStyle(
                   fontSize: 16.0,
                   fontFamily: "Montserrat",
@@ -1951,11 +1540,6 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
       ),
     ),
 
-    // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
-    //     fontSize: 18.0,
-    //     fontFamily: "Montserrat",
-    //     fontWeight: FontWeight.normal,
-    //     color: liorange)),
     actions: [
       cancelButton,
       continueButton,
@@ -1993,67 +1577,16 @@ Future<void> callDeviceCurrentStatus(context) async {
   String deviceName = prefs.getString('deviceName').toString();
 }
 
-// void showDialog(context, timevalue) {
-//   showGeneralDialog(
-//     barrierLabel: "Barrier",
-//     barrierDismissible: true,
-//     barrierColor: Colors.black.withOpacity(0.5),
-//     transitionDuration: Duration(milliseconds: 700),
-//     context: context,
-//     pageBuilder: (_, __, ___) {
-//       return Align(
-//         alignment: Alignment.bottomCenter,
-//         child: Container(
-//             margin: EdgeInsets.only(bottom: 50, left: 12, right: 12),
-//             decoration: BoxDecoration(
-//               color: Colors.white,
-//               borderRadius: BorderRadius.circular(40),
-//             ),
-//             height: 300,
-//             padding: EdgeInsets.fromLTRB(20, 25, 20, 0),
-//             child: Column(children: [
-//               Text(
-//                 "Last Communication Date and Time",
-//                 textAlign: TextAlign.center,
-//                 style: TextStyle(
-//                     fontSize: 20.0,
-//                     fontFamily: "Montserrat",
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.black),
-//               ),
-//
-//               const SizedBox(
-//                 height: 15,
-//               ),
-//               Text(
-//                 '$timevalue',
-//                 textAlign: TextAlign.center,
-//                 style: TextStyle(
-//                     fontSize: 20.0,
-//                     fontFamily: "Montserrat",
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.black),
-//               ),
-//             ])),
-//       );
-//     },
-//     transitionBuilder: (_, anim, __, child) {
-//       return SlideTransition(
-//         position: Tween(begin: Offset(0, 1), end: Offset(0, 0)).animate(anim),
-//         child: child,
-//       );
-//     },
-//   );
-// }
-
 Future<ThingsboardError> toThingsboardError(error, context,
     [StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
+  /*FlutterLogs.logInfo(
+      "ccms_maintenance_page", "ccms_maintenance", "Server Error");*/
   if (error.message == "Session expired!") {
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => DashboardView()));
+          builder: (BuildContext context) => dashboard_screen()));
     }
   } else {
     if (error is DioError) {
@@ -2126,13 +1659,13 @@ Future<void> callLogoutoption(BuildContext context) async {
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",
+      title: Text(app_display_name,
           style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: liorange)),
-      content: Text("Are you sure you want to Logout?",
+      content: Text(app_logout,
           style: const TextStyle(
               fontSize: 18.0,
               fontFamily: "Montserrat",
@@ -2143,7 +1676,7 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",
+          child: Text(app_logout_no,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -2151,37 +1684,37 @@ Future<void> callLogoutoption(BuildContext context) async {
                   color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',
+          child: Text(app_logout_yes,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
           onPressed: () async {
-            // DBHelper dbhelper = new DBHelper();
-            // dbhelper.region_delete();
-            // dbhelper.zone_delete();
-            // dbhelper.ward_delete();
+            try {
+              DBHelper dbhelper = new DBHelper();
+              SharedPreferences prefs = await SharedPreferences.getInstance();
 
-            DBHelper dbhelper = new DBHelper();
-            SharedPreferences prefs = await SharedPreferences.getInstance();
+              var SelectedRegion = prefs.getString("SelectedRegion").toString();
+              List<Region> details = await dbhelper.region_getDetails();
 
-            var SelectedRegion = prefs.getString("SelectedRegion").toString();
-            List<Region> details = await dbhelper.region_getDetails();
+              for (int i = 0; i < details.length; i++) {
+                dbhelper.delete(details.elementAt(i).id!.toInt());
+              }
+              dbhelper.zone_delete(SelectedRegion);
+              dbhelper.ward_delete(SelectedRegion);
 
-            for (int i = 0; i < details.length; i++) {
-              dbhelper.delete(details.elementAt(i).id!.toInt());
+              SharedPreferences preferences =
+              await SharedPreferences.getInstance();
+              await preferences.clear();
+              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => splash_screen()));
+            } catch (e) {
+              /*FlutterLogs.logInfo(
+                  "ccms_maintenance_page", "ccms_maintenance", "DB Error");*/
             }
-            dbhelper.zone_delete(SelectedRegion);
-            dbhelper.ward_delete(SelectedRegion);
-
-            SharedPreferences preferences =
-                await SharedPreferences.getInstance();
-            await preferences.clear();
-            SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => splash_screen()));
           },
         ),
       ],

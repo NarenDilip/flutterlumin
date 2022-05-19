@@ -4,8 +4,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
@@ -15,19 +16,20 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 
+import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
-import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
+import '../../dashboard/dashboard_screen.dart';
 
 import 'package:poly_geofence_service/models/lat_lng.dart';
 import 'package:poly_geofence_service/models/poly_geofence.dart';
@@ -44,28 +46,34 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   String DeviceName = "0";
   var imageFile;
   var accuvalue;
-  var addvalue;
+  var Adressaccuvalue;
 
-  // LocationData? currentLocation;
   String address = "";
   String SelectedWard = "0";
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
-  String addresss = "0";
+
   String? _error;
   late ProgressDialog pr;
   List<double>? _latt = [];
   String Lattitude = "0";
   String Longitude = "0";
-  late bool visibility = true;
+  String geoFence = "false";
+  var counter = 0;
+  var caclsss = 0;
+
+  late bool visibility = false;
   late bool viewvisibility = true;
 
   final _streamController = StreamController<PolyGeofence>();
 
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
+  late Timer _timer;
+  int _start = 20;
 
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
       interval: 5000,
@@ -97,46 +105,125 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     _streamController.sink.add(polyGeofence);
   }
 
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
-
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
-    Lattitude = location!.latitude!.toString();
-    Longitude = location!.longitude!.toString();
+    accuracy = location.accuracy;
+    Lattitude = location.latitude.toString();
+    Longitude = location.longitude.toString();
+    accuvalue = accuracy.toString().split(".");
     var insideArea;
-    if (accuracy <= 5) {
+
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
+
+    if (geoFence == "true") {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
         insideArea = _checkIfValidMarker(
             LatLng(location.latitude, location.longitude),
             _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
-
-        visibility = true;
-        _polyGeofenceService.stop();
+        if (insideArea == true) {
+          if (accuracy <= 10) {
+            _getAddress(location!.latitude, location!.longitude).then((value) {
+              setState(() {
+                address = value;
+              });
+            });
+          } else {
+            setState(() {
+              visibility = false;
+            });
+            Fluttertoast.showToast(
+                msg:
+                app_fetch_loc,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+          callPolygonStop();
+        } else {
+          setState(() {
+            visibility = false;
+          });
+          if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
+            Fluttertoast.showToast(
+                msg:
+                app_loc_ward,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+            counter++;
+          }
+          callPolygonStop();
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => dashboard_screen()));
+        }
       }
     } else {
-      visibility = false;
-      Fluttertoast.showToast(
-          msg:
-              "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-                  insideArea!.toString(),
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
+      if (accuracy <= 10) {
+        callPolygonStop();
+        _timer.cancel();
+        _getAddress(location!.latitude, location!.longitude).then((value) {
+          setState(() {
+            visibility = true;
+            address = value;
+          });
+        });
+      }
     }
+
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      setState(() {
+        visibility = true;
+        viewvisibility = false;
+      });
+    }
+    Adressaccuvalue = address.toString().split(",");
+  }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          if (accuracy <= 10) {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          } else {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          }
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+    Adressaccuvalue = address.toString().split(",");
   }
 
   Future<void> callPolygons() async {}
 
-  // This function is to be called when a location services status change occurs
-  // since the service was started.
   void _onLocationServicesStatusChanged(bool status) {
     print('isLocationServicesEnabled: $status');
   }
@@ -180,10 +267,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
-
+    geoFence = prefs.getString('geoFence').toString();
+    // FirmwareVersion = prefs.getString("firmwareVersion").toString();
     setState(() {
       DeviceName = DeviceName;
       SelectedWard = SelectedWard;
+      geoFence = geoFence;
+      // FirmwareVersion = FirmwareVersion;
     });
   }
 
@@ -193,48 +283,89 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     // getLocation();
     DeviceName = "";
     SelectedWard = "";
-    _openCamera(context);
     getSharedPrefs();
+    _openCamera(context);
+    setUpLogs();
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+    });
+
+    if (geoFence == "true") {
+      CallCoordinates(context);
+    } else {
+      Fluttertoast.showToast(
+          msg:app_geofence_nfound,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    }
   }
 
-  // Future<void> _listenLocation() async {
-  //   // pr.show();
-  //   _locationSubscription =
-  //       locations.onLocationChanged.handleError((dynamic err) {
-  //     if (err is PlatformException) {
-  //       setState(() {
-  //         _error = err.code;
-  //       });
-  //     }
-  //     _locationSubscription?.cancel();
-  //     setState(() {
-  //       _locationSubscription = null;
-  //     });
-  //   }).listen((LocationData currentLocation) {
-  //     setState(() {
-  //       _error = null;
-  //       _location = currentLocation;
-  //       _getAddress(_location!.latitude, _location!.longitude).then((value) {
-  //         setState(() {
-  //           address = value;
-  //           _latt!.add(_location!.latitude!);
-  //           lattitude = _location!.latitude!;
-  //           longitude = _location!.longitude!;
-  //           accuracy = _location!.accuracy!;
-  //           if (accuracy <= 7) {
-  //             _locationSubscription?.cancel();
-  //             setState(() {
-  //               _locationSubscription = null;
-  //             });
-  //             accuvalue = accuracy.toString().split(".");
-  //             addvalue = value.toString().split(",");
-  //             callILMInstallation(context, imageFile, DeviceName, SelectedWard);
-  //           }
-  //         });
-  //       });
-  //     });
-  //   });
-  // }
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +376,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -262,8 +393,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
     return WillPopScope(
         onWillPop: () async {
+          callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => DashboardView()));
+              builder: (BuildContext context) => dashboard_screen()));
           return true;
         },
         child: Scaffold(
@@ -280,82 +412,113 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
-                  Container(
-                      width: double.infinity,
-                      child: TextButton(
-                          child: Text("Complete Installation",
-                              style: const TextStyle(
-                                  fontSize: 18.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
-                          style: ButtonStyle(
-                              padding: MaterialStateProperty.all<EdgeInsets>(
-                                  EdgeInsets.all(20)),
-                              backgroundColor:
+                  Visibility(
+                      visible: visibility,
+                      child: Container(
+                          width: double.infinity,
+                          child: TextButton(
+                              child: Text(app_com_install,
+                                  style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              style: ButtonStyle(
+                                  padding:
+                                  MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
+                                  backgroundColor:
                                   MaterialStateProperty.all(Colors.green),
-                              shape: MaterialStateProperty.all<
+                                  shape: MaterialStateProperty.all<
                                       RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
-                          onPressed: () {
-                            // Utility.progressDialog(context);
-                            if (imageFile != null) {
-                              pr.show();
-
-                              WidgetsBinding.instance
-                                  ?.addPostFrameCallback((_) {
-                                _polyGeofenceService.start();
-                                _polyGeofenceService
-                                    .addPolyGeofenceStatusChangeListener(
-                                        _onPolyGeofenceStatusChanged);
-                                _polyGeofenceService.addLocationChangeListener(
-                                    _onLocationChanged);
-                                _polyGeofenceService
-                                    .addLocationServicesStatusChangeListener(
-                                        _onLocationServicesStatusChanged);
-                                _polyGeofenceService
-                                    .addStreamErrorListener(_onError);
-                                _polyGeofenceService
-                                    .start(_polyGeofenceList)
-                                    .catchError(_onError);
-                              });
-                            } else {
-                              pr.hide();
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "Invalid Image Capture, Please recapture and try installation",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.white,
-                                  textColor: Colors.black,
-                                  fontSize: 16.0);
-                            }
-                          }))
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25.0),
+                                      ))),
+                              onPressed: () {
+                                // Utility.progressDialog(context);
+                                if (imageFile != null) {
+                                  pr.show();
+                                  if (geoFence == false) {
+                                    callILMInstallation(context, imageFile,
+                                        DeviceName, SelectedWard);
+                                  } else {
+                                    CallGeoFenceListener(context);
+                                  }
+                                } else {
+                                  pr.hide();
+                                  Fluttertoast.showToast(
+                                      msg:
+                                      app_device_image_cap,
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.white,
+                                      textColor: Colors.black,
+                                      fontSize: 16.0);
+                                }
+                              })))
                 ]))));
   }
 
   void _openCamera(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        maxHeight: 480,
-        maxWidth: 640,
-        imageQuality: 25,
-        preferredCameraDevice: CameraDevice.rear);
-    setState(() {
-      imageFile = pickedFile;
-    });
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+          maxHeight: 480,
+          maxWidth: 640,
+          imageQuality: 25,
+          preferredCameraDevice: CameraDevice.rear);
+      setState(() {
+        if(pickedFile != null) {
+          imageFile = pickedFile;
+        }else{
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => dashboard_screen()),
+          );
+        }
+      });
+    } catch (e) {
+      e.toString();
+    }
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var geoFence = prefs.getString('geoFence').toString();
+    if (geoFence == "true") {
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
+        _polyGeofenceService.start();
+        _polyGeofenceService
+            .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+        _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+        _polyGeofenceService.addLocationServicesStatusChangeListener(
+            _onLocationServicesStatusChanged);
+        _polyGeofenceService.addStreamErrorListener(_onError);
+        _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+      });
+    } else {
+      visibility = false;
+      Fluttertoast.showToast(
+          msg: app_geofence_nfound,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      callILMInstallation(context, imageFile, DeviceName, SelectedWard);
+    }
   }
 
   Future<void> callILMInstallation(
@@ -363,183 +526,332 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
     String deviceName = prefs.getString('deviceName').toString();
+    String SelectedRegion = prefs.getString('SelectedRegion').toString();
+    String SelectedZone = prefs.getString('SelectedZone').toString();
+    // String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
 
-    Utility.isConnected().then((value) async {
-      if (value) {
-        // Utility.progressDialog(context);
-        pr.show();
-        try {
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
+    var status = await Permission.location.status;
+    if (status.isGranted) {
+      var versionCompatability = false;
 
-          Device response;
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
+      Utility.isConnected().then((value) async {
+        if (value) {
+          pr.show();
+          try {
+            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+            tbClient.smart_init();
 
-          if (imageFile != null) {
-            if (response != null) {
-              DeviceCredentials deviceCredentials = await tbClient
-                  .getDeviceService()
-                  .getDeviceCredentialsByDeviceId(
-                      response.id!.id.toString()) as DeviceCredentials;
-              if (deviceCredentials.credentialsId.length == 16) {
-                List<String> myList = [];
-                myList.add("faulty");
-                List<AttributeKvEntry> responser;
+            Device response;
+            response = (await tbClient
+                .getDeviceService()
+                .getTenantDevice(deviceName)) as Device;
+            if (imageFile != null) {
+              if (response != null) {
+                DeviceCredentials deviceCredentials = await tbClient
+                    .getDeviceService()
+                    .getDeviceCredentialsByDeviceId(
+                    response.id!.id.toString()) as DeviceCredentials;
 
-                responser = (await tbClient
+                if (deviceCredentials.credentialsId.length == 16) {
+                  /* List<String> myList = [];
+                   myList.add("faulty");
+                   List<AttributeKvEntry> responser;
+
+                   responser = (await tbClient
+                       .getAttributeService()
+                       .getAttributeKvEntries(response.id!, myList));
+                  */
+                  var faultyDetails = false;
+                  /* if (responser.isEmpty) {
+                     faultyDetails = false;
+                   } else {
+                     var datas = responser.first.getValue();
+                     faultyDetails = datas;
+                   }*/
+
+                  DBHelper dbHelper = DBHelper();
+                  var regionid;
+                  List<Region> regiondetails = await dbHelper
+                      .region_name_regionbasedDetails(SelectedRegion);
+                  if (regiondetails.length != "0") {
+                    regionid = regiondetails.first.regionid;
+                  }
+
+                  /* try {
+                    List<String> myfirmList = [];
+                    myfirmList.add("firmware_versions");
+
+                    List<AttributeKvEntry> faultresponser;
+
+                    faultresponser = (await tbClient
                         .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<AttributeKvEntry>;
+                        .getFirmAttributeKvEntries(regionid, myfirmList));
 
-                var faultyDetails = false;
-                if (responser.length == 0) {
-                  faultyDetails = false;
-                } else {
-                  faultyDetails = responser.first.getValue();
-                }
+                    if (faultresponser.length != 0) {
+                      var firmwaredetails =
+                          faultresponser.first.getValue().toString();
+                      final decoded = jsonDecode(firmwaredetails) as Map;
+                      var firmware_versions = decoded['firmware_version'];
 
-                if (faultyDetails == false) {
-                  if (SelectedWard != "Ward") {
-                    if (lattitude.toString() != null) {
-                      DBHelper dbHelper = DBHelper();
-                      List<Ward> warddetails = await dbHelper
-                          .ward_basedDetails(SelectedWard) as List<Ward>;
-                      if (warddetails.length != "0") {
-                        warddetails.first.wardid;
+                      if (firmware_versions
+                          .toString()
+                          .contains(FirmwareVersion)) { */
 
-                        Map<String, dynamic> fromId = {
-                          'entityType': 'ASSET',
-                          'id': warddetails.first.wardid
-                        };
-                        Map<String, dynamic> toId = {
-                          'entityType': 'DEVICE',
-                          'id': response.id!.id
-                        };
+                  versionCompatability = true;
 
-                        EntityRelation entityRelation = EntityRelation(
-                            from: EntityId.fromJson(fromId),
-                            to: EntityId.fromJson(toId),
-                            type: "Contains",
-                            typeGroup: RelationTypeGroup.COMMON);
+                  /*     } else {
+                         versionCompatability = false;
+                       }
+                     }
+                   } catch (e) {
+                     var message = toThingsboardError(e, context);
+                   } */
 
-                        Future<EntityRelation> entityRelations = tbClient
-                            .getEntityRelationService()
-                            .saveRelation(entityRelation);
+                  if (faultyDetails == false) {
+                    if (SelectedWard != "Ward") {
+                      if (lattitude.toString() != null) {
+                        if (versionCompatability == true) {
+                          DBHelper dbHelper = DBHelper();
+                          List<Ward> warddetails =
+                          await dbHelper.ward_basedDetails(SelectedWard);
+                          if (warddetails.length != "0") {
+                            warddetails.first.wardid;
 
-                        Map data = {
-                          'landmark': addresss,
-                          'lattitude': lattitude.toString(),
-                          'longitude': longitude.toString(),
-                          'accuracy': accuracy.toString()
-                        };
+                            var oldasset;
 
-                        var saveAttributes = await tbClient
-                            .getAttributeService()
-                            .saveDeviceAttributes(
-                                response.id!.id!, "SERVER_SCOPE", data);
+                            PageLink pageLink = new PageLink(250);
+                            pageLink.page = 0;
+                            pageLink.pageSize = 250;
 
-                        List<EntityGroupId> currentdeviceresponse;
-                        currentdeviceresponse = await tbClient
-                            .getEntityGroupService()
-                            .getEntityGroupsForFolderEntity(response.id!.id!);
+                            PageData<Asset> assetPagedetails = await tbClient
+                                .getAssetService()
+                                .getUsertypeAssets(pageLink);
 
-                        if (currentdeviceresponse != null) {
-                          var firstdetails = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroup(currentdeviceresponse.first.id!);
-
-                          if (firstdetails!.name.toString() != "All") {
-                            DevicecurrentFolderName =
-                                currentdeviceresponse.first.id!;
-                          }
-                          var seconddetails = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroup(currentdeviceresponse.last.id!);
-                          if (seconddetails!.name.toString() != "All") {
-                            DevicecurrentFolderName =
-                                currentdeviceresponse.last.id!;
-                          }
-
-                          List<EntityGroupInfo> entitygroups;
-                          entitygroups = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroupsByFolderType();
-
-                          if (entitygroups != null) {
-                            for (int i = 0; i < entitygroups.length; i++) {
-                              if (entitygroups.elementAt(i).name ==
-                                  ILMDeviceInstallationFolder) {
-                                DevicemoveFolderName = entitygroups
+                            if (assetPagedetails.data.length != 0) {
+                              for (int i = 0;
+                              i < assetPagedetails.data.length;
+                              i++) {
+                                if (assetPagedetails.data
                                     .elementAt(i)
-                                    .id!
-                                    .id!
-                                    .toString();
+                                    .name
+                                    .toString() ==
+                                    SelectedWard + "-" + "ILM") {
+                                  oldasset =
+                                      assetPagedetails.data
+                                          .elementAt(i)
+                                          .id!
+                                          .id;
+                                  break;
+                                }
                               }
+                              if(oldasset == null){
+                                Asset newasset = Asset(
+                                    SelectedWard + "-" + "ILM", "node-cluster");
+                                Asset savedasset = await tbClient
+                                    .getAssetService()
+                                    .saveAsset(newasset);
+                                oldasset = savedasset.id!.id;
+                              }
+                            } else {
+                              Asset newasset = Asset(
+                                  SelectedWard + "-" + "ILM", "node-cluster");
+                              Asset savedasset = await tbClient
+                                  .getAssetService()
+                                  .saveAsset(newasset);
+                              oldasset = savedasset.id!.id;
                             }
 
-                            List<String> myList = [];
-                            myList.add(response.id!.id!);
+                            Map<String, dynamic> lfromId = {
+                              'entityType': 'ASSET',
+                              'id': warddetails.first.wardid
+                            };
 
-                            var remove_response = tbClient
+                            Map<String, dynamic> ltoId = {
+                              'entityType': 'ASSET',
+                              'id': oldasset
+                            };
+
+                            EntityRelation fentityRelation = EntityRelation(
+                                from: EntityId.fromJson(lfromId),
+                                to: EntityId.fromJson(ltoId),
+                                type: "Contains",
+                                typeGroup: RelationTypeGroup.COMMON);
+
+                            Future<EntityRelation> entityRelations = tbClient
+                                .getEntityRelationService()
+                                .saveRelation(fentityRelation);
+
+                            Map<String, dynamic> fromId = {
+                              'entityType': 'ASSET',
+                              'id': oldasset
+                            };
+                            Map<String, dynamic> toId = {
+                              'entityType': 'DEVICE',
+                              'id': response.id!.id
+                            };
+
+                            EntityRelation entityRelation = EntityRelation(
+                                from: EntityId.fromJson(fromId),
+                                to: EntityId.fromJson(toId),
+                                type: "Contains",
+                                typeGroup: RelationTypeGroup.COMMON);
+
+                            Future<EntityRelation> entityRelationss = tbClient
+                                .getEntityRelationService()
+                                .saveRelation(entityRelation);
+
+                            Map data = {
+                              'landmark': address,
+                              'latitude': Lattitude.toString(),
+                              'longitude': Longitude.toString(),
+                              'accuracy': accuracy.toString(),
+                              'lampWatts': "",
+                              'zoneName': SelectedZone,
+                              'wardName': SelectedWard,
+                            };
+
+                            var saveAttributes = await tbClient
+                                .getAttributeService()
+                                .saveDeviceAttributes(
+                                response.id!.id!, "SERVER_SCOPE", data);
+
+                            List<EntityGroupId> currentdeviceresponse;
+                            currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
-                                .removeEntitiesFromEntityGroup(
+                                .getEntityGroupsForFolderEntity(
+                                response.id!.id!);
+
+                            if (currentdeviceresponse != null) {
+                              var firstdetails = await tbClient
+                                  .getEntityGroupService()
+                                  .getEntityGroup(
+                                  currentdeviceresponse.first.id!);
+
+                              if (firstdetails!.name.toString() != "All") {
+                                DevicecurrentFolderName =
+                                currentdeviceresponse.first.id!;
+                              }
+                              var seconddetails = await tbClient
+                                  .getEntityGroupService()
+                                  .getEntityGroup(
+                                  currentdeviceresponse.last.id!);
+                              if (seconddetails!.name.toString() != "All") {
+                                DevicecurrentFolderName =
+                                currentdeviceresponse.last.id!;
+                              }
+
+                              List<EntityGroupInfo> entitygroups;
+                              entitygroups = await tbClient
+                                  .getEntityGroupService()
+                                  .getEntityGroupsByFolderType();
+
+                              if (entitygroups != null) {
+                                for (int i = 0; i < entitygroups.length; i++) {
+                                  if (entitygroups.elementAt(i).name ==
+                                      FlavorConfig.instance.variables["ILMDeviceInstallationFolder"]) {
+                                    DevicemoveFolderName = entitygroups
+                                        .elementAt(i)
+                                        .id!
+                                        .id!
+                                        .toString();
+                                  }
+                                }
+
+                                List<String> myList = [];
+                                myList.add(response.id!.id!);
+
+                                var remove_response = tbClient
+                                    .getEntityGroupService()
+                                    .removeEntitiesFromEntityGroup(
                                     DevicecurrentFolderName, myList);
 
-                            var add_response = tbClient
-                                .getEntityGroupService()
-                                .addEntitiesToEntityGroup(
+                                var add_response = tbClient
+                                    .getEntityGroupService()
+                                    .addEntitiesToEntityGroup(
                                     DevicemoveFolderName, myList);
 
-                            final bytes =
+                                final bytes =
                                 File(imageFile!.path).readAsBytesSync();
-                            String img64 = base64Encode(bytes);
+                                String img64 = base64Encode(bytes);
 
-                            postRequest(context, img64, DeviceName);
-                            pr.hide();
+                                postRequest(context, img64, DeviceName);
+                                pr.hide();
+                              } else {
+                                pr.hide();
+                                Fluttertoast.showToast(
+                                    msg: app_unable_folder,
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.white,
+                                    textColor: Colors.black,
+                                    fontSize: 16.0);
+                                callPolygonStop();
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (BuildContext context) =>
+                                            dashboard_screen()));
+                              }
+                            } else {
+                              pr.hide();
+                              calltoast(deviceName);
+                              callPolygonStop();
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          dashboard_screen()));
+                            }
                           } else {
-                            // Navigator.pop(context);
                             pr.hide();
-                            Fluttertoast.showToast(
-                                msg: "Unable to Find Folder Details",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.white,
-                                textColor: Colors.black,
-                                fontSize: 16.0);
+                            calltoast(deviceName);
+                            callPolygonStop();
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        DashboardView()));
+                                        dashboard_screen()));
                           }
                         } else {
-                          // Navigator.pop(context);
+                          /* FlutterLogs.logInfo(
+                              "ilm_installation_page",
+                              "ilm_installation",
+                              "ILM Device Not authorized to Install");*/
                           pr.hide();
-                          calltoast(deviceName);
+                          callPolygonStop();
+                          Fluttertoast.showToast(
+                              msg:
+                              app_compat_one + SelectedRegion + app_compat_two,
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.white,
+                              textColor: Colors.black,
+                              fontSize: 16.0);
+
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      DashboardView()));
+                                      dashboard_screen()));
                         }
                       } else {
-                        // Navigator.pop(context);
                         pr.hide();
-                        calltoast(deviceName);
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                DashboardView()));
+                        Fluttertoast.showToast(
+                            msg:
+                            app_fetch_loc,
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.white,
+                            textColor: Colors.black,
+                            fontSize: 16.0);
                       }
                     } else {
-                      // Navigator.pop(context);
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                              "Please wait to load lattitude, longitude Details to Install.",
+                          app_reg_selec,
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -548,78 +860,80 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                           fontSize: 16.0);
                     }
                   } else {
-                    // Navigator.pop(context);
                     pr.hide();
+                    callPolygonStop();
                     Fluttertoast.showToast(
                         msg:
-                            "Kindly Select the Region, Zone and Ward Details to Install.",
+                        app_device_faulty,
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
                         backgroundColor: Colors.white,
                         textColor: Colors.black,
                         fontSize: 16.0);
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
-                  // Navigator.pop(context);
                   pr.hide();
-                  Fluttertoast.showToast(
-                      msg:
-                          "Device Currently in Faulty State Unable to Install.",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.BOTTOM,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.white,
-                      textColor: Colors.black,
-                      fontSize: 16.0);
+                  /*FlutterLogs.logInfo(
+                      "ilm_installation_page",
+                      "ilm_installation",
+                      "ILM Device Invalid Credentials Server Exception");*/
+                  callPolygonStop();
+                  calltoast(
+                      app_dev_cred_improper);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => DashboardView()));
+                      builder: (BuildContext context) => dashboard_screen()));
                 }
               } else {
-                // Navigator.pop(context);
+                /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+                    "ILM Device details not found Exception");*/
                 pr.hide();
-                calltoast(deviceName);
+                calltoast(
+                    app_dev_nfound_one + DeviceName + app_dev_nfound_two );
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => DashboardView()));
+                    builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
-              // Navigator.pop(context);
+              /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+                  "ILM Device Invalid Image to Server Exception");*/
               pr.hide();
-              calltoast(deviceName);
-               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => DashboardView()));
+              Fluttertoast.showToast(
+                  msg:
+                  app_device_image_cap,
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
             }
-          } else {
-            // Navigator.pop(context);
+          } catch (e) {
+            callPolygonStop();
+            /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+                "ILM Device Installation Exception");*/
             pr.hide();
-            Fluttertoast.showToast(
-                msg:
-                    "Invalid Image Capture, Please recapture and try installation",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
-        } catch (e) {
-          // Navigator.pop(context);
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              callILMInstallation(context, imageFile, DeviceName, SelectedWard);
+            var message = toThingsboardError(e, context);
+            if (message == session_expired) {
+              var status = loginThingsboard.callThingsboardLogin(context);
+              if (status == true) {
+                callILMInstallation(
+                    context, imageFile, DeviceName, SelectedWard);
+              }
+            } else {
+              calltoast(deviceName);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => dashboard_screen()));
             }
-          } else {
-            calltoast(deviceName);
-            // Navigator.pop(context);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => DashboardView()));
           }
         }
-      }
-    });
+      });
+    } else {
+      pr.hide();
+      Permission.locationAlways.request();
+      // openAppSettings();
+    }
   }
 
   void showMyDialog(BuildContext context) {
@@ -648,17 +962,17 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              width: 200,
-                              height: 200,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.grey[800],
-                              )),
+                          decoration: BoxDecoration(color: Colors.white),
+                          width: 200,
+                          height: 200,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey[800],
+                          )),
                     ),
                     SizedBox(height: 10),
                     Text(
-                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      Adressaccuvalue[0].toString(),
                       style: const TextStyle(
                           fontSize: 16.0,
                           fontFamily: "Montserrat",
@@ -678,7 +992,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      "Installed Successfully",
+                      app_dev_inst_success,
                       style: const TextStyle(
                           fontSize: 22.0,
                           fontFamily: "Montserrat",
@@ -702,40 +1016,16 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         fontSize: 16.0);
   }
 
-  // Future<LocationData?> _getLocation() async {
-  //   Location location = Location();
-  //   LocationData _locationData;
-  //   bool _serviceEnabled;
-  //   PermissionStatus _permissionGranted;
-  //
-  //   _serviceEnabled = await location.serviceEnabled();
-  //   if (!_serviceEnabled) {
-  //     _serviceEnabled = await location.requestService();
-  //     if (!_serviceEnabled) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _permissionGranted = await location.hasPermission();
-  //   if (_permissionGranted == PermissionStatus.denied) {
-  //     _permissionGranted = await location.requestPermission();
-  //     if (_permissionGranted != PermissionStatus.granted) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _locationData = await location.getLocation();
-  //
-  //   return _locationData;
-  // }
-
-  // Future<String> _getAddress(double? lat, double? lang) async {
-  //   if (lat == null || lang == null) return "";
-  //   final coordinates = new Coordinates(lat, lang);
-  //   List<Address> addresss = (await Geocoder.local
-  //       .findAddressesFromCoordinates(coordinates)) as List<Address>;
-  //   return "${addresss.elementAt(1).addressLine}";
-  // }
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates));
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
@@ -750,14 +1040,18 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       print("${response.statusCode}");
 
       if (response.statusCode.toString() == "200") {
+        callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => DashboardView()));
+            builder: (BuildContext context) => dashboard_screen()));
         showMyDialog(context);
       } else {}
       return response;
     } catch (e) {
+      callPolygonStop();
+      /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+          "Captured Image Upload Error");*/
       Fluttertoast.showToast(
-          msg: "Device Installation Image Upload Error",
+          msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -771,11 +1065,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
+        "ILM Device Installation Server Error");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => DashboardView()));
+            builder: (BuildContext context) => dashboard_screen()));
       }
     } else {
       if (error is DioError) {
@@ -840,5 +1136,16 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         StackTrace.current;
 
     return tbError;
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
   }
 }

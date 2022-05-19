@@ -4,8 +4,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/model/device_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
@@ -17,21 +18,20 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-// import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
-import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
-
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
+import '../../dashboard/dashboard_screen.dart';
 
 class gwcaminstall extends StatefulWidget {
   const gwcaminstall() : super();
@@ -44,8 +44,8 @@ class gwcaminstallState extends State<gwcaminstall> {
   String DeviceName = "0";
   var imageFile;
   var accuvalue;
-  var addvalue;
-  // LocationData? currentLocation;
+  var Adressaccuvalue;
+
   String address = "";
   String SelectedWard = "0";
   String SelectedZone = "0";
@@ -53,21 +53,26 @@ class gwcaminstallState extends State<gwcaminstall> {
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
-  String addresss = "0";
+
   String? _error;
   late ProgressDialog pr;
+  String geoFence = "false";
   List<double>? _latt = [];
-
+  var caclsss = 0;
   String Lattitude = "0";
+  var counter = 0;
   String Longitude = "0";
-  late bool visibility = true;
+  late bool visibility = false;
   late bool viewvisibility = true;
 
   final _streamController = StreamController<PolyGeofence>();
 
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+
+  late Timer _timer;
+  int _start = 20;
 
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
       interval: 5000,
@@ -99,39 +104,173 @@ class gwcaminstallState extends State<gwcaminstall> {
     _streamController.sink.add(polyGeofence);
   }
 
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
-
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
-    Lattitude = location!.latitude!.toString();
-    Longitude = location!.longitude!.toString();
+    accuracy = location.accuracy;
+    Lattitude = location.latitude.toString();
+    Longitude = location.longitude.toString();
+    accuvalue = accuracy.toString().split(".");
     var insideArea;
-    if (accuracy <= 5) {
+
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
+
+    if (geoFence == "true") {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
         insideArea = _checkIfValidMarker(
             LatLng(location.latitude, location.longitude),
             _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
-        visibility = true;
-        _polyGeofenceService.stop();
+        if (insideArea == true) {
+          if (accuracy <= 10) {
+            _getAddress(location!.latitude, location!.longitude).then((value) {
+              setState(() {
+                address = value;
+              });
+            });
+          } else {
+            setState(() {
+              visibility = false;
+            });
+            Fluttertoast.showToast(
+                msg:
+                app_fetch_loc,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+          }
+          callPolygonStop();
+        } else {
+          setState(() {
+            visibility = false;
+          });
+          if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
+            Fluttertoast.showToast(
+                msg:
+                app_loc_ward,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
+            counter++;
+          }
+          callPolygonStop();
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => dashboard_screen()));
+        }
       }
     } else {
-      visibility = false;
-      Fluttertoast.showToast(
-          msg:
-          "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-              insideArea!.toString(),
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
+      if (accuracy <= 10) {
+        _timer.cancel();
+        callPolygonStop();
+        _getAddress(location!.latitude, location!.longitude).then((value) {
+          setState(() {
+            visibility = true;
+            address = value;
+          });
+        });
+      }
     }
+
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      setState(() {
+        visibility = true;
+        viewvisibility = false;
+      });
+    }
+
+    Adressaccuvalue = address.toString().split(",");
+  }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          if (accuracy <= 10) {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          } else {
+            timer.cancel();
+            callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+          }
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+    Adressaccuvalue = address.toString().split(",");
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
   }
 
   Future<void> callPolygons() async {}
@@ -177,22 +316,20 @@ class gwcaminstallState extends State<gwcaminstall> {
     return true;
   }
 
-
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
-
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
     FirmwareVersion = prefs.getString("firmwareVersion").toString();
+    geoFence = prefs.getString('geoFence').toString();
 
     setState(() {
       DeviceName = DeviceName;
       SelectedWard = SelectedWard;
       SelectedZone = SelectedZone;
+      FirmwareVersion = FirmwareVersion;
+      geoFence = geoFence;
     });
   }
 
@@ -202,52 +339,54 @@ class gwcaminstallState extends State<gwcaminstall> {
     // getLocation();
     DeviceName = "";
     SelectedWard = "";
-    _openCamera(context);
     getSharedPrefs();
+    _openCamera(context);
+    setUpLogs();
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+    });
+
+    if (geoFence == "true") {
+      CallCoordinates(context);
+    } else {
+      Fluttertoast.showToast(
+          msg: app_geofence_nfound,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      _polyGeofenceService.stop();
+    }
   }
 
-  // Future<void> _listenLocation() async {
-  //   _locationSubscription =
-  //       locations.onLocationChanged.handleError((dynamic err) {
-  //     if (err is PlatformException) {
-  //       setState(() {
-  //         _error = err.code;
-  //       });
-  //     }
-  //     _locationSubscription?.cancel();
-  //     setState(() {
-  //       _locationSubscription = null;
-  //     });
-  //   }).listen((LocationData currentLocation) {
-  //     setState(() {
-  //       _error = null;
-  //       _location = currentLocation;
-  //       _getAddress(_location!.latitude, _location!.longitude).then((value) {
-  //         setState(() {
-  //           address = value;
-  //           // if (_latt!.length <= 5) {
-  //           _latt!.add(_location!.latitude!);
-  //           lattitude = _location!.latitude!;
-  //           longitude = _location!.longitude!;
-  //           accuracy = _location!.accuracy!;
-  //           // addresss = addresss;
-  //           // } else {
-  //           if (accuracy <= 7) {
-  //             _locationSubscription?.cancel();
-  //             setState(() {
-  //               _locationSubscription = null;
-  //             });
-  //             accuvalue = accuracy.toString().split(".");
-  //             addvalue = value.toString().split(",");
-  //             callReplacementComplete(
-  //                 context, imageFile, DeviceName, SelectedWard);
-  //           }
-  //           // }
-  //         });
-  //       });
-  //     });
-  //   });
-  // }
+  Future<void> CallCoordinates(context) async {
+    _polyGeofenceList[0].polygon.clear();
+    String data = await DefaultAssetBundle.of(context)
+        .loadString("assets/json/geofence.json");
+    final jsonResult = jsonDecode(data); //latest Dart
+    var coordinateCount =
+        jsonResult['features'][0]['geometry']['coordinates'][0].length;
+    var details;
+    for (int i = 0; i < coordinateCount; i++) {
+      var latter =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      var rlonger =
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      // polygonad(LatLng(latter,rlonger));
+      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+      // details[new LatLng(latter,rlonger)];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +397,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -275,8 +414,9 @@ class gwcaminstallState extends State<gwcaminstall> {
 
     return WillPopScope(
         onWillPop: () async {
+          callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => DashboardView()));
+              builder: (BuildContext context) => dashboard_screen()));
           return true;
         },
         child: Scaffold(
@@ -293,71 +433,61 @@ class gwcaminstallState extends State<gwcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
-                  Container(
-                      width: double.infinity,
-                      child: TextButton(
-                          child: Text("Complete Installation",
-                              style: const TextStyle(
-                                  fontSize: 18.0,
-                                  fontFamily: "Montserrat",
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
-                          style: ButtonStyle(
-                              padding: MaterialStateProperty.all<EdgeInsets>(
-                                  EdgeInsets.all(20)),
-                              backgroundColor:
+                  Visibility(
+                      visible: visibility,
+                      child: Container(
+                          width: double.infinity,
+                          child: TextButton(
+                              child: Text(app_com_install,
+                                  style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              style: ButtonStyle(
+                                  padding:
+                                  MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
+                                  backgroundColor:
                                   MaterialStateProperty.all(Colors.green),
-                              shape: MaterialStateProperty.all<
+                                  shape: MaterialStateProperty.all<
                                       RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
-                          onPressed: () {
-                            // Utility.progressDialog(context);
-                            if (imageFile != null) {
-                              pr.show();
-                              // _listenLocation();
-
-                              WidgetsBinding.instance
-                                  ?.addPostFrameCallback((_) {
-                                _polyGeofenceService.start();
-                                _polyGeofenceService
-                                    .addPolyGeofenceStatusChangeListener(
-                                    _onPolyGeofenceStatusChanged);
-                                _polyGeofenceService.addLocationChangeListener(
-                                    _onLocationChanged);
-                                _polyGeofenceService
-                                    .addLocationServicesStatusChangeListener(
-                                    _onLocationServicesStatusChanged);
-                                _polyGeofenceService
-                                    .addStreamErrorListener(_onError);
-                                _polyGeofenceService
-                                    .start(_polyGeofenceList)
-                                    .catchError(_onError);
-                              });
-
-                            } else {
-                              pr.hide();
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "Invalid Image Capture, Please recapture and try installation",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.white,
-                                  textColor: Colors.black,
-                                  fontSize: 16.0);
-                            }
-                          }))
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(25.0),
+                                      ))),
+                              onPressed: () {
+                                // Utility.progressDialog(context);
+                                if (imageFile != null) {
+                                  pr.show();
+                                  // _listenLocation();
+                                  if (geoFence == true) {
+                                    CallGeoFenceListener(context);
+                                  } else {
+                                    callReplacementComplete(context, imageFile,
+                                        DeviceName, SelectedWard);
+                                  }
+                                } else {
+                                  pr.hide();
+                                  Fluttertoast.showToast(
+                                      msg:
+                                      app_device_image_cap,
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.BOTTOM,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.white,
+                                      textColor: Colors.black,
+                                      fontSize: 16.0);
+                                }
+                              }))),
                 ]))));
   }
 
@@ -369,8 +499,44 @@ class gwcaminstallState extends State<gwcaminstall> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      imageFile = pickedFile;
+      if(pickedFile != null) {
+        imageFile = pickedFile;
+      }else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => dashboard_screen()),
+        );
+      }
     });
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var geoFence = prefs.getString('geoFence').toString();
+    if (geoFence == "true") {
+      WidgetsBinding.instance?.addPostFrameCallback((_) {
+        _polyGeofenceService.start();
+        _polyGeofenceService
+            .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+        _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+        _polyGeofenceService.addLocationServicesStatusChangeListener(
+            _onLocationServicesStatusChanged);
+        _polyGeofenceService.addStreamErrorListener(_onError);
+        _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+      });
+    } else {
+      visibility = false;
+      Fluttertoast.showToast(
+          msg: app_geofence_nfound,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.white,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      callReplacementComplete(context, imageFile, DeviceName, SelectedWard);
+    }
   }
 
   Future<void> callReplacementComplete(
@@ -378,299 +544,354 @@ class gwcaminstallState extends State<gwcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
     String SelectedRegion = prefs.getString('SelectedRegion').toString();
+    String SelectedZone = prefs.getString('SelectedZone').toString();
     String deviceName = prefs.getString('deviceName').toString();
     String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
-    var versionCompatability = false;
+    var versionCompatability = true;
 
-    Utility.isConnected().then((value) async {
-      if (value) {
-        // Utility.progressDialog(context);
-        pr.show();
-        try {
-          var tbClient = ThingsboardClient(serverUrl);
-          tbClient.smart_init();
+    var status = await Permission.location.status;
+    if (status.isGranted) {
+      Utility.isConnected().then((value) async {
+        if (value) {
+          // Utility.progressDialog(context);
+          pr.show();
+          try {
+            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+            tbClient.smart_init();
 
-          Device response;
-          response = (await tbClient
-              .getDeviceService()
-              .getTenantDevice(deviceName)) as Device;
+            Device response;
+            response = (await tbClient
+                .getDeviceService()
+                .getTenantDevice(deviceName)) as Device;
 
-          if (imageFile != null) {
-            if (response != null) {
-              DeviceCredentials deviceCredentials = await tbClient
-                  .getDeviceService()
-                  .getDeviceCredentialsByDeviceId(
-                      response.id!.id.toString()) as DeviceCredentials;
+            if (imageFile != null) {
+              if (response != null) {
+                DeviceCredentials deviceCredentials = await tbClient
+                    .getDeviceService()
+                    .getDeviceCredentialsByDeviceId(
+                    response.id!.id.toString()) as DeviceCredentials;
 
-              if (deviceCredentials.credentialsId.length == 15) {
-                DBHelper dbHelper = DBHelper();
-                var regionid;
-                List<Region> regiondetails = await dbHelper
-                        .region_name_regionbasedDetails(SelectedRegion)
-                    as List<Region>;
-                if (regiondetails.length != "0") {
-                  regionid = regiondetails.first.regionid;
-                }
-
-                // List<String> firmmyList = [];
-                // firmmyList.add("firmware_versions");
-                // List<AttributeKvEntry> firmmyList_responser;
-                //
-                // List<AttributeKvEntry> responserse;
-                //
-                // responserse = (await tbClient
-                //     .getAttributeService()
-                //     .getAttributeKvEntries(response.id!, firmmyList))
-                // as List<AttributeKvEntry>;
-
-                try {
-                  List<String> myfirmList = [];
-                  myfirmList.add("firmware_versions");
-
-                  List<AttributeKvEntry> faultresponser;
-
-                  faultresponser = (await tbClient
-                          .getAttributeService()
-                          .getFirmAttributeKvEntries(regionid, myfirmList))
-                      as List<AttributeKvEntry>;
-
-                  //
-                  // List<TsKvEntry> faultresponser;
-                  // faultresponser = await tbClient
-                  //     .getAttributeService()
-                  //     .getFIRMselectedLatestTimeseries(
-                  //         regionid, "firmware_versions");
-
-                  if (faultresponser.length != 0) {
-                    var firmwaredetails =
-                        faultresponser.first.getValue().toString();
-                    final decoded = jsonDecode(firmwaredetails) as Map;
-                    var firmware_versions = decoded['firmware_version'];
-
-                    if (firmware_versions
-                        .toString()
-                        .contains(FirmwareVersion)) {
-                      versionCompatability = true;
-                    } else {
-                      versionCompatability = false;
-                    }
+                if (deviceCredentials.credentialsId.length == 15) {
+                  DBHelper dbHelper = DBHelper();
+                  var regionid;
+                  List<Region> regiondetails = await dbHelper
+                      .region_name_regionbasedDetails(SelectedRegion);
+                  if (regiondetails.length != "0") {
+                    regionid = regiondetails.first.regionid;
                   }
-                } catch (e) {
-                  var message = toThingsboardError(e, context);
-                }
 
-                // if (responserse.length != 0) {
-                //   var firmwaredetails = responserse.first.getValue();
-                // }
+                  /* List<String> firmmyList = [];
+                  firmmyList.add("firmware_versions");
+                  List<AttributeKvEntry> firmmyList_responser;
 
-                // List<String> myList = [];
-                // myList.add("faulty");
-                // List<AttributeKvEntry> responser;
-                //
-                // responser = (await tbClient
-                //     .getAttributeService()
-                //     .getAttributeKvEntries(response.id!, myList))
-                // as List<AttributeKvEntry>;
-                //
-                // var faultyDetails = false;
-                // if (responser.length == 0) {
-                //   faultyDetails = false;
-                // } else {
-                //   faultyDetails = responser.first.getValue();
-                // }
+                  List<AttributeKvEntry> responserse;
 
-                // if (faultyDetails == false) {
-                if (SelectedWard != "Ward") {
-                  if (lattitude.toString() != null) {
-                    if (versionCompatability == true) {
-                      DBHelper dbHelper = DBHelper();
-                      List<Ward> warddetails = await dbHelper
-                          .ward_basedDetails(SelectedWard) as List<Ward>;
-                      if (warddetails.length != "0") {
-                        warddetails.first.wardid;
+                  responserse = (await tbClient
+                      .getAttributeService()
+                      .getAttributeKvEntries(response.id!, firmmyList))
+                  as List<AttributeKvEntry>;*/
 
-                        Map<String, dynamic> fromId = {
-                          'entityType': 'ASSET',
-                          'id': warddetails.first.wardid
-                        };
-                        Map<String, dynamic> toId = {
-                          'entityType': 'DEVICE',
-                          'id': response.id!.id
-                        };
+                  try {
+                    List<String> myfirmList = [];
+                    myfirmList.add("firmware_versions");
+                    List<AttributeKvEntry> faultresponser;
 
-                        EntityRelation entityRelation = EntityRelation(
-                            from: EntityId.fromJson(fromId),
-                            to: EntityId.fromJson(toId),
-                            type: "Contains",
-                            typeGroup: RelationTypeGroup.COMMON);
+                    faultresponser = (await tbClient
+                        .getAttributeService()
+                        .getFirmAttributeKvEntries(regionid, myfirmList));
 
-                        Future<EntityRelation> entityRelations = tbClient
-                            .getEntityRelationService()
-                            .saveRelation(entityRelation);
+                    /* List<TsKvEntry> faultresponser;
+                    faultresponser = await tbClient
+                        .getAttributeService()
+                        .getFIRMselectedLatestTimeseries(
+                            regionid, "firmware_versions");
 
-                        Map data = {
-                          'landmark': addresss,
-                          'lattitude': lattitude.toString(),
-                          'longitude': longitude.toString(),
-                          'accuracy': accuracy.toString()
-                        };
+                    if (faultresponser.length != 0) {
+                      var firmwaredetails =
+                          faultresponser.first.getValue().toString();
+                      final decoded = jsonDecode(firmwaredetails) as Map;
+                      var firmware_versions = decoded['firmware_version'];
 
-                        var saveAttributes = await tbClient
-                            .getAttributeService()
-                            .saveDeviceAttributes(
+                      if (firmware_versions
+                          .toString()
+                          .contains(FirmwareVersion)) {*/
+                        versionCompatability = true;
+                      /*} else {
+                        versionCompatability = false;
+                      }
+                    }*/
+
+                  } catch (e) {
+                    /*FlutterLogs.logInfo(
+                        "gw_installation_page",
+                        "gw_installation",
+                        "Unable to Find Firmware version of Device");*/
+                    var message = toThingsboardError(e, context);
+                  }
+
+                  /* if (responserse.length != 0) {
+                    var firmwaredetails = responserse.first.getValue();
+                  }
+
+                  List<String> myList = [];
+                  myList.add("faulty");
+                  List<AttributeKvEntry> responser;
+
+                  responser = (await tbClient
+                          .getAttributeService()
+                          .getAttributeKvEntries(response.id!, myList));
+                  */
+
+                  var faultyDetails = false;
+
+                  /* if (responser.length == 0) {
+                     faultyDetails = false;
+                   } else {
+                     faultyDetails = responser.first.getValue();
+                   } */
+
+                  if (faultyDetails == false) {
+                    if (SelectedWard != "Ward") {
+                      if (lattitude.toString() != null) {
+                        if (versionCompatability == true) {
+                          DBHelper dbHelper = DBHelper();
+                          List<Ward> warddetails =
+                          await dbHelper.ward_basedDetails(SelectedWard);
+                          if (warddetails.length != "0") {
+                            warddetails.first.wardid;
+
+                            Map<String, dynamic> fromId = {
+                              'entityType': 'ASSET',
+                              'id': warddetails.first.wardid
+                            };
+                            Map<String, dynamic> toId = {
+                              'entityType': 'DEVICE',
+                              'id': response.id!.id
+                            };
+
+                            EntityRelation entityRelation = EntityRelation(
+                                from: EntityId.fromJson(fromId),
+                                to: EntityId.fromJson(toId),
+                                type: "Contains",
+                                typeGroup: RelationTypeGroup.COMMON);
+
+                            Future<EntityRelation> entityRelations = tbClient
+                                .getEntityRelationService()
+                                .saveRelation(entityRelation);
+
+                            Map data = {
+                              'landmark': address,
+                              'lattitude': Lattitude.toString(),
+                              'longitude': Longitude.toString(),
+                              'accuracy': accuracy.toString(),
+                              'zoneName': SelectedZone,
+                              'wardName': SelectedWard,
+                            };
+
+                            var saveAttributes = await tbClient
+                                .getAttributeService()
+                                .saveDeviceAttributes(
                                 response.id!.id!, "SERVER_SCOPE", data);
 
-                        List<EntityGroupId> currentdeviceresponse;
-                        currentdeviceresponse = await tbClient
-                            .getEntityGroupService()
-                            .getEntityGroupsForFolderEntity(response.id!.id!);
-
-                        if (currentdeviceresponse != null) {
-                          var firstdetails = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroup(currentdeviceresponse.first.id!);
-
-                          if (firstdetails!.name.toString() != "All") {
-                            DevicecurrentFolderName =
-                                currentdeviceresponse.first.id!;
-                          }
-                          var seconddetails = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroup(currentdeviceresponse.last.id!);
-                          if (seconddetails!.name.toString() != "All") {
-                            DevicecurrentFolderName =
-                                currentdeviceresponse.last.id!;
-                          }
-
-                          List<EntityGroupInfo> entitygroups;
-                          entitygroups = await tbClient
-                              .getEntityGroupService()
-                              .getEntityGroupsByFolderType();
-
-                          if (entitygroups != null) {
-                            for (int i = 0; i < entitygroups.length; i++) {
-                              if (entitygroups.elementAt(i).name ==
-                                  "Gateway- " + SelectedZone) {
-                                DevicemoveFolderName = entitygroups
-                                    .elementAt(i)
-                                    .id!
-                                    .id!
-                                    .toString();
-                              }
-                            }
-
-                            if (DevicemoveFolderName.isEmpty) {
-                              Map<String, dynamic> type = {
-                                'name': "Gateway- " + SelectedZone,
-                                'type': 'DEVICE'
-                              };
-
-                              // EntityGroup entityGroup = EntityGroup.fromJson(type);
-
-                              EntityGroup entityGroup = EntityGroup(
-                                  "Gateway- " + SelectedZone,
-                                  EntityType.DEVICE);
-
-                              EntityGroupInfo groupCreation = await tbClient
-                                  .getEntityGroupService()
-                                  .saveEntityGroup(entityGroup);
-                              DevicemoveFolderName =
-                                  groupCreation.id!.id.toString();
-                            }
-
-                            List<String> myList = [];
-                            myList.add(response.id!.id!);
-
-                            var remove_response = tbClient
+                            List<EntityGroupId> currentdeviceresponse;
+                            currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
-                                .removeEntitiesFromEntityGroup(
+                                .getEntityGroupsForFolderEntity(
+                                response.id!.id!);
+
+                            if (currentdeviceresponse != null) {
+                              var firstdetails = await tbClient
+                                  .getEntityGroupService()
+                                  .getEntityGroup(
+                                  currentdeviceresponse.first.id!);
+
+                              if (firstdetails!.name.toString() != "All") {
+                                DevicecurrentFolderName =
+                                currentdeviceresponse.first.id!;
+                              }
+                              var seconddetails = await tbClient
+                                  .getEntityGroupService()
+                                  .getEntityGroup(
+                                  currentdeviceresponse.elementAt(1).id!);
+                              if (seconddetails!.name.toString() != "All") {
+                                DevicecurrentFolderName =
+                                currentdeviceresponse.last.id!;
+                              }
+
+                              List<EntityGroupInfo> entitygroups;
+                              entitygroups = await tbClient
+                                  .getEntityGroupService()
+                                  .getEntityGroupsByFolderType();
+
+                              if (entitygroups != null) {
+                                for (int i = 0; i < entitygroups.length; i++) {
+                                  if (entitygroups.elementAt(i).name ==
+                                      "Gateway- " + SelectedZone) {
+                                    DevicemoveFolderName = entitygroups
+                                        .elementAt(i)
+                                        .id!
+                                        .id!
+                                        .toString();
+                                  }
+                                }
+
+                                if (DevicemoveFolderName.isEmpty) {
+                                  Map<String, dynamic> type = {
+                                    'name': "Gateway- " + SelectedZone,
+                                    'type': 'DEVICE'
+                                  };
+
+                                  // EntityGroup entityGroup = EntityGroup.fromJson(type);
+
+                                  EntityGroup entityGroup = EntityGroup(
+                                      "Gateway- " + SelectedZone,
+                                      EntityType.DEVICE);
+
+                                  EntityGroupInfo groupCreation = await tbClient
+                                      .getEntityGroupService()
+                                      .saveEntityGroup(entityGroup);
+                                  DevicemoveFolderName =
+                                      groupCreation.id!.id.toString();
+                                }
+
+                                List<String> myList = [];
+                                myList.add(response.id!.id!);
+
+                                var remove_response = tbClient
+                                    .getEntityGroupService()
+                                    .removeEntitiesFromEntityGroup(
                                     DevicecurrentFolderName, myList);
 
-                            var add_response = tbClient
-                                .getEntityGroupService()
-                                .addEntitiesToEntityGroup(
+                                var add_response = tbClient
+                                    .getEntityGroupService()
+                                    .addEntitiesToEntityGroup(
                                     DevicemoveFolderName, myList);
 
-                            // Need to add with Region Folder, Zone Folder and
-                            // Ward Folder as device verification, Need to update
+                                // Need to add with Region Folder, Zone Folder and
+                                // Ward Folder as device verification, Need to update
 
-                            final bytes =
+                                final bytes =
                                 File(imageFile!.path).readAsBytesSync();
-                            String img64 = base64Encode(bytes);
+                                String img64 = base64Encode(bytes);
 
-                            postRequest(context, img64, DeviceName);
-                            pr.hide();
+                                postRequest(context, img64, DeviceName);
+                                pr.hide();
+                              } else {
+                                // Navigator.pop(context);
+                                /*FlutterLogs.logInfo(
+                                    "gw_installation_page",
+                                    "gw_installation",
+                                    "Gateway Device No Folder Found Exception");*/
+                                callPolygonStop();
+                                pr.hide();
+                                Fluttertoast.showToast(
+                                    msg: app_unable_folder,
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.white,
+                                    textColor: Colors.black,
+                                    fontSize: 16.0);
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (BuildContext context) =>
+                                            dashboard_screen()));
+                              }
+                            } else {
+                              callPolygonStop();
+                              // Navigator.pop(context);
+                              pr.hide();
+                              calltoast(deviceName);
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          dashboard_screen()));
+                            }
                           } else {
+                            callPolygonStop();
                             // Navigator.pop(context);
                             pr.hide();
-                            Fluttertoast.showToast(
-                                msg: "Unable to Find Folder Details",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.white,
-                                textColor: Colors.black,
-                                fontSize: 16.0);
+                            calltoast(deviceName);
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        DashboardView()));
+                                        dashboard_screen()));
                           }
                         } else {
-                          // Navigator.pop(context);
+                          callPolygonStop();
+                          /* FlutterLogs.logInfo(
+                              "gw_installation_page",
+                              "gw_installation",
+                              "Gateway Device Not Authorized Exception");*/
                           pr.hide();
-                          calltoast(deviceName);
+                          Fluttertoast.showToast(
+                              msg:
+                              app_compat_one + SelectedRegion + app_compat_two,
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.white,
+                              textColor: Colors.black,
+                              fontSize: 16.0);
+
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      DashboardView()));
+                                      dashboard_screen()));
                         }
                       } else {
                         // Navigator.pop(context);
                         pr.hide();
-                        calltoast(deviceName);
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                DashboardView()));
+                        Fluttertoast.showToast(
+                            msg:
+                            app_fetch_loc,
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.white,
+                            textColor: Colors.black,
+                            fontSize: 16.0);
                       }
                     } else {
+                      // Navigator.pop(context);
                       pr.hide();
                       Fluttertoast.showToast(
                           msg:
-                              "Selected Device is not authorized to install in this Region",
+                          app_reg_selec,
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
                           backgroundColor: Colors.white,
                           textColor: Colors.black,
                           fontSize: 16.0);
-
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              DashboardView()));
                     }
                   } else {
                     // Navigator.pop(context);
+                    /*FlutterLogs.logInfo("gw_installation_page",
+                        "gw_installation", "Gateway Device Faulty Exception");*/
                     pr.hide();
                     Fluttertoast.showToast(
                         msg:
-                            "Please wait to load lattitude, longitude Details to Install.",
+                        app_device_faulty,
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
                         backgroundColor: Colors.white,
                         textColor: Colors.black,
                         fontSize: 16.0);
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (BuildContext context) => dashboard_screen()));
                   }
                 } else {
                   // Navigator.pop(context);
+                  /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                      "Gateway Device Invalid Credentials Exception");*/
                   pr.hide();
                   Fluttertoast.showToast(
-                      msg:
-                          "Kindly Select the Region, Zone and Ward Details to Install.",
+                      msg: app_device_invalid_credentials,
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.BOTTOM,
                       timeInSecForIosWeb: 1,
@@ -678,72 +899,56 @@ class gwcaminstallState extends State<gwcaminstall> {
                       textColor: Colors.black,
                       fontSize: 16.0);
                 }
-                // } else {
-                //   // Navigator.pop(context);
-                //   pr.hide();
-                //   Fluttertoast.showToast(
-                //       msg:
-                //       "Device Currently in Faulty State Unable to Install.",
-                //       toastLength: Toast.LENGTH_SHORT,
-                //       gravity: ToastGravity.BOTTOM,
-                //       timeInSecForIosWeb: 1,
-                //       backgroundColor: Colors.white,
-                //       textColor: Colors.black,
-                //       fontSize: 16.0);
-                //   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                //       builder: (BuildContext context) => DashboardView()));
-                // }
               } else {
+                callPolygonStop();
                 // Navigator.pop(context);
                 pr.hide();
-                Fluttertoast.showToast(
-                    msg: "Invalid Device Credentials",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
+                calltoast(deviceName);
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => dashboard_screen()));
               }
             } else {
               // Navigator.pop(context);
+              /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                  "Gateway Device Invalid Image Exception");*/
               pr.hide();
-              calltoast(deviceName);
-               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => DashboardView()));
+              Fluttertoast.showToast(
+                  msg:
+                  app_device_image_cap,
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
             }
-          } else {
+          } catch (e) {
+            callPolygonStop();
             // Navigator.pop(context);
+            /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+                "Gateway Device Installation Exception");*/
             pr.hide();
-            Fluttertoast.showToast(
-                msg:
-                    "Invalid Image Capture, Please recapture and try installation",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.white,
-                textColor: Colors.black,
-                fontSize: 16.0);
-          }
-        } catch (e) {
-          // Navigator.pop(context);
-          pr.hide();
-          var message = toThingsboardError(e, context);
-          if (message == session_expired) {
-            var status = loginThingsboard.callThingsboardLogin(context);
-            if (status == true) {
-              callReplacementComplete(
-                  context, imageFile, DeviceName, SelectedWard);
+            var message = toThingsboardError(e, context);
+            if (message == session_expired) {
+              var status = loginThingsboard.callThingsboardLogin(context);
+              if (status == true) {
+                callReplacementComplete(
+                    context, imageFile, DeviceName, SelectedWard);
+              }
+            } else {
+              calltoast(deviceName);
+              // Navigator.pop(context);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => dashboard_screen()));
             }
-          } else {
-            calltoast(deviceName);
-            // Navigator.pop(context);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => DashboardView()));
           }
         }
-      }
-    });
+      });
+    } else {
+      pr.hide();
+      Permission.locationAlways.request();
+      // openAppSettings();
+    }
   }
 
   void showMyDialog(BuildContext context) {
@@ -772,17 +977,17 @@ class gwcaminstallState extends State<gwcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              width: 200,
-                              height: 200,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.grey[800],
-                              )),
+                          decoration: BoxDecoration(color: Colors.white),
+                          width: 200,
+                          height: 200,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey[800],
+                          )),
                     ),
                     SizedBox(height: 10),
                     Text(
-                      addvalue[0].toString() + "," + addvalue[1].toString(),
+                      Adressaccuvalue[0].toString(),
                       style: const TextStyle(
                           fontSize: 16.0,
                           fontFamily: "Montserrat",
@@ -802,7 +1007,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      "Installed Successfully",
+                      app_dev_inst_success,
                       style: const TextStyle(
                           fontSize: 22.0,
                           fontFamily: "Montserrat",
@@ -826,45 +1031,22 @@ class gwcaminstallState extends State<gwcaminstall> {
         fontSize: 16.0);
   }
 
-  // Future<LocationData?> _getLocation() async {
-  //   Location location = Location();
-  //   LocationData _locationData;
-  //   bool _serviceEnabled;
-  //   PermissionStatus _permissionGranted;
-  //
-  //   _serviceEnabled = await location.serviceEnabled();
-  //   if (!_serviceEnabled) {
-  //     _serviceEnabled = await location.requestService();
-  //     if (!_serviceEnabled) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _permissionGranted = await location.hasPermission();
-  //   if (_permissionGranted == PermissionStatus.denied) {
-  //     _permissionGranted = await location.requestPermission();
-  //     if (_permissionGranted != PermissionStatus.granted) {
-  //       return null;
-  //     }
-  //   }
-  //
-  //   _locationData = await location.getLocation();
-  //
-  //   return _locationData;
-  // }
-  //
-  // Future<String> _getAddress(double? lat, double? lang) async {
-  //   if (lat == null || lang == null) return "";
-  //   final coordinates = new Coordinates(lat, lang);
-  //   List<Address> addresss = (await Geocoder.local
-  //       .findAddressesFromCoordinates(coordinates)) as List<Address>;
-  //   return "${addresss.elementAt(1).addressLine}";
-  // }
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)) as List<Address>;
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
 
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
     try {
       Uri myUri = Uri.parse(localAPICall);
+      // Uri myUri = Uri.parse(serverUrl);
 
       Map data = {'img': imageFile, 'name': DeviceName};
       var body = json.encode(data);
@@ -874,14 +1056,18 @@ class gwcaminstallState extends State<gwcaminstall> {
       print("${response.statusCode}");
 
       if (response.statusCode.toString() == "200") {
+        callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => DashboardView()));
+            builder: (BuildContext context) => dashboard_screen()));
         showMyDialog(context);
       } else {}
       return response;
     } catch (e) {
+      callPolygonStop();
+      /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+          "Gateway Device Captured Image Upload Error");*/
       Fluttertoast.showToast(
-          msg: "Device Installation Image Upload Error",
+          msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -895,11 +1081,13 @@ class gwcaminstallState extends State<gwcaminstall> {
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
+    /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
+        "Gateway Device Installation Server Issue");*/
     if (error.message == "Session expired!") {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => DashboardView()));
+            builder: (BuildContext context) => dashboard_screen()));
       }
     } else {
       if (error is DioError) {

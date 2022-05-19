@@ -1,28 +1,21 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
+import 'package:flutterlumin/src/thingsboard/model/dashboard_models.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/point/edge.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/ui/splash_screen.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
-
 import '../../localdb/model/region_model.dart';
-import 'package:flutter/services.dart' as rootBundle;
-import '../../localdb/model/ward_model.dart';
 
 class device_count_screen extends StatefulWidget {
   @override
@@ -32,20 +25,19 @@ class device_count_screen extends StatefulWidget {
 }
 
 class device_count_screen_state extends State<device_count_screen> {
-  final _streamController = StreamController<PolyGeofence>();
-  String SelectedRegion = "0";
-  String SelectedZone = "0";
-  String SelectedWard = "0";
+  String selectedRegion = "0";
+  String selectedZone = "0";
+  String selectedWard = "0";
 
   String totalCount = "0";
   String activeCount = "0";
   String nonactiveCount = "0";
   String ncCount = "0";
 
-  String ccms_totalCount = "0";
-  String ccms_activeCount = "0";
-  String ccms_nonactiveCount = "0";
-  String ccms_ncCount = "0";
+  String ccmsTotalCount = "0";
+  String ccmsActiveCount = "0";
+  String ccmsNonactiveCount = "0";
+  String ccmsNcCount = "0";
 
   String gw_totalCount = "0";
   String gw_activeCount = "0";
@@ -54,8 +46,6 @@ class device_count_screen_state extends State<device_count_screen> {
 
   String Maintenance = "true";
 
-  // LocationData? currentLocation;
-  String? _error;
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
@@ -63,133 +53,26 @@ class device_count_screen_state extends State<device_count_screen> {
   var accuvalue;
   var addvalue;
   var polygonad;
-  List<double>? _latt = [];
 
-  // final Location locations = Location();
-  // LocationData? _location;
-  // StreamSubscription<LocationData>? _locationSubscription;
-
-  // Create a [PolyGeofenceService] instance and set options.
-  final _polyGeofenceService = PolyGeofenceService.instance.setup(
-      interval: 5000,
-      accuracy: 100,
-      loiteringDelayMs: 60000,
-      statusChangeDelayMs: 10000,
-      allowMockLocations: false,
-      printDevLog: false);
-
-  // Create a [PolyGeofence] list.
-  final _polyGeofenceList = <PolyGeofence>[
-    PolyGeofence(
-      id: 'Office_Address',
-      data: {
-        'address': 'Coimbatore',
-        'about': 'Schnell Energy Equipments,Coimbatore.',
-      },
-      polygon: <LatLng>[
-        const LatLng(11.140339923116493, 76.94095999002457),
-      ],
-    ),
-  ];
-
-  // This function is to be called when the geofence status is changed.
-  Future<void> _onPolyGeofenceStatusChanged(PolyGeofence polyGeofence,
-      PolyGeofenceStatus polyGeofenceStatus, Location location) async {
-    print('polyGeofence: ${polyGeofence.toJson()}');
-    print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
-    _streamController.sink.add(polyGeofence);
-  }
-
-  // Future<String> getJson() {
-  //   return rootBundle.loadString('geofence.json');
-  // }
-
-  // This function is to be called when the location has changed.
-  Future<void> _onLocationChanged(Location location) async {
-    print('location: ${location.toJson()}');
-
-    // final jsondata = await rootBundle.load('assets/geofence.json');
-    // final list = json.decode(jsondata) as List<dynamic>;
-
-    // var my_data = json.decode(await getJson());
-    // my_data.toString();
-
-    for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-
-      var insideArea = _checkIfValidMarker(
-          LatLng(location.latitude, location.longitude),
-          _polyGeofenceList[0].polygon);
-      print('location check: ${insideArea}');
-
-      Fluttertoast.showToast(
-          msg: "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " + insideArea!.toString(),
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
-
-      _polyGeofenceService.stop();
-    }
-  }
-
-  // This function is to be called when a location services status change occurs
-  // since the service was started.
-  void _onLocationServicesStatusChanged(bool status) {
-    print('isLocationServicesEnabled: $status');
-  }
-
-  // This function is used to handle errors that occur in the service.
-  void _onError(error) {
-    final errorCode = getErrorCodesFromError(error);
-    if (errorCode == null) {
-      print('Undefined error: $error');
-      return;
-    }
-    print('ErrorCode: $errorCode');
-  }
-
-  bool _checkIfValidMarker(LatLng tap, List<LatLng> vertices) {
-    int intersectCount = 0;
-    for (int j = 0; j < vertices.length - 1; j++) {
-      if (rayCastIntersect(tap, vertices[j], vertices[j + 1])) {
-        intersectCount++;
-      }
-    }
-    return ((intersectCount % 2) == 1); // odd = inside, even = outside;
-  }
-
-  bool rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
-    double aY = vertA.latitude;
-    double bY = vertB.latitude;
-    double aX = vertA.longitude;
-    double bX = vertB.longitude;
-    double pY = tap.latitude;
-    double pX = tap.longitude;
-
-    if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
-      return false; // a and b can't both be above or below pt.y, and a or
-      // b must be east of pt.x
-    }
-    return true;
-  }
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
 
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    SelectedRegion = prefs.getString("SelectedRegion").toString();
-    SelectedZone = prefs.getString("SelectedZone").toString();
-    SelectedWard = prefs.getString("SelectedWard").toString();
+    selectedRegion = prefs.getString("SelectedRegion").toString();
+    selectedZone = prefs.getString("SelectedZone").toString();
+    selectedWard = prefs.getString("SelectedWard").toString();
 
     totalCount = prefs.getString("totalCount").toString();
     activeCount = prefs.getString("activeCount").toString();
     nonactiveCount = prefs.getString("nonactiveCount").toString();
     ncCount = prefs.getString("ncCount").toString();
 
-    ccms_totalCount = prefs.getString("ccms_totalCount").toString();
-    ccms_activeCount = prefs.getString("ccms_activeCount").toString();
-    ccms_nonactiveCount = prefs.getString("ccms_nonactiveCount").toString();
-    ccms_ncCount = prefs.getString("ccms_ncCount").toString();
+    ccmsTotalCount = prefs.getString("ccms_totalCount").toString();
+    ccmsActiveCount = prefs.getString("ccms_activeCount").toString();
+    ccmsNonactiveCount = prefs.getString("ccms_nonactiveCount").toString();
+    ccmsNcCount = prefs.getString("ccms_ncCount").toString();
 
     gw_totalCount = prefs.getString("gw_totalCount").toString();
     gw_activeCount = prefs.getString("gw_activeCount").toString();
@@ -199,19 +82,19 @@ class device_count_screen_state extends State<device_count_screen> {
     Maintenance = prefs.getString("Maintenance").toString();
 
     setState(() {
-      SelectedRegion = SelectedRegion;
-      SelectedZone = SelectedZone;
-      SelectedWard = SelectedWard;
+      selectedRegion = selectedRegion;
+      selectedZone = selectedZone;
+      selectedWard = selectedWard;
 
       totalCount = totalCount;
       activeCount = activeCount;
       nonactiveCount = nonactiveCount;
       ncCount = ncCount;
 
-      ccms_totalCount = ccms_totalCount;
-      ccms_activeCount = ccms_activeCount;
-      ccms_nonactiveCount = ccms_nonactiveCount;
-      ccms_ncCount = ccms_ncCount;
+      ccmsTotalCount = ccmsTotalCount;
+      ccmsActiveCount = ccmsActiveCount;
+      ccmsNonactiveCount = ccmsNonactiveCount;
+      ccmsNcCount = ccmsNcCount;
 
       gw_totalCount = gw_totalCount;
       gw_activeCount = gw_activeCount;
@@ -220,18 +103,18 @@ class device_count_screen_state extends State<device_count_screen> {
 
       Maintenance = Maintenance;
 
-      if (SelectedRegion == "0" || SelectedRegion == "null") {
-        SelectedRegion = "Region";
-        SelectedZone = "Zone";
-        SelectedWard = "Ward";
+      if (selectedRegion == "0" || selectedRegion == "null") {
+        selectedRegion = "Region";
+        selectedZone = "Zone";
+        selectedWard = "Ward";
       }
 
-      if (SelectedZone == "0" || SelectedZone == "null") {
-        SelectedZone = "Zone";
+      if (selectedZone == "0" || selectedZone == "null") {
+        selectedZone = "Zone";
       }
 
-      if (SelectedWard == "0" || SelectedWard == "null") {
-        SelectedWard = "Ward";
+      if (selectedWard == "0" || selectedWard == "null") {
+        selectedWard = "Ward";
       }
 
       if (totalCount == "null") {
@@ -239,79 +122,70 @@ class device_count_screen_state extends State<device_count_screen> {
         activeCount = "0";
         nonactiveCount = "0";
         ncCount = "0";
+      }
 
-        ccms_totalCount = "0";
-        ccms_activeCount = "0";
-        ccms_nonactiveCount = "0";
-        ccms_ncCount = "0";
+      if (ccmsTotalCount == "null") {
+        ccmsTotalCount = "0";
+        ccmsActiveCount = "0";
+        ccmsNonactiveCount = "0";
+        ccmsNcCount = "0";
+      }
 
+      if (gw_totalCount == "null") {
         gw_totalCount = "0";
         gw_activeCount = "0";
         gw_nonactiveCount = "0";
         gw_ncCount = "0";
       }
     });
-
-    String data = await DefaultAssetBundle.of(context)
-        .loadString("assets/json/geofence.json");
-    final jsonResult = jsonDecode(data); //latest Dart
-    var coordinateCount =
-        jsonResult['features'][0]['geometry']['coordinates'][0].length;
-    var details;
-    for (int i = 0; i < coordinateCount; i++) {
-      var latter =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
-      var rlonger =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
-      // polygonad(LatLng(latter,rlonger));
-      _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
-      // details[new LatLng(latter,rlonger)];
-    }
   }
 
   @override
   void initState() {
     super.initState();
-    SelectedRegion = "";
+    selectedRegion = "";
     getSharedPrefs();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _polyGeofenceService.start();
-      _polyGeofenceService
-          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
-      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
-      _polyGeofenceService.addLocationServicesStatusChangeListener(
-          _onLocationServicesStatusChanged);
-      _polyGeofenceService.addStreamErrorListener(_onError);
-      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
-    });
-    // _listenLocation();
+    setUpLogs();
+    FlutterLogs.logInfo("devicecount_page", "device_count", "pageEntry");
   }
 
-  // Future<void> _listenLocation() async {
-  //   // pr.show();
-  //   _locationSubscription =
-  //       locations.onLocationChanged.handleError((dynamic err) {
-  //     if (err is PlatformException) {
-  //       setState(() {
-  //         _error = err.code;
-  //       });
-  //     }
-  //     _locationSubscription?.cancel();
-  //     setState(() {
-  //       _locationSubscription = null;
-  //     });
-  //   }).listen((LocationData currentLocation) {
-  //     setState(() async {
-  //       _error = null;
-  //       _location = currentLocation;
-  //       _latt!.add(_location!.latitude!);
-  //       lattitude = _location!.latitude!;
-  //       longitude = _location!.longitude!;
-  //       accuracy = _location!.accuracy!;
-  //       accuvalue = accuracy.toString().split(".");
-  //     });
-  //   });
-  // }
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -336,7 +210,7 @@ class device_count_screen_state extends State<device_count_screen> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Text('Dashboard',
+                      child: Text(app_dashboard,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                               fontSize: 25.0,
@@ -371,782 +245,873 @@ class device_count_screen_state extends State<device_count_screen> {
                               topRight: Radius.circular(35.0),
                               bottomLeft: Radius.circular(0.0),
                               bottomRight: Radius.circular(0.0))),
-                      child: Column(mainAxisSize: MainAxisSize.min, children: <
-                          Widget>[
-                        SizedBox(height: 5),
-                        Container(
-                            height: 55,
-                            child: Padding(
-                                padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
-                                child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Align(
-                                        alignment: Alignment.center,
-                                        child: Padding(
-                                          padding: EdgeInsets.only(left: 5.0),
-                                          child: Point(
-                                            triangleHeight: 25.0,
-                                            edge: Edge.RIGHT,
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            region_list_screen()));
-                                                setState(() {});
-                                              },
-                                              child: Container(
-                                                color: thbDblue,
-                                                width: 120.0,
-                                                height: 50.0,
-                                                child: Center(
-                                                  child: Text('$SelectedRegion',
-                                                      style: const TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white)),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.center,
-                                        child: Padding(
-                                          padding: EdgeInsets.only(left: 5.0),
-                                          child: Point(
-                                            triangleHeight: 25.0,
-                                            edge: Edge.RIGHT,
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            zone_li_screen()));
-                                                setState(() {});
-                                              },
-                                              child: Container(
-                                                color: thbDblue,
-                                                width: 120.0,
-                                                height: 50.0,
-                                                child: Center(
-                                                  child: Text('$SelectedZone',
-                                                      style: const TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white)),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment: Alignment.center,
-                                        child: Padding(
-                                          padding: EdgeInsets.only(left: 5.0),
-                                          child: Point(
-                                            triangleHeight: 25.0,
-                                            edge: Edge.RIGHT,
-                                            child: GestureDetector(
-                                              onTap: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            ward_li_screen()));
-                                                setState(() {});
-                                              },
-                                              child: Container(
-                                                color: thbDblue,
-                                                width: 120.0,
-                                                height: 50.0,
-                                                child: Center(
-                                                  child: Text('$SelectedWard',
-                                                      style: const TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white)),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ]))),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Container(
-                            child: Card(
-                          color: Colors.transparent,
-                          elevation: 20,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Card(
-                                elevation: 20,
-                                color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      SizedBox(height: 10),
-                                      Container(
+                      child: ListView(
+                          padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
+                          children: <Widget>[
+                            SizedBox(height: 5),
+                            new Wrap(
+                                spacing: 8.0,
+                                // gap between adjacent chips
+                                runSpacing: 4.0,
+                                // gap between lines
+                                direction: Axis.horizontal,
+                                // main axis (rows or columns)
+                                children: <Widget>[
+                                  Container(
+                                      height: 55,
+                                      child: Padding(
+                                          padding:
+                                              EdgeInsets.fromLTRB(5, 5, 5, 0),
                                           child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 5.0),
+                                                    child: Point(
+                                                      triangleHeight: 25.0,
+                                                      edge: Edge.RIGHT,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                          context) =>
+                                                                      region_list_screen()));
+                                                          setState(() {});
+                                                        },
+                                                        child: Container(
+                                                          color: thbDblue,
+                                                          height: 40.0,
+                                                          child: Center(
+                                                            child: Text(
+                                                                "  " +
+                                                                    '$selectedRegion' +
+                                                                    "      ",
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    fontFamily:
+                                                                        "Montserrat",
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 5.0),
+                                                    child: Point(
+                                                      triangleHeight: 25.0,
+                                                      edge: Edge.RIGHT,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                          context) =>
+                                                                      zone_li_screen()));
+                                                          setState(() {});
+                                                        },
+                                                        child: Container(
+                                                          color: thbDblue,
+                                                          height: 40.0,
+                                                          child: Center(
+                                                            child: Text(
+                                                                "  " +
+                                                                    '$selectedZone' +
+                                                                    "      ",
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    fontFamily:
+                                                                        "Montserrat",
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        left: 5.0),
+                                                    child: Point(
+                                                      triangleHeight: 25.0,
+                                                      edge: Edge.RIGHT,
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                          context) =>
+                                                                      ward_li_screen()));
+                                                          setState(() {});
+                                                        },
+                                                        child: Container(
+                                                          color: thbDblue,
+                                                          height: 40.0,
+                                                          child: Center(
+                                                            child: Text(
+                                                                "  " +
+                                                                    '$selectedWard' +
+                                                                    "      ",
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        14.0,
+                                                                    fontFamily:
+                                                                        "Montserrat",
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white)),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ]))),
+                                ]),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Container(
+                                child: Card(
+                              color: Colors.transparent,
+                              elevation: 20,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Card(
+                                    elevation: 20,
+                                    color: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  15.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "ILM",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
+                                          SizedBox(height: 10),
+                                          Container(
+                                              child: Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      15.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                  ),
                                                 ),
-                                                alignment: Alignment.center,
                                               ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 15.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.blue,
-                                                  child: Center(
-                                                    child: new Text(
-                                                      '$totalCount',
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: Text(
+                                                      "ILM",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          fontSize: 20.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: thbDblue),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 15.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.blue,
+                                                      child: Center(
+                                                        child: new Text(
+                                                          '$totalCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: const <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      40.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: Text(
+                                                      "ON",
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment:
+                                                        Alignment.centerLeft,
                                                   ),
                                                 ),
-                                                alignment:
-                                                    Alignment.centerRight,
                                               ),
-                                            ),
-                                          ),
-                                        ],
-                                      )),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: const <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  40.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "ON",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: Text(
+                                                      "OFF",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: thbDblue),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                  ),
                                                 ),
-                                                alignment: Alignment.centerLeft,
                                               ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "OFF",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 40.0, 0),
+                                                  child: Align(
+                                                    child: Text(
+                                                      "NC",
+                                                      style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: thbDblue),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
                                                 ),
-                                                alignment: Alignment.center,
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 40.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "NC",
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      30.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$activeCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                  ),
                                                 ),
-                                                alignment:
-                                                    Alignment.centerRight,
                                               ),
-                                            ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$nonactiveCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 30.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.orange,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$ncCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
+                                          const SizedBox(height: 20),
+                                        ]),
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Card(
+                                    elevation: 20,
+                                    color: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  30.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.green,
-                                                  child: Center(
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: <Widget>[
+                                              const Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      15.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                  ),
+                                                ),
+                                              ),
+                                              const Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
                                                     child: Text(
-                                                      '$activeCount',
+                                                      "CCMS",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                          fontSize: 20.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: thbDblue),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 15.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.blue,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$ccmsTotalCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: const <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      40.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: Text(
+                                                      "ON",
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment:
+                                                        Alignment.centerLeft,
                                                   ),
                                                 ),
-                                                alignment: Alignment.centerLeft,
                                               ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.red,
-                                                  child: Center(
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
                                                     child: Text(
-                                                      '$nonactiveCount',
+                                                      "OFF",
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment: Alignment.center,
                                                   ),
                                                 ),
-                                                alignment: Alignment.center,
                                               ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 30.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor:
-                                                      Colors.orange,
-                                                  child: Center(
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 40.0, 0),
+                                                  child: Align(
                                                     child: Text(
-                                                      '$ncCount',
+                                                      "NC",
                                                       style: TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment:
+                                                        Alignment.centerRight,
                                                   ),
                                                 ),
-                                                alignment:
-                                                    Alignment.centerRight,
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ]),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              Card(
-                                elevation: 20,
-                                color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      SizedBox(height: 10),
-                                      Container(
-                                          child: Row(
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      30.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$ccmsActiveCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$ccmsNonactiveCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 30.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.orange,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$ccmsNcCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 20),
+                                        ]),
+                                  ),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  Card(
+                                    elevation: 20,
+                                    color: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  15.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "CCMS",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment: Alignment.center,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 15.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.blue,
-                                                  child: Center(
-                                                    child: new Text(
-                                                      '$ccms_totalCount',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white),
-                                                    ),
+                                          SizedBox(height: 10),
+                                          Container(
+                                              child: Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      15.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
                                                   ),
                                                 ),
-                                                alignment:
-                                                    Alignment.centerRight,
                                               ),
-                                            ),
-                                          ),
-                                        ],
-                                      )),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: const <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  40.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "ON",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment: Alignment.centerLeft,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "OFF",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment: Alignment.center,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 40.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "NC",
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment:
-                                                    Alignment.centerRight,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  30.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.green,
-                                                  child: Center(
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
                                                     child: Text(
-                                                      '$ccms_activeCount',
+                                                      "Gateway",
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
-                                                          fontSize: 16.0,
+                                                          fontSize: 20.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment: Alignment.center,
                                                   ),
                                                 ),
-                                                alignment: Alignment.centerLeft,
                                               ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.red,
-                                                  child: Center(
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 15.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.blue,
+                                                      child: Center(
+                                                        child: new Text(
+                                                          '$gw_totalCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: const <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      40.0, 0.0, 0.0, 0),
+                                                  child: Align(
                                                     child: Text(
-                                                      '$ccms_nonactiveCount',
+                                                      "ON",
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment:
+                                                        Alignment.centerLeft,
                                                   ),
                                                 ),
-                                                alignment: Alignment.center,
                                               ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 30.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor:
-                                                      Colors.orange,
-                                                  child: Center(
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
                                                     child: Text(
-                                                      '$ccms_ncCount',
+                                                      "OFF",
+                                                      textAlign:
+                                                          TextAlign.center,
                                                       style: TextStyle(
                                                           fontSize: 16.0,
                                                           fontFamily:
                                                               "Montserrat",
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.white),
+                                                          color: thbDblue),
                                                     ),
+                                                    alignment: Alignment.center,
                                                   ),
                                                 ),
-                                                alignment:
-                                                    Alignment.centerRight,
                                               ),
-                                            ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 40.0, 0),
+                                                  child: Align(
+                                                    child: Text(
+                                                      "NC",
+                                                      style: TextStyle(
+                                                          fontSize: 16.0,
+                                                          fontFamily:
+                                                              "Montserrat",
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: thbDblue),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ]),
+                                          const SizedBox(height: 10),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      30.0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$gw_activeCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0.0, 0.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$gw_nonactiveCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      0, 0, 30.0, 0),
+                                                  child: Align(
+                                                    child: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.orange,
+                                                      child: Center(
+                                                        child: Text(
+                                                          '$gw_ncCount',
+                                                          style: TextStyle(
+                                                              fontSize: 16.0,
+                                                              fontFamily:
+                                                                  "Montserrat",
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 20),
+                                        ]),
+                                  ),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                ],
                               ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              Card(
-                                elevation: 20,
-                                color: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      SizedBox(height: 10),
-                                      Container(
-                                          child: Row(
-                                        children: <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  15.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "Gateway",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 20.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment: Alignment.center,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 15.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.blue,
-                                                  child: Center(
-                                                    child: new Text(
-                                                      '$gw_totalCount',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                ),
-                                                alignment:
-                                                    Alignment.centerRight,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      )),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: const <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  40.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "ON",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment: Alignment.centerLeft,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "OFF",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment: Alignment.center,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 40.0, 0),
-                                              child: Align(
-                                                child: Text(
-                                                  "NC",
-                                                  style: TextStyle(
-                                                      fontSize: 16.0,
-                                                      fontFamily: "Montserrat",
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: thbDblue),
-                                                ),
-                                                alignment:
-                                                    Alignment.centerRight,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: <Widget>[
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  30.0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.green,
-                                                  child: Center(
-                                                    child: Text(
-                                                      '$gw_activeCount',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                ),
-                                                alignment: Alignment.centerLeft,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0.0, 0.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor: Colors.red,
-                                                  child: Center(
-                                                    child: Text(
-                                                      '$gw_nonactiveCount',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                ),
-                                                alignment: Alignment.center,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(
-                                                  0, 0, 30.0, 0),
-                                              child: Align(
-                                                child: CircleAvatar(
-                                                  backgroundColor:
-                                                      Colors.orange,
-                                                  child: Center(
-                                                    child: Text(
-                                                      '$gw_ncCount',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0,
-                                                          fontFamily:
-                                                              "Montserrat",
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                ),
-                                                alignment:
-                                                    Alignment.centerRight,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 20),
-                                    ]),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                            ],
-                          ),
-                        )),
-                      ])))
+                            )),
+                          ])))
             ],
           ),
         ));
@@ -1154,19 +1119,19 @@ class device_count_screen_state extends State<device_count_screen> {
 }
 
 Future<void> callLogoutoption(BuildContext context) async {
-  final result = await showDialog(
+  showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",
-          style: const TextStyle(
+      title: const Text(app_display_name,
+          style: TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: liorange)),
-      content: Text("Are you sure you want to Logout?",
-          style: const TextStyle(
+      content: const Text(app_logout,
+          style: TextStyle(
               fontSize: 18.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
@@ -1176,49 +1141,43 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",
-              style: const TextStyle(
+          child: const Text(app_logout_no,
+              style: TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',
-              style: const TextStyle(
+          child: const Text(app_logout_yes,
+              style: TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
           onPressed: () async {
-            DBHelper dbhelper = new DBHelper();
-            SharedPreferences prefs = await SharedPreferences.getInstance();
+            try {
+              DBHelper dbhelper = new DBHelper();
+              SharedPreferences prefs = await SharedPreferences.getInstance();
 
-            var SelectedRegion = prefs.getString("SelectedRegion").toString();
-            List<Region> details = await dbhelper.region_getDetails();
+              var SelectedRegion = prefs.getString("SelectedRegion").toString();
+              List<Region> details = await dbhelper.region_getDetails();
 
-            for (int i = 0; i < details.length; i++) {
-              dbhelper.delete(details.elementAt(i).id!.toInt());
+              for (int i = 0; i < details.length; i++) {
+                dbhelper.delete(details.elementAt(i).id!.toInt());
+              }
+              dbhelper.zone_delete(SelectedRegion);
+              dbhelper.ward_delete(SelectedRegion);
+
+              SharedPreferences preferences =
+                  await SharedPreferences.getInstance();
+              await preferences.clear();
+
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => splash_screen()));
+            } catch (e) {
+              // FlutterLogs.logInfo("devicecount_page", "device_count", "Db Exception");
             }
-            dbhelper.zone_delete(SelectedRegion);
-            dbhelper.ward_delete(SelectedRegion);
-
-            // List<Region> detailss = await dbhelper.region_getDetails();
-            // List<Zone> zdetails =
-            //     (await dbhelper.zone_getDetails()).cast<Zone>();
-            // List<Ward> wdetails = await dbhelper.ward_getDetails();
-
-            // dbhelper.region_delete();
-            // dbhelper.zone_delete();
-            // dbhelper.ward_delete();
-
-            SharedPreferences preferences =
-                await SharedPreferences.getInstance();
-            await preferences.clear();
-            // SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => splash_screen()));
           },
         ),
       ],

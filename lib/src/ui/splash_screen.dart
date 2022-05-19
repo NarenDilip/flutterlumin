@@ -1,13 +1,22 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
-import 'package:flutterlumin/src/presentation/views/login/login_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
-import 'package:flutterlumin/src/ui/login/login_screen.dart';
+import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
+import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
+import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
+import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'login/login_screen.dart';
 
 class splash_screen extends StatefulWidget {
   @override
@@ -20,12 +29,20 @@ class splash_screenState extends State<splash_screen> {
   late String token;
   late final TbStorage storage;
 
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     initial();
+    // checkForUpdate();
   }
+
+  // Future<void> checkForUpdate()async {
+  //
+  // }
+
+
 
   void initial() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -36,9 +53,24 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                  return const LoginView();
+                  return login_screen();
                 } else {
-                  return const DashboardView();
+                  var selectedRegion = prefs.getString("SelectedRegion").toString();
+                  var SelectedZone = prefs.getString("SelectedZone").toString();
+                  var SelectedWard = prefs.getString("SelectedWard").toString();
+                  if(selectedRegion == "null"){
+                    return region_list_screen();
+                  }else{
+                    if(SelectedZone == "null"){
+                      return zone_li_screen();
+                    }else{
+                      if(SelectedWard == "null") {
+                        return ward_li_screen();
+                      }else{
+                        return dashboard_screen();
+                      }
+                    }
+                  }
                 }
               })));
     } catch (e) {}
@@ -73,12 +105,24 @@ class splash_screenState extends State<splash_screen> {
                 SizedBox(
                   height: 40,
                 ),
-                Text(splashscreen_text,
+                DefaultTextStyle(
+                    style: TextStyle(decoration: TextDecoration.none),
+                    child :Text(splashscreen_text,
                     style: TextStyle(
                         color: thbDblue,
                         fontSize: 38,
                         fontWeight: FontWeight.bold,
-                        fontFamily: "Montserrat")),
+                        fontFamily: "Montserrat"))),
+                const SizedBox(height: 60),
+                DefaultTextStyle(
+                    style: TextStyle(decoration: TextDecoration.none),
+                    child : Center(
+                    child:Text(app_version,style: const TextStyle(
+                        fontSize: 15.0,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.bold,
+                        color: invListBackgroundColor))
+                )),
               ],
             )));
   }

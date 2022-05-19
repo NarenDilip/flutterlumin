@@ -1,42 +1,42 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
-import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
+import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/replacement_ilm_screen.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/remove_ilm_screen.dart';
+import 'package:flutterlumin/src/ui/maintenance/ilm/replace_ilm_screen.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/models/poly_geofence.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
+
 // import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
-import '../../../presentation/views/dashboard/dashboard_view.dart';
-import '../../../utils/toogle_button.dart';
+import '../../../utils/ilmtoogle_button.dart';
 import '../../splash_screen.dart';
-
-import 'package:poly_geofence_service/models/lat_lng.dart';
-import 'package:poly_geofence_service/models/poly_geofence.dart';
-import 'package:poly_geofence_service/poly_geofence_service.dart';
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen() : super();
@@ -45,7 +45,7 @@ class MaintenanceScreen extends StatefulWidget {
   _MaintenanceScreenState createState() => _MaintenanceScreenState();
 }
 
-class _MaintenanceScreenState extends State<MaintenanceScreen> {
+class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindingObserver {
   var selectedImage = "";
   bool _isOn = true;
   DateTime? date;
@@ -54,18 +54,22 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   var LampactiveStatus;
   String Lampwatts = "0";
   String DeviceName = "0";
+  String DeviceIdDetails = "";
   String DeviceStatus = "0";
   String SelectedRegion = "0";
   String SelectedZone = "0";
   String SelectedWard = "0";
   String faultyStatus = "0";
+  String geoFence = "false";
   String timevalue = "0";
   String location = "0";
   String version = "0";
   String Lattitude = "0";
   String Longitude = "0";
+  String FirmwareVersion = "0";
   late ProgressDialog pr;
-  late bool visibility = true;
+  late ProgressDialog pr1;
+  late bool visibility = false;
   late bool viewvisibility = true;
 
   // LocationData? currentLocation;
@@ -73,11 +77,21 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   double lattitude = 0;
   double longitude = 0;
   double accuracy = 0;
+  double difference = 0;
   String address = "";
   var accuvalue;
+  var counter = 0;
   var addvalue;
   List<double>? _latt = [];
   final _streamController = StreamController<PolyGeofence>();
+  var caclsss = 0;
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
+  var serverUrl = FlavorConfig.instance.variables["baseUrl"];
+  late Timer _timer;
+  int _start = 5;
+
   // final Location locations = Location();
   // LocationData? _location;
   // StreamSubscription<LocationData>? _locationSubscription;
@@ -119,46 +133,213 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     print('location: ${location.toJson()}');
-    accuracy = location!.accuracy!;
-    var insideArea;
-    if (accuracy <= 5) {
+    accuracy = location.accuracy;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('deviceLatitude', location.latitude.toString());
+    prefs.setString('deviceLongitude', location.longitude.toString());
+
+    if (caclsss == 0) {
+      startTimer();
+    }
+    caclsss++;
+
+    if (geoFence == "true") {
       for (int i = 0; i < _polyGeofenceList[0].polygon.length; i++) {
-        insideArea = _checkIfValidMarker(
+        var insideArea = _checkIfValidMarker(
             LatLng(location.latitude, location.longitude),
             _polyGeofenceList[0].polygon);
-        print('location check: ${insideArea}');
+        if (insideArea == true) {
+          if (accuracy <= 10) {
+            Geolocator geolocator = new Geolocator();
+            difference = (await geolocator.distanceBetween(
+                double.parse(Lattitude),
+                double.parse(Longitude),
+                location.latitude,
+                location.longitude));
+            difference = difference;
+            if (difference <= 50.0) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+                difference = difference;
+              });
+              callPolygonStop();
+            } else {
+              callPolygonStop();
+              // _controll_dialog_show(context, difference, true);
+              // setState(() {
+              //   visibility = false;
+              //   viewvisibility = false;
+              // });
+            }
+          } else {
+            setState(() {
+              visibility = false;
+              viewvisibility = true;
+            });
 
-
-
-        Geolocator geolocator = new Geolocator();
-        var difference = await geolocator.distanceBetween(
-            double.parse(Lattitude),
-            double.parse(Longitude),
-            location!.latitude!,
-            location!.longitude!);
-
-        if (difference <= 5.0) {
-          visibility = true;
-          _polyGeofenceService.stop();
+          }
         } else {
-          visibility = false;
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => dashboard_screen()));
+          setState(() {
+            visibility = false;
+          });
+          if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
+            // Fluttertoast.showToast(
+            //     msg:
+            //         "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
+            //             insideArea.toString(),
+            //     toastLength: Toast.LENGTH_SHORT,
+            //     gravity: ToastGravity.BOTTOM,
+            //     timeInSecForIosWeb: 1,
+            //     backgroundColor: Colors.white,
+            //     textColor: Colors.black,
+            //     fontSize: 16.0);
+            counter++;
+          }
+          callPolygonStop();
         }
       }
     } else {
-      visibility = false;
+      if (accuracy <= 10) {
+        Geolocator geolocator = new Geolocator();
+        difference = (await geolocator.distanceBetween(double.parse(Lattitude),
+            double.parse(Longitude), location.latitude, location.longitude));
+        difference = difference;
 
-      Fluttertoast.showToast(
-          msg:
-          "GeoFence Location Alert Your are not in the selected Ward, Please reselect the Current Ward , Status: " +
-              insideArea!.toString(),
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
+        if (difference <= 50.0) {
+          _timer.cancel();
+          callPolygonStop();
+          setState(() {
+            visibility = true;
+            viewvisibility = false;
+          });
+        } else {
+          setState(() {
+            visibility = true;
+            viewvisibility = false;
+          });
 
+          // _controll_dialog_show(context, difference, true);
+
+          // Fluttertoast.showToast(
+          //     msg:
+          //         "Your Distance with device Location is More, Your not in the adequate Range",
+          //     toastLength: Toast.LENGTH_SHORT,
+          //     gravity: ToastGravity.BOTTOM,
+          //     timeInSecForIosWeb: 1,
+          //     backgroundColor: Colors.white,
+          //     textColor: Colors.black,
+          //     fontSize: 16.0);
+          //
+          // setState(() {
+          //   visibility = false;
+          //   viewvisibility = false;
+          // });
+        }
+      } else {
+        // _timer.cancel();
+        // callPolygonStop();
+        // setState(() {
+        //   visibility = false;
+        //   viewvisibility = true;
+        // });
+
+        // Fluttertoast.showToast(
+        //     msg: "Fetching Device Location Accuracy Please wait for Some time" +
+        //         "Acccuracy Level-->" +
+        //         accuracy.toString(),
+        //     toastLength: Toast.LENGTH_SHORT,
+        //     gravity: ToastGravity.BOTTOM,
+        //     timeInSecForIosWeb: 1,
+        //     backgroundColor: Colors.white,
+        //     textColor: Colors.black,
+        //     fontSize: 16.0);
+      }
     }
+
+    if (caclsss == 20) {
+      _timer.cancel();
+      callPolygonStop();
+      Geolocator geolocator = new Geolocator();
+      var difference = await geolocator.distanceBetween(double.parse(Lattitude),
+          double.parse(Longitude), location.latitude, location.longitude);
+      if (difference <= 50.0) {
+        setState(() {
+          visibility = true;
+          viewvisibility = false;
+        });
+      } else {
+        setState(() {
+          visibility = false;
+          viewvisibility = false;
+        });
+      }
+    }
+  }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          timer.cancel();
+          callPolygonStop();
+          if (accuracy <= 10) {
+            if (difference <= 50) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+            } else {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+              // _controll_dialog_show(context, difference, true);
+            }
+          } else {
+            // timer.cancel();
+            // callPolygonStop();
+            setState(() {
+              visibility = true;
+              viewvisibility = false;
+            });
+            if (difference <= 50) {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+            } else {
+              setState(() {
+                visibility = true;
+                viewvisibility = false;
+              });
+              // _controll_dialog_show(context, difference, true);
+            }
+          }
+        }else{
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> callPolygonStop() async {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
+    pr1.hide();
   }
 
   Future<void> callPolygons() async {}
@@ -208,6 +389,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Lampwatts = prefs.getString('deviceWatts').toString();
     DeviceName = prefs.getString('deviceName').toString();
+    DeviceIdDetails = prefs.getString('DeviceDetails').toString();
     DeviceStatus = prefs.getString('deviceStatus').toString();
     SelectedRegion = prefs.getString("SelectedRegion").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
@@ -216,6 +398,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     location = prefs.getString("location").toString();
     version = prefs.getString("version").toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
+    geoFence = prefs.getString('geoFence').toString();
+    FirmwareVersion = prefs.getString('firmwareVersion').toString();
 
     Lattitude = prefs.getString('deviceLatitude').toString();
     Longitude = prefs.getString('deviceLongitude').toString();
@@ -235,6 +419,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       faultyStatus = faultyStatus;
       Lattitude = Lattitude;
       Longitude = Longitude;
+      FirmwareVersion = FirmwareVersion;
+      geoFence = geoFence;
+      DeviceIdDetails = DeviceIdDetails;
 
       date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
 
@@ -266,17 +453,142 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     DeviceName = "";
     DeviceStatus = "";
     getSharedPrefs();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
-      _polyGeofenceService.start();
-      _polyGeofenceService
-          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
-      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
-      _polyGeofenceService.addLocationServicesStatusChangeListener(
-          _onLocationServicesStatusChanged);
-      _polyGeofenceService.addStreamErrorListener(_onError);
-      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
-    });
+    CallGeoFenceListener(context);
+    // calllocationFinder();
+
+
+    // visibility = true;
     // _listenLocation();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  // void calllocationFinder() async {
+  //   var status = await Permission.location.status;
+  //   if (status.isGranted) {
+  //     CallGeoFenceListener(context);
+  //     setUpLogs();
+  //   } else {
+  //     Permission.locationAlways.request();
+  //   }
+  // }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+  Future<void> CallGeoFenceListener(BuildContext context) async {
+    var status = await Permission.location.status;
+    if (status.isGranted) {
+      try {
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        var geoFence = prefs.getString('geoFence').toString();
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          _polyGeofenceService.start();
+          _polyGeofenceService.addPolyGeofenceStatusChangeListener(
+              _onPolyGeofenceStatusChanged);
+          _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+          _polyGeofenceService.addLocationServicesStatusChangeListener(
+              _onLocationServicesStatusChanged);
+          _polyGeofenceService.addStreamErrorListener(_onError);
+          _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+          pr1.show();
+        });
+        if (geoFence == "true") {
+          CallCoordinates(context);
+          setState(() {
+            visibility = true;
+          });
+        } else {
+
+          visibility = true;
+          viewvisibility = false;
+          // Fluttertoast.showToast(
+          //     msg: "GeoFence Availability is not found with this Ward",
+          //     toastLength: Toast.LENGTH_SHORT,
+          //     gravity: ToastGravity.BOTTOM,
+          //     timeInSecForIosWeb: 1,
+          //     backgroundColor: Colors.white,
+          //     textColor: Colors.black,
+          //     fontSize: 16.0);
+        }
+      } catch (e) {}
+    } else {
+      // Fluttertoast.showToast(
+      //     msg: "Kindly Enable App Location Permission",
+      //     toastLength: Toast.LENGTH_SHORT,
+      //     gravity: ToastGravity.BOTTOM,
+      //     timeInSecForIosWeb: 1,
+      //     backgroundColor: Colors.white,
+      //     textColor: Colors.black,
+      //     fontSize: 16.0);
+      Permission.locationAlways.request();
+      // openAppSettings();
+    }
+  }
+
+  Future<void> CallCoordinates(context) async {
+    try {
+      _polyGeofenceList[0].polygon.clear();
+      String data = await DefaultAssetBundle.of(context)
+          .loadString("assets/json/geofence.json");
+      final jsonResult = jsonDecode(data); //latest Dart
+      var coordinateCount =
+          jsonResult['features'][0]['geometry']['coordinates'][0].length;
+      var details;
+      for (int i = 0; i < coordinateCount; i++) {
+        var latter =
+        jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+        var rlonger =
+        jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+        // polygonad(LatLng(latter,rlonger));
+        _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
+        // details[new LatLng(latter,rlonger)];
+      }
+    } catch (e) {}
   }
 
   // Future<void> _listenLocation() async {
@@ -326,7 +638,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   //   });
   // }
 
-
   void toggle() {
     setState(() => _isOn = !_isOn);
   }
@@ -361,10 +672,29 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           strokeWidth: 3.0),
     );
 
+    pr1 = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr1.style(
+      message: 'Fetching Location',
+      borderRadius: 20.0,
+      backgroundColor: Colors.lightBlueAccent,
+      elevation: 10.0,
+      messageTextStyle: const TextStyle(
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          strokeWidth: 3.0),
+    );
+
     return WillPopScope(
       onWillPop: () async {
+        callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => DashboardView()));
+            builder: (BuildContext context) => dashboard_screen()));
         return true;
       },
       child: Scaffold(
@@ -386,7 +716,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     : 10.0,
                 decoration: BoxDecoration(
                     borderRadius:
-                        BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                    BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
                     color: Colors.white),
               ),
             ),
@@ -411,7 +741,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                           child: Text('ILM Maintanance',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                  fontSize: 25.0,
+                                  fontSize: 20.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white)),
@@ -435,7 +765,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     ),
                   ),
                   Expanded(
-                    child: Container(
+                      child: Container(
                         decoration: const BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.only(
@@ -444,438 +774,502 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                 bottomLeft: Radius.circular(0.0),
                                 bottomRight: Radius.circular(0.0))),
                         child: Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          child:
-                              Column(mainAxisSize: MainAxisSize.min, children: <
-                                  Widget>[
-                            Container(
-                                child: Padding(
-                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                              child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 5.0),
-                                        child: Point(
-                                          triangleHeight: 25.0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          ward_li_screen()));
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              color: thbDblue,
-                                              width: 120.0,
-                                              height: 50.0,
-                                              child: Center(
-                                                child: Text('$SelectedRegion',
-                                                    style: const TextStyle(
-                                                        fontSize: 16.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
-                                          ),
+                            padding: EdgeInsets.only(left: 10, right: 10),
+                            child: ListView(
+                                padding: EdgeInsets.only(left: 10, right: 10),
+                                children: <Widget>[
+                                  SizedBox(height: 5),
+                                  Wrap(
+                                      spacing: 8.0,
+                                      // gap between adjacent chips
+                                      runSpacing: 4.0,
+                                      // gap between lines
+                                      direction: Axis.horizontal,
+                                      // main axis (rows or columns)
+                                      children: <Widget>[
+                                        Container(
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                              child: Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                                  children: [
+                                                    Align(
+                                                      alignment: Alignment.center,
+                                                      child: Padding(
+                                                        padding:
+                                                        EdgeInsets.only(left: 5.0),
+                                                        child: Point(
+                                                          triangleHeight: 25.0,
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              Navigator.of(context).push(
+                                                                  MaterialPageRoute(
+                                                                      builder: (BuildContext
+                                                                      context) =>
+                                                                          ward_li_screen()));
+                                                              setState(() {});
+                                                            },
+                                                            child: Container(
+                                                              color: thbDblue,
+                                                              height: 40.0,
+                                                              child: Center(
+                                                                child: Text(
+                                                                    ' $SelectedRegion  ',
+                                                                    style: const TextStyle(
+                                                                        fontSize: 16.0,
+                                                                        fontFamily:
+                                                                        "Montserrat",
+                                                                        fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                        color: Colors
+                                                                            .white)),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Align(
+                                                      alignment: Alignment.center,
+                                                      child: Padding(
+                                                        padding:
+                                                        EdgeInsets.only(left: 5.0),
+                                                        child: Point(
+                                                          triangleHeight: 25.0,
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              Navigator.of(context).push(
+                                                                  MaterialPageRoute(
+                                                                      builder: (BuildContext
+                                                                      context) =>
+                                                                          zone_li_screen()));
+                                                              setState(() {});
+                                                            },
+                                                            child: Container(
+                                                              color: thbDblue,
+                                                              height: 40.0,
+                                                              child: Center(
+                                                                child: Text(
+                                                                    '  $SelectedZone  ',
+                                                                    style: const TextStyle(
+                                                                        fontSize: 16.0,
+                                                                        fontFamily:
+                                                                        "Montserrat",
+                                                                        fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                        color: Colors
+                                                                            .white)),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Align(
+                                                      alignment: Alignment.center,
+                                                      child: Padding(
+                                                        padding:
+                                                        EdgeInsets.only(left: 5.0),
+                                                        child: Point(
+                                                          triangleHeight: 25.0,
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              Navigator.of(context).push(
+                                                                  MaterialPageRoute(
+                                                                      builder: (BuildContext
+                                                                      context) =>
+                                                                          ward_li_screen()));
+                                                              setState(() {});
+                                                            },
+                                                            child: Container(
+                                                              color: thbDblue,
+                                                              height: 40.0,
+                                                              child: Center(
+                                                                child: Text(
+                                                                    '  $SelectedWard  ',
+                                                                    style: const TextStyle(
+                                                                        fontSize: 16.0,
+                                                                        fontFamily:
+                                                                        "Montserrat",
+                                                                        fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                        color: Colors
+                                                                            .white)),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ]),
+                                            )),
+                                        const SizedBox(
+                                          height: 15,
                                         ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 5.0),
-                                        child: Point(
-                                          triangleHeight: 25.0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          zone_li_screen()));
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              color: thbDblue,
-                                              width: 120.0,
-                                              height: 50.0,
-                                              child: Center(
-                                                child: Text('$SelectedZone',
-                                                    style: const TextStyle(
-                                                        fontSize: 16.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(left: 5.0),
-                                        child: Point(
-                                          triangleHeight: 25.0,
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          ward_li_screen()));
-                                              setState(() {});
-                                            },
-                                            child: Container(
-                                              color: thbDblue,
-                                              width: 120.0,
-                                              height: 50.0,
-                                              child: Center(
-                                                child: Text('$SelectedWard',
-                                                    style: const TextStyle(
-                                                        fontSize: 16.0,
-                                                        fontFamily:
-                                                            "Montserrat",
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white)),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ]),
-                            )),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.fromLTRB(15, 10, 5, 0),
-                              decoration: const BoxDecoration(
-                                  color: thbDblue,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(35.0))),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: <Widget>[
-                                      Container(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            5, 0, 0, 0),
-                                        width: width / 3,
-                                        height: 45,
-                                        alignment: Alignment.centerLeft,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(15.0))),
-                                        child: Center(
-                                          child: Text(
-                                            '$DeviceName',
-                                            style: TextStyle(
-                                                color: Colors.deepOrange,
-                                                fontSize: 26,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ), //Container
-                                      SizedBox(
-                                        width: 15,
-                                      ), //SizedBox
-                                      Container(
-                                          width: width / 2.05,
-                                          height: 25,
-                                          child: Text(
-                                            "$location",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontFamily: "Montserrat",
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold),
-                                          ) //BoxDecoration
-                                          ) //Container
-                                    ], //<Widget>[]
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Container(
-                                          width: width / 3,
-                                          height: 25,
-                                          child: Text(
-                                            "Lamp watts",
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontFamily: "Montserrat",
-                                                color: Colors.white),
-                                          )), //Container
-                                      SizedBox(
-                                        width: 5,
-                                      ), //SizedBox
-                                      Container(
-                                          width: width / 2.05,
-                                          height: 25,
-                                          child: Text(
-                                            "$Lampwatts",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                color: Colors.white,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold),
-                                          ) //BoxDecoration
-                                          ) //Container
-                                    ], //<Widget>[]
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    children: <Widget>[
-                                      Container(
-                                          width: width / 3,
-                                          height: 25,
-                                          child: Text(
-                                            "Last Comm @ ",
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.white,
-                                                fontFamily: "Montserrat"),
-                                          )), //Container
-                                      SizedBox(
-                                        width: 5,
-                                      ), //SizedBox
-                                      Container(
-                                          width: width / 2.05,
-                                          height: 25,
-                                          child: Text(
-                                            "$date",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                color: Colors.white,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold),
-                                          ) //BoxDecoration
-                                          ) //Container
-                                    ], //<Widget>[]
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                  ),
-                                  const SizedBox(
-                                    height: 20,
-                                  ),
-                                  // Column(
-                                  //   children: [
-                                  //     Container(
-                                  //       alignment: Alignment.topLeft,
-                                  //       padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
-                                  //       height: 40,
-                                  //       child: Text(
-                                  //         'Last Comm @',
-                                  //         style: TextStyle(
-                                  //             fontSize: 18, fontFamily: "Montserrat"),
-                                  //       ),
-                                  //     ),
-                                  //     Container(
-                                  //       padding: const EdgeInsets.all(8),
-                                  //       height: 40,
-                                  //       child: Text(
-                                  //         '$date',
-                                  //         style: TextStyle(
-                                  //             fontSize: 16,
-                                  //             fontWeight: FontWeight.bold,
-                                  //             fontFamily: "Montserrat"),
-                                  //       ),
-                                  //     ),
-                                  //     // Expanded(
-                                  //     //   child: Container(
-                                  //     //     alignment: Alignment.centerRight,
-                                  //     //     padding: EdgeInsets.all(6),
-                                  //     //     child: IconButton(
-                                  //     //       icon: const Icon(
-                                  //     //         Icons.arrow_drop_down,
-                                  //     //       ),
-                                  //     //       iconSize: 50,
-                                  //     //       color: Colors.black,
-                                  //     //       splashColor: Colors.purple,
-                                  //     //       onPressed: () {
-                                  //     //         // showDialog(context, date);
-                                  //     //       },
-                                  //     //     ),
-                                  //     //   ),
-                                  //     // ),
-                                  //   ],
-                                  // ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Visibility(
-                              visible: viewvisibility,
-                              child: Text(
-                                  'Your Not in adequate Range to Access & Controll of Devices',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      color: Colors.redAccent,
-                                      fontFamily: "Montserrat")),
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                const Expanded(flex: 2, child: ToggleButtonn()),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                Expanded(
-                                    flex: 2,
-                                    child: InkWell(
-                                      child: Container(
-                                        height: 90,
-                                        decoration: const BoxDecoration(
-                                            color: Colors.orange,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(50.0))),
-                                        child: const Center(
-                                          child: Text('GET LIVE',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontFamily: "Montserrat")),
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        if (visibility == true) {
-                                          if ('$DeviceStatus' != "false") {
-                                            getLiveRPCCall(version, context);
-                                          } else {
-                                            Fluttertoast.showToast(
-                                                msg: "Device in Offline Mode",
-                                                toastLength: Toast.LENGTH_SHORT,
-                                                gravity: ToastGravity.BOTTOM,
-                                                timeInSecForIosWeb: 1);
-                                          }
-                                        } else {
-                                          _show(context, true);
-                                        }
-                                      },
-                                    )),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                              decoration: const BoxDecoration(
-                                  color: Colors.black12,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(18.0))),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    "Replace With",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: thbDblue,
-                                      fontSize: 35,
-                                      fontFamily: "Montserrat",
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 15,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Expanded(
-                                          flex: 2,
-                                          child: InkWell(
-                                            child: Container(
-                                              alignment: Alignment.center,
-                                              height: 90,
-                                              decoration: const BoxDecoration(
-                                                  color: Colors.deepOrange,
-                                                  borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(
-                                                              50.0))),
-                                              child: const Text('Shorting CAP',
-                                                  style: TextStyle(
-                                                      fontSize: 18,
-                                                      color: Colors.white,
-                                                      fontFamily:
-                                                          "Montserrat")),
-                                            ),
-                                            onTap: () {
-                                              if (visibility == true) {
-                                                replaceShortingCap(context);
-                                              } else {
-                                                _show(context, true);
-                                              }
-                                            },
-                                          )),
-                                      const SizedBox(
-                                        width: 15,
-                                      ),
-                                      Expanded(
-                                          flex: 2,
-                                          child: InkWell(
-                                              child: Container(
-                                                alignment: Alignment.center,
-                                                height: 90,
+                                        Wrap(
+                                            spacing: 8.0,
+                                            // gap between adjacent chips
+                                            runSpacing: 4.0,
+                                            // gap between lines
+                                            direction: Axis.horizontal,
+                                            // main axis (rows or columns)
+                                            children: <Widget>[
+                                              Container(
+                                                padding: const EdgeInsets.fromLTRB(
+                                                    5, 10, 2, 0),
                                                 decoration: const BoxDecoration(
-                                                    color: Colors.green,
-                                                    borderRadius:
+                                                    color: thbDblue,
+                                                    borderRadius: BorderRadius.all(
+                                                        Radius.circular(35.0))),
+                                                child: Column(
+                                                  children: [
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Container(
+                                                          padding: const EdgeInsets
+                                                              .fromLTRB(5, 0, 0, 0),
+                                                          width: width / 3,
+                                                          height: 45,
+                                                          alignment:
+                                                          Alignment.centerLeft,
+                                                          decoration: const BoxDecoration(
+                                                              color: Colors.white,
+                                                              borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius.circular(
+                                                                      15.0))),
+                                                          child: Center(
+                                                            child: Text(
+                                                              '$DeviceName',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .deepOrange,
+                                                                  fontSize: 26,
+                                                                  fontFamily:
+                                                                  "Montserrat",
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                            ),
+                                                          ),
+                                                        ), //Container
+                                                        SizedBox(
+                                                          width: 15,
+                                                        ), //SizedBox
+                                                        Container(
+                                                            width: width / 2.05,
+                                                            height: 25,
+                                                            child: Text(
+                                                              "$location",
+                                                              style: const TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontFamily:
+                                                                  "Montserrat",
+                                                                  color:
+                                                                  Colors.white,
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                            ) //BoxDecoration
+                                                        ) //Container
+                                                      ], //<Widget>[]
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 20,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Container(
+                                                            width: width / 3,
+                                                            height: 25,
+                                                            child: Text(
+                                                              "Lamp watts",
+                                                              style: const TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontFamily:
+                                                                  "Montserrat",
+                                                                  color:
+                                                                  Colors.white),
+                                                            )), //Container
+                                                        SizedBox(
+                                                          width: 5,
+                                                        ), //SizedBox
+                                                        Container(
+                                                            width: width / 2.05,
+                                                            height: 25,
+                                                            child: Text(
+                                                              "$Lampwatts",
+                                                              style: const TextStyle(
+                                                                  fontSize: 18,
+                                                                  color:
+                                                                  Colors.white,
+                                                                  fontFamily:
+                                                                  "Montserrat",
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                            ) //BoxDecoration
+                                                        ) //Container
+                                                      ], //<Widget>[]
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 20,
+                                                    ),
+                                                    Row(
+                                                      children: <Widget>[
+                                                        Container(
+                                                            width: width / 3,
+                                                            height: 25,
+                                                            child: Text(
+                                                              "Last Comm @ ",
+                                                              style: const TextStyle(
+                                                                  fontSize: 16,
+                                                                  color:
+                                                                  Colors.white,
+                                                                  fontFamily:
+                                                                  "Montserrat"),
+                                                            )), //Container
+                                                        SizedBox(
+                                                          width: 5,
+                                                        ), //SizedBox
+                                                        Container(
+                                                            width: width / 2.05,
+                                                            height: 25,
+                                                            child: Text(
+                                                              "$date",
+                                                              style: const TextStyle(
+                                                                  fontSize: 18,
+                                                                  color:
+                                                                  Colors.white,
+                                                                  fontFamily:
+                                                                  "Montserrat",
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                            ) //BoxDecoration
+                                                        ) //Container
+                                                      ], //<Widget>[]
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 20,
+                                                    ),
+                                                    // Column(
+                                                    //   children: [
+                                                    //     Container(
+                                                    //       alignment: Alignment.topLeft,
+                                                    //       padding: const EdgeInsets.fromLTRB(8, 10, 0, 0),
+                                                    //       height: 40,
+                                                    //       child: Text(
+                                                    //         'Last Comm @',
+                                                    //         style: TextStyle(
+                                                    //             fontSize: 18, fontFamily: "Montserrat"),
+                                                    //       ),
+                                                    //     ),
+                                                    //     Container(
+                                                    //       padding: const EdgeInsets.all(8),
+                                                    //       height: 40,
+                                                    //       child: Text(
+                                                    //         '$date',
+                                                    //         style: TextStyle(
+                                                    //             fontSize: 16,
+                                                    //             fontWeight: FontWeight.bold,
+                                                    //             fontFamily: "Montserrat"),
+                                                    //       ),
+                                                    //     ),
+                                                    //     // Expanded(
+                                                    //     //   child: Container(
+                                                    //     //     alignment: Alignment.centerRight,
+                                                    //     //     padding: EdgeInsets.all(6),
+                                                    //     //     child: IconButton(
+                                                    //     //       icon: const Icon(
+                                                    //     //         Icons.arrow_drop_down,
+                                                    //     //       ),
+                                                    //     //       iconSize: 50,
+                                                    //     //       color: Colors.black,
+                                                    //     //       splashColor: Colors.purple,
+                                                    //     //       onPressed: () {
+                                                    //     //         // showDialog(context, date);
+                                                    //     //       },
+                                                    //     //     ),
+                                                    //     //   ),
+                                                    //     // ),
+                                                    //   ],
+                                                    // ),
+                                                  ],
+                                                ),
+                                              )
+                                            ]),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                          children: [
+                                            const Expanded(
+                                                flex: 2, child: ILMToggleButtonn()),
+                                            const SizedBox(
+                                              width: 15,
+                                            ),
+                                            Expanded(
+                                                flex: 2,
+                                                child: InkWell(
+                                                  child: Container(
+                                                    height: 90,
+                                                    decoration: const BoxDecoration(
+                                                        color: Colors.orange,
+                                                        borderRadius:
                                                         BorderRadius.all(
                                                             Radius.circular(
                                                                 50.0))),
-                                                child: const Text('ILM',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontSize: 18,
-                                                        color: Colors.white,
-                                                        fontFamily:
-                                                            "Montserrat")),
+                                                    child: const Center(
+                                                      child: Text('GET LIVE',
+                                                          style: TextStyle(
+                                                              fontSize: 18,
+                                                              color: Colors.white,
+                                                              fontFamily:
+                                                              "Montserrat")),
+                                                    ),
+                                                  ),
+                                                  onTap: () {
+                                                    if (visibility == true) {
+                                                      if ('$DeviceStatus' !=
+                                                          "false") {
+                                                        getLiveRPCCall(
+                                                            version, context);
+                                                      } else {
+                                                        Fluttertoast.showToast(
+                                                            msg:
+                                                            "Device in Offline Mode",
+                                                            toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity.BOTTOM,
+                                                            timeInSecForIosWeb: 1);
+                                                      }
+                                                    } else {
+                                                      _show(context, true);
+                                                    }
+                                                  },
+                                                )),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        Container(
+                                          padding:
+                                          const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                          decoration: const BoxDecoration(
+                                              color: Colors.black12,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(18.0))),
+                                          child: Column(
+                                            children: [
+                                              const Text(
+                                                "Replace With",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: thbDblue,
+                                                  fontSize: 35,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                              onTap: () {
-                                                if (visibility == true) {
-                                                  replaceILM(context);
-                                                } else {
-                                                  _show(context, true);
-                                                }
-                                              })),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ]),
-                        )),
-                  )
+                                              const SizedBox(
+                                                height: 15,
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                                children: [
+                                                  Expanded(
+                                                      flex: 2,
+                                                      child: InkWell(
+                                                        child: Container(
+                                                          alignment:
+                                                          Alignment.center,
+                                                          height: 90,
+                                                          decoration: const BoxDecoration(
+                                                              color:
+                                                              Colors.deepOrange,
+                                                              borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius.circular(
+                                                                      50.0))),
+                                                          child: const Text(
+                                                              'Shorting CAP',
+                                                              style: TextStyle(
+                                                                  fontSize: 18,
+                                                                  color:
+                                                                  Colors.white,
+                                                                  fontFamily:
+                                                                  "Montserrat")),
+                                                        ),
+                                                        onTap: () {
+                                                          if (visibility == true) {
+                                                            replaceShortingCap(
+                                                                context);
+                                                          } else {
+                                                            _show(context, true);
+                                                          }
+                                                        },
+                                                      )),
+                                                  const SizedBox(
+                                                    width: 15,
+                                                  ),
+                                                  Expanded(
+                                                      flex: 2,
+                                                      child: InkWell(
+                                                          child: Container(
+                                                            alignment:
+                                                            Alignment.center,
+                                                            height: 90,
+                                                            decoration: const BoxDecoration(
+                                                                color: Colors.green,
+                                                                borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        50.0))),
+                                                            child: const Text('ILM',
+                                                                textAlign: TextAlign
+                                                                    .center,
+                                                                style: TextStyle(
+                                                                    fontSize: 18,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontFamily:
+                                                                    "Montserrat")),
+                                                          ),
+                                                          onTap: () {
+                                                            if (visibility ==
+                                                                true) {
+                                                              replaceILM(context);
+                                                            } else {
+                                                              _show(context, true);
+                                                            }
+                                                          })),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ]),
+                                ])),
+                      ))
                 ],
               ),
             ),
@@ -883,6 +1277,51 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         ),
       ),
     );
+  }
+
+  void _controll_dialog_show(context, distance, dvisibility) {
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        barrierColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return Visibility(
+            child: AlertDialog(
+              elevation: 10,
+              title: Text(
+                  'You are far from the ILM to be replaced by a distance ' +
+                      distance.toString() +
+                      'm (recommended - < 50m )',
+                  style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.blue,
+                      fontFamily: "Montserrat")),
+              content: const Text(''),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              dashboard_screen()));
+                    },
+                    child: const Text('Cancel',
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.red,
+                            fontFamily: "Montserrat"))),
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                    },
+                    child: const Text('Proceed with Replacement',
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.green,
+                            fontFamily: "Montserrat")))
+              ],
+            ),
+          );
+        });
   }
 
   void _show(context, visibility) {
@@ -895,7 +1334,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             child: AlertDialog(
               elevation: 10,
               title: const Text('Luminator Location Alert'),
-              content: const Text('Your are not in the Nearest Range to Controll or Access the Device'),
+              content: const Text(
+                  'Your are not in the Nearest Range to Controll or Access the Device'),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -907,7 +1347,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           );
         });
   }
-}
+
 // class ToggleButton extends StatefulWidget {
 //   const ToggleButton({Key? key}) : super(key: key);
 //
@@ -1046,6 +1486,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 //     );
 //   }
 // }
+}
 
 Future<void> callONRPCCall(context) async {
   Utility.isConnected().then((value) async {
@@ -1072,9 +1513,8 @@ Future<void> callONRPCCall(context) async {
       // Utility.progressDialog(context);
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
 
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
         final jsonData = {
@@ -1082,10 +1522,10 @@ Future<void> callONRPCCall(context) async {
           "params": {"lamp": 1, "mode": 2}
         };
         // final parsedJson = jsonDecode(jsonData);
-
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(Duration(minutes: 2));
 
         if (response["lamp"].toString() == "1") {
@@ -1105,6 +1545,7 @@ Future<void> callONRPCCall(context) async {
           calltoast("Unable to Process, Please try again");
         }
       } catch (e) {
+        FlutterLogs.logInfo("devicelist_page", "ilm_maintenance", "logMessage");
         pr.hide();
         // Navigator.pop(context);
         var message = toThingsboardError(e, context);
@@ -1147,9 +1588,8 @@ Future<void> callOFFRPCCall(context) async {
       pr.show();
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
 
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
         final jsonData = {
@@ -1157,10 +1597,10 @@ Future<void> callOFFRPCCall(context) async {
           "params": {"lamp": 0, "mode": 2}
         };
         // final parsedJson = jsonDecode(jsonData);
-
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(deviceID, jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(const Duration(minutes: 2));
 
         if (response["lamp"].toString() == "0") {
@@ -1174,10 +1614,14 @@ Future<void> callOFFRPCCall(context) async {
               textColor: Colors.black,
               fontSize: 16.0);
         } else {
+          FlutterLogs.logInfo("devicelist_page", "ilm_maintenance",
+              "Devie Connectivity Exception");
           pr.hide();
           calltoast("Unable to Process, Please try again");
         }
       } catch (e) {
+        FlutterLogs.logInfo("devicelist_page", "ilm_maintenance",
+            "ILM Device Maintenance Exception");
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1219,8 +1663,7 @@ Future<void> getLiveRPCCall(version, context) async {
       pr.show();
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        String deviceID = prefs.getString('deviceId').toString();
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
         final jsonData;
@@ -1234,10 +1677,11 @@ Future<void> getLiveRPCCall(version, context) async {
           };
         }
 
+        var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
         // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(deviceID, jsonData)
+            .handleOneWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
         pr.hide();
         // if(response.) {
@@ -1248,6 +1692,8 @@ Future<void> getLiveRPCCall(version, context) async {
         //   Navigator.pop(context);
         // }
       } catch (e) {
+        FlutterLogs.logInfo("devicelist_page", "ilm_maintenance",
+            "ILM Device Maintenance Exception");
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
@@ -1273,111 +1719,65 @@ Future<void> replaceILM(context) async {
   Utility.isConnected().then((value) async {
     if (value) {
       late ProgressDialog pr;
-      pr = ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
-        messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
-      );
-      pr.show();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String OlddeviceID = prefs.getString('deviceId').toString();
-      String OlddeviceName = prefs.getString('deviceName').toString();
-
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-          (route) => true).then((value) async {
-        if (value != null) {
-          if (OlddeviceName.toString() != value.toString()) {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            prefs.setString('newDevicename', value);
-
-            pr.hide();
-            // showActionAlertDialog(context,OlddeviceName,value);
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => replaceilm()));
-          } else {
-            pr.hide();
-            calltoast("Duplicate QR Code");
-          }
-        } else {
-          pr.hide();
-          calltoast("Invalid QR Code");
-        }
-      });
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
-
-@override
-Future<Device?> ilm_main_fetchDeviceDetails(
-    String OlddeviceName, String deviceName, BuildContext context) async {
-  Utility.isConnected().then((value) async {
-    if (value) {
-      late ProgressDialog pr;
-      pr = ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
-        messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
-      );
-      pr.show();
       try {
-        Device response;
-        Future<List<EntityGroupInfo>> deviceResponse;
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-        response = await tbClient.getDeviceService().getTenantDevice(deviceName)
-            as Device;
-        if (response.name.isNotEmpty) {
-          if (response.type == ilmDeviceType) {
-            ilm_main_fetchSmartDeviceDetails(
-                OlddeviceName, deviceName, response.id!.id.toString(), context);
-          } else if (response.type == ccmsDeviceType) {
-          } else if (response.type == gatewayDeviceType) {
+        pr = ProgressDialog(context,
+            type: ProgressDialogType.Normal, isDismissible: false);
+        pr.style(
+          message: 'Please wait ..',
+          borderRadius: 20.0,
+          backgroundColor: Colors.lightBlueAccent,
+          elevation: 10.0,
+          messageTextStyle: const TextStyle(
+              color: Colors.white,
+              fontFamily: "Montserrat",
+              fontSize: 19.0,
+              fontWeight: FontWeight.w600),
+          progressWidget: const CircularProgressIndicator(
+              backgroundColor: Colors.lightBlueAccent,
+              valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+              strokeWidth: 3.0),
+        );
+        pr.show();
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        // String OlddeviceID = prefs.getString('deviceId').toString();
+        String OlddeviceName = prefs.getString('deviceName').toString();
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
+                (route) => true).then((value) async {
+          if (value != null) {
+            if (OlddeviceName.toString() != value.toString()) {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('newDevicename', value);
+
+              pr.hide();
+              // showActionAlertDialog(context,OlddeviceName,value);
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) => replaceilm()));
+            } else {
+              FlutterLogs.logInfo(
+                  "ilm_maintenance", "ilm_maintenance", "Duplicate QR Code");
+              pr.hide();
+              calltoast("Duplicate QR Code");
+            }
           } else {
+            FlutterLogs.logInfo(
+                "ilm_maintenance_page", "ilm_maintenance", "Invalid QR Code");
             pr.hide();
-            calltoast("Device Details Not Found");
+            calltoast("Invalid QR Code");
           }
-        } else {
-          pr.hide();
-          calltoast(deviceName);
-        }
+        });
       } catch (e) {
+        FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance",
+            "ILM  Device Maintenance Exception");
         pr.hide();
         var message = toThingsboardError(e, context);
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            ilm_main_fetchDeviceDetails(OlddeviceName, deviceName, context);
-          }
         } else {
-          calltoast(deviceName);
+          calltoast("Device Replacement Issue");
         }
       }
     } else {
@@ -1385,6 +1785,73 @@ Future<Device?> ilm_main_fetchDeviceDetails(
     }
   });
 }
+
+// @override
+// Future<Device?> ilm_main_fetchDeviceDetails(
+//     String OlddeviceName, String deviceName, BuildContext context) async {
+//   Utility.isConnected().then((value) async {
+//     if (value) {
+//       late ProgressDialog pr;
+//       pr = ProgressDialog(context,
+//           type: ProgressDialogType.Normal, isDismissible: false);
+//       pr.style(
+//         message: 'Please wait ..',
+//         borderRadius: 20.0,
+//         backgroundColor: Colors.lightBlueAccent,
+//         elevation: 10.0,
+//         messageTextStyle: const TextStyle(
+//             color: Colors.white,
+//             fontFamily: "Montserrat",
+//             fontSize: 19.0,
+//             fontWeight: FontWeight.w600),
+//         progressWidget: const CircularProgressIndicator(
+//             backgroundColor: Colors.lightBlueAccent,
+//             valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+//             strokeWidth: 3.0),
+//       );
+//       pr.show();
+//       try {
+//         Device response;
+//         Future<List<EntityGroupInfo>> deviceResponse;
+//         var tbClient = ThingsboardClient(serverUrl);
+//         tbClient.smart_init();
+//         response = await tbClient.getDeviceService().getTenantDevice(deviceName)
+//             as Device;
+//         if (response.name.isNotEmpty) {
+//           if (response.type == ilm_deviceType) {
+//             // ilm_main_fetchSmartDeviceDetails(
+//             //     OlddeviceName, deviceName, response.id!.id.toString(), context);
+//           } else if (response.type == ccms_deviceType) {
+//           } else if (response.type == Gw_deviceType) {
+//           } else {
+//             FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//             pr.hide();
+//             calltoast("Device Details Not Found");
+//           }
+//         } else {
+//           FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//           pr.hide();
+//           calltoast(deviceName);
+//         }
+//       } catch (e) {
+//         FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//         pr.hide();
+//         var message = toThingsboardError(e, context);
+//         if (message == session_expired) {
+//           var status = loginThingsboard.callThingsboardLogin(context);
+//           if (status == true) {
+//             ilm_main_fetchDeviceDetails(OlddeviceName, deviceName, context);
+//           }
+//         } else {
+//           calltoast(deviceName);
+//         }
+//       }
+//     } else {
+//       FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//       calltoast(no_network);
+//     }
+//   });
+// }
 
 Future<void> replaceShortingCap(context) async {
   // SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1500,385 +1967,394 @@ Future<void> replaceShortingCap(context) async {
   // });
 }
 
-@override
-Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
-    String deviceName, String deviceid, BuildContext context) async {
-  var DevicecurrentFolderName = "";
-  var DevicemoveFolderName = "";
-
-  Utility.isConnected().then((value) async {
-    if (value) {
-      late ProgressDialog pr;
-      pr = ProgressDialog(context,
-          type: ProgressDialogType.Normal, isDismissible: false);
-      pr.style(
-        message: 'Please wait ..',
-        borderRadius: 20.0,
-        backgroundColor: Colors.lightBlueAccent,
-        elevation: 10.0,
-        messageTextStyle: const TextStyle(
-            color: Colors.white,
-            fontFamily: "Montserrat",
-            fontSize: 19.0,
-            fontWeight: FontWeight.w600),
-        progressWidget: const CircularProgressIndicator(
-            backgroundColor: Colors.lightBlueAccent,
-            valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
-            strokeWidth: 3.0),
-      );
-      pr.show();
-      try {
-        Device response;
-        Future<List<EntityGroupInfo>> deviceResponse;
-        var tbClient = ThingsboardClient(serverUrl);
-        tbClient.smart_init();
-
-        response = (await tbClient
-            .getDeviceService()
-            .getTenantDevice(deviceName)) as Device;
-
-        if (response != null) {
-          var new_Device_Name = response.name;
-
-          List<EntityGroupInfo> entitygroups;
-          entitygroups = await tbClient
-              .getEntityGroupService()
-              .getEntityGroupsByFolderType();
-
-          if (entitygroups != null) {
-            for (int i = 0; i < entitygroups.length; i++) {
-              if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
-                DevicemoveFolderName =
-                    entitygroups.elementAt(i).id!.id!.toString();
-              }
-            }
-
-            List<EntityGroupId> currentdeviceresponse;
-            currentdeviceresponse = await tbClient
-                .getEntityGroupService()
-                .getEntityGroupsForFolderEntity(response.id!.id!);
-
-            if (currentdeviceresponse != null) {
-              var firstdetails = await tbClient
-                  .getEntityGroupService()
-                  .getEntityGroup(currentdeviceresponse.first.id!);
-              if (firstdetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.first.id!;
-              }
-              var seconddetails = await tbClient
-                  .getEntityGroupService()
-                  .getEntityGroup(currentdeviceresponse.last.id!);
-              if (seconddetails!.name.toString() != "All") {
-                DevicecurrentFolderName = currentdeviceresponse.last.id!;
-              }
-
-              var relationDetails = await tbClient
-                  .getEntityRelationService()
-                  .findInfoByTo(response.id!);
-
-              if (relationDetails != null) {
-                List<String> myList = [];
-                myList.add("lampWatts");
-                myList.add("active");
-
-                List<BaseAttributeKvEntry> responser;
-
-                responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<BaseAttributeKvEntry>;
-
-                if (responser != null) {
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  prefs.setString(
-                      'deviceStatus', responser.first.kv.getValue().toString());
-                  prefs.setString(
-                      'deviceWatts', responser.last.kv.getValue().toString());
-
-                  prefs.setString('deviceId', deviceid);
-                  prefs.setString('deviceName', deviceName);
-
-                  DeviceCredentials? newdeviceCredentials;
-                  DeviceCredentials? olddeviceCredentials;
-
-                  if (relationDetails.length.toString() == "0") {
-                    newdeviceCredentials = await tbClient
-                        .getDeviceService()
-                        .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString()) as DeviceCredentials;
-
-                    if (newdeviceCredentials != null) {
-                      var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
-
-                      newdeviceCredentials.credentialsId = newQRID + "L";
-                      var credresponse = await tbClient
-                          .getDeviceService()
-                          .saveDeviceCredentials(newdeviceCredentials);
-
-                      response.name = deviceName + "99";
-                      var devresponse = await tbClient
-                          .getDeviceService()
-                          .saveDevice(response);
-
-                      // Old Device Updations
-                      Device Olddevicedetails = null as Device;
-                      Olddevicedetails = await tbClient
-                          .getDeviceService()
-                          .getTenantDevice(Olddevicename) as Device;
-
-                      if (Olddevicedetails != null) {
-                        var Old_Device_Name = Olddevicedetails.name;
-
-                        olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                    Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
-
-                        if (olddeviceCredentials != null) {
-                          var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
-
-                          olddeviceCredentials.credentialsId = oldQRID + "L";
-                          var old_cred_response = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          Olddevicedetails.name = Olddevicename + "99";
-                          var old_dev_response = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          olddeviceCredentials.credentialsId = newQRID;
-                          var oldcredresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          response.name = Old_Device_Name;
-                          response.label = Old_Device_Name;
-                          var olddevresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(response);
-
-                          final old_body_req = {
-                            'boardNumber': Old_Device_Name,
-                            'ieeeAddress': oldQRID,
-                          };
-
-                          var up_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
-
-                          // New Device Updations
-
-                          Olddevicedetails.name = new_Device_Name;
-                          Olddevicedetails.label = new_Device_Name;
-                          var up_devresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          newdeviceCredentials.credentialsId = oldQRID;
-                          var up_credresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(newdeviceCredentials);
-
-                          final new_body_req = {
-                            'boardNumber': new_Device_Name,
-                            'ieeeAddress': newQRID,
-                          };
-
-                          var up_newdevice_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                                  "SERVER_SCOPE", new_body_req));
-
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
-
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                                  DevicecurrentFolderName, myList);
-
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                                  DevicemoveFolderName, myList);
-
-                          pr.hide();
-                          callDashboard(context);
-                        }
-                      } else {
-                        pr.hide();
-                        calltoast(deviceName);
-                      }
-                    }
-                  } else {
-                    // New Device Updations
-                    newdeviceCredentials = await tbClient
-                        .getDeviceService()
-                        .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString()) as DeviceCredentials;
-
-                    var relation_response = await tbClient
-                        .getEntityRelationService()
-                        .deleteDeviceRelation(
-                            relationDetails.elementAt(0).from.id!,
-                            response.id!.id!);
-
-                    if (newdeviceCredentials != null) {
-                      var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
-
-                      newdeviceCredentials.credentialsId = newQRID + "L";
-                      var credresponse = await tbClient
-                          .getDeviceService()
-                          .saveDeviceCredentials(newdeviceCredentials);
-
-                      response.name = deviceName + "99";
-                      var devresponse = await tbClient
-                          .getDeviceService()
-                          .saveDevice(response);
-
-                      // Old Device Updations
-
-                      Device Olddevicedetails = null as Device;
-                      Olddevicedetails = await tbClient
-                          .getDeviceService()
-                          .getTenantDevice(Olddevicename) as Device;
-
-                      if (Olddevicedetails != null) {
-                        var Old_Device_Name = Olddevicedetails.name;
-
-                        olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                    Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
-
-                        if (olddeviceCredentials != null) {
-                          var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
-
-                          olddeviceCredentials.credentialsId = oldQRID + "L";
-                          var old_cred_response = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          Olddevicedetails.name = Olddevicename + "99";
-                          var old_dev_response = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          olddeviceCredentials.credentialsId = newQRID;
-                          var oldcredresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(olddeviceCredentials);
-
-                          response.name = Old_Device_Name;
-                          response.label = Old_Device_Name;
-                          var olddevresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(response);
-
-                          final old_body_req = {
-                            'boardNumber': Old_Device_Name,
-                            'ieeeAddress': oldQRID,
-                          };
-
-                          var up_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
-
-                          // New Device Updations
-
-                          Olddevicedetails.name = new_Device_Name;
-                          Olddevicedetails.label = new_Device_Name;
-                          var up_devresponse = await tbClient
-                              .getDeviceService()
-                              .saveDevice(Olddevicedetails);
-
-                          newdeviceCredentials.credentialsId = oldQRID;
-                          var up_credresponse = await tbClient
-                              .getDeviceService()
-                              .saveDeviceCredentials(newdeviceCredentials);
-
-                          final new_body_req = {
-                            'boardNumber': new_Device_Name,
-                            'ieeeAddress': newQRID,
-                          };
-
-                          var up_newdevice_attribute = (await tbClient
-                              .getAttributeService()
-                              .saveDeviceAttributes(Olddevicedetails.id!.id!,
-                                  "SERVER_SCOPE", new_body_req));
-
-                          List<String> myList = [];
-                          myList.add(response.id!.id!);
-
-                          var remove_response = tbClient
-                              .getEntityGroupService()
-                              .removeEntitiesFromEntityGroup(
-                                  DevicecurrentFolderName, myList);
-
-                          var add_response = tbClient
-                              .getEntityGroupService()
-                              .addEntitiesToEntityGroup(
-                                  DevicemoveFolderName, myList);
-
-                          pr.hide();
-                          callDashboard(context);
-                        }
-                      } else {
-                        pr.hide();
-                        calltoast(deviceName);
-                      }
-                    } else {
-                      pr.hide();
-                      calltoast(deviceName);
-                    }
-                  }
-                } else {
-                  pr.hide();
-                  calltoast(deviceName);
-                }
-              } else {
-                pr.hide();
-                calltoast(deviceName);
-              }
-            } else {
-              pr.hide();
-              calltoast(deviceName);
-            }
-          } else {
-            pr.hide();
-            calltoast(deviceName);
-          }
-        } else {
-          pr.hide();
-          calltoast(deviceName);
-        }
-      } catch (e) {
-        pr.hide();
-        var message = toThingsboardError(e, context);
-        if (message == session_expired) {
-          var status = loginThingsboard.callThingsboardLogin(context);
-          if (status == true) {
-            ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context);
-          }
-        } else {
-          calltoast(deviceName);
-        }
-      }
-    } else {
-      calltoast(no_network);
-    }
-  });
-}
+// @override
+// Future<Device?> ilm_main_fetchSmartDeviceDetails(String Olddevicename,
+//     String deviceName, String deviceid, BuildContext context) async {
+//   var DevicecurrentFolderName = "";
+//   var DevicemoveFolderName = "";
+//
+//   Utility.isConnected().then((value) async {
+//     if (value) {
+//       late ProgressDialog pr;
+//       pr = ProgressDialog(context,
+//           type: ProgressDialogType.Normal, isDismissible: false);
+//       pr.style(
+//         message: 'Please wait ..',
+//         borderRadius: 20.0,
+//         backgroundColor: Colors.lightBlueAccent,
+//         elevation: 10.0,
+//         messageTextStyle: const TextStyle(
+//             color: Colors.white,
+//             fontFamily: "Montserrat",
+//             fontSize: 19.0,
+//             fontWeight: FontWeight.w600),
+//         progressWidget: const CircularProgressIndicator(
+//             backgroundColor: Colors.lightBlueAccent,
+//             valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+//             strokeWidth: 3.0),
+//       );
+//       pr.show();
+//       try {
+//         Device response;
+//         Future<List<EntityGroupInfo>> deviceResponse;
+//         var tbClient = ThingsboardClient(serverUrl);
+//         tbClient.smart_init();
+//
+//         response = (await tbClient
+//             .getDeviceService()
+//             .getTenantDevice(deviceName)) as Device;
+//
+//         if (response != null) {
+//           var new_Device_Name = response.name;
+//
+//           List<EntityGroupInfo> entitygroups;
+//           entitygroups = await tbClient
+//               .getEntityGroupService()
+//               .getEntityGroupsByFolderType();
+//
+//           if (entitygroups != null) {
+//             for (int i = 0; i < entitygroups.length; i++) {
+//               if (entitygroups.elementAt(i).name == ILMserviceFolderName) {
+//                 DevicemoveFolderName =
+//                     entitygroups.elementAt(i).id!.id!.toString();
+//               }
+//             }
+//
+//             List<EntityGroupId> currentdeviceresponse;
+//             currentdeviceresponse = await tbClient
+//                 .getEntityGroupService()
+//                 .getEntityGroupsForFolderEntity(response.id!.id!);
+//
+//             if (currentdeviceresponse != null) {
+//               var firstdetails = await tbClient
+//                   .getEntityGroupService()
+//                   .getEntityGroup(currentdeviceresponse.first.id!);
+//               if (firstdetails!.name.toString() != "All") {
+//                 DevicecurrentFolderName = currentdeviceresponse.first.id!;
+//               }
+//               var seconddetails = await tbClient
+//                   .getEntityGroupService()
+//                   .getEntityGroup(currentdeviceresponse.last.id!);
+//               if (seconddetails!.name.toString() != "All") {
+//                 DevicecurrentFolderName = currentdeviceresponse.last.id!;
+//               }
+//
+//               var relationDetails = await tbClient
+//                   .getEntityRelationService()
+//                   .findInfoByTo(response.id!);
+//
+//               if (relationDetails != null) {
+//                 List<String> myList = [];
+//                 myList.add("lampWatts");
+//                 myList.add("active");
+//
+//                 List<BaseAttributeKvEntry> responser;
+//
+//                 responser = (await tbClient
+//                         .getAttributeService()
+//                         .getAttributeKvEntries(response.id!, myList))
+//                     as List<BaseAttributeKvEntry>;
+//
+//                 if (responser != null) {
+//                   SharedPreferences prefs =
+//                       await SharedPreferences.getInstance();
+//                   prefs.setString(
+//                       'deviceStatus', responser.first.kv.getValue().toString());
+//                   prefs.setString(
+//                       'deviceWatts', responser.last.kv.getValue().toString());
+//
+//                   prefs.setString('deviceId', deviceid);
+//                   prefs.setString('deviceName', deviceName);
+//
+//                   DeviceCredentials? newdeviceCredentials;
+//                   DeviceCredentials? olddeviceCredentials;
+//
+//                   if (relationDetails.length.toString() == "0") {
+//                     newdeviceCredentials = await tbClient
+//                         .getDeviceService()
+//                         .getDeviceCredentialsByDeviceId(
+//                             response.id!.id.toString()) as DeviceCredentials;
+//
+//                     if (newdeviceCredentials != null) {
+//                       var newQRID =
+//                           newdeviceCredentials.credentialsId.toString();
+//
+//                       newdeviceCredentials.credentialsId = newQRID + "L";
+//                       var credresponse = await tbClient
+//                           .getDeviceService()
+//                           .saveDeviceCredentials(newdeviceCredentials);
+//
+//                       response.name = deviceName + "99";
+//                       var devresponse = await tbClient
+//                           .getDeviceService()
+//                           .saveDevice(response);
+//
+//                       // Old Device Updations
+//                       Device Olddevicedetails = null as Device;
+//                       Olddevicedetails = await tbClient
+//                           .getDeviceService()
+//                           .getTenantDevice(Olddevicename) as Device;
+//
+//                       if (Olddevicedetails != null) {
+//                         var Old_Device_Name = Olddevicedetails.name;
+//
+//                         olddeviceCredentials = await tbClient
+//                                 .getDeviceService()
+//                                 .getDeviceCredentialsByDeviceId(
+//                                     Olddevicedetails.id!.id.toString())
+//                             as DeviceCredentials;
+//
+//                         if (olddeviceCredentials != null) {
+//                           var oldQRID =
+//                               olddeviceCredentials.credentialsId.toString();
+//
+//                           olddeviceCredentials.credentialsId = oldQRID + "L";
+//                           var old_cred_response = await tbClient
+//                               .getDeviceService()
+//                               .saveDeviceCredentials(olddeviceCredentials);
+//
+//                           Olddevicedetails.name = Olddevicename + "99";
+//                           var old_dev_response = await tbClient
+//                               .getDeviceService()
+//                               .saveDevice(Olddevicedetails);
+//
+//                           olddeviceCredentials.credentialsId = newQRID;
+//                           var oldcredresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDeviceCredentials(olddeviceCredentials);
+//
+//                           response.name = Old_Device_Name;
+//                           response.label = Old_Device_Name;
+//                           var olddevresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDevice(response);
+//
+//                           final old_body_req = {
+//                             'boardNumber': Old_Device_Name,
+//                             'ieeeAddress': oldQRID,
+//                           };
+//
+//                           var up_attribute = (await tbClient
+//                               .getAttributeService()
+//                               .saveDeviceAttributes(response.id!.id!,
+//                                   "SERVER_SCOPE", old_body_req));
+//
+//                           // New Device Updations
+//
+//                           Olddevicedetails.name = new_Device_Name;
+//                           Olddevicedetails.label = new_Device_Name;
+//                           var up_devresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDevice(Olddevicedetails);
+//
+//                           newdeviceCredentials.credentialsId = oldQRID;
+//                           var up_credresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDeviceCredentials(newdeviceCredentials);
+//
+//                           final new_body_req = {
+//                             'boardNumber': new_Device_Name,
+//                             'ieeeAddress': newQRID,
+//                           };
+//
+//                           var up_newdevice_attribute = (await tbClient
+//                               .getAttributeService()
+//                               .saveDeviceAttributes(Olddevicedetails.id!.id!,
+//                                   "SERVER_SCOPE", new_body_req));
+//
+//                           List<String> myList = [];
+//                           myList.add(response.id!.id!);
+//
+//                           var remove_response = tbClient
+//                               .getEntityGroupService()
+//                               .removeEntitiesFromEntityGroup(
+//                                   DevicecurrentFolderName, myList);
+//
+//                           var add_response = tbClient
+//                               .getEntityGroupService()
+//                               .addEntitiesToEntityGroup(
+//                                   DevicemoveFolderName, myList);
+//
+//                           pr.hide();
+//                           callDashboard(context);
+//                         }
+//                       } else {
+//                         FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//                         pr.hide();
+//                         calltoast(deviceName);
+//                       }
+//                     }
+//                   } else {
+//                     // New Device Updations
+//                     newdeviceCredentials = await tbClient
+//                         .getDeviceService()
+//                         .getDeviceCredentialsByDeviceId(
+//                             response.id!.id.toString()) as DeviceCredentials;
+//
+//                     var relation_response = await tbClient
+//                         .getEntityRelationService()
+//                         .deleteDeviceRelation(
+//                             relationDetails.elementAt(0).from.id!,
+//                             response.id!.id!);
+//
+//                     if (newdeviceCredentials != null) {
+//                       var newQRID =
+//                           newdeviceCredentials.credentialsId.toString();
+//
+//                       newdeviceCredentials.credentialsId = newQRID + "L";
+//                       var credresponse = await tbClient
+//                           .getDeviceService()
+//                           .saveDeviceCredentials(newdeviceCredentials);
+//
+//                       response.name = deviceName + "99";
+//                       var devresponse = await tbClient
+//                           .getDeviceService()
+//                           .saveDevice(response);
+//
+//                       // Old Device Updations
+//
+//                       Device Olddevicedetails = null as Device;
+//                       Olddevicedetails = await tbClient
+//                           .getDeviceService()
+//                           .getTenantDevice(Olddevicename) as Device;
+//
+//                       if (Olddevicedetails != null) {
+//                         var Old_Device_Name = Olddevicedetails.name;
+//
+//                         olddeviceCredentials = await tbClient
+//                                 .getDeviceService()
+//                                 .getDeviceCredentialsByDeviceId(
+//                                     Olddevicedetails.id!.id.toString())
+//                             as DeviceCredentials;
+//
+//                         if (olddeviceCredentials != null) {
+//                           var oldQRID =
+//                               olddeviceCredentials.credentialsId.toString();
+//
+//                           olddeviceCredentials.credentialsId = oldQRID + "L";
+//                           var old_cred_response = await tbClient
+//                               .getDeviceService()
+//                               .saveDeviceCredentials(olddeviceCredentials);
+//
+//                           Olddevicedetails.name = Olddevicename + "99";
+//                           var old_dev_response = await tbClient
+//                               .getDeviceService()
+//                               .saveDevice(Olddevicedetails);
+//
+//                           olddeviceCredentials.credentialsId = newQRID;
+//                           var oldcredresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDeviceCredentials(olddeviceCredentials);
+//
+//                           response.name = Old_Device_Name;
+//                           response.label = Old_Device_Name;
+//                           var olddevresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDevice(response);
+//
+//                           final old_body_req = {
+//                             'boardNumber': Old_Device_Name,
+//                             'ieeeAddress': oldQRID,
+//                           };
+//
+//                           var up_attribute = (await tbClient
+//                               .getAttributeService()
+//                               .saveDeviceAttributes(response.id!.id!,
+//                                   "SERVER_SCOPE", old_body_req));
+//
+//                           // New Device Updations
+//
+//                           Olddevicedetails.name = new_Device_Name;
+//                           Olddevicedetails.label = new_Device_Name;
+//                           var up_devresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDevice(Olddevicedetails);
+//
+//                           newdeviceCredentials.credentialsId = oldQRID;
+//                           var up_credresponse = await tbClient
+//                               .getDeviceService()
+//                               .saveDeviceCredentials(newdeviceCredentials);
+//
+//                           final new_body_req = {
+//                             'boardNumber': new_Device_Name,
+//                             'ieeeAddress': newQRID,
+//                           };
+//
+//                           var up_newdevice_attribute = (await tbClient
+//                               .getAttributeService()
+//                               .saveDeviceAttributes(Olddevicedetails.id!.id!,
+//                                   "SERVER_SCOPE", new_body_req));
+//
+//                           List<String> myList = [];
+//                           myList.add(response.id!.id!);
+//
+//                           var remove_response = tbClient
+//                               .getEntityGroupService()
+//                               .removeEntitiesFromEntityGroup(
+//                                   DevicecurrentFolderName, myList);
+//
+//                           var add_response = tbClient
+//                               .getEntityGroupService()
+//                               .addEntitiesToEntityGroup(
+//                                   DevicemoveFolderName, myList);
+//
+//                           pr.hide();
+//                           callDashboard(context);
+//                         }
+//                       } else {
+//                         FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//                         pr.hide();
+//                         calltoast(deviceName);
+//                       }
+//                     } else {
+//                       FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//                       pr.hide();
+//                       calltoast(deviceName);
+//                     }
+//                   }
+//                 } else {
+//                   FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//                   pr.hide();
+//                   calltoast(deviceName);
+//                 }
+//               } else {
+//                 FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//                 pr.hide();
+//                 calltoast(deviceName);
+//               }
+//             } else {
+//               FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//               pr.hide();
+//               calltoast(deviceName);
+//             }
+//           } else {
+//             FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//             pr.hide();
+//             calltoast(deviceName);
+//           }
+//         } else {
+//           FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//           pr.hide();
+//           calltoast(deviceName);
+//         }
+//       } catch (e) {
+//         FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance", "logMessage");
+//         pr.hide();
+//         var message = toThingsboardError(e, context);
+//         if (message == session_expired) {
+//           var status = loginThingsboard.callThingsboardLogin(context);
+//           if (status == true) {
+//             ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context);
+//           }
+//         } else {
+//           calltoast(deviceName);
+//         }
+//       }
+//     } else {
+//       calltoast(no_network);
+//     }
+//   });
+// }
 
 showActionAlertDialog(context, OldDevice, NewDevice) {
   // set up the buttons
@@ -1901,9 +2377,10 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
             fontWeight: FontWeight.bold,
             color: Colors.green)),
     onPressed: () {
-      late Future<Device?> entityFuture;
+      // late Future<Device?> entityFuture;
+      replaceILM(context);
       // Utility.progressDialog(context);
-      entityFuture = ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice);
+      // entityFuture = ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice);
     },
   );
 
@@ -2055,11 +2532,13 @@ Future<void> callDeviceCurrentStatus(context) async {
 Future<ThingsboardError> toThingsboardError(error, context,
     [StackTrace? stackTrace]) async {
   ThingsboardError? tbError;
+  FlutterLogs.logInfo("ilm_maintenance_page", "ilm_maintenance",
+      "Server Exception with selected Dev");
   if (error.message == "Session expired!") {
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => DashboardView()));
+          builder: (BuildContext context) => dashboard_screen()));
     }
   } else {
     if (error is DioError) {
@@ -2182,7 +2661,7 @@ Future<void> callLogoutoption(BuildContext context) async {
             dbhelper.ward_delete(SelectedRegion);
 
             SharedPreferences preferences =
-                await SharedPreferences.getInstance();
+            await SharedPreferences.getInstance();
             await preferences.clear();
             SystemChannels.platform.invokeMethod('SystemNavigator.pop');
 

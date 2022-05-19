@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/thingsboard/model/login_models.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/utils/utility.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 class login_thingsboard {
   static Future<bool> callThingsboardLogin(BuildContext context, String username,String password) async {
     try {
-      // Utility.progressDialog(context);
-      var tbClient = ThingsboardClient(serverUrl);
+      var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       final smartToken =

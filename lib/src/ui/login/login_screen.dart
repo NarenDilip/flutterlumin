@@ -2,6 +2,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -11,14 +12,13 @@ import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/components/rounded_button.dart';
 import 'package:flutterlumin/src/ui/components/rounded_input_field.dart';
+import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/login/login_thingsboard.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../presentation/views/dashboard/dashboard_view.dart';
 
 class login_screen extends StatefulWidget {
   @override
@@ -56,7 +56,7 @@ class LoginForm extends StatelessWidget {
   late final TbStorage storage;
   TextEditingController passwordController = TextEditingController(text: "");
   final TextEditingController _emailController =
-      TextEditingController(text: "");
+  TextEditingController(text: "");
 
 
   @override
@@ -64,7 +64,7 @@ class LoginForm extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
-      message: 'Please wait ..',
+      message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
@@ -74,81 +74,89 @@ class LoginForm extends StatelessWidget {
           strokeWidth: 3.0),
     );
     return WillPopScope(
-        onWillPop: () async {
-          SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-          return true;
-        },
-    child: SingleChildScrollView(
-      child: Container(
-        color: Colors.white,
-          height: size.height,
-          width: double.infinity,
+      onWillPop: () async {
+        SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+        return true;
+      },
+      child: SingleChildScrollView(
+          child: Container(
+              color: Colors.white,
+              height: size.height,
+              width: double.infinity,
 
-          child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Image(
-                      image: AssetImage("assets/icons/logo.png"),
-                      height: 95,
-                      width: 95),
-                  const SizedBox(height: 35),
-                  const SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                      "Log-In with User email and Password",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 18.0,
-                          fontFamily: "Montserrat",
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  rounded_input_field(
-                    hintText: user_email,
-                    isObscure: false,
-                    controller: _emailController,
-                    validator: (email) {
-                      if (email!.isEmpty) {
-                        return "Please enter the email";
-                      } else if (!EmailValidator.validate(email)) {
-                        return "Please enter the validate email";
-                      }
-                    },
-                    onSaved: (email) => user.username = email!,
-                    onChanged: (String value) {},
-                  ),
-                  SizedBox(height: size.height * 0.02),
-                  rounded_input_field(
-                    hintText: user_password,
-                    isObscure: true,
-                    onSaved: (value) => user.password = value!,
-                    controller: passwordController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please enter the password";
-                      }
-                    },
-                    onChanged: (value) {},
-                  ),
-                  const SizedBox(height: 10),
-                  rounded_button(
-                    text: sign_in,
-                    color: thbDblue,
-                    press: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        FocusScope.of(context).requestFocus(FocusNode());
-                        _loginAPI(context);
-                      }
-                    },
-                    key: null,
-                  ),
-                ],
-              )))),
+              child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Image(
+                          image: AssetImage("assets/icons/logo.png"),
+                          height: 95,
+                          width: 95),
+                      const SizedBox(height: 35),
+                      const SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          app_log_email,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 18.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      rounded_input_field(
+                        hintText: user_email,
+                        isObscure: false,
+                        controller: _emailController,
+                        validator: (email) {
+                          if (email!.isEmpty) {
+                            return app_no_email;
+                          } else if (!EmailValidator.validate(email)) {
+                            return app_validate_email;
+                          }
+                        },
+                        onSaved: (email) => user.username = email!,
+                        onChanged: (String value) {},
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      rounded_input_field(
+                        hintText: user_password,
+                        isObscure: true,
+                        onSaved: (value) => user.password = value!,
+                        controller: passwordController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return app_validate_pass;
+                          }
+                        },
+                        onChanged: (value) {},
+                      ),
+                      const SizedBox(height: 10),
+                      rounded_button(
+                        text: sign_in,
+                        color: thbDblue,
+                        press: () {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            FocusScope.of(context).requestFocus(FocusNode());
+                            _loginAPI(context);
+                          }
+                        },
+                        key: null,
+                      ),
+                      const SizedBox(height: 60),
+                      Center(
+                          child:Text(app_version,style: const TextStyle(
+                              fontSize: 15.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: invListBackgroundColor))
+                      ),
+                    ],
+                  )))),
     );
   }
 
@@ -156,7 +164,6 @@ class LoginForm extends StatelessWidget {
     // storage = TbSecureStorage();
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         pr.show();
 
         if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
@@ -167,13 +174,10 @@ class LoginForm extends StatelessWidget {
             prefs.setString('username', user.username);
             prefs.setString('password', user.password);
             callRegionDetails(context);
-            // Navigator.of(context).pushReplacement(MaterialPageRoute(
-            //     builder: (BuildContext context) => DashboardView()));
           }else{
-            // Navigator.pop(context);
             pr.hide();
             Fluttertoast.showToast(
-                msg: "Please check Username and Password, Invalid Credentials",
+                msg: app_usr_invalid_cred,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -185,7 +189,7 @@ class LoginForm extends StatelessWidget {
           // Navigator.pop(context);
           pr.hide();
           Fluttertoast.showToast(
-              msg: "Please check Username and Password, Invalid Credentials",
+              msg: app_usr_invalid_cred,
               toastLength: Toast.LENGTH_SHORT,
               gravity: ToastGravity.BOTTOM,
               timeInSecForIosWeb: 1,
@@ -200,16 +204,11 @@ class LoginForm extends StatelessWidget {
   void callRegionDetails(BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         pr.show();
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
 
         DBHelper dbHelper = new DBHelper();
-
-        // dbHelper.region_delete();
-        // final jsonData = '{"region"}';
-        // final parsedJson = jsonDecode(jsonData);
 
         Map<String, dynamic> _portaInfoMap = {
           "type": ["region"],
@@ -246,64 +245,13 @@ class LoginForm extends StatelessWidget {
               .getAssetService()
               .getZoneTenantAssets(pageLink));
 
-          // if (zone_response != null) {
-          //   if (zone_response.totalElements != 0) {
-          //     for (int i = 0; i < zone_response.data.length; i++) {
-          //       String id = zone_response.data
-          //           .elementAt(i)
-          //           .id!
-          //           .id
-          //           .toString();
-          //       String name = zone_response.data
-          //           .elementAt(i)
-          //           .name
-          //           .toString();
-          //       var regionname = name.split("-");
-          //       Zone zone = new Zone(i, id, name, regionname[0].toString());
-          //       dbHelper.zone_add(zone);
-          //     }
-          //   }
-          //
-          //   PageData<Asset> ward_response;
-          //   ward_response = (await tbClient
-          //       .getAssetService()
-          //       .getWardTenantAssets(pageLink));
-
-            // if (ward_response != null) {
-            //   if (ward_response.totalElements != 0) {
-            //     for (int i = 0; i < ward_response.data.length; i++) {
-            //       String id = ward_response.data
-            //           .elementAt(i)
-            //           .id!
-            //           .id
-            //           .toString();
-            //       String name = ward_response.data
-            //           .elementAt(i)
-            //           .name
-            //           .toString();
-            //       var regionname = name.split("-");
-            //       Ward ward = new Ward(i, id, name, regionname[0].toString(),
-            //           regionname[0].toString() + "-" +
-            //               regionname[1].toString());
-            //       dbHelper.ward_add(ward);
-            //     }
-            //   }
-            //   Navigator.pop(context);
           pr.hide();
-               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => DashboardView()));
-            // } else {
-            //   Navigator.pop(context);
-            //   calltoast("Ward Details found");
-            // }
-          // } else {
-          //   Navigator.pop(context);
-          //   calltoast("Zone Details found");
-          // }
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (BuildContext context) => region_list_screen()));
         } else {
-          // Navigator.pop(context);
+          // FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
           pr.hide();
-          calltoast("Region Details found");
+          calltoast(app_no_regions);
         }
       }
     });
