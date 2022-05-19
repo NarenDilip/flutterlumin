@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/presentation/views/devices/device_detail.dart';
@@ -60,7 +61,7 @@ class _DeviceListViewState extends State<DeviceListView> {
   }
 
   Future<void> isDeviceInstalled(ProductDevice device) async {
-    var tbClient = ThingsboardClient(serverUrl);
+    var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
     tbClient.smart_init();
     var response = (await tbClient
         .getDeviceService()

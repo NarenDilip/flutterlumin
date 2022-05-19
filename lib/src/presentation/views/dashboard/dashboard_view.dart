@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/domain/repository/device_repository.dart';
 import 'package:flutterlumin/src/domain/repository/projects_repository.dart';
@@ -216,7 +217,7 @@ class _DashboardAppState extends State<DashboardView> {
           Device response;
           String? SelectedRegion;
           var tbClient =
-          ThingsboardClient(serverUrl);
+          ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           SelectedRegion = prefs.getString("SelectedRegion").toString();

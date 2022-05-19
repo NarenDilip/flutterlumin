@@ -700,19 +700,19 @@ class _LocationWidgetState extends State<LocationWidget> {
 
                 if (relationDetails.length.toString() == "0") {
                   pr.hide();
-                  if (response.type == ilm_deviceType) {
+                  if (response.type == ilmDeviceType) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const ilmcaminstall()),
                     );
-                  } else if (response.type == ccms_deviceType) {
+                  } else if (response.type == ccmsDeviceType) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const ccmscaminstall()),
                     );
-                  } else if (response.type == Gw_deviceType) {
+                  } else if (response.type == gatewayDeviceType) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -807,20 +807,20 @@ class _LocationWidgetState extends State<LocationWidget> {
                         responser.last.kv.getValue().toString());
 
                     pr.hide();
-                    if (response.type == ilm_deviceType) {
+                    if (response.type == ilmDeviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const MaintenanceScreen()),
                       );
-                    } else if (response.type == ccms_deviceType) {
+                    } else if (response.type == ccmsDeviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
                             const CCMSMaintenanceScreen()),
                       );
-                    } else if (response.type == Gw_deviceType) {
+                    } else if (response.type == ccmsDeviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(

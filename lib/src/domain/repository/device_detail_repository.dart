@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
@@ -15,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class DeviceDetailRepository {
   Future<ProductDevice> fetchDeviceInformation(
       ProductDevice productDevice, BuildContext context) async {
-    var tbClient = ThingsboardClient(serverUrl);
+    var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
     tbClient.smart_init();
     var response = (await tbClient
         .getDeviceService()
@@ -97,7 +98,7 @@ class DeviceDetailRepository {
   Future<void> getLiveRPCCall(context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String deviceID = prefs.getString('deviceId').toString();
-    var tbClient = ThingsboardClient(serverUrl);
+    var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
     tbClient.smart_init();
     final Map<String, Object> jsonData;
     String version = "0";
@@ -119,7 +120,7 @@ class DeviceDetailRepository {
   Future<dynamic> changeDeviceStatus(BuildContext context, bool deviceStatus,
       ProductDevice productDevice) async {
     try {
-      var tbClient = ThingsboardClient(serverUrl);
+      var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
       tbClient.smart_init();
       final jsonData = {
         "method": "ctrl",
@@ -147,7 +148,7 @@ class DeviceDetailRepository {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String deviceID = prefs.getString('deviceId').toString();
-      var tbClient = ThingsboardClient(serverUrl);
+      var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
       tbClient.smart_init();
       final Map<String, String> jsonData;
       jsonData = {"method": "clr", "params": "8"};

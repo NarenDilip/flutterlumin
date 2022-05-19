@@ -94,20 +94,12 @@ const app_pls_wait ='Please wait ..';
 const app_qr_duplicate = "Duplicate QR Code";
 const app_qr_invalid = "Invalid QR Code";
 const app_unab_procs = "Unable to Process, Please try again";
-const device_toast_msg = "Unable to find device  ";
-const device_toast_notfound = "  Kindly try another device";
 
 //Const messages
 
-const device_qr_nt_found = "No QRs Found";
-const device_selec_regions = "Please select Region to start Installation.";
-const app_logout = "Are you sure you want to Logout?";
+
 const device_no_entry = "Please Enter Device";
 const device_no_result = 'No results found';
-const app_display_name = "Luminator";
-const app_logout_msg = "Are you sure you want to exit Luminator?";
-const app_logout_no = "NO";
-const app_logout_yes = "YES";
 const app_scan_qr= "SCAN QR";
 const app_dashboard = 'Dashboard';
 const app_device_list  = "Device List view";
@@ -115,7 +107,6 @@ const app_device_filters = 'Device Filters';
 const app_reg_selec = "Please select Region to start Installation";
 const app_fetch_loc = "Fetching your location.";
 const app_loc_ward = "Your current location does not appear to be in the selected Ward";
-const app_pls_wait ='Please wait ..';
 const app_invalid_img ="Invalid Image Capture, Please recapture and try installation";
 const app_geofence_nfound ="GeoFence Availability is not found with this Ward";
 const app_unable_folder ="Unable to Find Folder Details";
@@ -150,9 +141,6 @@ const app_dev_range_alert = 'Your are not in the Nearest Range to Controll or Ac
 const app_close_btn = 'Close';
 const app_dev_on = "Device ON Successfully";
 const app_dev_off = "Device Off Successfully";
-const app_unab_procs = "Unable to Process, Please try again";
-const app_qr_duplicate = "Duplicate QR Code";
-const app_qr_invalid = "Invalid QR Code";
 const app_dialog_cancel = "Cancel";
 const app_dialog_replace = "Replace";
 const app_dial_replace = 'Would you like to replace ';

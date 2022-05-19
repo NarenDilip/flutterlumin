@@ -331,11 +331,11 @@ class replaceccmsState extends State<replaceccms> {
               .getDeviceService()
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
-            if (response.type == ilm_deviceType) {
-            } else if (response.type == ccms_deviceType) {
+            if (response.type == ilmDeviceType) {
+            } else if (response.type == ccmsDeviceType) {
               ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
                   response.id!.id.toString(), context, imageFile);
-            } else if (response.type == Gw_deviceType) {
+            } else if (response.type == gatewayDeviceType) {
             } else {
               pr.hide();
               calltoast(app_dev_sel_details_one +

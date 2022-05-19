@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_switch/flutter_switch.dart';
@@ -15,12 +16,12 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../thingsboard/thingsboard_client_base.dart';
 import '../../../ui/maintenance/ccms/ccms_maintenance_screen.dart';
+import '../../../ui/maintenance/ccms/remove_ccms_screen.dart';
 import '../../../ui/maintenance/ccms/replace_ccms_screen.dart';
-import '../../../ui/maintenance/ccms/replacement_ccms_screen.dart';
+import '../../../ui/maintenance/gateway/remove_gw_screen.dart';
 import '../../../ui/maintenance/gateway/replace_gw_screen.dart';
-import '../../../ui/maintenance/gateway/replacement_gw_screen.dart';
+import '../../../ui/maintenance/ilm/remove_ilm_screen.dart';
 import '../../../ui/maintenance/ilm/replace_ilm_screen.dart';
-import '../../../ui/maintenance/ilm/replacement_ilm_screen.dart';
 import '../../../ui/qr_scanner/qr_scanner.dart';
 import '../../../utils/utility.dart';
 
@@ -656,7 +657,7 @@ Future<void> updateDeviceStatus(
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
 
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
 
         if (productDevice.type == ilmDeviceType) {
@@ -750,7 +751,7 @@ Future<void> getLiveRPCCall(context, ProductDevice productDevice) async {
       pr.show();
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
         final jsonData;
@@ -818,7 +819,7 @@ Future<void> callMCBTrip(context, ProductDevice productDevice) async {
       );
       pr.show();
       try {
-        var tbClient = ThingsboardClient(serverUrl);
+        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         final jsonData;
         jsonData = {"method": "clr", "params": "8"};

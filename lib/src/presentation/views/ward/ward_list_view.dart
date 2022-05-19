@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
@@ -104,7 +105,7 @@ class WardListState extends State<WardList> {
           var sharedPreferences =
               await SharedPreferences.getInstance() as SharedPreferences;
           sharedPreferences.setString("SelectedWard", selectedWard);
-          var tbClient = await ThingsboardClient(serverUrl);
+          var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           relatedDevices!.clear();

@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
-import 'package:flutterlumin/src/localdb/model/zone_model.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -89,7 +89,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
 
   void loadDetails() async {
     DBHelper dbHelper = DBHelper();
-    Future<List<Zone>> zones;
+    Future<List<ZoneResponse>> zones;
 
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
@@ -260,7 +260,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
           await dbHelper.ward_zonebasedDetails(selectedZone);
           if (ward.isEmpty) {
 
-            List<Zone> regiondetails =
+            List<ZoneResponse> regiondetails =
             await dbHelper.zone_zonebasedDetails(selectedZone);
             if (regiondetails.length != 0) {
               Map<String, dynamic> fromId = {

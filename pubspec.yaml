@@ -62,9 +62,6 @@ dependencies:
   flutter_bloc: ^8.0.1
   flutter_switch: ^0.3.1
   flutter_advanced_segment: ^3.0.0
-  flutter_logs: ^2.1.4
-
-  flutter_foreground_task: any
   poly_geofence_service: any
   firebase_core: any
   firebase_crashlytics: 2.5.1

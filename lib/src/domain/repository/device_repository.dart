@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/data/model/device.dart';
 import 'package:flutterlumin/src/data/model/device_response.dart';
@@ -18,7 +19,7 @@ class DeviceRepository {
       String productType, BuildContext context) async {
     DeviceResponse deviceResponse = DeviceResponse();
     try {
-      var tbClient = ThingsboardClient(serverUrl);
+      var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
       tbClient.smart_init();
       String searchNumber = productSearchString.replaceAll(" ", "");
       PageLink pageLink = PageLink(100);
@@ -75,7 +76,7 @@ class DeviceRepository {
     DeviceResponse deviceResponse = DeviceResponse();
     String poleNumber = productSearchString.replaceAll(" ", "");
     Asset response;
-    var tbClient = ThingsboardClient(serverUrl);
+    var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
     tbClient.smart_init();
     response =
         await tbClient.getAssetService().getTenantAsset(poleNumber) as Asset;

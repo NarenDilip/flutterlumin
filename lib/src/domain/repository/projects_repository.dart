@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/data/model/projects.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/asset_models.dart';
@@ -40,7 +41,7 @@ class ProjectsRepository {
     Projects projectInfo = Projects();
     try {
       var sharedPreferences = await SharedPreferences.getInstance();
-      var tbClient = ThingsboardClient(serverUrl);
+      var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
       tbClient.smart_init();
       relatedDevices!.clear();
       AssetDevices!.clear();

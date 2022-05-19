@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -288,7 +289,7 @@ Future<void> _loginAPI(BuildContext context, LoginRequester user,
 void callRegionDetails(BuildContext context, ProgressDialog progressDialog) {
   Utility.isConnected().then((value) async {
     if (value) {
-      var tbClient = ThingsboardClient(serverUrl);
+      var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
       tbClient.smart_init();
       DBHelper dbHelper = DBHelper();
       PageLink pageLink = PageLink(250);

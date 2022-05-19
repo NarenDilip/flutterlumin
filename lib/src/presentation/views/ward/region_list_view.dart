@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
@@ -247,7 +248,7 @@ class RegionListScreenState extends State<RegionListScreen> {
       if (value) {
         // Utility.progressDialog(context);
         try {
-          var tbClient = await ThingsboardClient(serverUrl);
+          var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           SharedPreferences prefs = await SharedPreferences.getInstance();

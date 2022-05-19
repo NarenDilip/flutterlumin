@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
@@ -17,7 +18,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../localdb/model/zone_model.dart';
 import '../../thingsboard/error/thingsboard_error.dart';
 import '../../thingsboard/model/model.dart';
 import '../../thingsboard/thingsboard_client_base.dart';
@@ -361,7 +361,7 @@ class region_list_screen_state extends State<region_list_screen> {
 
           DBHelper dbHelper = new DBHelper();
           dbHelper.zone_delete(selectedZone);
-          List<Zone> details = await dbHelper
+          List<ZoneResponse> details = await dbHelper
               .zone_regionbasedDetails(selectedZone);
           if (details.isEmpty) {
             // dbHelper.zone_delete();
@@ -392,8 +392,8 @@ class region_list_screen_state extends State<region_list_screen> {
                     var rng = new Random();
                     var code = rng.nextInt(999999) + 100000;
 
-                    Zone zone =
-                    new Zone(j+code+0, asset.id!.id, asset.name, selectedZone);
+                    ZoneResponse zone =
+                    new ZoneResponse(j+code+0, asset.id!.id, asset.name, selectedZone);
                     dbHelper.zone_add(zone);
                   }
                 }

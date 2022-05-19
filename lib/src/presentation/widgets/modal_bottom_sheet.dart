@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/region_model.dart';
@@ -45,7 +46,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
-          var tbClient = ThingsboardClient(serverUrl);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString("selected_region", selectedZone);
