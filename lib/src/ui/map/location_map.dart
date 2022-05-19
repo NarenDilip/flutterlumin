@@ -306,9 +306,9 @@ class _LocationWidgetState extends State<LocationWidget> {
             ],
           ),
         Padding(
-          padding: const EdgeInsets.only(right: 13, bottom: 40),
+          padding: const EdgeInsets.only(left: 13, bottom: 20),
           child: Align(
-            alignment: Alignment.bottomRight,
+            alignment: Alignment.bottomLeft,
             child: GestureDetector(
               onTap: () {
                 getCurrentLocation();
@@ -460,30 +460,6 @@ class _LocationWidgetState extends State<LocationWidget> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(right: 13, bottom: 40),
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: GestureDetector(
-              onTap: () {
-                getCurrentLocation();
-              },
-              child: Container(
-                height: 55,
-                width: 55,
-                //margin: EdgeInsets.all(10.0),
-                decoration: const BoxDecoration(
-                  color: thbDblue,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.my_location,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        )
       ]),
     );
   }
