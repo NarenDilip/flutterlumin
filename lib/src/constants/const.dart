@@ -142,6 +142,7 @@ const app_dev_current_unable_folder_details = "Unable to find current Device Fol
 const app_dev_find_relation_details = "Unable to Find Related Devices";
 const app_dev_find_dev_attr = "Unable to find device attributes";
 const app_dev_find_dev_cred = "Unable to Fetch Device Credentials";
+//const app_dev_find_dev_cred = "Unable to Fetch Device Credentials";
 
 
 
