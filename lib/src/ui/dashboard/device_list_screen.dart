@@ -1504,19 +1504,19 @@ class device_list_screen_state extends State<device_list_screen> {
 
                 if (relationDetails.length.toString() == "0") {
                   pr.hide();
-                  if (response.type == ilm_deviceType) {
+                  if (response.type == ilmDeviceType) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const ilmcaminstall()),
                     );
-                  } else if (response.type == ccms_deviceType) {
+                  } else if (response.type == ccmsDeviceType) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const ccmscaminstall()),
                     );
-                  } else if (response.type == Gw_deviceType) {
+                  } else if (response.type == gatewayDeviceType) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -1613,20 +1613,20 @@ class device_list_screen_state extends State<device_list_screen> {
                     }
 
                     pr.hide();
-                    if (response.type == ilm_deviceType) {
+                    if (response.type == ilmDeviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const MaintenanceScreen()),
                       );
-                    } else if (response.type == ccms_deviceType) {
+                    } else if (response.type == ccmsDeviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
                             const CCMSMaintenanceScreen()),
                       );
-                    } else if (response.type == Gw_deviceType) {
+                    } else if (response.type == gatewayDeviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(

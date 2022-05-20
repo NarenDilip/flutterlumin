@@ -1,6 +1,6 @@
 import 'package:flutterlumin/src/localdb/model/mapdata_model.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
-import 'package:flutterlumin/src/localdb/model/zone_model.dart';
+import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io' as io;
 import 'package:path/path.dart';
@@ -129,7 +129,7 @@ class DBHelper {
   //   return await dbClient.rawDelete("DROP TABLE IF EXISTS ward");
   // }
 
-  Future<Zone> zone_add(Zone zone) async {
+  Future<ZoneResponse> zone_add(ZoneResponse zone) async {
     var dbClient = await db;
     zone.id = await dbClient.insert('zone', zone.toMap());
     return zone;
@@ -171,44 +171,44 @@ class DBHelper {
     return ward;
   }
 
-  Future<List<Zone>> zone_getDetails() async {
+  Future<List<ZoneResponse>> zone_getDetails() async {
     var dbClient = await db;
     List<Map> maps = await dbClient
         .query('zone', columns: ['id', 'zoneid', 'zonename', 'regioninfo']);
-    List<Zone> zone = [];
+    List<ZoneResponse> zone = [];
     if (maps.length > 0) {
       for (int i = 0; i < maps.length; i++) {
-        zone.add(Zone.fromMap(maps[i] as dynamic));
+        zone.add(ZoneResponse.fromMap(maps[i] as dynamic));
       }
     }
     return zone;
   }
 
-  Future<List<Zone>> zone_zonebasedDetails(String? selectedZone) async {
+  Future<List<ZoneResponse>> zone_zonebasedDetails(String? selectedZone) async {
     var dbClient = await db;
     List<Map> maps = await dbClient
         .query('zone',
       where: 'zonename = ?',
       whereArgs: [selectedZone],);
-    List<Zone> zone = [];
+    List<ZoneResponse> zone = [];
     if (maps.length > 0) {
       for (int i = 0; i < maps.length; i++) {
-        zone.add(Zone.fromMap(maps[i] as dynamic));
+        zone.add(ZoneResponse.fromMap(maps[i] as dynamic));
       }
     }
     return zone;
   }
 
-  Future<List<Zone>> zone_regionbasedDetails(String? selectedZone) async {
+  Future<List<ZoneResponse>> zone_regionbasedDetails(String? selectedZone) async {
     var dbClient = await db;
     List<Map> maps = await dbClient
         .query('zone',
         where: 'regioninfo = ?',
         whereArgs: [selectedZone],);
-    List<Zone> zone = [];
+    List<ZoneResponse> zone = [];
     if (maps.length > 0) {
       for (int i = 0; i < maps.length; i++) {
-        zone.add(Zone.fromMap(maps[i] as dynamic));
+        zone.add(ZoneResponse.fromMap(maps[i] as dynamic));
       }
     }
     return zone;

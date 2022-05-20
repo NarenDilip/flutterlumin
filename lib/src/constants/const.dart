@@ -23,6 +23,18 @@ const liblue = Color(0xff65f2f9 );
 const thbblue = Color(0xff00696e);
 const thbDblue = Color(0xff2F96BF);
 const darkgreen = Color(0xff146e00);
+const lightGrey = Color(0xffE8E8E8);
+const lightRed = Color(0xffFDEBEA);
+const lightRedColor = Color(0xffE1797A);
+const lightBlueColor = Color(0xffADD8E6);
+const lightGreenColor = Color(0xff9FE2BF);
+const lightRedSalmonColor = Color(0xffFA8072);
+const lightBlueAlterColor = Color(0xff008080);
+const lightBlueCardColor = Color(0xffBAE5F5);
+const lightPinkCardColor = Color(0xffE2D3FE);
+const lightGreenCardColor = Color(0xffCCF0C0);
+const lightBlueViewColor = Color(0xff0091EA);
+
 
 const splashscreen_text = "LUMINATOR";
 
@@ -34,7 +46,9 @@ const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 // const app_username = "smartLumi@gmail.com";
 // const app_password = "smartLumi";
 
-const no_network = "Please check your Mobile Internet Connectivity";
+const no_network = "Connection not available. Please check your connection";
+const onMessage = "Device ON Successfully";
+const offMessage = "Device OFF Successfully";
 const user_email = "User Email";
 const user_password = "Password";
 const validate_email = "Please enter the validate email";
@@ -53,9 +67,9 @@ const CCMSserviceFolderName = "forServiceCCMS";
 const devGWserviceFolderName = "forRepairGateway";
 const GWserviceFolderName = "forServiceCCMS";
 
-const ilm_deviceType = "lumiNode";
-const ccms_deviceType = "CCMS";
-const Gw_deviceType = "Gateway";
+const ilmDeviceType = "lumiNode";
+const ccmsDeviceType = "CCMS";
+const gatewayDeviceType = "Gateway";
 
 const session_expired = "Session expired!";
 //test
@@ -67,20 +81,25 @@ const app_version= "Version 2.2.1";
 // const prod_Username = "production@schnellenergy.com";
 // const prod_Password = "LumiNode";
 
-const device_toast_msg = "Unable to find device  ";
-const device_toast_notfound = "  Kindly try another device";
-
-//Const messages
-
-const device_qr_nt_found = "No QRs Found";
-const device_selec_regions = "Please select Region to start Installation.";
-const app_logout = "Are you sure you want to Logout?";
-const device_no_entry = "Please Enter Device";
-const device_no_result = 'No results found';
+const device_toast_msg = "Given Device ";
+const device_toast_notfound = " Not Found";
 const app_display_name = "Luminator";
 const app_logout_msg = "Are you sure you want to exit Luminator?";
 const app_logout_no = "NO";
 const app_logout_yes = "YES";
+const app_logout = "Are you sure you want to Logout?";
+const device_qr_nt_found = "No QRs Found";
+const device_selec_regions = "Please select Region to start Installation.";
+const app_pls_wait ='Please wait ..';
+const app_qr_duplicate = "Duplicate QR Code";
+const app_qr_invalid = "Invalid QR Code";
+const app_unab_procs = "Unable to Process, Please try again";
+
+//Const messages
+
+
+const device_no_entry = "Please Enter Device";
+const device_no_result = 'No results found';
 const app_scan_qr= "SCAN QR";
 const app_dashboard = 'Dashboard';
 const app_device_list  = "Device List view";
@@ -88,7 +107,6 @@ const app_device_filters = 'Device Filters';
 const app_reg_selec = "Please select Region to start Installation";
 const app_fetch_loc = "Fetching your location.";
 const app_loc_ward = "Your current location does not appear to be in the selected Ward";
-const app_pls_wait ='Please wait ..';
 const app_invalid_img ="Invalid Image Capture, Please recapture and try installation";
 const app_geofence_nfound ="GeoFence Availability is not found with this Ward";
 const app_unable_folder ="Unable to Find Folder Details";
@@ -123,9 +141,6 @@ const app_dev_range_alert = 'Your are not in the Nearest Range to Controll or Ac
 const app_close_btn = 'Close';
 const app_dev_on = "Device ON Successfully";
 const app_dev_off = "Device Off Successfully";
-const app_unab_procs = "Unable to Process, Please try again";
-const app_qr_duplicate = "Duplicate QR Code";
-const app_qr_invalid = "Invalid QR Code";
 const app_dialog_cancel = "Cancel";
 const app_dialog_replace = "Replace";
 const app_dial_replace = 'Would you like to replace ';

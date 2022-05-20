@@ -1,10 +1,10 @@
-class Zone {
+class ZoneResponse {
   int? id;
   String? zoneid;
   String? zonename;
   String? regioninfo;
 
-  Zone(this.id,
+  ZoneResponse(this.id,
       this.zoneid,
       this.zonename,
       this.regioninfo);
@@ -19,7 +19,7 @@ class Zone {
     return map;
   }
 
-  Zone.fromMap(Map<String, dynamic> map) {
+  ZoneResponse.fromMap(Map<String, dynamic> map) {
     id = map['id'] as int;
     zoneid = map['zoneid'] as String;
     zonename = map['zonename'] as String;
