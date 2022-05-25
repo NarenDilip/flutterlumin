@@ -24,9 +24,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../thingsboard/model/model.dart';
-import '../../dashboard/dashboard_screen.dart';
-import '../ilm/ilm_maintenance_screen.dart';
 
 class replacementgw extends StatefulWidget {
   const replacementgw() : super();
@@ -144,7 +143,7 @@ class replacementgwState extends State<replacementgw> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -385,21 +384,21 @@ class replacementgwState extends State<replacementgw> {
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              DashboardView()));
                     }
                   } else {
                     pr.hide();
                     calltoast("Device EntityGroup Not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => DashboardView()));
                   }
                 } else {
                   pr.hide();
                   calltoast(deviceName);
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => DashboardView()));
                 }
               } else {
                 pr.hide();
@@ -414,14 +413,14 @@ class replacementgwState extends State<replacementgw> {
                     fontSize: 16.0);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               pr.hide();
               calltoast(deviceName);
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           } else {
             pr.hide();
@@ -448,7 +447,7 @@ class replacementgwState extends State<replacementgw> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       }
@@ -474,7 +473,7 @@ class replacementgwState extends State<replacementgw> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {
@@ -567,7 +566,7 @@ class replacementgwState extends State<replacementgw> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       } else {}
       return response;
     } catch (e) {

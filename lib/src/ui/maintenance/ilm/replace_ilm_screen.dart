@@ -26,7 +26,7 @@ import 'package:http/http.dart' as http;
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
-import '../../dashboard/dashboard_screen.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 import 'ilm_maintenance_screen.dart';
@@ -151,7 +151,7 @@ class replaceilmState extends State<replaceilm> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -817,7 +817,7 @@ class replaceilmState extends State<replaceilm> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        DashboardView()));
                           }
                         }
                       } else {
@@ -1019,7 +1019,7 @@ class replaceilmState extends State<replaceilm> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        DashboardView()));
                           }
                         } else {
                           FlutterLogs.logInfo(
@@ -1029,7 +1029,7 @@ class replaceilmState extends State<replaceilm> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      DashboardView()));
                         }
                       }
                     } else {
@@ -1049,7 +1049,7 @@ class replaceilmState extends State<replaceilm> {
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              DashboardView()));
                     }
                   } else {
                     FlutterLogs.logInfo(
@@ -1058,7 +1058,7 @@ class replaceilmState extends State<replaceilm> {
                     callstoast("Unable to find device attributes");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (BuildContext context) =>
-                            dashboard_screen()));
+                            DashboardView()));
                   }
                 } else {
                   FlutterLogs.logInfo(
@@ -1066,7 +1066,7 @@ class replaceilmState extends State<replaceilm> {
                   pr.hide();
                   callstoast("Unable to Find Related Devices");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => DashboardView()));
                 }
               } else {
                 FlutterLogs.logInfo(
@@ -1074,7 +1074,7 @@ class replaceilmState extends State<replaceilm> {
                 pr.hide();
                 callstoast("Unable to find current Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               FlutterLogs.logInfo(
@@ -1082,7 +1082,7 @@ class replaceilmState extends State<replaceilm> {
               pr.hide();
               callstoast("Unable to find Device Folder Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           } else {
             FlutterLogs.logInfo(
@@ -1090,7 +1090,7 @@ class replaceilmState extends State<replaceilm> {
             pr.hide();
             callstoast("Unable to find Selected Device Details");
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
           // } else {
           //   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -1118,7 +1118,7 @@ class replaceilmState extends State<replaceilm> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       } else {
@@ -1164,7 +1164,7 @@ class replaceilmState extends State<replaceilm> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {
@@ -1257,7 +1257,7 @@ class replaceilmState extends State<replaceilm> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       } else {}
       return response;
     } catch (e) {

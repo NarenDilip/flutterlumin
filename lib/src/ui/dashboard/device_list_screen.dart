@@ -26,13 +26,13 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../localdb/db_helper.dart';
 import '../../localdb/model/region_model.dart';
+import '../../presentation/views/dashboard/dashboard_view.dart';
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/gateway/gateway_install_cam_screen.dart';
 import '../installation/ilm/ilm_install_cam_screen.dart';
 import '../maintenance/ccms/ccms_maintenance_screen.dart';
 import '../maintenance/gateway/gw_maintenance_screen.dart';
 import '../splash_screen.dart';
-import 'dashboard_screen.dart';
 
 class device_list_screen extends StatefulWidget {
   @override
@@ -1712,7 +1712,7 @@ class device_list_screen_state extends State<device_list_screen> {
 
   void refreshPage(context) {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) => dashboard_screen()));
+        builder: (BuildContext context) => DashboardView()));
   }
 
   void calltoast(String polenumber) {
@@ -1739,7 +1739,7 @@ class device_list_screen_state extends State<device_list_screen> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {

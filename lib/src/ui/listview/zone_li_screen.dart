@@ -18,13 +18,13 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../localdb/model/ward_model.dart';
+import '../../presentation/views/dashboard/dashboard_view.dart';
 import '../../thingsboard/error/thingsboard_error.dart';
 import '../../thingsboard/model/model.dart';
 import '../../thingsboard/thingsboard_client_base.dart';
 import '../../utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
-import '../dashboard/dashboard_screen.dart';
 
 class zone_li_screen extends StatefulWidget {
   @override
@@ -337,7 +337,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       } else {

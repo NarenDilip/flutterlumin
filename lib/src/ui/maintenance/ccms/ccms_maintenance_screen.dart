@@ -12,7 +12,6 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_count_screen.dart';
 import 'package:flutterlumin/src/ui/dashboard/device_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
@@ -35,6 +34,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../utils/ccmstoogle_button.dart';
 import '../../splash_screen.dart';
 
@@ -166,7 +166,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           setState(() {
             visibility = false;
           });
@@ -527,7 +527,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       onWillPop: () async {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
         return true;
       },
       child: Scaffold(
@@ -1586,7 +1586,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
+          builder: (BuildContext context) => DashboardView()));
     }
   } else {
     if (error is DioError) {

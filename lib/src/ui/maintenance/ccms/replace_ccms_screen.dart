@@ -26,7 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
-import '../../dashboard/dashboard_screen.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
 class replaceccms extends StatefulWidget {
@@ -142,7 +142,7 @@ class replaceccmsState extends State<replaceccms> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -685,7 +685,7 @@ class replaceccmsState extends State<replaceccms> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            DashboardView()));
                               }
                             }
                           } else {
@@ -827,7 +827,7 @@ class replaceccmsState extends State<replaceccms> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            DashboardView()));
                               }
                             } else {
                               pr.hide();
@@ -835,7 +835,7 @@ class replaceccmsState extends State<replaceccms> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          DashboardView()));
                             }
                           }
                         } else {
@@ -854,7 +854,7 @@ class replaceccmsState extends State<replaceccms> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      DashboardView()));
                         }
                       // } else {
                       //   pr.hide();
@@ -864,25 +864,25 @@ class replaceccmsState extends State<replaceccms> {
                       callstoast(app_dev_find_dev_attr);
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              DashboardView()));
                     }
                   } else {
                     pr.hide();
                     callstoast(app_dev_find_relation_details);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => DashboardView()));
                   }
                 } else {
                   pr.hide();
                   callstoast(app_dev_current_unable_folder_details);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => DashboardView()));
                 }
               } else {
                 pr.hide();
                 callstoast(app_dev_unable_folder_details);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               pr.hide();
@@ -890,7 +890,7 @@ class replaceccmsState extends State<replaceccms> {
                   DeviceName +
                   app_dev_sel_details_two);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           } else {
             pr.hide();
@@ -917,7 +917,7 @@ class replaceccmsState extends State<replaceccms> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       } else {
@@ -940,7 +940,7 @@ class replaceccmsState extends State<replaceccms> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {
@@ -1056,7 +1056,7 @@ class replaceccmsState extends State<replaceccms> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       } else {}
       return response;
     } catch (e) {

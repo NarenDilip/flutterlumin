@@ -28,10 +28,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
-import '../../dashboard/dashboard_screen.dart';
+
 
 class ccmscaminstall extends StatefulWidget {
   const ccmscaminstall() : super();
@@ -161,7 +162,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
           }
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
         }
       }
     } else {
@@ -410,7 +411,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         onWillPop: () async {
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -499,7 +500,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => dashboard_screen()),
+              builder: (context) => DashboardView()),
         );
       }
     });
@@ -799,7 +800,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            DashboardView()));
                               }
                             } else {
                               //
@@ -809,7 +810,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          DashboardView()));
                             }
                           } else {
                             callPolygonStop();
@@ -819,7 +820,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        DashboardView()));
                           }
                         } else {
                           callPolygonStop();
@@ -841,7 +842,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      DashboardView()));
                         }
                       } else {
                         // Navigator.pop(context);
@@ -884,7 +885,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         textColor: Colors.black,
                         fontSize: 16.0);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => DashboardView()));
                   }
                 } else {
                   // Navigator.pop(context);
@@ -906,7 +907,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                 pr.hide();
                 calltoast(deviceName);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               // Navigator.pop(context);
@@ -940,7 +941,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
               calltoast(deviceName);
               // Navigator.pop(context);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           }
         }
@@ -1057,7 +1058,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       if (response.statusCode.toString() == "200") {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
         showMyDialog(context);
       } else {}
       return response;
@@ -1086,7 +1087,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {

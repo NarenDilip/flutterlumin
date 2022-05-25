@@ -22,8 +22,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
+import '../../../presentation/views/dashboard/dashboard_view.dart';
 import '../../../thingsboard/model/model.dart';
-import '../../dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 import 'ilm_maintenance_screen.dart';
@@ -144,7 +144,7 @@ class replacementilmState extends State<replacementilm> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => DashboardView()));
           return true;
         },
         child: Scaffold(
@@ -390,7 +390,7 @@ class replacementilmState extends State<replacementilm> {
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              DashboardView()));
                     }
                   } else {
                     FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -398,7 +398,7 @@ class replacementilmState extends State<replacementilm> {
                     calltoast("Device EntityGroup Not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => DashboardView()));
                   }
                 } else {
                   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -406,7 +406,7 @@ class replacementilmState extends State<replacementilm> {
                   calltoast(deviceName);
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => DashboardView()));
                 }
               } else {
                 FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -422,7 +422,7 @@ class replacementilmState extends State<replacementilm> {
                     fontSize: 16.0);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -430,7 +430,7 @@ class replacementilmState extends State<replacementilm> {
               calltoast(deviceName);
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           } else {
             FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -457,7 +457,7 @@ class replacementilmState extends State<replacementilm> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       }
@@ -501,7 +501,7 @@ class replacementilmState extends State<replacementilm> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       } else {}
       return response;
     } catch (e) {
@@ -527,7 +527,7 @@ class replacementilmState extends State<replacementilm> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => DashboardView()));
       }
     } else {
       if (error is DioError) {

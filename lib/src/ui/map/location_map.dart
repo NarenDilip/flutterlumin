@@ -17,7 +17,6 @@ import 'package:flutterlumin/src/localdb/model/mapdata_model.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
@@ -27,6 +26,7 @@ import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../presentation/views/dashboard/dashboard_view.dart';
 import '../../thingsboard/error/thingsboard_error.dart';
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/gateway/gateway_install_cam_screen.dart';
@@ -1665,7 +1665,7 @@ class _LocationWidgetState extends State<LocationWidget> {
 
 void refreshPage(context) {
   Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => dashboard_screen()));
+      MaterialPageRoute(builder: (BuildContext context) => DashboardView()));
 }
 
 Future<ThingsboardError> toThingsboardError(error, context,
@@ -1675,7 +1675,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
+          builder: (BuildContext context) => DashboardView()));
     }
   } else {
     if (error is DioError) {

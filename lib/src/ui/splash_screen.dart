@@ -1,22 +1,16 @@
 import 'dart:async';
-import 'dart:io';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
+import 'package:flutterlumin/src/presentation/views/login/login_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
 import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import 'login/login_screen.dart';
 
 class splash_screen extends StatefulWidget {
   @override
@@ -53,7 +47,7 @@ class splash_screenState extends State<splash_screen> {
           () => Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (BuildContext context) {
                 if (token == "null") {
-                  return login_screen();
+                  return LoginView();
                 } else {
                   var selectedRegion = prefs.getString("SelectedRegion").toString();
                   var SelectedZone = prefs.getString("SelectedZone").toString();
@@ -67,7 +61,7 @@ class splash_screenState extends State<splash_screen> {
                       if(SelectedWard == "null") {
                         return ward_li_screen();
                       }else{
-                        return dashboard_screen();
+                        return DashboardView();
                       }
                     }
                   }

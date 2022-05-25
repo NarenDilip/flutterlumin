@@ -17,7 +17,6 @@ import 'package:flutterlumin/src/thingsboard/model/id/device_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/relation_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/telemetry_models.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
 import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -25,6 +24,7 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
+import '../../presentation/views/dashboard/dashboard_view.dart';
 import '../../thingsboard/error/thingsboard_error.dart';
 import '../../thingsboard/model/model.dart';
 import '../maintenance/ilm/ilm_maintenance_screen.dart';
@@ -379,7 +379,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
                 pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => DashboardView()));
               }
             } else {
               /*FlutterLogs.logInfo("wardlist_page", "ward_list",
@@ -401,7 +401,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
               pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => DashboardView()));
             }
           }
         } catch (e) {
@@ -416,7 +416,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => DashboardView()));
           }
         }
       } else {
