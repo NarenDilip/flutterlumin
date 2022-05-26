@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/app_bar_view.dart';
 
+import '../../../ui/map/location_map.dart';
+import '../dashboard/dashboard_app_bar_view.dart';
+
 class DeviceLocationView extends StatefulWidget {
   const DeviceLocationView({Key? key}) : super(key: key);
 
@@ -25,10 +28,22 @@ class _DeviceLocationState extends State<DeviceLocationView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightGrey,
-      body: SingleChildScrollView(
-        child: Column(children: const <Widget>[
-          AppBarWidget(title: "",),
-        ]),
+      body: Column(children: <Widget>[
+          const DashboardAppBarWidget(title: "",),
+          Expanded(
+              child: Container(
+                  color: Colors.grey,
+                  child: Stack(
+                    children: [
+                      LocationWidget(
+                        initialLabel: 0,
+                        onToggle: (index) {
+                          // print('switched to: $index');
+                        },
+                      ),
+                    ],
+                  )))
+        ],
       )
     );
   }

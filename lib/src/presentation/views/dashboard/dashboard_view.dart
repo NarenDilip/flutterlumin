@@ -28,6 +28,7 @@ import '../../../ui/installation/ilm/ilm_install_cam_screen.dart';
 import '../../../ui/qr_scanner/qr_scanner.dart';
 import '../../../utils/utility.dart';
 import '../devices/device_detail_view.dart';
+import '../location/location_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({Key? key}) : super(key: key);
@@ -48,7 +49,7 @@ class _DashboardAppState extends State<DashboardView> {
       create: (context) => SearchDeviceCubit(DeviceRepository()),
       child: const SearchDevicesView(),
     ),
-    map_view_screen(),
+    DeviceLocationView(),
     const SettingsScreen(),
   ];
 

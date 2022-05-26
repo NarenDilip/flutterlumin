@@ -44,7 +44,7 @@ class ProjectCard extends StatelessWidget {
                       )),
                   Text(
                       totalCount == 0
-                          ? "-"
+                          ? " - 0"
                           : " - " + totalCount.toString(),
                       style: const TextStyle(
                         fontSize: 20,
