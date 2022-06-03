@@ -9,6 +9,8 @@ import 'package:flutterlumin/src/presentation/views/devices/device_list_view.dar
 import 'package:flutterlumin/src/presentation/widgets/search_input_field.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../dashboard/dashboard_app_bar_view.dart';
+
 class SearchDevicesView extends StatefulWidget {
   const SearchDevicesView({Key? key}) : super(key: key);
 
@@ -41,9 +43,7 @@ class _SearchDevicesState extends State<SearchDevicesView> {
       backgroundColor: lightGrey,
       body: Column(
         children: <Widget>[
-          const AppBarWidget(
-            title: "Devices",
-          ),
+          const DashboardAppBarWidget(title: "",),
           Container(
             padding:
                 const EdgeInsets.only(left: 16, top: 20, right: 16, bottom: 20),

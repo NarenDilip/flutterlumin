@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,8 +18,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:latlong/latlong.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../thingsboard/error/thingsboard_error.dart';
 import '../../../thingsboard/thingsboard_client_base.dart';
-import '../../../ui/maintenance/ccms/ccms_maintenance_screen.dart';
 import '../../../ui/maintenance/ccms/remove_ccms_screen.dart';
 import '../../../ui/maintenance/ccms/replace_ccms_screen.dart';
 import '../../../ui/maintenance/gateway/remove_gw_screen.dart';
@@ -24,6 +28,7 @@ import '../../../ui/maintenance/ilm/remove_ilm_screen.dart';
 import '../../../ui/maintenance/ilm/replace_ilm_screen.dart';
 import '../../../ui/qr_scanner/qr_scanner.dart';
 import '../../../utils/utility.dart';
+import '../dashboard/dashboard_view.dart';
 
 class DeviceDetailView extends StatefulWidget {
   const DeviceDetailView({
@@ -79,6 +84,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: lightGrey,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           widget.productDevice.name,
@@ -126,7 +132,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                 SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
-                      SizedBox(
+                      Container(
                         height: 160,
                         child: FlutterMap(
                           options: MapOptions(
@@ -198,6 +204,9 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                                 state.deviceResponse.location != ""
                                     ? state.deviceResponse.location
                                     : "-",
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                                softWrap: true,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontFamily: 'Roboto',
@@ -682,7 +691,7 @@ Future<void> updateDeviceStatus(
         if (message == session_expired) {
           var status = loginThingsboard.callThingsboardLogin(context);
           if (status == true) {
-            callONRPCCall(context);
+            updateDeviceStatus(context, deviceStatus, productDevice );
           }
         } else {
           calltoast("Unable to Process");
@@ -947,4 +956,90 @@ Future<void> replaceDevice(context, ProductDevice productDevice) async {
       calltoast(no_network);
     }
   });
+}
+
+Future<ThingsboardError> toThingsboardError(error, context,
+    [StackTrace? stackTrace]) async {
+  ThingsboardError? tbError;
+  FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+  if (error.message == "Session expired!") {
+    var status = loginThingsboard.callThingsboardLogin(context);
+    if (status == true) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => DashboardView()));
+    }
+  } else {
+    if (error is DioError) {
+      if (error.response != null && error.response!.data != null) {
+        var data = error.response!.data;
+        if (data is ThingsboardError) {
+          tbError = data;
+        } else if (data is Map<String, dynamic>) {
+          tbError = ThingsboardError.fromJson(data);
+        } else if (data is String) {
+          try {
+            tbError = ThingsboardError.fromJson(jsonDecode(data));
+          } catch (_) {}
+        }
+      } else if (error.error != null) {
+        if (error.error is ThingsboardError) {
+          tbError = error.error;
+        } else if (error.error is SocketException) {
+          tbError = ThingsboardError(
+              error: error,
+              message: 'Unable to connect',
+              errorCode: ThingsBoardErrorCode.general);
+        } else {
+          tbError = ThingsboardError(
+              error: error,
+              message: error.error.toString(),
+              errorCode: ThingsBoardErrorCode.general);
+        }
+      }
+      if (tbError == null &&
+          error.response != null &&
+          error.response!.statusCode != null) {
+        var httpStatus = error.response!.statusCode!;
+        var message = (httpStatus.toString() +
+            ': ' +
+            (error.response!.statusMessage != null
+                ? error.response!.statusMessage!
+                : 'Unknown'));
+        tbError = ThingsboardError(
+            error: error,
+            message: message,
+            errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+            status: httpStatus);
+      }
+    } else if (error is ThingsboardError) {
+      tbError = error;
+    }
+  }
+  tbError ??= ThingsboardError(
+      error: error,
+      message: error.toString(),
+      errorCode: ThingsBoardErrorCode.general);
+
+  var errorStackTrace;
+  if (tbError.error is Error) {
+    errorStackTrace = tbError.error.stackTrace;
+  }
+
+  tbError.stackTrace = stackTrace ??
+      tbError.getStackTrace() ??
+      errorStackTrace ??
+      StackTrace.current;
+
+  return tbError;
+}
+
+void calltoast(String polenumber) {
+  Fluttertoast.showToast(
+      msg: device_toast_msg + polenumber + device_toast_notfound,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.white,
+      textColor: Colors.black,
+      fontSize: 16.0);
 }

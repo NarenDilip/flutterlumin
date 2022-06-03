@@ -20,13 +20,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../../../data/model/device.dart';
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../presentation/views/dashboard/dashboard_view.dart';
+import '../../../presentation/views/devices/device_detail_view.dart';
 import '../../../thingsboard/model/model.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
-
-import 'ilm_maintenance_screen.dart';
 
 class replacementilm extends StatefulWidget {
   const replacementilm() : super();
@@ -230,10 +230,15 @@ class replacementilmState extends State<replacementilm> {
       if(pickedFile != null) {
         imageFile = pickedFile;
       }else{
+
+        ProductDevice productDevice = ProductDevice();
+        productDevice.name = DeviceName;
+        productDevice.type = ilmDeviceType;
+
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => MaintenanceScreen()),
+              builder: (context) => DeviceDetailView(productDevice: productDevice)),
         );
       }
     });

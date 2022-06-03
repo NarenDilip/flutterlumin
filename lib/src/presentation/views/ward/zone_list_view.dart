@@ -235,7 +235,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                     dbHelper.ward_add(ward);
                   }
                 }
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => WardList()));
               } else {
                 Fluttertoast.showToast(
@@ -258,7 +258,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                   fontSize: 16.0);
             }
           } else {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
+            Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext context) => WardList()));
           }
         } catch (e) {

@@ -5,10 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/presentation/views/dashboard/dashboard_view.dart';
 import 'package:flutterlumin/src/presentation/views/login/login_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/region_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/ward_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/zone_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/storage/storage.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -53,13 +53,13 @@ class splash_screenState extends State<splash_screen> {
                   var SelectedZone = prefs.getString("SelectedZone").toString();
                   var SelectedWard = prefs.getString("SelectedWard").toString();
                   if(selectedRegion == "null"){
-                    return region_list_screen();
+                    return RegionListScreen();
                   }else{
                     if(SelectedZone == "null"){
-                      return zone_li_screen();
+                      return ZoneListScreen();
                     }else{
                       if(SelectedWard == "null") {
-                        return ward_li_screen();
+                        return WardList();
                       }else{
                         return DashboardView();
                       }

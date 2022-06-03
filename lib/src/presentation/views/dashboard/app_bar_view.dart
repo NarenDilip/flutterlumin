@@ -52,9 +52,9 @@ class _AppBarWidgetState extends State<AppBarWidget> {
         padding: const EdgeInsets.only(left: 10, top: 30, right: 10,bottom: 20),
         child: Column(children: <Widget>[
           const SizedBox(
-            height: 10,
+            height: 16,
           ),
-          Row(
+         /* Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               const Image(
@@ -76,7 +76,7 @@ class _AppBarWidgetState extends State<AppBarWidget> {
           ),
           const SizedBox(
             height: 16,
-          ),
+          ),*/
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
@@ -104,6 +104,13 @@ class _AppBarWidgetState extends State<AppBarWidget> {
                       builder: (BuildContext context) => WardList()));
                 },
               ),
+              const SizedBox(
+                width: 10,
+              ),
+              const Image(
+                  image: AssetImage("assets/icons/logo.png"),
+                  height: 30,
+                  width: 30),
             ],
           ),
         ]));

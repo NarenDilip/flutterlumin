@@ -96,35 +96,6 @@ class _ProfileState extends State<SettingsScreen> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: const [
                             Icon(
-                              Icons.lock_open,
-                              color: Colors.blue,
-                              size: 34.0,
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              "Change password",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontFamily: 'Roboto',
-                                color: Colors.black54,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Divider(color: Colors.black26),
-                        const SizedBox(
-                          height: 6,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: const [
-                            Icon(
                               Icons.verified_user,
                               color: Colors.blue,
                               size: 34.0,

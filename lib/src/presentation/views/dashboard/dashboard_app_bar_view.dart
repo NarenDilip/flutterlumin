@@ -63,7 +63,7 @@ class _DashboardAppBarWidgetState extends State<DashboardAppBarWidget> {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (BuildContext context) => const WardList()));
                 },
-                child: Icon(Icons.filter_center_focus, color: Colors.white),
+                child: Icon(Icons.filter_list, color: Colors.white),
                 style: ElevatedButton.styleFrom(
                   shape: const CircleBorder(),
                   padding: const EdgeInsets.all(6),

@@ -4,10 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterlumin/src/constants/const.dart';
-import 'package:flutterlumin/src/ui/listview/region_list_screen.dart';
-import 'package:flutterlumin/src/ui/listview/ward_li_screen.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
-
+import 'package:flutterlumin/src/presentation/views/ward/region_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/ward_list_view.dart';
+import 'package:flutterlumin/src/presentation/views/ward/zone_list_view.dart';
 import 'package:flutterlumin/src/ui/point/edge.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -167,7 +166,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                         MaterialPageRoute(
                                                             builder: (BuildContext
                                                                     context) =>
-                                                                region_list_screen()));
+                                                                RegionListScreen()));
                                                     setState(() {});
                                                   },
                                                   child: Container(
@@ -204,7 +203,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                         MaterialPageRoute(
                                                             builder: (BuildContext
                                                                     context) =>
-                                                                zone_li_screen()));
+                                                                ZoneListScreen()));
                                                     setState(() {});
                                                   },
                                                   child: Container(
@@ -241,7 +240,7 @@ class map_view_screen_state extends State<map_view_screen> {
                                                         MaterialPageRoute(
                                                             builder: (BuildContext
                                                                     context) =>
-                                                                ward_li_screen()));
+                                                                WardList()));
                                                     setState(() {});
                                                   },
                                                   child: Container(

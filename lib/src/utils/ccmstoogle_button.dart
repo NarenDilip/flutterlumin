@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geocoder/model.dart';
@@ -424,7 +423,7 @@ class _CCMSToggleButtonnState extends State<CCMSToggleButtonn> {
                     xAlign = loginAlign;
                     loginColor = Colors.black;
                     signInColor = Colors.black;
-                    callONRPCCall(context);
+                    //callONRPCCall(context);
                   } else {
                     Fluttertoast.showToast(
                         msg: "Device in Offline Mode",
@@ -468,7 +467,7 @@ class _CCMSToggleButtonnState extends State<CCMSToggleButtonn> {
                     xAlign = signInAlign;
                     signInColor = Colors.black;
                     loginColor = Colors.black;
-                    callOFFRPCCall(context);
+                    //callOFFRPCCall(context);
                   } else {
                     Fluttertoast.showToast(
                         msg: "Device in Offline Mode",

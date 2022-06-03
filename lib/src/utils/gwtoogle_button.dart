@@ -16,7 +16,6 @@ import 'package:poly_geofence_service/models/poly_geofence.dart';
 import 'package:poly_geofence_service/poly_geofence_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../ui/maintenance/gateway/gw_maintenance_screen.dart';
 
 class GwToggleButtonn extends StatefulWidget {
   const GwToggleButtonn({Key? key}) : super(key: key);
@@ -425,7 +424,7 @@ class _GwToggleButtonnState extends State<GwToggleButtonn> {
                     xAlign = loginAlign;
                     loginColor = Colors.black;
                     signInColor = Colors.black;
-                    callONRPCCall(context);
+                    //callONRPCCall(context);
                   } else {
                     Fluttertoast.showToast(
                         msg: "Device in Offline Mode",
@@ -469,7 +468,7 @@ class _GwToggleButtonnState extends State<GwToggleButtonn> {
                     xAlign = signInAlign;
                     signInColor = Colors.black;
                     loginColor = Colors.black;
-                    callOFFRPCCall(context);
+                    //callOFFRPCCall(context);
                   } else {
                     Fluttertoast.showToast(
                         msg: "Device in Offline Mode",

@@ -15,7 +15,6 @@ import 'package:flutterlumin/src/thingsboard/model/id/entity_group_id.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
@@ -23,11 +22,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../data/model/device.dart';
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
 import '../../../presentation/views/dashboard/dashboard_view.dart';
-import '../ilm/ilm_maintenance_screen.dart';
+import '../../../presentation/views/devices/device_detail_view.dart';
 
 class replaceccms extends StatefulWidget {
   const replaceccms() : super();
@@ -225,10 +225,13 @@ class replaceccmsState extends State<replaceccms> {
       if(pickedFile != null) {
         imageFile = pickedFile;
       }else{
+        ProductDevice productDevice = ProductDevice();
+        productDevice.name = DeviceName;
+        productDevice.type = ccmsDeviceType;
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => CCMSMaintenanceScreen()),
+              builder: (context) => DeviceDetailView(productDevice: productDevice)),
         );
       }
     });

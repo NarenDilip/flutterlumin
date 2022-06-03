@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/localdb/db_helper.dart';
 import 'package:flutterlumin/src/localdb/model/ward_model.dart';
@@ -56,11 +58,64 @@ class WardListState extends State<WardList> {
   String selectedZone = "0";
   String selectedWard = "0";
   String selectedRegion = "0";
+  late ProgressDialog pr;
 
+  var _myLogFileName = "Luminator2.0_LogFile";
+  var logStatus = '';
+  static Completer _completer = new Completer<String>();
   @override
   initState() {
     // at the beginning, all users are shown
     loadDetails();
+    setUpLogs();
+  }
+
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        // Contains file name of zip
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsExported: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        // Notify Future with value
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        // FlutterLogs.logInfo(
+        //     _tag, "setUpLogs", "logsPrinted: ${call.arguments.toString()}");
+
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
   }
 
   void loadDetails() async {
@@ -103,8 +158,9 @@ class WardListState extends State<WardList> {
       if (value) {
         try {
           var sharedPreferences =
-              await SharedPreferences.getInstance() as SharedPreferences;
+          await SharedPreferences.getInstance() as SharedPreferences;
           sharedPreferences.setString("SelectedWard", selectedWard);
+
           var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
@@ -121,14 +177,16 @@ class WardListState extends State<WardList> {
           response = await tbClient
               .getAssetService()
               .getTenantAsset(selectedWard) as Asset;
+
           var relatedDeviceId;
           if (response != null) {
             List<EntityRelationInfo> wardlist = await tbClient
                 .getEntityRelationService()
                 .findInfoByAssetFrom(response.id!);
+
             if (wardlist.length != 0) {
               for (int i = 0; i < wardlist.length; i++) {
-                if (wardlist.elementAt(i).to.entityType.name != "DEVICE") {
+                if (wardlist.elementAt(i).to.entityType.index != 6) {
                   relatedDeviceId = wardlist.elementAt(i).to;
                   AssetDevices?.add(relatedDeviceId);
                 } else {
@@ -137,18 +195,22 @@ class WardListState extends State<WardList> {
                   break;
                 }
               }
-              var assetrelatedwardid;
-              for (int j = 0; j < AssetDevices!.length; j++) {
-                List<EntityRelationInfo> relationdevicelist = await tbClient
-                        .getEntityRelationService()
-                        .findInfoByAssetFrom(AssetDevices!.elementAt(j));
-                for (int k = 0; k < relationdevicelist.length; k++) {
-                  if (relationdevicelist.length != 0) {
-                    assetrelatedwardid = relationdevicelist.elementAt(k).to;
-                    relatedDevices?.add(assetrelatedwardid);
+
+              try {
+                var assetrelatedwardid;
+                for (int j = 0; j < AssetDevices!.length; j++) {
+                  List<EntityRelationInfo> relationdevicelist = await tbClient
+                      .getEntityRelationService()
+                      .findInfoByAssetFrom(AssetDevices!.elementAt(j));
+
+                  for (int k = 0; k < relationdevicelist.length; k++) {
+                    if (relationdevicelist.length != 0) {
+                      assetrelatedwardid = relationdevicelist.elementAt(k).to;
+                      relatedDevices?.add(assetrelatedwardid);
+                    }
                   }
                 }
-              }
+              } catch (e) {}
 
               if (relatedDevices != null) {
                 for (int k = 0; k < relatedDevices!.length; k++) {
@@ -160,16 +222,16 @@ class WardListState extends State<WardList> {
                       relatedDevices!.elementAt(k).id.toString())) as Device;
 
                   if (data_response.type == "lumiNode") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    List<AttributeKvEntry> vresponser;
+                    vresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (vresponser != null) {
+                      if (vresponser.first.getValue().toString() == "true") {
                         activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (vresponser.first.getValue().toString() ==
                           "false") {
                         nonactiveDevices!.add(relatedDevices!.elementAt(k));
                       } else {
@@ -190,25 +252,24 @@ class WardListState extends State<WardList> {
                       noncomdevice = ncdevices.toString();
                     }
 
-                    sharedPreferences.setInt('ilm_total_count', totalval);
-                    sharedPreferences.setInt(
-                        'ilm_on_count', activeDevice!.length);
-                    sharedPreferences.setInt(
-                        'ilm_off_count', nonactiveDevices!.length);
-                    sharedPreferences.setInt(
-                        'ilm_nc_count', int.parse(noncomdevice));
-                  }
-                  else if (data_response.type == "CCMS") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    sharedPreferences.setString(
+                        'totalCount', totalval.toString());
+                    sharedPreferences.setString(
+                        'activeCount', activeDevice!.length.toString());
+                    sharedPreferences.setString(
+                        'nonactiveCount', nonactiveDevices!.length.toString());
+                    sharedPreferences.setString('ncCount', noncomdevice);
+                  } else if (data_response.type == "CCMS") {
+                    List<AttributeKvEntry> sresponser;
+                    sresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (sresponser != null) {
+                      if (sresponser.first.getValue().toString() == "true") {
                         ccms_activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (sresponser.first.getValue().toString() ==
                           "false") {
                         ccms_nonactiveDevices!
                             .add(relatedDevices!.elementAt(k));
@@ -231,25 +292,25 @@ class WardListState extends State<WardList> {
                       ccms_noncomdevice = ccms_ncdevices.toString();
                     }
 
-                    sharedPreferences.setInt('ccms_total_count', ccms_totalval);
-                    sharedPreferences.setInt(
-                        'ccms_on_count', ccms_activeDevice!.length);
-                    sharedPreferences.setInt(
-                        'ccms_off_count', ccms_nonactiveDevices!.length);
-                    sharedPreferences.setInt(
-                        'ccms_nc_count', int.parse(ccms_noncomdevice));
-                  }
-                  else if (data_response.type == "Gateway") {
-                    List<AttributeKvEntry> responser;
-                    responser = await tbClient
+                    sharedPreferences.setString(
+                        'ccms_totalCount', ccms_totalval.toString());
+                    sharedPreferences.setString('ccms_activeCount',
+                        ccms_activeDevice!.length.toString());
+                    sharedPreferences.setString('ccms_nonactiveCount',
+                        ccms_nonactiveDevices!.length.toString());
+                    sharedPreferences.setString(
+                        'ccms_ncCount', ccms_noncomdevice);
+                  } else if (data_response.type == "Gateway") {
+                    List<AttributeKvEntry> kresponser;
+                    kresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                            relatedDevices!.elementAt(k), myList);
+                        relatedDevices!.elementAt(k), myList);
 
-                    if (responser != null) {
-                      if (responser.first.getValue().toString() == "true") {
+                    if (kresponser != null) {
+                      if (kresponser.first.getValue().toString() == "true") {
                         gw_activeDevice!.add(relatedDevices!.elementAt(k));
-                      } else if (responser.first.getValue().toString() ==
+                      } else if (kresponser.first.getValue().toString() ==
                           "false") {
                         gw_nonactiveDevices!.add(relatedDevices!.elementAt(k));
                       } else {
@@ -271,15 +332,17 @@ class WardListState extends State<WardList> {
                       gw_noncomdevice = gw_ncdevices.toString();
                     }
 
-                    sharedPreferences.setInt('gw_total_count', gw_totalval);
-                    sharedPreferences.setInt(
-                        'gw_on_count', gw_activeDevice!.length);
-                    sharedPreferences.setInt(
-                        'gw_off_count', gw_nonactiveDevices!.length);
-                    sharedPreferences.setInt(
-                        'gw_nc_count', int.parse(gw_noncomdevice));
+                    sharedPreferences.setString(
+                        'gw_totalCount', gw_totalval.toString());
+                    sharedPreferences.setString(
+                        'gw_activeCount', gw_activeDevice!.length.toString());
+                    sharedPreferences.setString('gw_nonactiveCount',
+                        gw_nonactiveDevices!.length.toString());
+                    sharedPreferences.setString('gw_ncCount', gw_noncomdevice);
                   }
                 }
+
+                pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => DashboardView()));
               }
@@ -329,7 +392,13 @@ class WardListState extends State<WardList> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return WillPopScope(
+        onWillPop: () async {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => ZoneListScreen()));
+      return true;
+    },
+    child:Container(
         child: Scaffold(
       backgroundColor: lightGrey,
           appBar: AppBar(
@@ -448,7 +517,7 @@ class WardListState extends State<WardList> {
           ],
         ),
       ),
-    ));
+    )));
   }
 
   Future<void> updateWard() async{

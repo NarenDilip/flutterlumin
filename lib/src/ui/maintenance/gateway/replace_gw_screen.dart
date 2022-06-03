@@ -22,11 +22,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../data/model/device.dart';
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../localdb/model/ward_model.dart';
 import '../../../presentation/views/dashboard/dashboard_view.dart';
-import 'gw_maintenance_screen.dart';
+import '../../../presentation/views/devices/device_detail_view.dart';
 
 class replacegw extends StatefulWidget {
   const replacegw() : super();
@@ -244,10 +245,14 @@ class replacegwState extends State<replacegw> {
       if(pickedFile != null) {
         imageFile = pickedFile;
       }else{
+        ProductDevice productDevice = ProductDevice();
+        productDevice.name = DeviceName;
+        productDevice.type = gatewayDeviceType;
+
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => GWMaintenanceScreen()),
+              builder: (context) => DeviceDetailView(productDevice: productDevice)),
         );
       }
     });

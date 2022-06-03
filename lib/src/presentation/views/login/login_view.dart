@@ -8,7 +8,6 @@ import 'package:flutterlumin/src/models/loginrequester.dart';
 import 'package:flutterlumin/src/presentation/views/ward/region_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -80,10 +79,6 @@ class _LoginAppState extends State<LoginView> {
                         ),
                         _PasswordInputField(passwordController, user),
                         const SizedBox(
-                          height: 6,
-                        ),
-                        _ForgotPassword(),
-                        const SizedBox(
                           height: 30,
                         ),
                         LoginButton(
@@ -137,35 +132,48 @@ class _EmailInputField extends StatelessWidget {
   }
 }
 
-class _PasswordInputField extends StatelessWidget {
+class _PasswordInputField extends StatefulWidget {
   const _PasswordInputField(this._passwordController, this.user);
 
   final TextEditingController _passwordController;
   final LoginRequester user;
 
   @override
+  State<_PasswordInputField> createState() => _PasswordInputFieldState();
+}
+
+class _PasswordInputFieldState extends State<_PasswordInputField> {
+  late bool _isObscure = true;
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: true,
-      decoration: const InputDecoration(
+      obscureText: _isObscure,
+      decoration: InputDecoration(
         hintText: 'Password',
-        hintStyle: TextStyle(color: Colors.grey, fontFamily: 'Roboto'),
+        hintStyle: const TextStyle(color: Colors.grey, fontFamily: 'Roboto'),
         filled: true,
         fillColor: lightGrey,
-        suffixIcon: Icon(
-          Icons.visibility_off,
+        suffixIcon: IconButton(
+          icon: Icon(
+            _isObscure ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _isObscure = !_isObscure;
+            });
+          },
         ),
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
           borderSide: BorderSide(color: Colors.white, width: 2),
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
           borderSide: BorderSide(color: lightGrey),
         ),
       ),
-      onSaved: (value) => user.password = value!,
-      controller: _passwordController,
+      onSaved: (value) => widget.user.password = value!,
+      controller: widget._passwordController,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return "Please enter the password";
@@ -261,7 +269,7 @@ Future<void> _loginAPI(BuildContext context, LoginRequester user,
           prefs.setString('password', user.password);
           callRegionDetails(context, progressDialog);
         } else {
-          // Navigator.pop(context);
+           Navigator.pop(context);
           Fluttertoast.showToast(
               msg: "Please check Username and Password, Invalid Credentials",
               toastLength: Toast.LENGTH_SHORT,
@@ -272,7 +280,7 @@ Future<void> _loginAPI(BuildContext context, LoginRequester user,
               fontSize: 16.0);
         }
       } else {
-        // Navigator.pop(context);
+         Navigator.pop(context);
         Fluttertoast.showToast(
             msg: "Please check Username and Password, Invalid Credentials",
             toastLength: Toast.LENGTH_SHORT,
@@ -318,3 +326,15 @@ void callRegionDetails(BuildContext context, ProgressDialog progressDialog) {
     }
   });
 }
+
+void calltoast(String polenumber) {
+  Fluttertoast.showToast(
+      msg: device_toast_msg + polenumber + device_toast_notfound,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.white,
+      textColor: Colors.black,
+      fontSize: 16.0);
+}
+

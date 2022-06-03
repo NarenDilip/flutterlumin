@@ -18,7 +18,6 @@ import 'package:flutterlumin/src/localdb/model/ward_model.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
-import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
@@ -26,13 +25,13 @@ import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/model/device.dart';
 import '../../presentation/views/dashboard/dashboard_view.dart';
+import '../../presentation/views/devices/device_detail_view.dart';
 import '../../thingsboard/error/thingsboard_error.dart';
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/gateway/gateway_install_cam_screen.dart';
 import '../installation/ilm/ilm_install_cam_screen.dart';
-import '../maintenance/ccms/ccms_maintenance_screen.dart';
-import '../maintenance/gateway/gw_maintenance_screen.dart';
 
 class LocationWidget extends StatefulWidget {
   final int initialLabel;
@@ -507,7 +506,7 @@ class _LocationWidgetState extends State<LocationWidget> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 13, bottom: 13),
+          padding: const EdgeInsets.only(left: 13, bottom: 16),
           child: Align(
             alignment: Alignment.bottomLeft,
             child: GestureDetector(
@@ -783,27 +782,16 @@ class _LocationWidgetState extends State<LocationWidget> {
                         responser.last.kv.getValue().toString());
 
                     pr.hide();
-                    if (response.type == ilmDeviceType) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MaintenanceScreen()),
-                      );
-                    } else if (response.type == ccmsDeviceType) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                            const CCMSMaintenanceScreen()),
-                      );
-                    } else if (response.type == ccmsDeviceType) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                            const GWMaintenanceScreen()),
-                      );
-                    }
+
+                    ProductDevice productDevice = ProductDevice();
+                    productDevice.name = deviceName;
+                    productDevice.type = response.type;
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DeviceDetailView(productDevice: productDevice)),
+                    );
                   } else {
                     FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
                         "No attributes key found");
@@ -1267,10 +1255,15 @@ class _LocationWidgetState extends State<LocationWidget> {
             // pr.hide();
             // Navigator.pop(context);
             if (context != null) {
+
+              ProductDevice productDevice = ProductDevice();
+              productDevice.name = deviceName;
+              productDevice.type = ccmsDeviceType;
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const CCMSMaintenanceScreen()),
+                    builder: (context) => DeviceDetailView(productDevice: productDevice)),
               );
               // Navigator.of(context).pushReplacement(MaterialPageRoute(
               //     builder: (BuildContext context) => CCMSMaintenanceScreen()));

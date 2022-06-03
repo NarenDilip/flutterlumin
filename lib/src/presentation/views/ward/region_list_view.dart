@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,13 +15,10 @@ import 'package:flutterlumin/src/presentation/views/ward/zone_list_view.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/listview/zone_li_screen.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 class RegionListScreen extends StatefulWidget {
   const RegionListScreen({Key? key}) : super(key: key);
@@ -87,8 +85,12 @@ class RegionListScreenState extends State<RegionListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+          showExitPopup(context);
+          return false;
+        },
+        child:  Scaffold(
           backgroundColor: lightGrey,
           body: Padding(
             padding: const EdgeInsets.all(30),
@@ -169,6 +171,57 @@ class RegionListScreenState extends State<RegionListScreen> {
         ));
   }
 
+  Future<bool> showExitPopup(context) async {
+    return await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: SizedBox(
+              height: 130,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Luminator",
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  const Text("Do you want to exit?"),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            exit(0);
+                          },
+                          child: const Text("Yes"),
+                          style: ElevatedButton.styleFrom(
+                              primary: Colors.red.shade800),
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("No",
+                                style: TextStyle(color: Colors.black)),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white,
+                            ),
+                          ))
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
     ThingsboardError? tbError;
@@ -246,7 +299,6 @@ class RegionListScreenState extends State<RegionListScreen> {
   void callZoneDetailsFinder(BuildContext context, selectedZone) {
     Utility.isConnected().then((value) async {
       if (value) {
-        // Utility.progressDialog(context);
         try {
           var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -254,7 +306,8 @@ class RegionListScreenState extends State<RegionListScreen> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString("SelectedRegion", selectedZone);
 
-          DBHelper dbHelper = DBHelper();
+          DBHelper dbHelper = new DBHelper();
+          dbHelper.zone_delete(selectedZone);
           List<ZoneResponse> details = await dbHelper
               .zone_regionbasedDetails(selectedZone);
           if (details.isEmpty) {
@@ -262,7 +315,7 @@ class RegionListScreenState extends State<RegionListScreen> {
 
             List<Region> regiondetails =
             await dbHelper.region_name_regionbasedDetails(selectedZone);
-            if (regiondetails.isNotEmpty) {
+            if (regiondetails.length != 0) {
               Map<String, dynamic> fromId = {
                 'entityType': 'ASSET',
                 'id': regiondetails.first.regionid
@@ -277,25 +330,26 @@ class RegionListScreenState extends State<RegionListScreen> {
                   relatedzones?.add(wardlist.elementAt(i).to.id.toString());
                 }
 
-                // DBHelper dbHelper = new DBHelper();
-                // dbHelper.region_delete();
-
                 for (int j = 0; j < relatedzones!.length; j++) {
                   Asset asset = await tbClient
                       .getAssetService()
                       .getAsset(relatedzones!.elementAt(j).toString()) as Asset;
                   if (asset.name != null) {
-                    // var regionname = selectedZone.split("-");
+
+                    var rng = new Random();
+                    var code = rng.nextInt(999999) + 100000;
+
                     ZoneResponse zone =
-                    ZoneResponse(j, asset.id!.id, asset.name, selectedZone) ;
+                    ZoneResponse(j+code+0, asset.id!.id, asset.name, selectedZone);
                     dbHelper.zone_add(zone);
                   }
                 }
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => ZoneListScreen()));
               } else {
+                /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Zone Details Found");*/
                 Fluttertoast.showToast(
-                    msg: "No Zones releated to this Region",
+                    msg: app_reg_nozones,
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -304,8 +358,9 @@ class RegionListScreenState extends State<RegionListScreen> {
                     fontSize: 16.0);
               }
             } else {
+              /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Region Details Found");*/
               Fluttertoast.showToast(
-                  msg: "Unable to find Region Details",
+                  msg: app_reg_notfound,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -314,10 +369,12 @@ class RegionListScreenState extends State<RegionListScreen> {
                   fontSize: 16.0);
             }
           } else {
+            /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Details Found");*/
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => ZoneListScreen()));
           }
         } catch (e) {
+          /*FlutterLogs.logInfo("regionlist_page", "region_list", "Region List Fetching Exception");*/
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -328,12 +385,12 @@ class RegionListScreenState extends State<RegionListScreen> {
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => RegionListScreen()));
-            // Navigator.pop(context);
           }
         }
       } else {
+        /*FlutterLogs.logInfo("regionlist_page", "region_list", "No Network");*/
         Fluttertoast.showToast(
-            msg: "No Network. Please try again later",
+            msg: app_no_network,
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,

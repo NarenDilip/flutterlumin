@@ -1,4 +1,8 @@
 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutterlumin/src/constants/const.dart';
@@ -7,10 +11,12 @@ import 'package:flutterlumin/src/localdb/model/region_model.dart';
 import 'package:flutterlumin/src/data/model/zone_model.dart';
 import 'package:flutterlumin/src/thingsboard/model/model.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
-import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import '../../thingsboard/error/thingsboard_error.dart';
+import '../views/ward/ward_list_view.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   const FilterBottomSheet({Key? key}) : super(key: key);
@@ -257,4 +263,78 @@ class SearchButton extends StatelessWidget {
                     side: BorderSide(color: kPrimaryColor)))),
         onPressed: () => {Navigator.pop(context)});
   }
+}
+
+Future<ThingsboardError> toThingsboardError(error, context,
+    [StackTrace? stackTrace]) async {
+  ThingsboardError? tbError;
+  if (error.message == "Session expired!") {
+    var status = loginThingsboard.callThingsboardLogin(context);
+    if (status == true) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (BuildContext context) => WardList()));
+    }
+  } else {
+    if (error is DioError) {
+      if (error.response != null && error.response!.data != null) {
+        var data = error.response!.data;
+        if (data is ThingsboardError) {
+          tbError = data;
+        } else if (data is Map<String, dynamic>) {
+          tbError = ThingsboardError.fromJson(data);
+        } else if (data is String) {
+          try {
+            tbError = ThingsboardError.fromJson(jsonDecode(data));
+          } catch (_) {}
+        }
+      } else if (error.error != null) {
+        if (error.error is ThingsboardError) {
+          tbError = error.error;
+        } else if (error.error is SocketException) {
+          tbError = ThingsboardError(
+              error: error,
+              message: 'Unable to connect',
+              errorCode: ThingsBoardErrorCode.general);
+        } else {
+          tbError = ThingsboardError(
+              error: error,
+              message: error.error.toString(),
+              errorCode: ThingsBoardErrorCode.general);
+        }
+      }
+      if (tbError == null &&
+          error.response != null &&
+          error.response!.statusCode != null) {
+        var httpStatus = error.response!.statusCode!;
+        var message = (httpStatus.toString() +
+            ': ' +
+            (error.response!.statusMessage != null
+                ? error.response!.statusMessage!
+                : 'Unknown'));
+        tbError = ThingsboardError(
+            error: error,
+            message: message,
+            errorCode: httpStatusToThingsboardErrorCode(httpStatus),
+            status: httpStatus);
+      }
+    } else if (error is ThingsboardError) {
+      tbError = error;
+    }
+  }
+  tbError ??= ThingsboardError(
+      error: error,
+      message: error.toString(),
+      errorCode: ThingsBoardErrorCode.general);
+
+  var errorStackTrace;
+  if (tbError.error is Error) {
+    errorStackTrace = tbError.error.stackTrace;
+  }
+
+  tbError.stackTrace = stackTrace ??
+      tbError.getStackTrace() ??
+      errorStackTrace ??
+      StackTrace.current;
+
+  return tbError;
 }

@@ -21,12 +21,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../data/model/device.dart';
 import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../presentation/views/dashboard/dashboard_view.dart';
+import '../../../presentation/views/devices/device_detail_view.dart';
 import '../../../thingsboard/model/model.dart';
-import '../ilm/ilm_maintenance_screen.dart';
-import 'ccms_maintenance_screen.dart';
 
 class replacementccms extends StatefulWidget {
   const replacementccms() : super();
@@ -221,10 +221,13 @@ class replacementccmsState extends State<replacementccms> {
       if(pickedFile != null) {
         imageFile = pickedFile;
       }else{
+        ProductDevice productDevice = ProductDevice();
+        productDevice.name = DeviceName;
+        productDevice.type = ccmsDeviceType;
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => CCMSMaintenanceScreen()),
+              builder: (context) => DeviceDetailView(productDevice: productDevice)),
         );
       }
     });
