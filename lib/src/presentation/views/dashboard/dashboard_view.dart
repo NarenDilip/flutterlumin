@@ -49,7 +49,7 @@ class _DashboardAppState extends State<DashboardView> {
       create: (context) => SearchDeviceCubit(DeviceRepository()),
       child: const SearchDevicesView(),
     ),
-    DeviceLocationView(),
+    const DeviceLocationView(),
     const SettingsScreen(),
   ];
 

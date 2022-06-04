@@ -52,10 +52,6 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
     super.initState();
   }
 
-  /* void updateDeviceStatus(bool deviceStatus, ProductDevice productDevice) {
-    final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
-    productDeviceCubit.updateDeviceStatus(context, deviceStatus, productDevice);
-  }*/
 
   void getLive() {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);

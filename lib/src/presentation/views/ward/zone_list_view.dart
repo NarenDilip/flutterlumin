@@ -32,8 +32,8 @@ class ZoneListScreen extends StatefulWidget {
 
 class ZoneListScreenState extends State<ZoneListScreen> {
   // return Scaffold(body: regionListview());
-  List<String>? _allUsers = [];
-  List<String>? _foundUsers = [];
+  List<String>? allZones = [];
+  List<String>? _zones = [];
   String selectedRegion = "0";
   String selectedZone = "0";
   List<String>? relatedzones = [];
@@ -52,13 +52,16 @@ class ZoneListScreenState extends State<ZoneListScreen> {
 
     if (selectedRegion != "0") {
       zones = dbHelper.zone_regionbasedDetails(selectedRegion);
+      if(_zones!.isNotEmpty){
+
+      }
       zones.then((data) {
         for (int i = 0; i < data.length; i++) {
           String regionname = data[i].zonename.toString();
-          _allUsers?.add(regionname);
+          allZones?.add(regionname);
         }
         setState(() {
-          _foundUsers = _allUsers!;
+          _zones = allZones!;
         });
       }, onError: (e) {
         print(e);
@@ -80,9 +83,9 @@ class ZoneListScreenState extends State<ZoneListScreen> {
     List<String> results = [];
     if (enteredKeyword.isEmpty) {
       // if the search field is empty or only contains white-space, we'll display all users
-      results = _allUsers!;
+      results = allZones!;
     } else {
-      results = _allUsers!
+      results = allZones!
           .where((user) =>
           user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
@@ -91,7 +94,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
 
     // Refresh the UI
     setState(() {
-      _foundUsers = results;
+      _zones = results;
     });
   }
 
@@ -140,11 +143,11 @@ class ZoneListScreenState extends State<ZoneListScreen> {
               ),
             ),
             Expanded(
-              child: _foundUsers!.isNotEmpty
+              child: _zones!.isNotEmpty
                   ? ListView.builder(
-                itemCount: _foundUsers!.length,
+                itemCount: _zones!.length,
                 itemBuilder: (context, index) => Card(
-                  key: ValueKey(_foundUsers),
+                  key: ValueKey(_zones),
                   color: Colors.white,
                   elevation: 4,
                   margin: const EdgeInsets.symmetric(vertical: 10),
@@ -160,7 +163,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                     onTap: () {
                       setState(() {
                         selectedZone =
-                            _foundUsers!.elementAt(index).toString();
+                            _zones!.elementAt(index).toString();
                         loadLocalData();
                       });
 
@@ -170,7 +173,7 @@ class ZoneListScreenState extends State<ZoneListScreen> {
                       //         builder: (BuildContext context) =>
                       //             ward_li_screen()));
                     },
-                    title: Text(_foundUsers!.elementAt(index),
+                    title: Text(_zones!.elementAt(index),
                         style: const TextStyle(
                             fontSize: 20.0,
                             fontFamily: 'Roboto',
@@ -202,11 +205,11 @@ class ZoneListScreenState extends State<ZoneListScreen> {
           prefs.setString("SelectedZone", selectedZone);
 
           DBHelper dbHelper = new DBHelper();
+          dbHelper.ward_delete(selectedZone);
           List<Ward> ward =
           await dbHelper.ward_zonebasedDetails(selectedZone);
           if (ward.isEmpty) {
-            // dbHelper.ward_delete();
-
+            relatedzones!.clear();
             List<ZoneResponse> regiondetails =
             await dbHelper.zone_zonebasedDetails(selectedZone);
             if (regiondetails.length != 0) {

@@ -296,7 +296,7 @@ class RegionListScreenState extends State<RegionListScreen> {
     return tbError;
   }
 
-  void callZoneDetailsFinder(BuildContext context, selectedZone) {
+  void callZoneDetailsFinder(BuildContext context, selectedRegion) {
     Utility.isConnected().then((value) async {
       if (value) {
         try {
@@ -304,30 +304,30 @@ class RegionListScreenState extends State<RegionListScreen> {
           tbClient.smart_init();
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString("SelectedRegion", selectedZone);
+          prefs.setString("SelectedRegion", selectedRegion);
 
           DBHelper dbHelper = new DBHelper();
-          dbHelper.zone_delete(selectedZone);
-          List<ZoneResponse> details = await dbHelper
-              .zone_regionbasedDetails(selectedZone);
-          if (details.isEmpty) {
-            // dbHelper.zone_delete();
+          dbHelper.zone_delete(selectedRegion);
+          relatedzones!.clear();
 
+          List<ZoneResponse> details = await dbHelper
+              .zone_regionbasedDetails(selectedRegion);
+          if (details.isEmpty) {
             List<Region> regiondetails =
-            await dbHelper.region_name_regionbasedDetails(selectedZone);
+            await dbHelper.region_name_regionbasedDetails(selectedRegion);
             if (regiondetails.length != 0) {
               Map<String, dynamic> fromId = {
                 'entityType': 'ASSET',
                 'id': regiondetails.first.regionid
               };
 
-              List<EntityRelationInfo> wardlist = await tbClient
+              List<EntityRelationInfo> zoneList = await tbClient
                   .getEntityRelationService()
                   .findInfoByAssetFrom(EntityId.fromJson(fromId));
 
-              if (wardlist.isNotEmpty) {
-                for (int i = 0; i < wardlist.length; i++) {
-                  relatedzones?.add(wardlist.elementAt(i).to.id.toString());
+              if (zoneList.isNotEmpty) {
+                for (int i = 0; i < zoneList.length; i++) {
+                  relatedzones?.add(zoneList.elementAt(i).to.id.toString());
                 }
 
                 for (int j = 0; j < relatedzones!.length; j++) {
@@ -340,7 +340,7 @@ class RegionListScreenState extends State<RegionListScreen> {
                     var code = rng.nextInt(999999) + 100000;
 
                     ZoneResponse zone =
-                    ZoneResponse(j+code+0, asset.id!.id, asset.name, selectedZone);
+                    ZoneResponse(j+code+0, asset.id!.id, asset.name, selectedRegion);
                     dbHelper.zone_add(zone);
                   }
                 }
