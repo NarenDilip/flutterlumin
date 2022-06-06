@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,7 +16,10 @@ import 'package:flutterlumin/src/presentation/blocs/device_detail_cubit.dart';
 import 'package:flutterlumin/src/presentation/blocs/device_info_state.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:latlong/latlong.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geocoder/model.dart';
+import 'package:poly_geofence_service/models/lat_lng.dart';
+import 'package:poly_geofence_service/poly_geofence_service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../thingsboard/error/thingsboard_error.dart';
@@ -27,8 +31,10 @@ import '../../../ui/maintenance/gateway/replace_gw_screen.dart';
 import '../../../ui/maintenance/ilm/remove_ilm_screen.dart';
 import '../../../ui/maintenance/ilm/replace_ilm_screen.dart';
 import '../../../ui/qr_scanner/qr_scanner.dart';
+import '../../../utils/ccmstoogle_button.dart';
 import '../../../utils/utility.dart';
 import '../dashboard/dashboard_view.dart';
+import 'device_map_view.dart';
 
 class DeviceDetailView extends StatefulWidget {
   const DeviceDetailView({
@@ -44,12 +50,135 @@ class DeviceDetailView extends StatefulWidget {
 class _DeviceDetailViewState extends State<DeviceDetailView> {
   bool deviceStatus = false;
   bool mcbTripStatus = true;
+  final _streamController = StreamController<PolyGeofence>();
+
+  String address = "";
+  String SelectedWard = "0";
+  List<double>? _latt = [];
+  String Lattitude = "0";
+  String Longitude = "0";
+  String geoFence = "false";
+  double accuracy = 0;
+  var accuvalue;
+
+
+  final _polyGeofenceService = PolyGeofenceService.instance.setup(
+      interval: 5000,
+      accuracy: 100,
+      loiteringDelayMs: 60000,
+      statusChangeDelayMs: 10000,
+      allowMockLocations: false,
+      printDevLog: false);
+
+  // Create a [PolyGeofence] list.
+  final _polyGeofenceList = <PolyGeofence>[
+    PolyGeofence(
+      id: 'Office_Address',
+      data: {
+        'address': 'Coimbatore',
+        'about': 'Schnell Energy Equipments,Coimbatore.',
+      },
+      polygon: <LatLng>[
+        const LatLng(11.140339923116493, 76.94095999002457),
+      ],
+    ),
+  ];
+
+  // This function is to be called when the geofence status is changed.
+  Future<void> _onPolyGeofenceStatusChanged(PolyGeofence polyGeofence,
+      PolyGeofenceStatus polyGeofenceStatus, Location location) async {
+    print('polyGeofence: ${polyGeofence.toJson()}');
+    print('polyGeofenceStatus: ${polyGeofenceStatus.toString()}');
+    _streamController.sink.add(polyGeofence);
+  }
+
+  // This function is to be called when the location has changed.
+  Future<void> _onLocationChanged(Location location) async {
+    print('location: ${location.toJson()}');
+    accuracy = location.accuracy;
+    Lattitude = location.latitude.toString();
+    Longitude = location.longitude.toString();
+    accuvalue = accuracy.toString().split(".");
+    var insideArea;
+
+    if (insideArea == true) {
+      if (accuracy <= 10) {
+        _getAddress(location!.latitude, location!.longitude).then((value) {
+          setState(() {
+            address = value;
+          });
+        });
+      } else {
+        setState(() {
+          visibility = false;
+        });
+        Fluttertoast.showToast(
+            msg:
+            app_fetch_loc,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+      callPolygonStop();
+    }
+  }
+
+  void callPolygonStop() {
+    _polyGeofenceService
+        .removePolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+    _polyGeofenceService.removeLocationChangeListener(_onLocationChanged);
+    _polyGeofenceService.removeLocationServicesStatusChangeListener(
+        _onLocationServicesStatusChanged);
+    _polyGeofenceService.removeStreamErrorListener(_onError);
+    _polyGeofenceService.clearAllListeners();
+    _polyGeofenceService.stop();
+  }
+
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates));
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
 
   @override
   void initState() {
     final productDeviceCubit = BlocProvider.of<DeviceDetailCubit>(context);
     productDeviceCubit.getDeviceDetail(widget.productDevice, context);
     super.initState();
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      _polyGeofenceService.start();
+      _polyGeofenceService
+          .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+      _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
+      _polyGeofenceService.addLocationServicesStatusChangeListener(
+          _onLocationServicesStatusChanged);
+      _polyGeofenceService.addStreamErrorListener(_onError);
+      _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
+    });
+  }
+
+  void _onLocationServicesStatusChanged(bool status) {
+    print('isLocationServicesEnabled: $status');
+  }
+
+
+  // This function is used to handle errors that occur in the service.
+  void _onError(error) {
+    final errorCode = getErrorCodesFromError(error);
+    if (errorCode == null) {
+      print('Undefined error: $error');
+      return;
+    }
+    print('ErrorCode: $errorCode');
   }
 
 
@@ -128,51 +257,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
                 SingleChildScrollView(
                   child: Column(
                     children: <Widget>[
-                      Container(
-                        height: 160,
-                        child: FlutterMap(
-                          options: MapOptions(
-                            center: LatLng(
-                                state.deviceResponse.latitude != ""
-                                    ? double.parse(
-                                        state.deviceResponse.latitude)
-                                    : 0.0,
-                                state.deviceResponse.longitude != ""
-                                    ? double.parse(
-                                        state.deviceResponse.longitude)
-                                    : 0.0),
-                            zoom: 17.0,
-                          ),
-                          layers: [
-                            TileLayerOptions(
-                              urlTemplate:
-                                  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                              subdomains: ['a', 'b', 'c'],
-                            ),
-                            MarkerLayerOptions(
-                              markers: [
-                                Marker(
-                                  width: 80.0,
-                                  height: 80.0,
-                                  point: LatLng(
-                                      state.deviceResponse.latitude != ""
-                                          ? double.parse(
-                                              state.deviceResponse.latitude)
-                                          : 0.0,
-                                      state.deviceResponse.longitude != ""
-                                          ? double.parse(
-                                              state.deviceResponse.longitude)
-                                          : 0.0),
-                                  builder: (_) => const Icon(
-                                    Icons.location_pin,
-                                    size: 40,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      DeviceMapView(state.deviceResponse),
                       Card(
                         shape: RoundedRectangleBorder(
                           side: const BorderSide(color: lightGrey, width: 2),
@@ -637,6 +722,7 @@ class _DeviceDetailViewState extends State<DeviceDetailView> {
     );
   }
 }
+
 
 Future<void> updateDeviceStatus(
     context, deviceStatus, ProductDevice productDevice) async {
