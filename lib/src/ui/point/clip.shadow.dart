@@ -1,5 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+// Clipshadow painter will be used for painting some polygon view, this page is
+// act a widget and used in all screens
+
 class ClipShadowPainter extends CustomPainter {
   final CustomClipper<Path> clipper;
   final List<ClipShadow> clipShadows;

@@ -3,6 +3,9 @@ import 'package:flutterlumin/src/ui/point/point_clipper.dart';
 import 'clip.shadow.dart';
 import 'edge.dart';
 
+// Point painter will be used for painting some polygon view and map view ,
+// this page is act a widget and used in all screens
+
 class Point extends StatelessWidget {
   const Point(
       {Key? key,

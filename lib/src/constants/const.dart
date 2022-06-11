@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+//Constants with local string, url, colors and declarations are declared it will also use for multilingual process.
+
 const kPrimaryColor = Color(0xff23a3e1);
 const buttonColor = Color(0xff3bbce3);
 const orangeColor = Color(0xfff1a146);
@@ -26,9 +28,13 @@ const darkgreen = Color(0xff146e00);
 
 const splashscreen_text = "LUMINATOR";
 
+// Development release url
 const devBaseUrl = "http://iotpro.io:8077";
+
+// Production release url
 const prodBaseUrl = "https://schnelliot.in/";
 
+//Image uploading url for production
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 
 // const app_username = "smartLumi@gmail.com";

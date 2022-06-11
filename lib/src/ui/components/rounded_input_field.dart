@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 
+// widget for rounded input button design for all stateful classes.
+
 class rounded_input_field extends StatelessWidget {
   final String hintText;
   final ValueChanged<String> onChanged;

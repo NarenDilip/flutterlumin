@@ -1,3 +1,4 @@
+// model class for requesting server with key values
 class DeviceRequester {
   String ilmnumber;
   String ccmsnumber;

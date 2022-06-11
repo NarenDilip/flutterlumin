@@ -1,5 +1,7 @@
 // @dart=2.9
 
+// Main app class is used for development and production release
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';

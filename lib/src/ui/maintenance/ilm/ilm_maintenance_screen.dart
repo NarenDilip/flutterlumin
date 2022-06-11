@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/constants/const.dart';
+import 'package:flutterlumin/src/localdb/model/localnetwork_model.dart';
 import 'package:flutterlumin/src/thingsboard/error/thingsboard_error.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/dashboard/dashboard_screen.dart';
@@ -37,6 +38,14 @@ import '../../../localdb/db_helper.dart';
 import '../../../localdb/model/region_model.dart';
 import '../../../utils/ilmtoogle_button.dart';
 import '../../splash_screen.dart';
+
+
+// ILM Maintenance screen in this screen we need to show the selected device
+// details with location, lampwatts and last communication time, need to show
+// some buttons like on,off getlive,remove or replace optins to users, if user
+// clicks remove we need navigate to remove and user clicks on replace we need
+// to navigate to replace screen, we need to fetch the device details based on
+// the user scanned or selected device to proceed maintenance actions
 
 class MaintenanceScreen extends StatefulWidget {
   const MaintenanceScreen() : super();
@@ -182,7 +191,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           setState(() {
             visibility = false;
           });
@@ -694,7 +703,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
       onWillPop: () async {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         return true;
       },
       child: Scaffold(
@@ -1302,7 +1311,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
                     onPressed: () {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              dashboard_screen(selectedPage: 0)));
                     },
                     child: const Text('Cancel',
                         style: TextStyle(
@@ -1347,6 +1356,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
           );
         });
   }
+
 
 // class ToggleButton extends StatefulWidget {
 //   const ToggleButton({Key? key}) : super(key: key);
@@ -2538,7 +2548,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
     }
   } else {
     if (error is DioError) {

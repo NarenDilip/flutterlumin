@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutterlumin/src/utils/responsive.dart';
 
+// Base components are created and it will be used in overall the application
+
 class Utility {
 
   var logStatus = '';

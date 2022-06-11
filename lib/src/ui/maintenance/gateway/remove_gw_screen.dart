@@ -28,6 +28,12 @@ import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
+
+// Gw Maintenance remove device screen, it will check the selected device
+// is present in server, it will collect the details of the device, user need
+// to remove the selected device.on the removal process will move the device to
+// forrepair folder and revert back to maintenance page
+
 class replacementgw extends StatefulWidget {
   const replacementgw() : super();
 
@@ -144,7 +150,7 @@ class replacementgwState extends State<replacementgw> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -385,21 +391,21 @@ class replacementgwState extends State<replacementgw> {
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              dashboard_screen(selectedPage: 0)));
                     }
                   } else {
                     pr.hide();
                     calltoast("Device EntityGroup Not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   pr.hide();
                   calltoast(deviceName);
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 pr.hide();
@@ -414,14 +420,14 @@ class replacementgwState extends State<replacementgw> {
                     fontSize: 16.0);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
             } else {
               pr.hide();
               calltoast(deviceName);
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           } else {
             pr.hide();
@@ -448,7 +454,7 @@ class replacementgwState extends State<replacementgw> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
       }
@@ -474,7 +480,7 @@ class replacementgwState extends State<replacementgw> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -567,7 +573,7 @@ class replacementgwState extends State<replacementgw> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       } else {}
       return response;
     } catch (e) {

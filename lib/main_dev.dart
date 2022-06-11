@@ -8,6 +8,8 @@ import 'package:flutterlumin/src/constants/const.dart';
 import 'package:flutterlumin/src/ui/splash_screen.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
 
+// Main app class is used for development and production release
+
 Future<void> main() async {
 
   FlavorConfig(

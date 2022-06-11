@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 
+// widget for roundede button design for all stateful classes.
+
 class rounded_button extends StatelessWidget {
   final String text;
   final Function()? press;

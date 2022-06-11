@@ -1,3 +1,6 @@
+
+// Model class for device with mapping records in marker
+
 class Mapdata {
   int? id;
   String? deviceid;

@@ -34,6 +34,13 @@ import '../installation/ilm/ilm_install_cam_screen.dart';
 import '../maintenance/ccms/ccms_maintenance_screen.dart';
 import '../maintenance/gateway/gw_maintenance_screen.dart';
 
+// Location map screen it will be used for map view, based on the ward selection
+// list of device details are avaliavle in local database, we need to plot
+// the device details in the map view, we need to plot the current location in
+// the mapview and need to create a radius circle, if users need to click on the
+// device it will show a popup details , user need to click on the popup it will
+// check the device details and device current state and move to the respective page
+
 class LocationWidget extends StatefulWidget {
   final int initialLabel;
   final OnToggle onToggle;
@@ -85,11 +92,12 @@ class _LocationWidgetState extends State<LocationWidget> {
   var logStatus = '';
   static Completer _completer = new Completer<String>();
   var serverUrl = FlavorConfig.instance.variables["baseUrl"];
+
   @override
   void initState() {
     super.initState();
     getCurrentLocation();
-    _listenLocation();
+    // _listenLocation();
     current = widget.initialLabel;
     callWatcher(context);
     setUpLogs();
@@ -146,38 +154,38 @@ class _LocationWidgetState extends State<LocationWidget> {
   Future<void> _listenLocation() async {
     _locationSubscription =
         locations.onLocationChanged.handleError((dynamic err) {
-          if (err is PlatformException) {
-            setState(() {
-              _error = err.code;
-            });
-          }
-          _locationSubscription?.cancel();
+      if (err is PlatformException) {
+        setState(() {
+          _error = err.code;
+        });
+      }
+      _locationSubscription?.cancel();
+      setState(() {
+        _locationSubscription = null;
+      });
+    }).listen((LocationData currentLocation) {
+      setState(() {
+        _error = null;
+        _location = currentLocation;
+        _getAddress(_location!.latitude, _location!.longitude).then((value) {
           setState(() {
-            _locationSubscription = null;
-          });
-        }).listen((LocationData currentLocation) {
-          setState(() {
-            _error = null;
-            _location = currentLocation;
-            _getAddress(_location!.latitude, _location!.longitude).then((value) {
-              setState(() {
-                address = value;
-                if (_latt!.length <= 5) {
-                  _latt!.add(_location!.latitude!);
-                  lattitude = _location!.latitude!;
-                  longitude = _location!.longitude!;
-                  accuracy = _location!.accuracy!;
-                  // addresss = addresss;
-                } else {
-                  _locationSubscription?.cancel();
-                  accuvalue = accuracy.toString().split(".");
-                  addvalue = value.toString().split(",");
-                  distance();
-                }
-              });
-            });
+            address = value;
+            if (_latt!.length <= 5) {
+              _latt!.add(_location!.latitude!);
+              lattitude = _location!.latitude!;
+              longitude = _location!.longitude!;
+              accuracy = _location!.accuracy!;
+              // addresss = addresss;
+            } else {
+              _locationSubscription?.cancel();
+              accuvalue = accuracy.toString().split(".");
+              addvalue = value.toString().split(",");
+              distance();
+            }
           });
         });
+      });
+    });
   }
 
   Future<void> distance() async {
@@ -240,7 +248,7 @@ class _LocationWidgetState extends State<LocationWidget> {
             borderColor: Colors.blue,
             useRadiusInMeter: true,
             radius: 6000 // 2000 meters | 2 km
-        ),
+            ),
       ];
 
     return Scaffold(
@@ -252,8 +260,8 @@ class _LocationWidgetState extends State<LocationWidget> {
               zoom: _zoom,
               center: LatLng(_location!.latitude, _location!.longitude),
               interactiveFlags: InteractiveFlag.pinchZoom |
-              InteractiveFlag.doubleTapZoom |
-              InteractiveFlag.drag,
+                  InteractiveFlag.doubleTapZoom |
+                  InteractiveFlag.drag,
               plugins: [
                 MarkerClusterPlugin(),
               ],
@@ -267,7 +275,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                 backgroundColor: Colors.black,
                 // errorImage: ,
                 urlTemplate:
-                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains: ['a', 'b', 'c'],
               ),
               CircleLayerOptions(circles: circleMarkers),
@@ -293,9 +301,9 @@ class _LocationWidgetState extends State<LocationWidget> {
                             onTap: () {
                               popupOnClick(
                                   listAnswers[listAnswers.indexWhere((pair) =>
-                                  pair['Key'] ==
-                                      marker.point.latitude.toString())]
-                                  ['value']
+                                              pair['Key'] ==
+                                              marker.point.latitude.toString())]
+                                          ['value']
                                       .toString(),
                                   context);
                             },
@@ -309,7 +317,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                   ),
                                   Row(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text("Lattitude : "),
                                         Text(
@@ -321,7 +329,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                       ]),
                                   Row(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text("Longitude : "),
                                         Text(
@@ -333,17 +341,17 @@ class _LocationWidgetState extends State<LocationWidget> {
                                       ]),
                                   Row(
                                       mainAxisAlignment:
-                                      MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text("Name : "),
                                         Text(
                                             listAnswers[listAnswers.indexWhere(
-                                                    (pair) =>
-                                                pair['Key'] ==
-                                                    marker
-                                                        .point.latitude
-                                                        .toString())]
-                                            ['value']
+                                                        (pair) =>
+                                                            pair['Key'] ==
+                                                            marker
+                                                                .point.latitude
+                                                                .toString())]
+                                                    ['value']
                                                 .toString(),
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -420,51 +428,51 @@ class _LocationWidgetState extends State<LocationWidget> {
                             if (current == 0) {
                               var _markers_1 = _latLngListILM
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.red,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.red,
+                                        ),
+                                      ))
                                   .toList();
                               var _markers_2 = _latLngListCCMS
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.green,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.green,
+                                        ),
+                                      ))
                                   .toList();
                               var _markers_3 = _latLngListGW
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.purple,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.purple,
+                                        ),
+                                      ))
                                   .toList();
                               var _markers_4 = _latLngListGW
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.purple,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.purple,
+                                        ),
+                                      ))
                                   .toList();
                               setState(() {
                                 _markers = _markers_1 + _markers_2 + _markers_3;
@@ -473,43 +481,43 @@ class _LocationWidgetState extends State<LocationWidget> {
                             if (current == 1) {
                               _markers = _latLngListILM
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.red,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.red,
+                                        ),
+                                      ))
                                   .toList();
                             }
                             if (current == 2) {
                               _markers = _latLngListCCMS
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.green,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.green,
+                                        ),
+                                      ))
                                   .toList();
                             }
                             if (current == 3) {
                               _markers = _latLngListGW
                                   .map((point) => Marker(
-                                point: point,
-                                width: 60,
-                                height: 60,
-                                builder: (context) => const Icon(
-                                  Icons.location_pin,
-                                  size: 60,
-                                  color: Colors.purple,
-                                ),
-                              ))
+                                        point: point,
+                                        width: 60,
+                                        height: 60,
+                                        builder: (context) => const Icon(
+                                          Icons.location_pin,
+                                          size: 60,
+                                          color: Colors.purple,
+                                        ),
+                                      ))
                                   .toList();
                             }
                           });
@@ -620,7 +628,8 @@ class _LocationWidgetState extends State<LocationWidget> {
           pr.show();
           Device response;
           String? SelectedRegion;
-          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          var tbClient =
+              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           SharedPreferences prefs = await SharedPreferences.getInstance();
           SelectedRegion = prefs.getString("SelectedRegion").toString();
@@ -739,8 +748,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                     }
                   } catch (e) {
                     var message = toThingsboardError(e, context);
-                    FlutterLogs.logInfo(
-                        "Luminator 2.0", "dashboard_page", "");
+                    FlutterLogs.logInfo("Luminator 2.0", "dashboard_page", "");
                   }
 
                   List<String> myList = [];
@@ -755,12 +763,8 @@ class _LocationWidgetState extends State<LocationWidget> {
                   if (atresponser.isNotEmpty) {
                     prefs.setString('deviceStatus',
                         atresponser.first.getValue().toString());
-                    prefs.setString(
-                        'devicetimeStamp',
-                        atresponser
-                            .elementAt(0)
-                            .getLastUpdateTs()
-                            .toString());
+                    prefs.setString('devicetimeStamp',
+                        atresponser.elementAt(0).getLastUpdateTs().toString());
 
                     List<String> myLister = [];
                     myLister.add("landmark");
@@ -770,8 +774,8 @@ class _LocationWidgetState extends State<LocationWidget> {
                         .getAttributeKvEntries(response.id!, myLister));
 
                     if (responserse.isNotEmpty) {
-                      prefs.setString('location',
-                          responserse.first.getValue().toString());
+                      prefs.setString(
+                          'location', responserse.first.getValue().toString());
                       prefs.setString('deviceName', deviceName);
                     }
                     // myLister.add("location");
@@ -797,9 +801,9 @@ class _LocationWidgetState extends State<LocationWidget> {
                     List<BaseAttributeKvEntry> responser;
 
                     responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(response.id!, myList))
-                    as List<BaseAttributeKvEntry>;
+                            .getAttributeService()
+                            .getAttributeKvEntries(response.id!, myList))
+                        as List<BaseAttributeKvEntry>;
 
                     prefs.setString('deviceLatitude',
                         responser.first.kv.getValue().toString());
@@ -818,14 +822,13 @@ class _LocationWidgetState extends State<LocationWidget> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const CCMSMaintenanceScreen()),
+                                const CCMSMaintenanceScreen()),
                       );
                     } else if (response.type == Gw_deviceType) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                            const GWMaintenanceScreen()),
+                            builder: (context) => const GWMaintenanceScreen()),
                       );
                     }
                   } else {
@@ -903,6 +906,7 @@ class _LocationWidgetState extends State<LocationWidget> {
       }
     });
   }
+
   // @override
   // Future<Device?> fetchDeviceDetails(
   //     String deviceName, BuildContext context) async {
@@ -1207,9 +1211,9 @@ class _LocationWidgetState extends State<LocationWidget> {
           List<BaseAttributeKvEntry> deviceresponser;
 
           deviceresponser = (await tbClient
-              .getAttributeService()
-              .getAttributeKvEntries(response.id!, myLists))
-          as List<BaseAttributeKvEntry>;
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myLists))
+              as List<BaseAttributeKvEntry>;
 
           SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setString('firmwareVersion',
@@ -1223,9 +1227,9 @@ class _LocationWidgetState extends State<LocationWidget> {
           try {
             List<TsKvEntry> faultresponser;
             faultresponser = await tbClient
-                .getAttributeService()
-                .getselectedLatestTimeseries(response.id!.id!, "lmp")
-            as List<TsKvEntry>;
+                    .getAttributeService()
+                    .getselectedLatestTimeseries(response.id!.id!, "lmp")
+                as List<TsKvEntry>;
             if (faultresponser.length != 0) {
               prefs.setString(
                   'faultyStatus', faultresponser.first.getValue().toString());
@@ -1240,9 +1244,9 @@ class _LocationWidgetState extends State<LocationWidget> {
           List<BaseAttributeKvEntry> responser;
 
           responser = (await tbClient
-              .getAttributeService()
-              .getAttributeKvEntries(response.id!, myList))
-          as List<BaseAttributeKvEntry>;
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myList))
+              as List<BaseAttributeKvEntry>;
 
           prefs.setString(
               'deviceStatus', responser.first.kv.getValue().toString());
@@ -1256,9 +1260,9 @@ class _LocationWidgetState extends State<LocationWidget> {
           List<AttributeKvEntry> responserse;
 
           responserse = (await tbClient
-              .getAttributeService()
-              .getAttributeKvEntries(response.id!, myLister))
-          as List<AttributeKvEntry>;
+                  .getAttributeService()
+                  .getAttributeKvEntries(response.id!, myLister))
+              as List<AttributeKvEntry>;
 
           if (responserse.length != "0") {
             prefs.setString(
@@ -1524,7 +1528,7 @@ class _LocationWidgetState extends State<LocationWidget> {
         borderColor: Colors.blue,
         useRadiusInMeter: true,
         radius: 5000 // 2000 meters | 2 km
-    ) as List<CircleMarker>;
+        ) as List<CircleMarker>;
   }
 
   void callWatcher(context) {
@@ -1539,116 +1543,327 @@ class _LocationWidgetState extends State<LocationWidget> {
 
           if (SelectedWard != "Ward") {
             DBHelper dbHelper = DBHelper();
-            List<Ward> warddetails =
-            await dbHelper.ward_basedDetails(SelectedWard);
-            if (warddetails.length != null) {
-              for (int i = 0; i < warddetails.length; i++) {
-                List<EntityRelation> wardslist = await tbClient
-                    .getEntityRelationService()
-                    .findByWardFrom(warddetails.elementAt(i).wardid.toString());
-                if (wardslist.isNotEmpty) {
-                  for (int j = 0; j < wardslist.length; j++) {
-                    Device relatedDevice = await tbClient
-                        .getDeviceService()
-                        .getDevice(wardslist.elementAt(j).to.id.toString())
-                    as Device;
+            // List<Mapdata> locationdetails =
+            //     await dbHelper.get_details_LocalNetMapdata(SelectedWard);
+            // if (locationdetails.isEmpty) {
+              // pr.show();
+              List<Ward> warddetails =
+                  await dbHelper.ward_basedDetails(SelectedWard);
+              if (warddetails.length != null) {
+                // pr.show();
+                for (int i = 0; i < warddetails.length; i++) {
+                  List<EntityRelation> wardslist = await tbClient
+                      .getEntityRelationService()
+                      .findByWardFrom(
+                          warddetails.elementAt(i).wardid.toString());
+                  if (wardslist.isNotEmpty) {
+                    for (int j = 0; j < wardslist.length; j++) {
+                      if (wardslist.elementAt(j).to.entityType.index == 5) {
+                        List<EntityRelation> assetslist = await tbClient
+                            .getEntityRelationService()
+                            .findByWardFrom(
+                                warddetails.elementAt(j).wardid.toString());
 
-                    List<String> myList = [];
-                    myList.add("lattitude");
-                    myList.add("longitude");
+                        if (assetslist.isNotEmpty) {
+                          for (int k = 0; k < assetslist.length; k++) {
+                            List<EntityRelation> wardsdetailslist =
+                                await tbClient
+                                    .getEntityRelationService()
+                                    .findByWardFrom(
+                                        assetslist.elementAt(k).to.id!!);
 
-                    List<AttributeKvEntry> responser;
-                    responser = (await tbClient
-                        .getAttributeService()
-                        .getAttributeKvEntries(relatedDevice.id!, myList));
+                            if (wardsdetailslist.isNotEmpty) {
+                              for (int l = 0;
+                                  l < wardsdetailslist.length;
+                                  l++) {
+                                Device relatedDevice = await tbClient
+                                    .getDeviceService()
+                                    .getDevice(wardsdetailslist
+                                        .elementAt(l)
+                                        .to
+                                        .id
+                                        .toString()) as Device;
 
-                    var rng = new Random();
-                    var code = rng.nextInt(900000) + 100000;
+                                List<String> myList = [];
+                                myList.add("latitude");
+                                myList.add("longitude");
 
-                    if (responser.isNotEmpty) {
-                      // distance();
-                      DBHelper dbHelper = DBHelper();
-                      Mapdata mapdata = Mapdata(
-                          j + code + 1,
-                          relatedDevice.id!.id,
-                          relatedDevice.name,
-                          responser.first.getValue(),
-                          responser.last.getValue(),
-                          relatedDevice.type,
-                          SelectedWard);
+                                List<AttributeKvEntry> responser;
+                                responser = (await tbClient
+                                    .getAttributeService()
+                                    .getAttributeKvEntries(
+                                        relatedDevice.id!, myList));
 
-                      dbHelper.mapdata_add(mapdata);
-                      var sslat = double.parse(responser.first.getValue());
-                      Lattitude =
-                          double.parse(responser.first.getValue()).toString();
-                      var sslong = double.parse(responser.last.getValue());
+                                var rng = new Random();
+                                var code = rng.nextInt(900000) + 100000;
 
-                      var keyPair = {
-                        'Key': sslat.toString(),
-                        'value': relatedDevice.name.toString(),
-                      };
-                      listAnswers.add(keyPair);
-                      // someMap= {sslat.toString(),relatedDevice.name.toString()};
+                                if (responser.isNotEmpty) {
+                                  // distance();
+                                  DBHelper dbHelper = DBHelper();
+                                  Mapdata mapdata = Mapdata(
+                                      l + code + 1,
+                                      relatedDevice.id!.id,
+                                      relatedDevice.name,
+                                      responser.first.getValue().toString(),
+                                      responser.last.getValue().toString(),
+                                      relatedDevice.type,
+                                      SelectedWard);
 
-                      setState(() {
-                        if (relatedDevice.type == "lumiNode") {
-                          _latLngListILM.add(LatLng(sslat, sslong));
-                        } else if (relatedDevice.type == "CCMS") {
-                          _latLngListCCMS.add(LatLng(sslat, sslong));
-                        } else if (relatedDevice.type == "Gateway") {
-                          _latLngListGW.add(LatLng(sslat, sslong));
+                                  dbHelper.mapdata_add(mapdata);
+                                  var sslat = double.parse(
+                                      responser.first.getValue().toString());
+                                  Lattitude = double.parse(
+                                          responser.first.getValue().toString())
+                                      .toString();
+                                  var sslong = double.parse(
+                                      responser.last.getValue().toString());
+
+                                  var keyPair = {
+                                    'Key': sslat.toString(),
+                                    'value': relatedDevice.name.toString(),
+                                  };
+                                  listAnswers.add(keyPair);
+                                  // someMap= {sslat.toString(),relatedDevice.name.toString()};
+
+                                  setState(() {
+                                    if (relatedDevice.type == "lumiNode") {
+                                      _latLngListILM.add(LatLng(sslat, sslong));
+                                    } else if (relatedDevice.type == "CCMS") {
+                                      _latLngListCCMS
+                                          .add(LatLng(sslat, sslong));
+                                    } else if (relatedDevice.type ==
+                                        "Gateway") {
+                                      _latLngListGW.add(LatLng(sslat, sslong));
+                                    }
+
+                                    ssname = relatedDevice.name;
+                                  });
+
+                                  var _markers_1 = _latLngListILM
+                                      .map((point) => Marker(
+                                    point: point,
+                                    width: 60,
+                                    height: 60,
+                                    builder: (context) => const Icon(
+                                      Icons.location_pin,
+                                      size: 60,
+                                      color: Colors.red,
+                                    ),
+                                  ))
+                                      .toList();
+                                  var _markers_2 = _latLngListCCMS
+                                      .map((point) => Marker(
+                                    point: point,
+                                    width: 60,
+                                    height: 60,
+                                    builder: (context) => const Icon(
+                                      Icons.location_pin,
+                                      size: 60,
+                                      color: Colors.green,
+                                    ),
+                                  ))
+                                      .toList();
+                                  var _markers_3 = _latLngListGW
+                                      .map((point) => Marker(
+                                    point: point,
+                                    width: 60,
+                                    height: 60,
+                                    builder: (context) => const Icon(
+                                      Icons.location_pin,
+                                      size: 60,
+                                      color: Colors.purple,
+                                    ),
+                                  ))
+                                      .toList();
+                                  setState(() {
+                                    _markers = _markers_1 + _markers_2 + _markers_3;
+                                  });
+                                  // pr.hide();
+                                  _listenLocation();
+                                }
+                              }
+                            }
+                          }
                         }
+                      } else {
+                        Device relatedDevice = await tbClient
+                                .getDeviceService()
+                                .getDevice(
+                                    wardslist.elementAt(j).to.id.toString())
+                            as Device;
 
-                        ssname = relatedDevice.name;
-                      });
+                        List<String> myList = [];
+                        myList.add("lattitude");
+                        myList.add("longitude");
+
+                        List<AttributeKvEntry> responser;
+                        responser = (await tbClient
+                            .getAttributeService()
+                            .getAttributeKvEntries(relatedDevice.id!, myList));
+
+                        var rng = new Random();
+                        var code = rng.nextInt(900000) + 100000;
+
+                        if (responser.isNotEmpty) {
+                          // distance();
+                          DBHelper dbHelper = DBHelper();
+                          Mapdata mapdata = Mapdata(
+                              j + code + 1,
+                              relatedDevice.id!.id,
+                              relatedDevice.name,
+                              responser.first.getValue(),
+                              responser.last.getValue(),
+                              relatedDevice.type,
+                              SelectedWard);
+
+                          dbHelper.mapdata_add(mapdata);
+                          var sslat = double.parse(responser.first.getValue());
+                          Lattitude = double.parse(responser.first.getValue())
+                              .toString();
+                          var sslong = double.parse(responser.last.getValue());
+
+                          var keyPair = {
+                            'Key': sslat.toString(),
+                            'value': relatedDevice.name.toString(),
+                          };
+                          listAnswers.add(keyPair);
+                          // someMap= {sslat.toString(),relatedDevice.name.toString()};
+
+                          setState(() {
+                            if (relatedDevice.type == "lumiNode") {
+                              _latLngListILM.add(LatLng(sslat, sslong));
+                            } else if (relatedDevice.type == "CCMS") {
+                              _latLngListCCMS.add(LatLng(sslat, sslong));
+                            } else if (relatedDevice.type == "Gateway") {
+                              _latLngListGW.add(LatLng(sslat, sslong));
+                            }
+
+                            ssname = relatedDevice.name;
+                          });
+
+                          var _markers_1 = _latLngListILM
+                              .map((point) => Marker(
+                                    point: point,
+                                    width: 60,
+                                    height: 60,
+                                    builder: (context) => const Icon(
+                                      Icons.location_pin,
+                                      size: 60,
+                                      color: Colors.red,
+                                    ),
+                                  ))
+                              .toList();
+                          var _markers_2 = _latLngListCCMS
+                              .map((point) => Marker(
+                                    point: point,
+                                    width: 60,
+                                    height: 60,
+                                    builder: (context) => const Icon(
+                                      Icons.location_pin,
+                                      size: 60,
+                                      color: Colors.green,
+                                    ),
+                                  ))
+                              .toList();
+                          var _markers_3 = _latLngListGW
+                              .map((point) => Marker(
+                                    point: point,
+                                    width: 60,
+                                    height: 60,
+                                    builder: (context) => const Icon(
+                                      Icons.location_pin,
+                                      size: 60,
+                                      color: Colors.purple,
+                                    ),
+                                  ))
+                              .toList();
+                          setState(() {
+                            _markers = _markers_1 + _markers_2 + _markers_3;
+                          });
+                          // pr.hide();
+                          _listenLocation();
+                        }
+                      }
                     }
+                    // distance();
                   }
-                  var _markers_1 = _latLngListILM
-                      .map((point) => Marker(
-                    point: point,
-                    width: 60,
-                    height: 60,
-                    builder: (context) => const Icon(
-                      Icons.location_pin,
-                      size: 60,
-                      color: Colors.red,
-                    ),
-                  ))
-                      .toList();
-                  var _markers_2 = _latLngListCCMS
-                      .map((point) => Marker(
-                    point: point,
-                    width: 60,
-                    height: 60,
-                    builder: (context) => const Icon(
-                      Icons.location_pin,
-                      size: 60,
-                      color: Colors.green,
-                    ),
-                  ))
-                      .toList();
-                  var _markers_3 = _latLngListGW
-                      .map((point) => Marker(
-                    point: point,
-                    width: 60,
-                    height: 60,
-                    builder: (context) => const Icon(
-                      Icons.location_pin,
-                      size: 60,
-                      color: Colors.purple,
-                    ),
-                  ))
-                      .toList();
-                  setState(() {
-                    _markers = _markers_1 + _markers_2 + _markers_3;
-                  });
-                  distance();
-                } else {}
+                }
+                // pr.hide();
               }
-            }
-          } else {
-            //show toast
+              // pr.hide();
+            // } else {
+            //   // pr.show();
+            //   for (int l = 0; l < locationdetails.length; l++) {
+            //     var sslat = double.parse(
+            //         locationdetails.elementAt(l).lattitude.toString());
+            //     var sslong = double.parse(
+            //         locationdetails.elementAt(l).longitude.toString());
+            //
+            //     var keyPair = {
+            //       'Key': sslat.toString(),
+            //       'value': locationdetails.elementAt(l).devicename,
+            //     };
+            //     listAnswers.add(keyPair);
+            //     // someMap= {sslat.toString(),relatedDevice.name.toString()};
+            //
+            //     setState(() {
+            //       if (locationdetails.elementAt(l).devicetype == "lumiNode") {
+            //         _latLngListILM.add(LatLng(sslat, sslong));
+            //       } else if (locationdetails.elementAt(l).devicetype ==
+            //           "CCMS") {
+            //         _latLngListCCMS.add(LatLng(sslat, sslong));
+            //       } else if (locationdetails.elementAt(l).devicetype ==
+            //           "Gateway") {
+            //         _latLngListGW.add(LatLng(sslat, sslong));
+            //       }
+            //       ssname = locationdetails.elementAt(l).devicename.toString();
+            //     });
+            //
+            //     var _markers_1 = _latLngListILM
+            //         .map((point) => Marker(
+            //               point: point,
+            //               width: 60,
+            //               height: 60,
+            //               builder: (context) => const Icon(
+            //                 Icons.location_pin,
+            //                 size: 60,
+            //                 color: Colors.red,
+            //               ),
+            //             ))
+            //         .toList();
+            //     var _markers_2 = _latLngListCCMS
+            //         .map((point) => Marker(
+            //               point: point,
+            //               width: 60,
+            //               height: 60,
+            //               builder: (context) => const Icon(
+            //                 Icons.location_pin,
+            //                 size: 60,
+            //                 color: Colors.green,
+            //               ),
+            //             ))
+            //         .toList();
+            //     var _markers_3 = _latLngListGW
+            //         .map((point) => Marker(
+            //               point: point,
+            //               width: 60,
+            //               height: 60,
+            //               builder: (context) => const Icon(
+            //                 Icons.location_pin,
+            //                 size: 60,
+            //                 color: Colors.purple,
+            //               ),
+            //             ))
+            //         .toList();
+            //     setState(() {
+            //       _markers = _markers_1 + _markers_2 + _markers_3;
+            //     });
+            //     // pr.hide();
+            //     _listenLocation();
+            //   }
+            // }
           }
+          // pr.hide();
         } catch (e) {
           var message;
           if (message == session_expired) {
@@ -1665,7 +1880,7 @@ class _LocationWidgetState extends State<LocationWidget> {
 
 void refreshPage(context) {
   Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => dashboard_screen()));
+      MaterialPageRoute(builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
 }
 
 Future<ThingsboardError> toThingsboardError(error, context,
@@ -1675,7 +1890,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
     }
   } else {
     if (error is DioError) {

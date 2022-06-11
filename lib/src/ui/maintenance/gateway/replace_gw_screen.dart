@@ -29,6 +29,13 @@ import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 import 'gw_maintenance_screen.dart';
 
+
+// Gw Maintenance remove device screen, it will check the selected device
+// is present in server, it will collect the details of the device, user need
+// to scan the new qr code for replacing with new device.on the replacement
+// process it will interchange both devices and move the non working device to
+// forrepair folder and revert back to maintenance page
+
 class replacegw extends StatefulWidget {
   const replacegw() : super();
 
@@ -149,7 +156,7 @@ class replacegwState extends State<replacegw> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -760,7 +767,7 @@ class replacegwState extends State<replacegw> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          dashboard_screen(selectedPage: 0)));
                             }
                           }
                         } else {
@@ -900,7 +907,7 @@ class replacegwState extends State<replacegw> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          dashboard_screen(selectedPage: 0)));
                             }
                           } else {
                             pr.hide();
@@ -908,7 +915,7 @@ class replacegwState extends State<replacegw> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        dashboard_screen(selectedPage: 0)));
                           }
                         }
                       } else {
@@ -925,38 +932,38 @@ class replacegwState extends State<replacegw> {
 
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                             builder: (BuildContext context) =>
-                                dashboard_screen()));
+                                dashboard_screen(selectedPage: 0)));
                       }
                     } else {
                       pr.hide();
                       callstoast("Unable to find device attributes");
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              dashboard_screen(selectedPage: 0)));
                     }
                   } else {
                     pr.hide();
                     callstoast("Unable to Find Related Devices");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   pr.hide();
                   callstoast("Unable to find current Device Folder Details");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 pr.hide();
                 callstoast("Unable to find Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
             } else {
               pr.hide();
               callstoast("Unable to find Selected Device Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           } else {
             pr.hide();
@@ -984,7 +991,7 @@ class replacegwState extends State<replacegw> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
       } else {
@@ -1029,7 +1036,7 @@ class replacegwState extends State<replacegw> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -1122,7 +1129,7 @@ class replacegwState extends State<replacegw> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       } else {}
       return response;
     } catch (e) {

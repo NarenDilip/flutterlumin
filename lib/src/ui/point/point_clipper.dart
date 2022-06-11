@@ -2,6 +2,9 @@ import 'package:flutter/widgets.dart';
 
 import 'edge.dart';
 
+// Point painter will be used for painting some polygon view and map view ,
+// this page is act a widget and used in all screens
+
 class PointClipper extends CustomClipper<Path> {
   PointClipper(this.triangleHeight, this.edge);
 

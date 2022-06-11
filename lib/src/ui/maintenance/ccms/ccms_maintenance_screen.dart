@@ -38,6 +38,13 @@ import '../../../localdb/model/region_model.dart';
 import '../../../utils/ccmstoogle_button.dart';
 import '../../splash_screen.dart';
 
+// CCMS Maintenance screen in this screen we need to show the selected device
+// details with location, lampwatts and last communication time, need to show
+// some buttons like on,off getlive, mcb trip,remove or replace optins to users, if user
+// clicks remove we need navigate to remove and user clicks on replace we need
+// to navigate to replace screen, we need to fetch the device details based on
+// the user scanned or selected device to proceed maintenance actions
+
 class CCMSMaintenanceScreen extends StatefulWidget {
   const CCMSMaintenanceScreen() : super();
 
@@ -166,7 +173,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           setState(() {
             visibility = false;
           });
@@ -527,7 +534,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       onWillPop: () async {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         return true;
       },
       child: Scaffold(
@@ -763,7 +770,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                     Container(
                                                       padding: const EdgeInsets
                                                           .fromLTRB(5, 0, 0, 0),
-                                                      width: width / 3,
+                                                      width: width / 2,
                                                       height: 45,
                                                       alignment:
                                                       Alignment.centerLeft,
@@ -1586,7 +1593,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
     }
   } else {
     if (error is DioError) {

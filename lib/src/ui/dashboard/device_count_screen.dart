@@ -17,6 +17,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../localdb/model/region_model.dart';
 
+// In device count screen, we need to show three cards ilm,ccms and gateway,
+// each card displays with on,off,nc and total count of device records
+// on the card, other major is card ui design.
+
 class device_count_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {

@@ -23,6 +23,7 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -33,7 +34,19 @@ import '../installation/ilm/ilm_install_cam_screen.dart';
 import '../maintenance/ccms/ccms_maintenance_screen.dart';
 import '../map/map_view_screen.dart';
 
+// Dashboard Screen , consist of three classes in botton tab bar, defaultly
+// it will open with device count screen, In Dashboard we implemented the remote
+// config operations while user opens the dashboard page it will check with
+// remote config for latest app updation, In Dashboard we have floating action button
+// is for scanning the QR Codes,In Dashbaord the scanned qr will be validated using
+// the server connectivity. fetching device details and default server error
+// listener is implemented
+
 class dashboard_screen extends StatefulWidget {
+
+  int selectedPage;
+  dashboard_screen({required this.selectedPage});
+
   @override
   State<StatefulWidget> createState() {
     return dashboard_screenState();
@@ -41,7 +54,6 @@ class dashboard_screen extends StatefulWidget {
 }
 
 class dashboard_screenState extends State<dashboard_screen> {
-  int _selectedIndex = 0;
   bool clickedCentreFAB = false;
   var _tag = "DashboardPage";
   var isPressed = false;
@@ -55,6 +67,9 @@ class dashboard_screenState extends State<dashboard_screen> {
   late final bool forceUpdate;
   final RemoteConfig remoteConfig = RemoteConfig.instance;
   late bool visibility = false;
+
+  bool iscamerapermission = false;
+  bool islocationpermission = false;
 
   @override
   // TODO: implement context
@@ -272,7 +287,7 @@ class dashboard_screenState extends State<dashboard_screen> {
         child: Scaffold(
           body: Stack(
             children: <Widget>[
-              _widgetOptions.elementAt(_selectedIndex),
+              _widgetOptions.elementAt(widget.selectedPage),
               //this is the code for the widget container that comes from behind the floating action button (FAB)
               Align(
                 alignment: FractionalOffset.bottomRight,
@@ -298,11 +313,23 @@ class dashboard_screenState extends State<dashboard_screen> {
           floatingActionButton: FloatingActionButton(
             backgroundColor: _foreground,
             onPressed: () {
+              requestCameraPermission();
               var currentFocus = FocusScope.of(context);
               if (!currentFocus.hasPrimaryFocus) {
                 currentFocus.unfocus();
               }
-              deviceFetcher(context);
+              if(iscamerapermission == false) {
+                Fluttertoast.showToast(
+                    msg:"Permission denied",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
+                    fontSize: 16.0);
+              } else {
+                deviceFetcher(context);
+              }
             },
             tooltip: app_scan_qr,
             child: Container(
@@ -314,7 +341,7 @@ class dashboard_screenState extends State<dashboard_screen> {
           backgroundColor: thbDblue,
           bottomNavigationBar: BottomNavigationBar(
             backgroundColor: Colors.white,
-            currentIndex: _selectedIndex,
+            currentIndex: widget.selectedPage,
             showSelectedLabels: false,
             showUnselectedLabels: false,
             items: const [
@@ -358,14 +385,57 @@ class dashboard_screenState extends State<dashboard_screen> {
                 ),
               ),
             ],
-            onTap: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
+            onTap: (index) async{
+              requestLocationPermission();
+              if(islocationpermission == false){
+                Fluttertoast.showToast(
+                    msg:"Permission denied",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.white,
+                    textColor: Colors.black,
+                    fontSize: 16.0);
+              } else {
+                setState(() {
+                  widget.selectedPage = index;
+                });
+              }
+
             },
           ),
         ));
   }
+
+  Future<void> requestCameraPermission() async {
+
+    final status = await Permission.camera.request();
+
+    if (status == PermissionStatus.granted) {
+      iscamerapermission = true;
+    } else if (status == PermissionStatus.denied) {
+      iscamerapermission = false;
+      await openAppSettings();
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      iscamerapermission = false;
+      await openAppSettings();
+    }
+  }
+  Future<void> requestLocationPermission() async {
+
+    final status = await Permission.location.request();
+
+    if (status == PermissionStatus.granted) {
+      islocationpermission = true;
+    } else if (status == PermissionStatus.denied) {
+      islocationpermission = false;
+      await openAppSettings();
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      islocationpermission = false;
+      await openAppSettings();
+    }
+  }
+
 
   Future<void> deviceFetcher(BuildContext context) async {
     Utility.isConnected().then((value) async {
@@ -701,7 +771,7 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   void refreshPage(context) {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) => dashboard_screen()));
+        builder: (BuildContext context) => dashboard_screen(selectedPage: 0,)));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
@@ -713,7 +783,7 @@ class dashboard_screenState extends State<dashboard_screen> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0,)));
       }
     } else {
       if (error is DioError) {

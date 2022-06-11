@@ -29,6 +29,11 @@ import '../../thingsboard/error/thingsboard_error.dart';
 import '../../thingsboard/model/model.dart';
 import '../maintenance/ilm/ilm_maintenance_screen.dart';
 
+// Ward list screen in this we need to show the ward details already
+// inserted in local database, based on the ward selection we need to fetch the
+// total number of ILM,CCMS and Gateway devices are present and store in local
+// storages, ui we need to create a list view with ward details.
+
 class ward_li_screen extends StatefulWidget {
   var _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
@@ -46,6 +51,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
   List<String>? _foundUsers = [];
   List<DeviceId>? relatedDevices = [];
   List<AssetId>? AssetDevices = [];
+
+  List<DeviceId>? ILMactiveDevice = [];
 
   List<DeviceId>? activeDevice = [];
   List<DeviceId>? nonactiveDevices = [];
@@ -66,13 +73,21 @@ class ward_li_screen_state extends State<ward_li_screen> {
   var _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
   static Completer _completer = new Completer<String>();
+  int index = 0;
 
   @override
   initState() {
     // at the beginning, all users are shown
     loadDetails();
     setUpLogs();
+    getIndex();
   }
+
+  void getIndex() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    index = prefs.getInt("Selected_index")!;
+  }
+
 
   void setUpLogs() async {
     await FlutterLogs.initLogs(
@@ -175,7 +190,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
     } else {
       results = _allUsers!
           .where((user) =>
-          user.toLowerCase().contains(enteredKeyword.toLowerCase()))
+              user.toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
       // we use the toLowerCase() method to make it case-insensitive
     }
@@ -193,10 +208,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
         pr.show();
         try {
           var sharedPreferences =
-          await SharedPreferences.getInstance() as SharedPreferences;
+              await SharedPreferences.getInstance() as SharedPreferences;
           sharedPreferences.setString("SelectedWard", selectedWard);
 
-          var tbClient = await ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          var tbClient = await ThingsboardClient(
+              FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           relatedDevices!.clear();
@@ -221,13 +237,43 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
             if (wardlist.length != 0) {
               for (int i = 0; i < wardlist.length; i++) {
-                if (wardlist.elementAt(i).to.entityType.index != 6) {
+                if (wardlist.elementAt(i).to.entityType.index == 6) {
+                  relatedDeviceId = wardlist.elementAt(i).to;
+                  ILMactiveDevice?.add(relatedDeviceId);
+                } else {
                   relatedDeviceId = wardlist.elementAt(i).to;
                   AssetDevices?.add(relatedDeviceId);
-                } else {
-                  relatedDeviceId = wardlist.elementAt(i).from;
-                  AssetDevices?.add(relatedDeviceId);
-                  break;
+                }
+              }
+
+              if (ILMactiveDevice != null) {
+                for (int p = 0; p < ILMactiveDevice!.length; p++) {
+                  Device ilm_device = (await tbClient.getDeviceService().getDevice(
+                        ILMactiveDevice!.elementAt(p).id.toString())) as Device;
+                  if (ilm_device.type == "lumiNode") {
+                    List<String> myList = [];
+                    myList.add("active");
+
+                    Device data_response;
+                    data_response = (await tbClient
+                            .getDeviceService()
+                            .getDevice(
+                                relatedDevices!.elementAt(p).id.toString()))
+                        as Device;
+                    List<AttributeKvEntry> vresponser;
+                    vresponser = await tbClient
+                        .getAttributeService()
+                        .getAttributeKvEntries(
+                            relatedDevices!.elementAt(p), myList);
+
+                    if (vresponser != null) {
+                      if (vresponser.first.getValue().toString() == "true") {
+
+                      }
+                    }
+                  }else{
+
+                  }
                 }
               }
 
@@ -261,7 +307,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     vresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                        relatedDevices!.elementAt(k), myList);
+                            relatedDevices!.elementAt(k), myList);
 
                     if (vresponser != null) {
                       if (vresponser.first.getValue().toString() == "true") {
@@ -299,7 +345,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     sresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                        relatedDevices!.elementAt(k), myList);
+                            relatedDevices!.elementAt(k), myList);
 
                     if (sresponser != null) {
                       if (sresponser.first.getValue().toString() == "true") {
@@ -340,7 +386,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     kresponser = await tbClient
                         .getAttributeService()
                         .getAttributeKvEntries(
-                        relatedDevices!.elementAt(k), myList);
+                            relatedDevices!.elementAt(k), myList);
 
                     if (kresponser != null) {
                       if (kresponser.first.getValue().toString() == "true") {
@@ -379,7 +425,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
                 pr.hide();
                 Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
               }
             } else {
               /*FlutterLogs.logInfo("wardlist_page", "ward_list",
@@ -401,7 +447,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
               pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
             }
           }
         } catch (e) {
@@ -416,7 +462,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
           }
         }
       } else {
@@ -438,11 +484,11 @@ class ward_li_screen_state extends State<ward_li_screen> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => zone_li_screen()));
+              builder: (BuildContext context) => zone_li_screen()));
           return true;
         },
-    child: Container(
-        child: Scaffold(
+        child: Container(
+            child: Scaffold(
           backgroundColor: thbDblue,
           body: Padding(
             padding: const EdgeInsets.all(30),
@@ -488,33 +534,33 @@ class ward_li_screen_state extends State<ward_li_screen> {
                 Expanded(
                   child: _foundUsers!.isNotEmpty
                       ? ListView.builder(
-                    itemCount: _foundUsers!.length,
-                    itemBuilder: (context, index) => Card(
-                      key: ValueKey(_foundUsers),
-                      color: Colors.white,
-                      elevation: 4,
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      child: ListTile(
-                        onTap: () {
-                          setState(() {
-                            selectedWard =
-                                _foundUsers!.elementAt(index).toString();
-                            loadLocalData(context);
-                          });
-                        },
-                        title: Text(_foundUsers!.elementAt(index),
-                            style: const TextStyle(
-                                fontSize: 22.0,
-                                fontFamily: "Montserrat",
-                                fontWeight: FontWeight.bold,
-                                color: thbDblue)),
-                      ),
-                    ),
-                  )
+                          itemCount: _foundUsers!.length,
+                          itemBuilder: (context, index) => Card(
+                            key: ValueKey(_foundUsers),
+                            color: Colors.white,
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            child: ListTile(
+                              onTap: () {
+                                setState(() {
+                                  selectedWard =
+                                      _foundUsers!.elementAt(index).toString();
+                                  loadLocalData(context);
+                                });
+                              },
+                              title: Text(_foundUsers!.elementAt(index),
+                                  style: const TextStyle(
+                                      fontSize: 22.0,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
+                                      color: thbDblue)),
+                            ),
+                          ),
+                        )
                       : const Text(
-                    app_no_results,
-                    style: TextStyle(fontSize: 24),
-                  ),
+                          app_no_results,
+                          style: TextStyle(fontSize: 24),
+                        ),
                 ),
               ],
             ),

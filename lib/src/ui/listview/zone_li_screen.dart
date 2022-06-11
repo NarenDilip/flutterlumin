@@ -26,6 +26,13 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 import '../dashboard/dashboard_screen.dart';
 
+
+// Zone list screen in this we need to show the zone details already
+// inserted in local database, based on the user selection zone we need
+// to fetch the ward list and store in local database, ui need to create
+// a list view and shown to the user
+
+
 class zone_li_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -337,7 +344,7 @@ class zone_li_screen_state extends State<zone_li_screen> {
             }
           } else {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
       } else {

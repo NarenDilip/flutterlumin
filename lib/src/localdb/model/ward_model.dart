@@ -1,3 +1,6 @@
+
+// Model class for ward with data entry
+
 class Ward {
   int? id;
   String? wardid;

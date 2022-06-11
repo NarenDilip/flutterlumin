@@ -1,3 +1,6 @@
+
+// Model class for zone with data entry
+
 class Zone {
   int? id;
   String? zoneid;

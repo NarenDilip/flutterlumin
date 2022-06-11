@@ -35,6 +35,11 @@ import 'package:poly_geofence_service/models/lat_lng.dart';
 import 'package:poly_geofence_service/models/poly_geofence.dart';
 import 'package:poly_geofence_service/poly_geofence_service.dart';
 
+// ILM Installation screen, Geo fence validation is implemeted, location accuracy
+// is implemented, Based on the user selected device, we need to capture the user
+// photo, and upload the image url to the cloud based on the device name,
+// successfull message need to shown to user
+
 class ilmcaminstall extends StatefulWidget {
   const ilmcaminstall() : super();
 
@@ -136,8 +141,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
               visibility = false;
             });
             Fluttertoast.showToast(
-                msg:
-                app_fetch_loc,
+                msg: app_fetch_loc,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -152,8 +156,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
           });
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
-                msg:
-                app_loc_ward,
+                msg: app_loc_ward,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -164,7 +167,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
           }
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         }
       }
     } else {
@@ -193,15 +196,17 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
   void startTimer() {
     const oneSec = Duration(seconds: 1);
+    pr.show();
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
             callPolygonStop();
             setState(() {
               visibility = true;
+              pr.hide();
               viewvisibility = false;
             });
           } else {
@@ -209,6 +214,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             callPolygonStop();
             setState(() {
               visibility = true;
+              pr.hide();
               viewvisibility = false;
             });
           }
@@ -302,7 +308,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       CallCoordinates(context);
     } else {
       Fluttertoast.showToast(
-          msg:app_geofence_nfound,
+          msg: app_geofence_nfound,
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -360,9 +366,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
     }
   }
@@ -395,7 +401,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         onWillPop: () async {
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -412,13 +418,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                        decoration: BoxDecoration(color: Colors.white),
-                        width: 200,
-                        height: 200,
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.grey[800],
-                        )),
+                            decoration: BoxDecoration(color: Colors.white),
+                            width: 200,
+                            height: 200,
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.grey[800],
+                            )),
                   ),
                   SizedBox(height: 10),
                   Visibility(
@@ -434,37 +440,43 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                       color: Colors.white)),
                               style: ButtonStyle(
                                   padding:
-                                  MaterialStateProperty.all<EdgeInsets>(
-                                      EdgeInsets.all(20)),
+                                      MaterialStateProperty.all<EdgeInsets>(
+                                          EdgeInsets.all(20)),
                                   backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                                      MaterialStateProperty.all(Colors.green),
                                   shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                          RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(25.0),
-                                      ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
-                                if (imageFile != null) {
-                                  pr.show();
-                                  if (geoFence == false) {
-                                    callILMInstallation(context, imageFile,
-                                        DeviceName, SelectedWard);
+                                Utility.isConnected().then((value) {
+                                  if (value) {
+                                    if (imageFile != null) {
+                                      pr.show();
+                                      if (geoFence == false) {
+                                        callILMInstallation(context, imageFile,
+                                            DeviceName, SelectedWard);
+                                      } else {
+                                        CallGeoFenceListener(context);
+                                      }
+                                    } else {
+                                      pr.hide();
+                                      Fluttertoast.showToast(
+                                          msg: app_device_image_cap,
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.white,
+                                          textColor: Colors.black,
+                                          fontSize: 16.0);
+                                    }
                                   } else {
-                                    CallGeoFenceListener(context);
+                                    call_no_network_toast(no_network);
+                                    pr.hide();
                                   }
-                                } else {
-                                  pr.hide();
-                                  Fluttertoast.showToast(
-                                      msg:
-                                      app_device_image_cap,
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.white,
-                                      textColor: Colors.black,
-                                      fontSize: 16.0);
-                                }
+                                });
                               })))
                 ]))));
   }
@@ -478,13 +490,12 @@ class ilmcaminstallState extends State<ilmcaminstall> {
           imageQuality: 25,
           preferredCameraDevice: CameraDevice.rear);
       setState(() {
-        if(pickedFile != null) {
+        if (pickedFile != null) {
           imageFile = pickedFile;
-        }else{
+        } else {
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => dashboard_screen()),
+            MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
           );
         }
       });
@@ -541,7 +552,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         if (value) {
           pr.show();
           try {
-            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+            var tbClient =
+                ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
             tbClient.smart_init();
 
             Device response;
@@ -553,7 +565,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                 DeviceCredentials deviceCredentials = await tbClient
                     .getDeviceService()
                     .getDeviceCredentialsByDeviceId(
-                    response.id!.id.toString()) as DeviceCredentials;
+                        response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 16) {
                   /* List<String> myList = [];
@@ -616,7 +628,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                         if (versionCompatability == true) {
                           DBHelper dbHelper = DBHelper();
                           List<Ward> warddetails =
-                          await dbHelper.ward_basedDetails(SelectedWard);
+                              await dbHelper.ward_basedDetails(SelectedWard);
                           if (warddetails.length != "0") {
                             warddetails.first.wardid;
 
@@ -632,22 +644,19 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
                             if (assetPagedetails.data.length != 0) {
                               for (int i = 0;
-                              i < assetPagedetails.data.length;
-                              i++) {
+                                  i < assetPagedetails.data.length;
+                                  i++) {
                                 if (assetPagedetails.data
-                                    .elementAt(i)
-                                    .name
-                                    .toString() ==
+                                        .elementAt(i)
+                                        .name
+                                        .toString() ==
                                     SelectedWard + "-" + "ILM") {
                                   oldasset =
-                                      assetPagedetails.data
-                                          .elementAt(i)
-                                          .id!
-                                          .id;
+                                      assetPagedetails.data.elementAt(i).id!.id;
                                   break;
                                 }
                               }
-                              if(oldasset == null){
+                              if (oldasset == null) {
                                 Asset newasset = Asset(
                                     SelectedWard + "-" + "ILM", "node-cluster");
                                 Asset savedasset = await tbClient
@@ -716,31 +725,31 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                             var saveAttributes = await tbClient
                                 .getAttributeService()
                                 .saveDeviceAttributes(
-                                response.id!.id!, "SERVER_SCOPE", data);
+                                    response.id!.id!, "SERVER_SCOPE", data);
 
                             List<EntityGroupId> currentdeviceresponse;
                             currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
                                 .getEntityGroupsForFolderEntity(
-                                response.id!.id!);
+                                    response.id!.id!);
 
                             if (currentdeviceresponse != null) {
                               var firstdetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                  currentdeviceresponse.first.id!);
+                                      currentdeviceresponse.first.id!);
 
                               if (firstdetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                currentdeviceresponse.first.id!;
+                                    currentdeviceresponse.first.id!;
                               }
                               var seconddetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                  currentdeviceresponse.last.id!);
+                                      currentdeviceresponse.last.id!);
                               if (seconddetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                currentdeviceresponse.last.id!;
+                                    currentdeviceresponse.last.id!;
                               }
 
                               List<EntityGroupInfo> entitygroups;
@@ -751,7 +760,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               if (entitygroups != null) {
                                 for (int i = 0; i < entitygroups.length; i++) {
                                   if (entitygroups.elementAt(i).name ==
-                                      FlavorConfig.instance.variables["ILMDeviceInstallationFolder"]) {
+                                      FlavorConfig.instance.variables[
+                                          "ILMDeviceInstallationFolder"]) {
                                     DevicemoveFolderName = entitygroups
                                         .elementAt(i)
                                         .id!
@@ -766,15 +776,15 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                    DevicecurrentFolderName, myList);
+                                        DevicecurrentFolderName, myList);
 
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                    DevicemoveFolderName, myList);
+                                        DevicemoveFolderName, myList);
 
                                 final bytes =
-                                File(imageFile!.path).readAsBytesSync();
+                                    File(imageFile!.path).readAsBytesSync();
                                 String img64 = base64Encode(bytes);
 
                                 postRequest(context, img64, DeviceName);
@@ -793,7 +803,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            dashboard_screen(selectedPage: 0)));
                               }
                             } else {
                               pr.hide();
@@ -802,7 +812,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          dashboard_screen(selectedPage: 0)));
                             }
                           } else {
                             pr.hide();
@@ -811,7 +821,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        dashboard_screen(selectedPage: 0)));
                           }
                         } else {
                           /* FlutterLogs.logInfo(
@@ -821,8 +831,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                           pr.hide();
                           callPolygonStop();
                           Fluttertoast.showToast(
-                              msg:
-                              app_compat_one + SelectedRegion + app_compat_two,
+                              msg: app_compat_one +
+                                  SelectedRegion +
+                                  app_compat_two,
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
@@ -833,13 +844,12 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      dashboard_screen(selectedPage: 0)));
                         }
                       } else {
                         pr.hide();
                         Fluttertoast.showToast(
-                            msg:
-                            app_fetch_loc,
+                            msg: app_fetch_loc,
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -850,8 +860,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     } else {
                       pr.hide();
                       Fluttertoast.showToast(
-                          msg:
-                          app_reg_selec,
+                          msg: app_reg_selec,
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -863,8 +872,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                     pr.hide();
                     callPolygonStop();
                     Fluttertoast.showToast(
-                        msg:
-                        app_device_faulty,
+                        msg: app_device_faulty,
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -872,7 +880,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                         textColor: Colors.black,
                         fontSize: 16.0);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   pr.hide();
@@ -881,27 +889,24 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                       "ilm_installation",
                       "ILM Device Invalid Credentials Server Exception");*/
                   callPolygonStop();
-                  calltoast(
-                      app_dev_cred_improper);
+                  calltoast(app_dev_cred_improper);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
                     "ILM Device details not found Exception");*/
                 pr.hide();
-                calltoast(
-                    app_dev_nfound_one + DeviceName + app_dev_nfound_two );
+                calltoast(app_dev_nfound_one + DeviceName + app_dev_nfound_two);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
             } else {
               /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
                   "ILM Device Invalid Image to Server Exception");*/
               pr.hide();
               Fluttertoast.showToast(
-                  msg:
-                  app_device_image_cap,
+                  msg: app_device_image_cap,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -924,7 +929,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             } else {
               calltoast(deviceName);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           }
         }
@@ -962,13 +967,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                          decoration: BoxDecoration(color: Colors.white),
-                          width: 200,
-                          height: 200,
-                          child: Icon(
-                            Icons.camera_alt,
-                            color: Colors.grey[800],
-                          )),
+                              decoration: BoxDecoration(color: Colors.white),
+                              width: 200,
+                              height: 200,
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.grey[800],
+                              )),
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -1005,6 +1010,17 @@ class ilmcaminstallState extends State<ilmcaminstall> {
         });
   }
 
+  void call_no_network_toast(String msg) {
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+
   void calltoast(String polenumber) {
     Fluttertoast.showToast(
         msg: device_toast_msg + polenumber + device_toast_notfound,
@@ -1019,8 +1035,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
     final coordinates = new Coordinates(lat, lang);
-    List<Address> addresss = (await Geocoder.local
-        .findAddressesFromCoordinates(coordinates));
+    List<Address> addresss =
+        (await Geocoder.local.findAddressesFromCoordinates(coordinates));
     setState(() {
       address = addresss.elementAt(1).addressLine.toString();
     });
@@ -1042,7 +1058,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       if (response.statusCode.toString() == "200") {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         showMyDialog(context);
       } else {}
       return response;
@@ -1071,7 +1087,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {

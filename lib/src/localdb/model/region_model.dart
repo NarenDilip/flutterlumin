@@ -1,3 +1,6 @@
+
+// Model class for region with data entry
+
 class Region {
   int? id;
   String? regionid;

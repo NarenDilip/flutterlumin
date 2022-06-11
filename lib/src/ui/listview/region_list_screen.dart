@@ -24,6 +24,11 @@ import '../../thingsboard/thingsboard_client_base.dart';
 import '../../utils/utility.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
+// Region list screen in this we need to show the region details already
+// inserted in local database, based on the user selection region we need
+// to fetch the zone list and store in local database, ui need to create
+// a list view and shown to the user
+
 class region_list_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {

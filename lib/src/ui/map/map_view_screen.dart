@@ -14,6 +14,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'location_map.dart';
 
+// Map view screen with implementation of Flutter map and open street maps with
+// device details , act as a widget and joins with Location map widget.
+
 class map_view_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {

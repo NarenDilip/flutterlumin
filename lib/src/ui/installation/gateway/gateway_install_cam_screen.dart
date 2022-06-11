@@ -33,6 +33,11 @@ import '../../../thingsboard/model/id/entity_id.dart';
 import '../../../thingsboard/model/model.dart';
 import '../../dashboard/dashboard_screen.dart';
 
+// Gateway Installation screen, Geo fence validation is implemeted, location accuracy
+// is implemented, Based on the user selected device, we need to capture the user
+// photo, and upload the image url to the cloud based on the device name,
+// successfull message need to shown to user
+
 class gwcaminstall extends StatefulWidget {
   const gwcaminstall() : super();
 
@@ -135,8 +140,7 @@ class gwcaminstallState extends State<gwcaminstall> {
               visibility = false;
             });
             Fluttertoast.showToast(
-                msg:
-                app_fetch_loc,
+                msg: app_fetch_loc,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -151,8 +155,7 @@ class gwcaminstallState extends State<gwcaminstall> {
           });
           if (counter == 0 || counter == 3 || counter == 6 || counter == 9) {
             Fluttertoast.showToast(
-                msg:
-                app_loc_ward,
+                msg: app_loc_ward,
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -163,7 +166,7 @@ class gwcaminstallState extends State<gwcaminstall> {
           }
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         }
       }
     } else {
@@ -195,7 +198,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -379,9 +382,9 @@ class gwcaminstallState extends State<gwcaminstall> {
     var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       // polygonad(LatLng(latter,rlonger));
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
       // details[new LatLng(latter,rlonger)];
@@ -416,7 +419,7 @@ class gwcaminstallState extends State<gwcaminstall> {
         onWillPop: () async {
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -433,13 +436,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                        decoration: BoxDecoration(color: Colors.white),
-                        width: 200,
-                        height: 200,
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.grey[800],
-                        )),
+                            decoration: BoxDecoration(color: Colors.white),
+                            width: 200,
+                            height: 200,
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.grey[800],
+                            )),
                   ),
                   SizedBox(height: 10),
                   Visibility(
@@ -455,40 +458,60 @@ class gwcaminstallState extends State<gwcaminstall> {
                                       color: Colors.white)),
                               style: ButtonStyle(
                                   padding:
-                                  MaterialStateProperty.all<EdgeInsets>(
-                                      EdgeInsets.all(20)),
+                                      MaterialStateProperty.all<EdgeInsets>(
+                                          EdgeInsets.all(20)),
                                   backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                                      MaterialStateProperty.all(Colors.green),
                                   shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                          RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(25.0),
-                                      ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
-                                if (imageFile != null) {
-                                  pr.show();
-                                  // _listenLocation();
-                                  if (geoFence == true) {
-                                    CallGeoFenceListener(context);
+                                Utility.isConnected().then((value) {
+                                  if (value) {
+                                    if (imageFile != null) {
+                                      pr.show();
+                                      // _listenLocation();
+                                      if (geoFence == true) {
+                                        CallGeoFenceListener(context);
+                                      } else {
+                                        callReplacementComplete(
+                                            context,
+                                            imageFile,
+                                            DeviceName,
+                                            SelectedWard);
+                                      }
+                                    } else {
+                                      pr.hide();
+                                      Fluttertoast.showToast(
+                                          msg: app_device_image_cap,
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.BOTTOM,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: Colors.white,
+                                          textColor: Colors.black,
+                                          fontSize: 16.0);
+                                    }
                                   } else {
-                                    callReplacementComplete(context, imageFile,
-                                        DeviceName, SelectedWard);
+                                    call_no_network_toast(no_network);
+                                    pr.hide();
                                   }
-                                } else {
-                                  pr.hide();
-                                  Fluttertoast.showToast(
-                                      msg:
-                                      app_device_image_cap,
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.white,
-                                      textColor: Colors.black,
-                                      fontSize: 16.0);
-                                }
+                                });
                               }))),
                 ]))));
+  }
+
+  void call_no_network_toast(String msg) {
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
   }
 
   void _openCamera(BuildContext context) async {
@@ -499,13 +522,12 @@ class gwcaminstallState extends State<gwcaminstall> {
         imageQuality: 25,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      if(pickedFile != null) {
+      if (pickedFile != null) {
         imageFile = pickedFile;
-      }else{
+      } else {
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => dashboard_screen()),
+          MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
         );
       }
     });
@@ -559,7 +581,8 @@ class gwcaminstallState extends State<gwcaminstall> {
           // Utility.progressDialog(context);
           pr.show();
           try {
-            var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+            var tbClient =
+                ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
             tbClient.smart_init();
 
             Device response;
@@ -572,7 +595,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                 DeviceCredentials deviceCredentials = await tbClient
                     .getDeviceService()
                     .getDeviceCredentialsByDeviceId(
-                    response.id!.id.toString()) as DeviceCredentials;
+                        response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 15) {
                   DBHelper dbHelper = DBHelper();
@@ -618,8 +641,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                       if (firmware_versions
                           .toString()
                           .contains(FirmwareVersion)) {*/
-                        versionCompatability = true;
-                      /*} else {
+                    versionCompatability = true;
+                    /*} else {
                         versionCompatability = false;
                       }
                     }*/
@@ -659,7 +682,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         if (versionCompatability == true) {
                           DBHelper dbHelper = DBHelper();
                           List<Ward> warddetails =
-                          await dbHelper.ward_basedDetails(SelectedWard);
+                              await dbHelper.ward_basedDetails(SelectedWard);
                           if (warddetails.length != "0") {
                             warddetails.first.wardid;
 
@@ -694,31 +717,31 @@ class gwcaminstallState extends State<gwcaminstall> {
                             var saveAttributes = await tbClient
                                 .getAttributeService()
                                 .saveDeviceAttributes(
-                                response.id!.id!, "SERVER_SCOPE", data);
+                                    response.id!.id!, "SERVER_SCOPE", data);
 
                             List<EntityGroupId> currentdeviceresponse;
                             currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
                                 .getEntityGroupsForFolderEntity(
-                                response.id!.id!);
+                                    response.id!.id!);
 
                             if (currentdeviceresponse != null) {
                               var firstdetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                  currentdeviceresponse.first.id!);
+                                      currentdeviceresponse.first.id!);
 
                               if (firstdetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                currentdeviceresponse.first.id!;
+                                    currentdeviceresponse.first.id!;
                               }
                               var seconddetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                  currentdeviceresponse.elementAt(1).id!);
+                                      currentdeviceresponse.elementAt(1).id!);
                               if (seconddetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                currentdeviceresponse.last.id!;
+                                    currentdeviceresponse.last.id!;
                               }
 
                               List<EntityGroupInfo> entitygroups;
@@ -763,18 +786,18 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                    DevicecurrentFolderName, myList);
+                                        DevicecurrentFolderName, myList);
 
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                    DevicemoveFolderName, myList);
+                                        DevicemoveFolderName, myList);
 
                                 // Need to add with Region Folder, Zone Folder and
                                 // Ward Folder as device verification, Need to update
 
                                 final bytes =
-                                File(imageFile!.path).readAsBytesSync();
+                                    File(imageFile!.path).readAsBytesSync();
                                 String img64 = base64Encode(bytes);
 
                                 postRequest(context, img64, DeviceName);
@@ -798,7 +821,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            dashboard_screen(selectedPage: 0)));
                               }
                             } else {
                               callPolygonStop();
@@ -808,7 +831,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          dashboard_screen(selectedPage: 0)));
                             }
                           } else {
                             callPolygonStop();
@@ -818,7 +841,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                             Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
                                     builder: (BuildContext context) =>
-                                        dashboard_screen()));
+                                        dashboard_screen(selectedPage: 0)));
                           }
                         } else {
                           callPolygonStop();
@@ -828,8 +851,9 @@ class gwcaminstallState extends State<gwcaminstall> {
                               "Gateway Device Not Authorized Exception");*/
                           pr.hide();
                           Fluttertoast.showToast(
-                              msg:
-                              app_compat_one + SelectedRegion + app_compat_two,
+                              msg: app_compat_one +
+                                  SelectedRegion +
+                                  app_compat_two,
                               toastLength: Toast.LENGTH_SHORT,
                               gravity: ToastGravity.BOTTOM,
                               timeInSecForIosWeb: 1,
@@ -840,14 +864,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      dashboard_screen(selectedPage: 0)));
                         }
                       } else {
                         // Navigator.pop(context);
                         pr.hide();
                         Fluttertoast.showToast(
-                            msg:
-                            app_fetch_loc,
+                            msg: app_fetch_loc,
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -859,8 +882,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                       // Navigator.pop(context);
                       pr.hide();
                       Fluttertoast.showToast(
-                          msg:
-                          app_reg_selec,
+                          msg: app_reg_selec,
                           toastLength: Toast.LENGTH_SHORT,
                           gravity: ToastGravity.BOTTOM,
                           timeInSecForIosWeb: 1,
@@ -874,8 +896,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         "gw_installation", "Gateway Device Faulty Exception");*/
                     pr.hide();
                     Fluttertoast.showToast(
-                        msg:
-                        app_device_faulty,
+                        msg: app_device_faulty,
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
                         timeInSecForIosWeb: 1,
@@ -883,7 +904,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         textColor: Colors.black,
                         fontSize: 16.0);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   // Navigator.pop(context);
@@ -905,7 +926,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                 pr.hide();
                 calltoast(deviceName);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
             } else {
               // Navigator.pop(context);
@@ -913,8 +934,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                   "Gateway Device Invalid Image Exception");*/
               pr.hide();
               Fluttertoast.showToast(
-                  msg:
-                  app_device_image_cap,
+                  msg: app_device_image_cap,
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM,
                   timeInSecForIosWeb: 1,
@@ -939,7 +959,7 @@ class gwcaminstallState extends State<gwcaminstall> {
               calltoast(deviceName);
               // Navigator.pop(context);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           }
         }
@@ -977,13 +997,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                          decoration: BoxDecoration(color: Colors.white),
-                          width: 200,
-                          height: 200,
-                          child: Icon(
-                            Icons.camera_alt,
-                            color: Colors.grey[800],
-                          )),
+                              decoration: BoxDecoration(color: Colors.white),
+                              width: 200,
+                              height: 200,
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.grey[800],
+                              )),
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -1058,7 +1078,7 @@ class gwcaminstallState extends State<gwcaminstall> {
       if (response.statusCode.toString() == "200") {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         showMyDialog(context);
       } else {}
       return response;
@@ -1087,7 +1107,7 @@ class gwcaminstallState extends State<gwcaminstall> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {

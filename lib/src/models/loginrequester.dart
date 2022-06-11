@@ -1,3 +1,4 @@
+// model class for requesting server with key values
 class LoginRequester {
   String username;
   String password;

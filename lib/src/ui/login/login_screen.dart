@@ -1,4 +1,3 @@
-
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +19,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// User login with credentials for thingsboard production and smart accounts,
+// and check the user is valid person or invalid, if the user is valid we need
+// fetch user related region details and store in local database, based on
+// the user login we need to store server token and refresh token in
+// local storage
+
 class login_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -33,11 +38,14 @@ class login_screenState extends State<login_screen> {
   @override
   void initState() {
     super.initState();
+
+    //intialize the Local Database
     dbHelper = DBHelper();
   }
 
   @override
   Widget build(BuildContext context) {
+    //loading the login form widget
     return Scaffold(body: LoginForm());
   }
 }
@@ -56,21 +64,26 @@ class LoginForm extends StatelessWidget {
   late final TbStorage storage;
   TextEditingController passwordController = TextEditingController(text: "");
   final TextEditingController _emailController =
-  TextEditingController(text: "");
-
+      TextEditingController(text: "");
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    pr = ProgressDialog(context,type: ProgressDialogType.Normal, isDismissible: false);
+    pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
     pr.style(
       message: app_pls_wait,
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
       elevation: 10.0,
       messageTextStyle: const TextStyle(
-          color: Colors.white, fontFamily: "Montserrat", fontSize: 19.0, fontWeight: FontWeight.w600),
-      progressWidget: const CircularProgressIndicator(backgroundColor: Colors.lightBlueAccent, valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
+          color: Colors.white,
+          fontFamily: "Montserrat",
+          fontSize: 19.0,
+          fontWeight: FontWeight.w600),
+      progressWidget: const CircularProgressIndicator(
+          backgroundColor: Colors.lightBlueAccent,
+          valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
           strokeWidth: 3.0),
     );
     return WillPopScope(
@@ -83,7 +96,6 @@ class LoginForm extends StatelessWidget {
               color: Colors.white,
               height: size.height,
               width: double.infinity,
-
               child: Form(
                   key: _formKey,
                   child: Column(
@@ -114,6 +126,7 @@ class LoginForm extends StatelessWidget {
                         validator: (email) {
                           if (email!.isEmpty) {
                             return app_no_email;
+                            //validating the user email address
                           } else if (!EmailValidator.validate(email)) {
                             return app_validate_email;
                           }
@@ -142,6 +155,7 @@ class LoginForm extends StatelessWidget {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
                             FocusScope.of(context).requestFocus(FocusNode());
+                            //Calling the api user validation with thingsboard library access
                             _loginAPI(context);
                           }
                         },
@@ -149,12 +163,12 @@ class LoginForm extends StatelessWidget {
                       ),
                       const SizedBox(height: 60),
                       Center(
-                          child:Text(app_version,style: const TextStyle(
-                              fontSize: 15.0,
-                              fontFamily: "Montserrat",
-                              fontWeight: FontWeight.bold,
-                              color: invListBackgroundColor))
-                      ),
+                          child: Text(app_version,
+                              style: const TextStyle(
+                                  fontSize: 15.0,
+                                  fontFamily: "Montserrat",
+                                  fontWeight: FontWeight.bold,
+                                  color: invListBackgroundColor))),
                     ],
                   )))),
     );
@@ -165,7 +179,6 @@ class LoginForm extends StatelessWidget {
     Utility.isConnected().then((value) async {
       if (value) {
         pr.show();
-
         if ((user.username.isNotEmpty) && (user.password.isNotEmpty)) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           var status = await login_thingsboard.callThingsboardLogin(
@@ -174,7 +187,7 @@ class LoginForm extends StatelessWidget {
             prefs.setString('username', user.username);
             prefs.setString('password', user.password);
             callRegionDetails(context);
-          }else{
+          } else {
             pr.hide();
             Fluttertoast.showToast(
                 msg: app_usr_invalid_cred,
@@ -201,57 +214,58 @@ class LoginForm extends StatelessWidget {
     });
   }
 
+  // Fetching the user related region details and store it in local database
+
   void callRegionDetails(BuildContext context) {
     Utility.isConnected().then((value) async {
       if (value) {
-        pr.show();
-        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
-        tbClient.smart_init();
+        try {
+          pr.show();
+          var tbClient =
+              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          tbClient.smart_init();
 
-        DBHelper dbHelper = new DBHelper();
+          DBHelper dbHelper = new DBHelper();
 
-        Map<String, dynamic> _portaInfoMap = {
-          "type": ["region"],
-        };
+          Map<String, dynamic> _portaInfoMap = {
+            "type": ["region"],
+          };
 
-        PageLink pageLink = new PageLink(250);
-        pageLink.page = 0;
-        pageLink.pageSize = 250;
+          PageLink pageLink = new PageLink(250);
+          pageLink.page = 0;
+          pageLink.pageSize = 250;
 
-        PageData<Asset> region_response;
-        region_response = (await tbClient
-            .getAssetService()
-            .getRegionTenantAssets(pageLink));
-
-        if (region_response != null) {
-          if (region_response.totalElements != 0) {
-            for (int i = 0; i < region_response.data.length; i++) {
-              String id = region_response.data
-                  .elementAt(i)
-                  .id!
-                  .id
-                  .toString();
-              String name = region_response.data
-                  .elementAt(i)
-                  .name
-                  .toString();
-              Region region = new Region(i, id, name);
-              dbHelper.add(region);
-            }
-          }
-
-          PageData<Asset> zone_response;
-          zone_response = (await tbClient
+          PageData<Asset> region_response;
+          region_response = (await tbClient
               .getAssetService()
-              .getZoneTenantAssets(pageLink));
+              .getRegionTenantAssets(pageLink));
 
+          if (region_response != null) {
+            if (region_response.totalElements != 0) {
+              for (int i = 0; i < region_response.data.length; i++) {
+                String id = region_response.data.elementAt(i).id!.id.toString();
+                String name = region_response.data.elementAt(i).name.toString();
+                Region region = new Region(i, id, name);
+                dbHelper.add(region);
+              }
+            }
+
+            PageData<Asset> zone_response;
+            zone_response = (await tbClient
+                .getAssetService()
+                .getZoneTenantAssets(pageLink));
+
+            // passing the application from login screen to region selection screen
+            pr.hide();
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => region_list_screen()));
+          } else {
+            // FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
+            pr.hide();
+            calltoast(app_no_regions);
+          }
+        } catch (e) {
           pr.hide();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => region_list_screen()));
-        } else {
-          // FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
-          pr.hide();
-          calltoast(app_no_regions);
         }
       }
     });

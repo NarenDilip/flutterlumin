@@ -29,6 +29,12 @@ import '../../../localdb/model/ward_model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 
+// CCMS Maintenance remove device screen, it will check the selected device
+// is present in server, it will collect the details of the device, user need
+// to scan the new qr code for replacing with new device.on the replacement
+// process it will interchange both devices and move the non working device to
+// forrepair folder and revert back to maintenance page
+
 class replaceccms extends StatefulWidget {
   const replaceccms() : super();
 
@@ -142,7 +148,7 @@ class replaceccmsState extends State<replaceccms> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -685,7 +691,7 @@ class replaceccmsState extends State<replaceccms> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            dashboard_screen(selectedPage: 0)));
                               }
                             }
                           } else {
@@ -827,7 +833,7 @@ class replaceccmsState extends State<replaceccms> {
                                 Navigator.of(context).pushReplacement(
                                     MaterialPageRoute(
                                         builder: (BuildContext context) =>
-                                            dashboard_screen()));
+                                            dashboard_screen(selectedPage: 0)));
                               }
                             } else {
                               pr.hide();
@@ -835,7 +841,7 @@ class replaceccmsState extends State<replaceccms> {
                               Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                       builder: (BuildContext context) =>
-                                          dashboard_screen()));
+                                          dashboard_screen(selectedPage: 0)));
                             }
                           }
                         } else {
@@ -854,7 +860,7 @@ class replaceccmsState extends State<replaceccms> {
                           Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                   builder: (BuildContext context) =>
-                                      dashboard_screen()));
+                                      dashboard_screen(selectedPage: 0)));
                         }
                       // } else {
                       //   pr.hide();
@@ -864,25 +870,25 @@ class replaceccmsState extends State<replaceccms> {
                       callstoast(app_dev_find_dev_attr);
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              dashboard_screen(selectedPage: 0)));
                     }
                   } else {
                     pr.hide();
                     callstoast(app_dev_find_relation_details);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   pr.hide();
                   callstoast(app_dev_current_unable_folder_details);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 pr.hide();
                 callstoast(app_dev_unable_folder_details);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
             } else {
               pr.hide();
@@ -890,7 +896,7 @@ class replaceccmsState extends State<replaceccms> {
                   DeviceName +
                   app_dev_sel_details_two);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           } else {
             pr.hide();
@@ -917,7 +923,7 @@ class replaceccmsState extends State<replaceccms> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
       } else {
@@ -940,7 +946,7 @@ class replaceccmsState extends State<replaceccms> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -1056,7 +1062,7 @@ class replaceccmsState extends State<replaceccms> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       } else {}
       return response;
     } catch (e) {

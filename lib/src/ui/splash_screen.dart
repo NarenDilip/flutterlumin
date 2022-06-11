@@ -18,6 +18,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'login/login_screen.dart';
 
+// Splash screen this screen will be the app first screen , implemented with
+// timer values and navigate to the dashboard or login pages.
+
 class splash_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -28,7 +31,6 @@ class splash_screen extends StatefulWidget {
 class splash_screenState extends State<splash_screen> {
   late String token;
   late final TbStorage storage;
-
 
   @override
   void initState() {
@@ -41,8 +43,6 @@ class splash_screenState extends State<splash_screen> {
   // Future<void> checkForUpdate()async {
   //
   // }
-
-
 
   void initial() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -67,7 +67,7 @@ class splash_screenState extends State<splash_screen> {
                       if(SelectedWard == "null") {
                         return ward_li_screen();
                       }else{
-                        return dashboard_screen();
+                        return dashboard_screen(selectedPage: 0);
                       }
                     }
                   }

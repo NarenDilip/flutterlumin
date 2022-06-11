@@ -39,6 +39,13 @@ import '../../../utils/gwtoogle_button.dart';
 import '../../../utils/ilmtoogle_button.dart';
 import '../../splash_screen.dart';
 
+// Gateway Maintenance screen in this screen we need to show the selected device
+// details with location, lampwatts and last communication time, need to show
+// some buttons like remove or replace optins to users, if user
+// clicks remove we need navigate to remove and user clicks on replace we need
+// to navigate to replace screen, we need to fetch the device details based on
+// the user scanned or selected device to proceed maintenance actions
+
 class GWMaintenanceScreen extends StatefulWidget {
   const GWMaintenanceScreen() : super();
 
@@ -172,7 +179,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           setState(() {
             visibility = false;
           });
@@ -540,7 +547,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
       onWillPop: () async {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
         return true;
       },
       child: Scaffold(
@@ -2149,7 +2156,7 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen()));
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
     }
   } else {
     if (error is DioError) {

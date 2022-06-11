@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+// Base Responsive key components are
+
 class Responsive extends StatelessWidget {
   final Widget mobile;
   final Widget tablet;

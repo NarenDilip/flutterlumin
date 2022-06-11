@@ -34,6 +34,13 @@ import '../maintenance/gateway/gw_maintenance_screen.dart';
 import '../splash_screen.dart';
 import 'dashboard_screen.dart';
 
+// In device list screen, we need to show filters for users like ilm number filter,
+// pole number filter, ccms number filter, gateway number filter these type of
+// filters we need show with users, based on the filter search we need to fetch
+// the details from the server and list to users, users will select the list ,
+// based on the list selection we need to navigate to next screen.
+
+
 class device_list_screen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -71,6 +78,11 @@ class device_list_screen_state extends State<device_list_screen> {
   final Location locations = Location();
   LocationData? _location;
   StreamSubscription<LocationData>? _locationSubscription;
+
+  final _formKey = new GlobalKey<FormState>();
+  TextEditingController ilmController = new TextEditingController();
+  TextEditingController ccmsController = new TextEditingController();
+  TextEditingController gateWayController = new TextEditingController();
 
   var _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
@@ -456,325 +468,335 @@ class device_list_screen_state extends State<device_list_screen> {
                               decoration: BoxDecoration(
                                   color: thbDblue,
                                   borderRadius: BorderRadius.circular(30)),
-                              child: Column(
-                                children: [
-                                  const SizedBox(
-                                    height: 15,
-                                  ),
-                                  Row(children: [
-                                    Flexible(
-                                        child: TextFormField(
-                                            autofocus: false,
-                                            keyboardType: TextInputType.text,
-                                            style: TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              hintText: 'ILM Number',
-                                              fillColor: Colors.white,
-                                              contentPadding:
-                                              EdgeInsets.fromLTRB(
-                                                  10, 0, 0, 0),
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      70.0),
-                                                  borderSide: BorderSide(
-                                                      color: thbDblue)),
-                                              enabledBorder:
-                                              const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(20.0)),
-                                                borderSide:
-                                                BorderSide(color: thbDblue),
-                                                //borderSide: const BorderSide(),
-                                              ),
-                                              suffixIcon: GestureDetector(
-                                                onTap: () {
-                                                  if (user
-                                                      .ilmnumber.isNotEmpty) {
-                                                    FocusScope.of(context)
-                                                        .requestFocus(
-                                                        FocusNode());
-                                                    callILMDeviceListFinder(
-                                                        user.ilmnumber,
-                                                        context);
-                                                  } else {
-                                                    Fluttertoast.showToast(
-                                                        msg:
-                                                        device_no_entry,
-                                                        toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                        gravity:
-                                                        ToastGravity.BOTTOM,
-                                                        timeInSecForIosWeb: 1);
-                                                  }
-                                                },
-                                                child: Icon(
-                                                  _obscureText
-                                                      ? Icons.search
-                                                      : Icons.search,
-                                                  semanticLabel: _obscureText
-                                                      ? 'show password'
-                                                      : 'hide password',
+                              child: Form(
+                                key:this._formKey,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 15,
+                                    ),
+                                    Row(children: [
+                                      Flexible(
+                                          child: TextFormField(
+                                              autofocus: false,
+                                              keyboardType: TextInputType.text,
+                                              controller: ilmController,
+                                              style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black),
+                                              decoration: InputDecoration(
+                                                filled: true,
+                                                hintText: 'ILM Number',
+                                                fillColor: Colors.white,
+                                                contentPadding:
+                                                EdgeInsets.fromLTRB(
+                                                    10, 0, 0, 0),
+                                                border: OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                        70.0),
+                                                    borderSide: BorderSide(
+                                                        color: thbDblue)),
+                                                enabledBorder:
+                                                const OutlineInputBorder(
+                                                  // width: 0.0 produces a thin "hairline" border
+                                                  borderRadius: BorderRadius.all(
+                                                      Radius.circular(20.0)),
+                                                  borderSide:
+                                                  BorderSide(color: thbDblue),
+                                                  //borderSide: const BorderSide(),
+                                                ),
+                                                suffixIcon: GestureDetector(
+                                                  onTap: () {
+                                                    if (user
+                                                        .ilmnumber.isNotEmpty) {
+                                                      FocusScope.of(context)
+                                                          .requestFocus(
+                                                          FocusNode());
+                                                      callILMDeviceListFinder(
+                                                          user.ilmnumber,
+                                                          context);
+                                                    } else {
+                                                      Fluttertoast.showToast(
+                                                          msg:
+                                                          device_no_entry,
+                                                          toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                          gravity:
+                                                          ToastGravity.BOTTOM,
+                                                          timeInSecForIosWeb: 1);
+                                                    }
+                                                  },
+                                                  child: Icon(
+                                                    _obscureText
+                                                        ? Icons.search
+                                                        : Icons.search,
+                                                    semanticLabel: _obscureText
+                                                        ? 'show password'
+                                                        : 'hide password',
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            onSaved: (value) => user.ilmnumber =
-                                                value!.toUpperCase(),
-                                            onChanged: (String value) {
-                                              user.ilmnumber =
-                                                  value.toUpperCase();
-                                              setState(() {
-                                                _foundUsers!.clear();
-                                              });
-                                            }))
-                                  ]),
-                                  const SizedBox(height: 5),
-                                  Row(children: [
-                                    Flexible(
-                                        child: TextFormField(
-                                            autofocus: false,
-                                            keyboardType: TextInputType.text,
-                                            style: TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              hintText: 'CCMS Number',
-                                              fillColor: Colors.white,
-                                              contentPadding:
-                                              EdgeInsets.fromLTRB(
-                                                  10, 0, 0, 0),
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      20.0),
-                                                  borderSide: BorderSide(
-                                                      color: Colors.white)),
-                                              enabledBorder:
-                                              const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(20.0)),
-                                                borderSide:
-                                                BorderSide(color: thbDblue),
-                                                //borderSide: const BorderSide(),
-                                              ),
-                                              suffixIcon: GestureDetector(
-                                                onTap: () {
-                                                  if (user
-                                                      .ccmsnumber.isNotEmpty) {
-                                                    FocusScope.of(context)
-                                                        .requestFocus(
-                                                        FocusNode());
-                                                    callCcmsDeviceListFinder(
-                                                        user.ccmsnumber,
-                                                        context);
-                                                    // callccmsbasedILMDeviceListFinder(
-                                                    //     user.ccmsnumber,
-                                                    //     _relationdevices,
-                                                    //     _foundUsers,
-                                                    //     context);
-                                                  } else {
-                                                    Fluttertoast.showToast(
-                                                        msg:
-                                                        device_no_entry,
-                                                        toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                        gravity:
-                                                        ToastGravity.BOTTOM,
-                                                        timeInSecForIosWeb: 1);
-                                                  }
-                                                },
-                                                child: Icon(
-                                                  _obscureText
-                                                      ? Icons.search
-                                                      : Icons.search,
-                                                  semanticLabel: _obscureText
-                                                      ? 'show password'
-                                                      : 'hide password',
+                                              onSaved: (value) => user.ilmnumber =
+                                                  value!.toUpperCase(),
+                                              onChanged: (String value) {
+                                                user.ilmnumber =
+                                                    value.toUpperCase();
+                                                setState(() {
+                                                  _foundUsers!.clear();
+                                                });
+                                              }))
+                                    ]),
+                                    const SizedBox(height: 5),
+                                    Row(children: [
+                                      Flexible(
+                                          child: TextFormField(
+                                              autofocus: false,
+                                              keyboardType: TextInputType.text,
+                                              controller: ccmsController,
+                                              style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black),
+                                              decoration: InputDecoration(
+                                                filled: true,
+                                                hintText: 'CCMS Number',
+                                                fillColor: Colors.white,
+                                                contentPadding:
+                                                EdgeInsets.fromLTRB(
+                                                    10, 0, 0, 0),
+                                                border: OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                        20.0),
+                                                    borderSide: BorderSide(
+                                                        color: Colors.white)),
+                                                enabledBorder:
+                                                const OutlineInputBorder(
+                                                  // width: 0.0 produces a thin "hairline" border
+                                                  borderRadius: BorderRadius.all(
+                                                      Radius.circular(20.0)),
+                                                  borderSide:
+                                                  BorderSide(color: thbDblue),
+                                                  //borderSide: const BorderSide(),
+                                                ),
+                                                suffixIcon: GestureDetector(
+                                                  onTap: () {
+                                                    if (user
+                                                        .ccmsnumber.isNotEmpty) {
+                                                      FocusScope.of(context)
+                                                          .requestFocus(
+                                                          FocusNode());
+                                                      callCcmsDeviceListFinder(
+                                                          user.ccmsnumber,
+                                                          context);
+                                                      // callccmsbasedILMDeviceListFinder(
+                                                      //     user.ccmsnumber,
+                                                      //     _relationdevices,
+                                                      //     _foundUsers,
+                                                      //     context);
+                                                    } else {
+                                                      Fluttertoast.showToast(
+                                                          msg:
+                                                          device_no_entry,
+                                                          toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                          gravity:
+                                                          ToastGravity.BOTTOM,
+                                                          timeInSecForIosWeb: 1);
+                                                    }
+                                                  },
+                                                  child: Icon(
+                                                    _obscureText
+                                                        ? Icons.search
+                                                        : Icons.search,
+                                                    semanticLabel: _obscureText
+                                                        ? 'show password'
+                                                        : 'hide password',
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            onSaved: (value) =>
-                                            user.ccmsnumber =
-                                                value!.toUpperCase(),
-                                            onChanged: (String value) {
+                                              onSaved: (value) =>
                                               user.ccmsnumber =
-                                                  value.toUpperCase();
-                                              setState(() {
-                                                _ccmsfoundUsers!.clear();
-                                              });
-                                            }))
-                                  ]),
-                                  const SizedBox(height: 5),
-                                  Row(children: [
-                                    Flexible(
-                                        child: TextFormField(
-                                            autofocus: false,
-                                            keyboardType: TextInputType.text,
-                                            style: TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              hintText: 'Pole Number',
-                                              fillColor: Colors.white,
-                                              contentPadding:
-                                              EdgeInsets.fromLTRB(
-                                                  10, 0, 0, 0),
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      20.0),
-                                                  borderSide: BorderSide(
-                                                      color: Colors.white)),
-                                              enabledBorder:
-                                              const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(20.0)),
-                                                borderSide:
-                                                BorderSide(color: thbDblue),
-                                                //borderSide: const BorderSide(),
-                                              ),
-                                              suffixIcon: GestureDetector(
-                                                onTap: () {
-                                                  if (user
-                                                      .polenumber.isNotEmpty) {
-                                                    FocusScope.of(context)
-                                                        .requestFocus(
-                                                        FocusNode());
-                                                    callpolebasedILMDeviceListFinder(
-                                                        user.polenumber,
-                                                        _relationdevices,
-                                                        _foundUsers,
-                                                        context);
-                                                  } else {
-                                                    Fluttertoast.showToast(
-                                                        msg:
-                                                        device_no_entry,
-                                                        toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                        gravity:
-                                                        ToastGravity.BOTTOM,
-                                                        timeInSecForIosWeb: 1);
-                                                  }
-                                                },
-                                                child: Icon(
-                                                  _obscureText
-                                                      ? Icons.search
-                                                      : Icons.search,
-                                                  semanticLabel: _obscureText
-                                                      ? 'show password'
-                                                      : 'hide password',
+                                                  value!.toUpperCase(),
+                                              onChanged: (String value) {
+                                                user.ccmsnumber =
+                                                    value.toUpperCase();
+                                                setState(() {
+                                                  _ccmsfoundUsers!.clear();
+                                                });
+                                              }))
+                                    ]),
+                                    const SizedBox(height: 5),
+                                    Visibility(
+                                      visible: false,
+                                      child: Row(children: [
+                                        Flexible(
+                                            child: TextFormField(
+                                                autofocus: false,
+                                                keyboardType: TextInputType.text,
+                                                style: TextStyle(
+                                                    fontSize: 18.0,
+                                                    fontFamily: "Montserrat",
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black),
+                                                decoration: InputDecoration(
+                                                  filled: true,
+                                                  hintText: 'Pole Number',
+                                                  fillColor: Colors.white,
+                                                  contentPadding:
+                                                  EdgeInsets.fromLTRB(
+                                                      10, 0, 0, 0),
+                                                  border: OutlineInputBorder(
+                                                      borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0),
+                                                      borderSide: BorderSide(
+                                                          color: Colors.white)),
+                                                  enabledBorder:
+                                                  const OutlineInputBorder(
+                                                    // width: 0.0 produces a thin "hairline" border
+                                                    borderRadius: BorderRadius.all(
+                                                        Radius.circular(20.0)),
+                                                    borderSide:
+                                                    BorderSide(color: thbDblue),
+                                                    //borderSide: const BorderSide(),
+                                                  ),
+                                                  suffixIcon: GestureDetector(
+                                                    onTap: () {
+                                                      if (user
+                                                          .polenumber.isNotEmpty) {
+                                                        FocusScope.of(context)
+                                                            .requestFocus(
+                                                            FocusNode());
+                                                        callpolebasedILMDeviceListFinder(
+                                                            user.polenumber,
+                                                            _relationdevices,
+                                                            _foundUsers,
+                                                            context);
+                                                      } else {
+                                                        Fluttertoast.showToast(
+                                                            msg:
+                                                            device_no_entry,
+                                                            toastLength:
+                                                            Toast.LENGTH_SHORT,
+                                                            gravity:
+                                                            ToastGravity.BOTTOM,
+                                                            timeInSecForIosWeb: 1);
+                                                      }
+                                                    },
+                                                    child: Icon(
+                                                      _obscureText
+                                                          ? Icons.search
+                                                          : Icons.search,
+                                                      semanticLabel: _obscureText
+                                                          ? 'show password'
+                                                          : 'hide password',
+                                                    ),
+                                                  ),
+                                                ),
+                                                onSaved: (value) =>
+                                                user.polenumber =
+                                                    value!.toUpperCase(),
+                                                onChanged: (String value) {
+                                                  user.polenumber =
+                                                      value.toUpperCase();
+                                                  setState(() {
+                                                    _foundUsers!.clear();
+                                                  });
+                                                }))
+                                      ]),
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Row(children: [
+                                      Flexible(
+                                          child: TextFormField(
+                                              autofocus: false,
+                                              keyboardType: TextInputType.text,
+                                              controller: gateWayController,
+                                              style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black),
+                                              decoration: InputDecoration(
+                                                filled: true,
+                                                hintText: 'Gateway Number',
+                                                fillColor: Colors.white,
+                                                contentPadding:
+                                                EdgeInsets.fromLTRB(
+                                                    10, 0, 0, 0),
+                                                border: OutlineInputBorder(
+                                                    borderRadius:
+                                                    BorderRadius.circular(
+                                                        20.0),
+                                                    borderSide: BorderSide(
+                                                        color: Colors.white)),
+                                                enabledBorder:
+                                                const OutlineInputBorder(
+                                                  // width: 0.0 produces a thin "hairline" border
+                                                  borderRadius: BorderRadius.all(
+                                                      Radius.circular(20.0)),
+                                                  borderSide:
+                                                  BorderSide(color: thbDblue),
+                                                  //borderSide: const BorderSide(),
+                                                ),
+                                                suffixIcon: GestureDetector(
+                                                  onTap: () {
+                                                    if (user.gatewaynumber
+                                                        .isNotEmpty) {
+                                                      FocusScope.of(context)
+                                                          .requestFocus(
+                                                          FocusNode());
+                                                      callgwDeviceListFinder(
+                                                          user.gatewaynumber,
+                                                          context);
+                                                      // callpolebasedILMDeviceListFinder(
+                                                      //     user.gatewaynumber,
+                                                      //     _relationdevices,
+                                                      //     _gwfoundUsers,
+                                                      //     context);
+                                                    } else {
+                                                      Fluttertoast.showToast(
+                                                          msg:
+                                                          device_no_entry,
+                                                          toastLength:
+                                                          Toast.LENGTH_SHORT,
+                                                          gravity:
+                                                          ToastGravity.BOTTOM,
+                                                          timeInSecForIosWeb: 1);
+                                                    }
+                                                  },
+                                                  child: Icon(
+                                                    _obscureText
+                                                        ? Icons.search
+                                                        : Icons.search,
+                                                    semanticLabel: _obscureText
+                                                        ? 'show password'
+                                                        : 'hide password',
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            onSaved: (value) =>
-                                            user.polenumber =
-                                                value!.toUpperCase(),
-                                            onChanged: (String value) {
-                                              user.polenumber =
-                                                  value.toUpperCase();
-                                              setState(() {
-                                                _foundUsers!.clear();
-                                              });
-                                            }))
-                                  ]),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(children: [
-                                    Flexible(
-                                        child: TextFormField(
-                                            autofocus: false,
-                                            keyboardType: TextInputType.text,
-                                            style: TextStyle(
-                                                fontSize: 18.0,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            decoration: InputDecoration(
-                                              filled: true,
-                                              hintText: 'Gateway Number',
-                                              fillColor: Colors.white,
-                                              contentPadding:
-                                              EdgeInsets.fromLTRB(
-                                                  10, 0, 0, 0),
-                                              border: OutlineInputBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      20.0),
-                                                  borderSide: BorderSide(
-                                                      color: Colors.white)),
-                                              enabledBorder:
-                                              const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(20.0)),
-                                                borderSide:
-                                                BorderSide(color: thbDblue),
-                                                //borderSide: const BorderSide(),
-                                              ),
-                                              suffixIcon: GestureDetector(
-                                                onTap: () {
-                                                  if (user.gatewaynumber
-                                                      .isNotEmpty) {
-                                                    FocusScope.of(context)
-                                                        .requestFocus(
-                                                        FocusNode());
-                                                    callgwDeviceListFinder(
-                                                        user.gatewaynumber,
-                                                        context);
-                                                    // callpolebasedILMDeviceListFinder(
-                                                    //     user.gatewaynumber,
-                                                    //     _relationdevices,
-                                                    //     _gwfoundUsers,
-                                                    //     context);
-                                                  } else {
-                                                    Fluttertoast.showToast(
-                                                        msg:
-                                                        device_no_entry,
-                                                        toastLength:
-                                                        Toast.LENGTH_SHORT,
-                                                        gravity:
-                                                        ToastGravity.BOTTOM,
-                                                        timeInSecForIosWeb: 1);
-                                                  }
-                                                },
-                                                child: Icon(
-                                                  _obscureText
-                                                      ? Icons.search
-                                                      : Icons.search,
-                                                  semanticLabel: _obscureText
-                                                      ? 'show password'
-                                                      : 'hide password',
-                                                ),
-                                              ),
-                                            ),
-                                            onSaved: (value) =>
-                                            user.gatewaynumber =
-                                                value!.toUpperCase(),
-                                            onChanged: (String value) {
+                                              onSaved: (value) =>
                                               user.gatewaynumber =
-                                                  value.toUpperCase();
-                                              setState(() {
-                                                _gwfoundUsers!.clear();
-                                              });
-                                            }))
-                                  ])
-                                ],
-                              ),
+                                                  value!.toUpperCase(),
+                                              onChanged: (String value) {
+                                                user.gatewaynumber =
+                                                    value.toUpperCase();
+                                                setState(() {
+                                                  _gwfoundUsers!.clear();
+                                                });
+                                              }))
+                                    ])
+                                  ],
+                                ),
+                              )),
                             ),
                             visible: _visible,
                           ),
@@ -1712,7 +1734,7 @@ class device_list_screen_state extends State<device_list_screen> {
 
   void refreshPage(context) {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) => dashboard_screen()));
+        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
   }
 
   void calltoast(String polenumber) {
@@ -1739,7 +1761,7 @@ class device_list_screen_state extends State<device_list_screen> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0,)));
       }
     } else {
       if (error is DioError) {

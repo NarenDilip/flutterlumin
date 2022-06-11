@@ -28,6 +28,12 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 
 import 'ilm_maintenance_screen.dart';
 
+
+// ILM Maintenance remove device screen, it will check the selected device
+// is present in server, it will collect the details of the device, user need
+// to remove the selected device.on the removal process will move the device to
+// forrepair folder and revert back to maintenance page
+
 class replacementilm extends StatefulWidget {
   const replacementilm() : super();
 
@@ -144,7 +150,7 @@ class replacementilmState extends State<replacementilm> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen()));
+              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -390,7 +396,7 @@ class replacementilmState extends State<replacementilm> {
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
-                              dashboard_screen()));
+                              dashboard_screen(selectedPage: 0)));
                     }
                   } else {
                     FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -398,7 +404,7 @@ class replacementilmState extends State<replacementilm> {
                     calltoast("Device EntityGroup Not Found");
 
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen()));
+                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -406,7 +412,7 @@ class replacementilmState extends State<replacementilm> {
                   calltoast(deviceName);
 
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen()));
+                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -422,7 +428,7 @@ class replacementilmState extends State<replacementilm> {
                     fontSize: 16.0);
 
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen()));
+                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
             } else {
               FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -430,7 +436,7 @@ class replacementilmState extends State<replacementilm> {
               calltoast(deviceName);
 
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen()));
+                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           } else {
             FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -457,7 +463,7 @@ class replacementilmState extends State<replacementilm> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen()));
+                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
       }
@@ -501,7 +507,7 @@ class replacementilmState extends State<replacementilm> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       } else {}
       return response;
     } catch (e) {
@@ -527,7 +533,7 @@ class replacementilmState extends State<replacementilm> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen()));
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {

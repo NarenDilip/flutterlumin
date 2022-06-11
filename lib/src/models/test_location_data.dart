@@ -1,3 +1,4 @@
+// model class for test location details
 class LocationData {
   late double latitude; // Latitude, in degrees
   late double longitude; // Longitude, in degrees
