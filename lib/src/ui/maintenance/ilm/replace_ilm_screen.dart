@@ -390,10 +390,10 @@ class replaceilmState extends State<replaceilm> {
       //     fontFamily: "Montserrat",
       //     fontWeight: FontWeight.normal,
       //     color: liorange)),
-      // actions: [
-      //   cancelButton,
-      //   continueButton,
-      // ],
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
     );
 
     // show the dialog

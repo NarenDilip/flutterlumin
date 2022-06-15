@@ -97,7 +97,7 @@ class _LocationWidgetState extends State<LocationWidget> {
   void initState() {
     super.initState();
     getCurrentLocation();
-    // _listenLocation();
+    _listenLocation();
     current = widget.initialLabel;
     callWatcher(context);
     setUpLogs();

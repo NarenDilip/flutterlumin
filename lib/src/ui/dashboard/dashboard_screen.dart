@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:fl_location/fl_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -43,8 +44,8 @@ import '../map/map_view_screen.dart';
 // listener is implemented
 
 class dashboard_screen extends StatefulWidget {
-
   int selectedPage;
+
   dashboard_screen({required this.selectedPage});
 
   @override
@@ -131,23 +132,25 @@ class dashboard_screenState extends State<dashboard_screen> {
           content: Text('Please update app to new version',
               textAlign: TextAlign.left,
               style: const TextStyle(
-              fontSize: 20.0,
-              fontFamily: "Montserrat",
-              fontWeight: FontWeight.normal,
-              color: Colors.black)),
+                  fontSize: 20.0,
+                  fontFamily: "Montserrat",
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black)),
           actions: <Widget>[
             TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Visibility(visible: visibility, child: Container(
-                  child: Text('Not Now',
-                      style: const TextStyle(
-                          fontSize: 18.0,
-                          fontFamily: "Montserrat",
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red)),
-                ))),
+                child: Visibility(
+                    visible: visibility,
+                    child: Container(
+                      child: Text('Not Now',
+                          style: const TextStyle(
+                              fontSize: 18.0,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red)),
+                    ))),
             TextButton(
                 child: Text('Update',
                     style: const TextStyle(
@@ -318,9 +321,9 @@ class dashboard_screenState extends State<dashboard_screen> {
               if (!currentFocus.hasPrimaryFocus) {
                 currentFocus.unfocus();
               }
-              if(iscamerapermission == false) {
+              if (iscamerapermission == false) {
                 Fluttertoast.showToast(
-                    msg:"Permission denied",
+                    msg: "Permission denied",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     timeInSecForIosWeb: 1,
@@ -385,30 +388,27 @@ class dashboard_screenState extends State<dashboard_screen> {
                 ),
               ),
             ],
-            onTap: (index) async{
-              requestLocationPermission();
-              if(islocationpermission == false){
-                Fluttertoast.showToast(
-                    msg:"Permission denied",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
-              } else {
+            onTap: (index) async {
+              if (await _checkLocationPermission()){
                 setState(() {
                   widget.selectedPage = index;
                 });
+              } else {
+                // Fluttertoast.showToast(
+                //     msg:"Permission denied",
+                //     toastLength: Toast.LENGTH_SHORT,
+                //     gravity: ToastGravity.BOTTOM,
+                //     timeInSecForIosWeb: 1,
+                //     backgroundColor: Colors.white,
+                //     textColor: Colors.black,
+                //     fontSize: 16.0);
               }
-
             },
           ),
         ));
   }
 
   Future<void> requestCameraPermission() async {
-
     final status = await Permission.camera.request();
 
     if (status == PermissionStatus.granted) {
@@ -421,21 +421,49 @@ class dashboard_screenState extends State<dashboard_screen> {
       await openAppSettings();
     }
   }
-  Future<void> requestLocationPermission() async {
+  //
+  // Future<void> requestLocationPermission() async {
+  //
+  //   final status = await Permission.location.request();
+  //
+  //   if (status == PermissionStatus.granted) {
+  //     islocationpermission = true;
+  //   } else if (status == PermissionStatus.denied) {
+  //     islocationpermission = false;
+  //     await openAppSettings();
+  //   } else if (status == PermissionStatus.permanentlyDenied) {
+  //     islocationpermission = false;
+  //     await openAppSettings();
+  //   }
+  // }
 
-    final status = await Permission.location.request();
-
-    if (status == PermissionStatus.granted) {
-      islocationpermission = true;
-    } else if (status == PermissionStatus.denied) {
-      islocationpermission = false;
-      await openAppSettings();
-    } else if (status == PermissionStatus.permanentlyDenied) {
-      islocationpermission = false;
-      await openAppSettings();
+  Future<bool> _checkLocationPermission({bool? background}) async {
+    if (!await FlLocation.isLocationServicesEnabled) {
+      // Location services are disabled.
+      return false;
     }
-  }
 
+    var locationPermission = await FlLocation.checkLocationPermission();
+    if (locationPermission == LocationPermission.deniedForever) {
+      await openAppSettings();
+      return false;
+    } else if (locationPermission == LocationPermission.denied) {
+      // Ask the user for location permission.
+      locationPermission = await FlLocation.requestLocationPermission();
+      if (locationPermission == LocationPermission.denied ||
+          locationPermission == LocationPermission.deniedForever)
+        await openAppSettings();
+      return false;
+    }
+
+    // Location permission must always be allowed (LocationPermission.always)
+    // to collect location data in the background.
+    if (background == true &&
+        locationPermission == LocationPermission.whileInUse) return false;
+
+    // Location services has been enabled and permission have been granted.
+    return true;
+  }
 
   Future<void> deviceFetcher(BuildContext context) async {
     Utility.isConnected().then((value) async {
@@ -771,7 +799,9 @@ class dashboard_screenState extends State<dashboard_screen> {
 
   void refreshPage(context) {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (BuildContext context) => dashboard_screen(selectedPage: 0,)));
+        builder: (BuildContext context) => dashboard_screen(
+              selectedPage: 0,
+            )));
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
@@ -783,7 +813,9 @@ class dashboard_screenState extends State<dashboard_screen> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0,)));
+            builder: (BuildContext context) => dashboard_screen(
+                  selectedPage: 0,
+                )));
       }
     } else {
       if (error is DioError) {
