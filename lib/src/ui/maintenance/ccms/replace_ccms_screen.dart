@@ -196,7 +196,7 @@ class replaceccmsState extends State<replaceccms> {
                                   ))),
                           onPressed: () {
                             if (imageFile != null) {
-                              pr.show();
+                              // pr.show();
                               // late Future<Device?> entityFuture;
                               // entityFuture = ilm_main_fetchDeviceDetails(
                               //     DeviceName,
@@ -317,6 +317,10 @@ class replaceccmsState extends State<replaceccms> {
           ],
         ),
       ),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
     );
 
     // show the dialog
@@ -594,6 +598,18 @@ class replaceccmsState extends State<replaceccms> {
                                       .credentialsId
                                       .toString();
 
+                                  var relationDetails = await tbClient
+                                      .getEntityRelationService()
+                                      .findInfoByTo(Olddevicedetails.id!);
+
+                                  if (relationDetails.isNotEmpty) {
+                                    var relation_response = await tbClient
+                                        .getEntityRelationService()
+                                        .deleteDeviceRelation(
+                                        relationDetails.elementAt(0).from.id!,
+                                        Olddevicedetails.id!.id!);
+                                  }
+
                                   olddeviceCredentials.credentialsId =
                                       oldQRID + "L";
                                   var old_cred_response = await tbClient
@@ -780,7 +796,7 @@ class replaceccmsState extends State<replaceccms> {
                                       .getEntityRelationService()
                                       .deleteDeviceRelation(
                                       relationDetails.elementAt(0).from.id!,
-                                      response.id!.id!);
+                                      Olddevicedetails.id!.id!);
                                 }
 
                                 olddeviceCredentials = await tbClient
@@ -811,6 +827,21 @@ class replaceccmsState extends State<replaceccms> {
                                       .getDeviceService()
                                       .saveDeviceCredentials(
                                       olddeviceCredentials);
+
+                                  var relationDetails = await tbClient
+                                      .getEntityRelationService()
+                                      .findInfoByTo(Olddevicedetails.id!);
+
+                                  if(relationDetails.isNotEmpty) {
+                                    var relation_response = await tbClient
+                                        .getEntityRelationService()
+                                        .deleteDeviceRelation(
+                                        relationDetails
+                                            .elementAt(0)
+                                            .from
+                                            .id!,
+                                        Olddevicedetails.id!.id!);
+                                  }
 
                                   response.name = Old_Device_Name;
                                   response.label = Old_Device_label;

@@ -204,7 +204,7 @@ class replacegwState extends State<replacegw> {
                                   ))),
                           onPressed: () {
                             if (imageFile != null) {
-                              pr.show();
+                              // pr.show();
                               // late Future<Device?> entityFuture;
                               // entityFuture = ilm_main_fetchDeviceDetails(
                               //     DeviceName,
@@ -331,7 +331,7 @@ class replacegwState extends State<replacegw> {
         late Future<Device?> entityFuture;
         // Utility.progressDialog(context);
         entityFuture =
-            ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice, imageFile);
+            ilm_main_fetchDeviceDetails(OldDevice, NewDevice, context,imageFile);
       },
     );
 
@@ -384,6 +384,10 @@ class replacegwState extends State<replacegw> {
           ],
         ),
       ),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
 
       // content: Text("Would you like to replace "+OldDevice+" with "+NewDevice +"?",style: const TextStyle(
       //     fontSize: 18.0,
@@ -657,6 +661,21 @@ class replacegwState extends State<replacegw> {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
 
+                              var relationDetails = await tbClient
+                                  .getEntityRelationService()
+                                  .findInfoByTo(Olddevicedetails.id!);
+
+                              if(relationDetails.isNotEmpty) {
+                                var relation_response = await tbClient
+                                    .getEntityRelationService()
+                                    .deleteDeviceRelation(
+                                    relationDetails
+                                        .elementAt(0)
+                                        .from
+                                        .id!,
+                                    Olddevicedetails.id!.id!);
+                              }
+
                               olddeviceCredentials = await tbClient
                                   .getDeviceService()
                                   .getDeviceCredentialsByDeviceId(
@@ -875,6 +894,18 @@ class replacegwState extends State<replacegw> {
                                 var old_dev_response = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
+
+                                var relationDetails = await tbClient
+                                    .getEntityRelationService()
+                                    .findInfoByTo(Olddevicedetails.id!);
+
+                                if (relationDetails.isNotEmpty) {
+                                  var relation_response = await tbClient
+                                      .getEntityRelationService()
+                                      .deleteDeviceRelation(
+                                      relationDetails.elementAt(0).from.id!,
+                                      Olddevicedetails.id!.id!);
+                                }
 
                                 olddeviceCredentials.credentialsId = newQRID;
                                 var oldcredresponse = await tbClient

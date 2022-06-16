@@ -678,16 +678,16 @@ class replaceilmState extends State<replaceilm> {
                                 .getEntityRelationService()
                                 .findInfoByTo(Olddevicedetails.id!);
 
-                            // if(relationDetails.isNotEmpty) {
-                            //   var relation_response = await tbClient
-                            //       .getEntityRelationService()
-                            //       .deleteDeviceRelation(
-                            //       relationDetails
-                            //           .elementAt(0)
-                            //           .from
-                            //           .id!,
-                            //       Olddevicedetails.id!.id!);
-                            // }
+                            if(relationDetails.isNotEmpty) {
+                              var relation_response = await tbClient
+                                  .getEntityRelationService()
+                                  .deleteDeviceRelation(
+                                  relationDetails
+                                      .elementAt(0)
+                                      .from
+                                      .id!,
+                                  Olddevicedetails.id!.id!);
+                            }
 
                             olddeviceCredentials = await tbClient
                                     .getDeviceService()
