@@ -331,7 +331,7 @@ class replaceilmState extends State<replaceilm> {
         late Future<Device?> entityFuture;
         // Utility.progressDialog(context);
         entityFuture = ilm_main_fetchDeviceDetails(
-            context, OldDevice, NewDevice, imageFile);
+            OldDevice, NewDevice, context, imageFile);
       },
     );
 
@@ -649,16 +649,16 @@ class replaceilmState extends State<replaceilm> {
                               .getDeviceService()
                               .saveDeviceCredentials(newdeviceCredentials);
 
-                          LocalNetData localNetData = new LocalNetData(
-                              newdeviceCredentials.createdTime,
-                              deviceName,
-                              "",
-                              "",
-                              deviceName + "99",
-                              newdeviceCredentials.credentialsId + "L",
-                              "",
-                              "credentialsUpdation");
-                          dbHelper.localnetwork_add(localNetData);
+                          // LocalNetData localNetData = new LocalNetData(
+                          //     newdeviceCredentials.createdTime,
+                          //     deviceName,
+                          //     "",
+                          //     "",
+                          //     deviceName + "99",
+                          //     newdeviceCredentials.credentialsId + "L",
+                          //     "",
+                          //     "credentialsUpdation");
+                          // dbHelper.localnetwork_add(localNetData);
 
                           response.name = deviceName + "99";
                           var devresponse = await tbClient
@@ -710,21 +710,21 @@ class replaceilmState extends State<replaceilm> {
                                   .getDeviceService()
                                   .saveDevice(Olddevicedetails);
 
-                              LocalNetData localNetData = dbHelper
-                                      .get_namebased_LocalNetData(deviceName)
-                                  as LocalNetData;
-
-                              LocalNetData localNetDatas = new LocalNetData(
-                                  olddeviceCredentials.createdTime,
-                                  deviceName,
-                                  Olddevicename + "99",
-                                  olddeviceCredentials.credentialsId,
-                                  localNetData.smartname,
-                                  localNetData.smartcred,
-                                  "credentialsUpdation",
-                                  localNetData.smartstatus);
-
-                              dbHelper.localnetwork_add(localNetDatas);
+                              // LocalNetData localNetData = dbHelper
+                              //         .get_namebased_LocalNetData(deviceName)
+                              //     as LocalNetData;
+                              //
+                              // LocalNetData localNetDatas = new LocalNetData(
+                              //     olddeviceCredentials.createdTime,
+                              //     deviceName,
+                              //     Olddevicename + "99",
+                              //     olddeviceCredentials.credentialsId,
+                              //     localNetData.smartname,
+                              //     localNetData.smartcred,
+                              //     "credentialsUpdation",
+                              //     localNetData.smartstatus);
+                              //
+                              // dbHelper.localnetwork_add(localNetDatas);
 
                               olddeviceCredentials.credentialsId = newQRID;
                               var oldcredresponse = await tbClient
@@ -838,7 +838,7 @@ class replaceilmState extends State<replaceilm> {
                                     "device_list", "logMessage");
                               }
 
-                              dbHelper.localdata_delete(deviceName);
+                              // dbHelper.localdata_delete(deviceName);
 
                               pr.hide();
                               callReplacementComplete(

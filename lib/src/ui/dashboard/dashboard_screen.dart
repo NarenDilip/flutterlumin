@@ -322,14 +322,14 @@ class dashboard_screenState extends State<dashboard_screen> {
                 currentFocus.unfocus();
               }
               if (iscamerapermission == false) {
-                Fluttertoast.showToast(
-                    msg: "Permission denied",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.white,
-                    textColor: Colors.black,
-                    fontSize: 16.0);
+                // Fluttertoast.showToast(
+                //     msg: "Permission denied",
+                //     toastLength: Toast.LENGTH_SHORT,
+                //     gravity: ToastGravity.BOTTOM,
+                //     timeInSecForIosWeb: 1,
+                //     backgroundColor: Colors.white,
+                //     textColor: Colors.black,
+                //     fontSize: 16.0);
               } else {
                 deviceFetcher(context);
               }
