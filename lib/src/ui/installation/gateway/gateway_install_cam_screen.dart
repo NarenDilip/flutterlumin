@@ -707,11 +707,12 @@ class gwcaminstallState extends State<gwcaminstall> {
 
                             Map data = {
                               'landmark': address,
-                              'lattitude': Lattitude.toString(),
-                              'longitude': Longitude.toString(),
+                              'slatitude': Lattitude.toString(),
+                              'slongitude': Longitude.toString(),
                               'accuracy': accuracy.toString(),
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
+                              'boardNumber':DeviceName,
                             };
 
                             var saveAttributes = await tbClient

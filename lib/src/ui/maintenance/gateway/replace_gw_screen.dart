@@ -17,6 +17,7 @@ import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -49,7 +50,7 @@ class replacegwState extends State<replacegw> {
   var imageFile;
   String faultyStatus = "0";
   late ProgressDialog pr;
-
+  String address = "";
   var _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
   static Completer _completer = new Completer<String>();
@@ -204,12 +205,12 @@ class replacegwState extends State<replacegw> {
                           onPressed: () {
                             if (imageFile != null) {
                               pr.show();
-                              late Future<Device?> entityFuture;
-                              entityFuture = ilm_main_fetchDeviceDetails(
-                                  DeviceName,
-                                  newDeviceName,
-                                  context,
-                                  imageFile);
+                              // late Future<Device?> entityFuture;
+                              // entityFuture = ilm_main_fetchDeviceDetails(
+                              //     DeviceName,
+                              //     newDeviceName,
+                              //     context,
+                              //     imageFile);
                               showActionAlertDialog(
                                   context, DeviceName, newDeviceName);
                             } else {
@@ -327,10 +328,10 @@ class replacegwState extends State<replacegw> {
               fontWeight: FontWeight.bold,
               color: Colors.green)),
       onPressed: () {
-        // late Future<Device?> entityFuture;
-        // // Utility.progressDialog(context);
-        // entityFuture =
-        //     ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice, imageFile);
+        late Future<Device?> entityFuture;
+        // Utility.progressDialog(context);
+        entityFuture =
+            ilm_main_fetchDeviceDetails(context, OldDevice, NewDevice, imageFile);
       },
     );
 
@@ -451,6 +452,18 @@ class replacegwState extends State<replacegw> {
     });
   }
 
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss =
+    (await Geocoder.local.findAddressesFromCoordinates(coordinates));
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
+
+
   @override
   Future<Device?> ilm_main_fetchSmartDeviceDetails(
       String Olddevicename,
@@ -472,6 +485,16 @@ class replacegwState extends State<replacegw> {
         String Longitude = prefs.getString("deviceLongitude").toString();
         String SelectedZone = prefs.getString('SelectedZone').toString();
         var versionCompatability = false;
+
+        var latter = double.parse(Lattitude);
+        var longer = double.parse(Longitude);
+
+        _getAddress(latter, longer).then((value) {
+          setState(() {
+            address = value;
+          });
+        });
+
         pr.show();
         try {
           Device response;
@@ -486,6 +509,7 @@ class replacegwState extends State<replacegw> {
           if (imageFile != null) {
             if (response != null) {
               var new_Device_Name = response.name;
+              var new_Device_label = response.label;
 
               if (faultyStatus == "2") {
                 Map data = {'faulty': "true"};
@@ -631,6 +655,7 @@ class replacegwState extends State<replacegw> {
 
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
+                              var Old_Device_label = Olddevicedetails.label;
 
                               olddeviceCredentials = await tbClient
                                   .getDeviceService()
@@ -661,7 +686,7 @@ class replacegwState extends State<replacegw> {
                                     olddeviceCredentials);
 
                                 response.name = Old_Device_Name;
-                                response.label = Old_Device_Name;
+                                response.label = Old_Device_label;
                                 var olddevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(response);
@@ -669,8 +694,9 @@ class replacegwState extends State<replacegw> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
-                                  'latitude': Lattitude,
-                                  'longitude': Longitude,
+                                  'landmark': address,
+                                  'slatitude': Lattitude.toString(),
+                                  'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
                                 };
@@ -712,7 +738,7 @@ class replacegwState extends State<replacegw> {
                                 // New Device Updations
 
                                 Olddevicedetails.name = new_Device_Name;
-                                Olddevicedetails.label = new_Device_Name;
+                                Olddevicedetails.label = new_Device_label;
                                 var up_devresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
@@ -726,8 +752,9 @@ class replacegwState extends State<replacegw> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
-                                  'latitude': Lattitude,
-                                  'longitude': Longitude,
+                                  'landmark': address,
+                                  'slatitude': Lattitude.toString(),
+                                  'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
                                 };
@@ -798,6 +825,12 @@ class replacegwState extends State<replacegw> {
                                 .getDeviceService()
                                 .saveDevice(response);
 
+                            var relation_response = await tbClient
+                                .getEntityRelationService()
+                                .deleteDeviceRelation(
+                                relationDetails.elementAt(0).from.id!,
+                                response.id!.id!);
+
                             // Old Device Updations
 
                             Device Olddevicedetails = null as Device;
@@ -807,6 +840,19 @@ class replacegwState extends State<replacegw> {
 
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
+                              var Old_Device_label = Olddevicedetails.label;
+
+                              var relationDetails = await tbClient
+                                  .getEntityRelationService()
+                                  .findInfoByTo(Olddevicedetails.id!);
+
+                              if (relationDetails.isNotEmpty) {
+                                var relation_response = await tbClient
+                                    .getEntityRelationService()
+                                    .deleteDeviceRelation(
+                                    relationDetails.elementAt(0).from.id!,
+                                    response.id!.id!);
+                              }
 
                               olddeviceCredentials = await tbClient
                                   .getDeviceService()
@@ -837,7 +883,7 @@ class replacegwState extends State<replacegw> {
                                     olddeviceCredentials);
 
                                 response.name = Old_Device_Name;
-                                response.label = Old_Device_Name;
+                                response.label = Old_Device_label;
                                 var olddevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(response);
@@ -855,7 +901,7 @@ class replacegwState extends State<replacegw> {
                                 // New Device Updations
 
                                 Olddevicedetails.name = new_Device_Name;
-                                Olddevicedetails.label = new_Device_Name;
+                                Olddevicedetails.label = new_Device_label;
                                 var up_devresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);

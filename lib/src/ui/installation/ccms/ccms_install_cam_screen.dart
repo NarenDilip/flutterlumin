@@ -713,6 +713,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               'accuracy': accuracy.toString(),
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
+                              'boardNumber':DeviceName,
                             };
 
                             var saveAttributes = await tbClient

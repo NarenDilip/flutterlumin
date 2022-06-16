@@ -720,6 +720,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               'lampWatts': "",
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
+                              'boardNumber':DeviceName,
                             };
 
                             var saveAttributes = await tbClient
