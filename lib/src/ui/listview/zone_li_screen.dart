@@ -343,8 +343,10 @@ class zone_li_screen_state extends State<zone_li_screen> {
                   builder: (BuildContext context) => zone_li_screen()));
             }
           } else {
+           /* Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));*/
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                builder: (BuildContext context) => ward_li_screen()));
           }
         }
       } else {

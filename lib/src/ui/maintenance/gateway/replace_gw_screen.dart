@@ -247,7 +247,7 @@ class replacegwState extends State<replacegw> {
         source: ImageSource.camera,
         maxHeight: 480,
         maxWidth: 640,
-        imageQuality: 25,
+        imageQuality: 10,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
       if(pickedFile != null) {
@@ -489,6 +489,8 @@ class replacegwState extends State<replacegw> {
         String Longitude = prefs.getString("deviceLongitude").toString();
         String SelectedZone = prefs.getString('SelectedZone').toString();
         var versionCompatability = false;
+        //newly added by dev
+        String Createdby = prefs.getString("username").toString();
 
         var latter = double.parse(Lattitude);
         var longer = double.parse(Longitude);
@@ -718,6 +720,7 @@ class replacegwState extends State<replacegw> {
                                   'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
+                                  'createdBy':Createdby,
                                 };
 
                                 DBHelper dbHelper = DBHelper();
@@ -776,6 +779,7 @@ class replacegwState extends State<replacegw> {
                                   'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
+                                  'createdBy':Createdby,
                                 };
 
                                 try {

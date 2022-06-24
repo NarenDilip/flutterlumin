@@ -81,6 +81,7 @@ class replaceilmState extends State<replaceilm> {
     newDeviceName = "";
     _openCamera(context);
     getSharedPrefs();
+
   }
 
   void setUpLogs() async {
@@ -205,7 +206,7 @@ class replaceilmState extends State<replaceilm> {
                               ))),
                           onPressed: () {
                             if (imageFile != null) {
-                              pr.hide();
+                               pr.hide();
                               // late Future<Device?> entityFuture;
                               // entityFuture = ilm_main_fetchDeviceDetails(
                               //     DeviceName,
@@ -244,22 +245,29 @@ class replaceilmState extends State<replaceilm> {
   }
 
   void _openCamera(BuildContext context) async {
-    final pickedFile = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        maxHeight: 480,
-        maxWidth: 640,
-        imageQuality: 25,
-        preferredCameraDevice: CameraDevice.rear);
-    setState(() {
-      if (pickedFile != null) {
-        imageFile = pickedFile;
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MaintenanceScreen()),
-        );
-      }
-    });
+    //try catch is done by dev & image quality also reduce
+    try{
+      final pickedFile = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+          maxHeight: 480,
+          maxWidth: 640,
+          imageQuality: 15,
+          preferredCameraDevice: CameraDevice.rear);
+      setState(() {
+
+        if (pickedFile != null) {
+          imageFile = pickedFile;
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MaintenanceScreen()),
+          );
+        }
+      });
+    } catch(e){
+      callNoNetworkToast(e.toString());
+    }
+
   }
 
 //
@@ -489,6 +497,8 @@ class replaceilmState extends State<replaceilm> {
         String FirmwareVersion = prefs.getString("firmwareVersion").toString();
         String Lattitude = prefs.getString("deviceLatitude").toString();
         String Longitude = prefs.getString("deviceLongitude").toString();
+        //newly added by dev
+        String Createdby = prefs.getString("username").toString();
         var versionCompatability = false;
 
         var latter = double.parse(Lattitude);
@@ -745,6 +755,7 @@ class replaceilmState extends State<replaceilm> {
                                 'landmark': address,
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
+                                'createdBy':Createdby,
                               };
 
                               var up_attribute = (await tbClient
@@ -773,6 +784,7 @@ class replaceilmState extends State<replaceilm> {
                                 'landmark': address,
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
+                                'createdBy':Createdby,
                               };
 
                               // DBHelper dbHelper = DBHelper();
@@ -1148,9 +1160,10 @@ class replaceilmState extends State<replaceilm> {
                 builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
-      } else {
+      }
+      else {
         FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
-        calltoast(no_network);
+        callNoNetworkToast(no_network);
       }
     });
   }
@@ -1158,7 +1171,15 @@ class replaceilmState extends State<replaceilm> {
   Future<void> callReplacementComplete(context, imageFile, DeviceName) async {
     final bytes = File(imageFile!.path).readAsBytesSync();
     String img64 = base64Encode(bytes);
-    postRequest(context, img64, DeviceName);
+    //network check is done by dev
+    Utility.isConnected().then((value) async {
+      if(value){
+        postRequest(context, img64, DeviceName);
+      }else{
+        callNoNetworkToast(no_network);
+      }
+    });
+
   }
 
   void callstoast(String polenumber) {
@@ -1175,6 +1196,17 @@ class replaceilmState extends State<replaceilm> {
   void calltoast(String polenumber) {
     Fluttertoast.showToast(
         msg: device_toast_msg + polenumber + device_toast_notfound,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+
+  void callNoNetworkToast(String msg) {
+    Fluttertoast.showToast(
+        msg: msg,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
@@ -1285,7 +1317,20 @@ class replaceilmState extends State<replaceilm> {
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
-      } else {}
+      } else {
+        //previuslly it's empty else part is done by dev
+        pr.hide();
+        Fluttertoast.showToast(
+            msg: "Device Replacement Failed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+      }
       return response;
     } catch (e) {
       FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -1301,4 +1346,5 @@ class replaceilmState extends State<replaceilm> {
       return response;
     }
   }
+
 }

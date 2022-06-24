@@ -24,6 +24,8 @@ import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geocoder/model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:poly_geofence_service/models/lat_lng.dart';
@@ -351,6 +353,18 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
     pr1.hide();
   }
 
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss =
+    (await Geocoder.local.findAddressesFromCoordinates(coordinates));
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
+
+
   Future<void> callPolygons() async {}
 
   // This function is to be called when a location services status change occurs
@@ -415,6 +429,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
 
     prefs.setString('Maintenance', "Yes");
 
+
     setState(() {
       Lampwatts = Lampwatts;
       DeviceName = DeviceName;
@@ -431,6 +446,12 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> with WidgetsBindi
       FirmwareVersion = FirmwareVersion;
       geoFence = geoFence;
       DeviceIdDetails = DeviceIdDetails;
+
+      /*_getAddress(double.parse(Lattitude), double.parse(Longitude)).then((value) {
+        setState(() {
+          location = value;
+        });
+      });*/
 
       date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
 
@@ -1535,7 +1556,7 @@ Future<void> callONRPCCall(context) async {
         var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(Duration(minutes: 2));
 
         if (response["lamp"].toString() == "1") {
@@ -1569,7 +1590,7 @@ Future<void> callONRPCCall(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      callNetworkToast(no_network);
     }
   });
 }
@@ -1610,7 +1631,7 @@ Future<void> callOFFRPCCall(context) async {
         var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(const Duration(minutes: 2));
 
         if (response["lamp"].toString() == "0") {
@@ -1644,7 +1665,7 @@ Future<void> callOFFRPCCall(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      callNetworkToast(no_network);
     }
   });
 }
@@ -1691,7 +1712,7 @@ Future<void> getLiveRPCCall(version, context) async {
         // final parsedJson = jsonDecode(jsonData);
         var response = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
+            .handleOneWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
         pr.hide();
         // if(response.) {
@@ -1716,7 +1737,7 @@ Future<void> getLiveRPCCall(version, context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      callNetworkToast(no_network);
     }
   });
 }
@@ -1791,7 +1812,7 @@ Future<void> replaceILM(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      callNetworkToast(no_network);
     }
   });
 }
@@ -2467,6 +2488,17 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 void calltoast(String polenumber) {
   Fluttertoast.showToast(
       msg: device_toast_msg + polenumber + device_toast_notfound,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.white,
+      textColor: Colors.black,
+      fontSize: 16.0);
+}
+
+void callNetworkToast(String msg) {
+  Fluttertoast.showToast(
+      msg: msg,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,

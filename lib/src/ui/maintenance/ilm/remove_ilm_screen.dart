@@ -230,7 +230,7 @@ class replacementilmState extends State<replacementilm> {
         source: ImageSource.camera,
         maxHeight: 480,
         maxWidth: 640,
-        imageQuality: 25,
+        imageQuality: 10,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
       if(pickedFile != null) {
@@ -384,10 +384,12 @@ class replacementilmState extends State<replacementilm> {
                             DevicemoveFolderName, myList);
                       } catch (e) {    FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");}
 
+                      //image post with out try catch need to check
                       final bytes = File(imageFile!.path).readAsBytesSync();
                       String img64 = base64Encode(bytes);
 
                       postRequest(context, img64, DeviceName);
+
                       pr.hide();
                     } else {
                       FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -466,6 +468,8 @@ class replacementilmState extends State<replacementilm> {
                 builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
+      }else {
+        calltoast(no_network);
       }
     });
   }
@@ -508,7 +512,19 @@ class replacementilmState extends State<replacementilm> {
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
-      } else {}
+      } else {
+        pr.hide();
+        Fluttertoast.showToast(
+            msg: "Device Replacement Failed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.white,
+            textColor: Colors.black,
+            fontSize: 16.0);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+      }
       return response;
     } catch (e) {
       FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");

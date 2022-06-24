@@ -1102,7 +1102,7 @@ Future<void> callONRPCCall(context) async {
 
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(Duration(minutes: 2));
 
         if (response["lamp"].toString() == "1") {
@@ -1173,7 +1173,7 @@ Future<void> callOFFRPCCall(context) async {
 
         var response = await tbClient
             .getDeviceService()
-            .handleTwoWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
+            .handleTwoWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(const Duration(minutes: 2));
 
         if (response["lamp"].toString() == "0") {
@@ -1243,7 +1243,7 @@ Future<void> callMCBTrip(context) async {
 
         var response = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(DeviceIdDetails!.toString(), jsonData)
+            .handleOneWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
 
         final jsonDatat;
@@ -1256,7 +1256,7 @@ Future<void> callMCBTrip(context) async {
         var responsee = await tbClient
             .getDeviceService()
             .handleOneWayDeviceRPCRequest(
-            DeviceIdDetails!.toString(), jsonDatat)
+            DeviceIdDetails.toString(), jsonDatat)
             .timeout(const Duration(minutes: 5));
 
         pr.hide();

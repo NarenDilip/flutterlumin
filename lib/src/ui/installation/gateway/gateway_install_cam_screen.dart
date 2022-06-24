@@ -130,7 +130,7 @@ class gwcaminstallState extends State<gwcaminstall> {
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
           if (accuracy <= 10) {
-            _getAddress(location!.latitude, location!.longitude).then((value) {
+            _getAddress(location.latitude, location.longitude).then((value) {
               setState(() {
                 address = value;
               });
@@ -173,7 +173,7 @@ class gwcaminstallState extends State<gwcaminstall> {
       if (accuracy <= 10) {
         _timer.cancel();
         callPolygonStop();
-        _getAddress(location!.latitude, location!.longitude).then((value) {
+        _getAddress(location.latitude, location.longitude).then((value) {
           setState(() {
             visibility = true;
             address = value;
@@ -519,7 +519,7 @@ class gwcaminstallState extends State<gwcaminstall> {
         source: ImageSource.camera,
         maxHeight: 480,
         maxWidth: 640,
-        imageQuality: 25,
+        imageQuality: 10,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
       if (pickedFile != null) {
@@ -569,6 +569,8 @@ class gwcaminstallState extends State<gwcaminstall> {
     String SelectedZone = prefs.getString('SelectedZone').toString();
     String deviceName = prefs.getString('deviceName').toString();
     String FirmwareVersion = prefs.getString("firmwareVersion").toString();
+    //newly added by dev
+    String Createdby = prefs.getString("username").toString();
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
@@ -576,6 +578,15 @@ class gwcaminstallState extends State<gwcaminstall> {
 
     var status = await Permission.location.status;
     if (status.isGranted) {
+      //newlly added by dev for landmark purpose
+      var latter = double.parse(Lattitude);
+      var longer = double.parse(Longitude);
+
+      _getAddress(latter, longer).then((value) {
+        setState(() {
+          address = value;
+        });
+      });
       Utility.isConnected().then((value) async {
         if (value) {
           // Utility.progressDialog(context);
@@ -713,6 +724,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
                               'boardNumber':DeviceName,
+                              'createdBy':Createdby,
                             };
 
                             var saveAttributes = await tbClient

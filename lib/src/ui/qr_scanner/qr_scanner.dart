@@ -83,6 +83,7 @@ class _QRState extends State<QRScreen> {
         controller.stopCamera();
         calltoast(no_network);
       }
+
     });
   }
 
@@ -108,4 +109,5 @@ class _QRState extends State<QRScreen> {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Barcode>('result', result));
   }
+
 }

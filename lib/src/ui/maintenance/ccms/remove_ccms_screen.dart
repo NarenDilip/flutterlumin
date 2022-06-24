@@ -220,7 +220,7 @@ class replacementccmsState extends State<replacementccms> {
         source: ImageSource.camera,
         maxHeight: 480,
         maxWidth: 640,
-        imageQuality: 25,
+        imageQuality: 10,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
       if(pickedFile != null) {

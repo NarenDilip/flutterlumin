@@ -131,12 +131,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
           if (accuracy <= 10) {
-            _getAddress(location!.latitude, location!.longitude).then((value) {
+            _getAddress(location.latitude, location.longitude).then((value) {
               setState(() {
                 address = value;
               });
             });
-          } else {
+          }
+          else {
             setState(() {
               visibility = false;
             });
@@ -174,7 +175,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       if (accuracy <= 10) {
         callPolygonStop();
         _timer.cancel();
-        _getAddress(location!.latitude, location!.longitude).then((value) {
+        _getAddress(location.latitude, location.longitude).then((value) {
           setState(() {
             visibility = true;
             address = value;
@@ -196,7 +197,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
   void startTimer() {
     const oneSec = Duration(seconds: 1);
-    pr.show();
     _timer = Timer.periodic(
       oneSec,
       (Timer timer) {
@@ -206,7 +206,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             callPolygonStop();
             setState(() {
               visibility = true;
-              pr.hide();
               viewvisibility = false;
             });
           } else {
@@ -214,7 +213,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             callPolygonStop();
             setState(() {
               visibility = true;
-              pr.hide();
               viewvisibility = false;
             });
           }
@@ -482,26 +480,22 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   }
 
   void _openCamera(BuildContext context) async {
-    try {
-      final pickedFile = await ImagePicker().pickImage(
-          source: ImageSource.camera,
-          maxHeight: 480,
-          maxWidth: 640,
-          imageQuality: 25,
-          preferredCameraDevice: CameraDevice.rear);
-      setState(() {
-        if (pickedFile != null) {
-          imageFile = pickedFile;
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
-          );
-        }
-      });
-    } catch (e) {
-      e.toString();
-    }
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        maxHeight: 480,
+        maxWidth: 640,
+        imageQuality: 10,
+        preferredCameraDevice: CameraDevice.rear);
+    setState(() {
+      if (pickedFile != null) {
+        imageFile = pickedFile;
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
+        );
+      }
+    });
   }
 
   Future<void> CallGeoFenceListener(BuildContext context) async {
@@ -539,6 +533,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     String deviceName = prefs.getString('deviceName').toString();
     String SelectedRegion = prefs.getString('SelectedRegion').toString();
     String SelectedZone = prefs.getString('SelectedZone').toString();
+    //newly added by dev
+    String Createdby = prefs.getString("username").toString();
     // String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     var DevicecurrentFolderName = "";
@@ -547,6 +543,17 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     var status = await Permission.location.status;
     if (status.isGranted) {
       var versionCompatability = false;
+
+      //newlly added by dev for landmark purpose
+      var latter = double.parse(Lattitude);
+      var longer = double.parse(Longitude);
+
+      _getAddress(latter, longer).then((value) {
+        setState(() {
+          address = value;
+        });
+      });
+
 
       Utility.isConnected().then((value) async {
         if (value) {
@@ -721,6 +728,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
                               'boardNumber':DeviceName,
+                              'createdBy':Createdby,
                             };
 
                             var saveAttributes = await tbClient

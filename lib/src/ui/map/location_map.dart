@@ -164,11 +164,11 @@ class _LocationWidgetState extends State<LocationWidget> {
         _locationSubscription = null;
       });
     }).listen((LocationData currentLocation) {
-      setState(() {
-        _error = null;
-        _location = currentLocation;
-        _getAddress(_location!.latitude, _location!.longitude).then((value) {
-          setState(() {
+      if(mounted){
+        setState(() {
+          _error = null;
+          _location = currentLocation;
+          _getAddress(_location!.latitude, _location!.longitude).then((value) {
             address = value;
             if (_latt!.length <= 5) {
               _latt!.add(_location!.latitude!);
@@ -184,7 +184,7 @@ class _LocationWidgetState extends State<LocationWidget> {
             }
           });
         });
-      });
+      }
     });
   }
 
@@ -595,7 +595,7 @@ class _LocationWidgetState extends State<LocationWidget> {
     setState(() {
       //_center = LatLng(_locationData.latitude, _locationData.longitude);
       _mapController.move(
-          LatLng(_locationData!.latitude!, _locationData!.longitude!), 10.0);
+          LatLng(_locationData.latitude!, _locationData.longitude!), 10.0);
 
       // _markers = [LatLng(_locationData.latitude, _locationData.longitude)]
       //     .map((point) => Marker(
@@ -1570,7 +1570,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                 await tbClient
                                     .getEntityRelationService()
                                     .findByWardFrom(
-                                        assetslist.elementAt(k).to.id!!);
+                                        assetslist.elementAt(k).to.id!);
 
                             if (wardsdetailslist.isNotEmpty) {
                               for (int l = 0;
