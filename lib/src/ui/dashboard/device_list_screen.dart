@@ -825,7 +825,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                          children: [
+                                          children: const [
                                             Expanded(
                                                 child: Padding(
                                                     padding:
@@ -922,7 +922,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                          children: [
+                                          children: const [
                                             Expanded(
                                                 child: Padding(
                                                     padding:
@@ -1019,7 +1019,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                          children: [
+                                          children: const [
                                             Expanded(
                                                 child: Padding(
                                                     padding:
@@ -1082,14 +1082,14 @@ class device_list_screen_state extends State<device_list_screen> {
                               )
                                   : Container(
                                   color: Colors.white,
-                                  child: Column(children: [
+                                  child: Column(children: const [
                                     SizedBox(
                                       height: 10,
                                     ),
                                     Text(
                                       device_no_result ,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 18.0,
                                           fontFamily: "Montserrat",
                                           fontWeight: FontWeight.normal,
@@ -1160,7 +1160,7 @@ class device_list_screen_state extends State<device_list_screen> {
   //         }
   //       }
   //     } else {
-  //       calltoast(no_network);
+  //       noInternetToast(no_network);
   //     }
   //   });
   // }
@@ -1170,7 +1170,7 @@ class device_list_screen_state extends State<device_list_screen> {
     Utility.isConnected().then((value) async {
       await pr!.show();
       if (value) {
-        await pr!.hide();
+
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -1187,6 +1187,7 @@ class device_list_screen_state extends State<device_list_screen> {
           (await tbClient.getDeviceService().getTenantDevices(pageLink));
 
           if (devicelist_response != null) {
+            await pr!.hide();
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {
                 String name =
@@ -1208,6 +1209,7 @@ class device_list_screen_state extends State<device_list_screen> {
               "devicelist_page", "device_list", "ILM Device Finder Issue");*/
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callpolebasedILMDeviceListFinder(
@@ -1221,7 +1223,7 @@ class device_list_screen_state extends State<device_list_screen> {
         }
       } else {
         await pr!.hide();
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -1231,7 +1233,7 @@ class device_list_screen_state extends State<device_list_screen> {
     Utility.isConnected().then((value) async {
       await pr!.show();
       if (value) {
-       await pr!.hide();
+
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -1260,7 +1262,9 @@ class device_list_screen_state extends State<device_list_screen> {
             setState(() {
               _ccmsfoundUsers = _ccmsfoundUsers;
             });
+            await pr!.hide();
           } else {
+            await pr!.hide();
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -1268,15 +1272,17 @@ class device_list_screen_state extends State<device_list_screen> {
               "devicelist_page", "device_list", "CCMS Device Finder Issue");*/
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {}
           } else {
+            await pr!.hide();
             calltoast(searchNumber);
           }
         }
       } else {
         await pr!.hide();
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -1286,7 +1292,7 @@ class device_list_screen_state extends State<device_list_screen> {
     Utility.isConnected().then((value) async {
       await  pr!.show();
       if (value) {
-        await pr!.hide();
+
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -1315,8 +1321,9 @@ class device_list_screen_state extends State<device_list_screen> {
             setState(() {
               _gwfoundUsers = _gwfoundUsers;
             });
-
+            await pr!.hide();
           } else {
+            await pr!.hide();
             calltoast(searchNumber);
           }
         } catch (e) {
@@ -1324,18 +1331,20 @@ class device_list_screen_state extends State<device_list_screen> {
               "devicelist_page", "device_list", "GW Device Finder Exception");*/
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callgwDeviceListFinder(selectedNumber, context);
             }
           } else {
+            await pr!.hide();
             calltoast(searchNumber);
             // Navigator.pop(context);
           }
         }
       } else {
         await pr!.hide();
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -1348,7 +1357,6 @@ class device_list_screen_state extends State<device_list_screen> {
     Utility.isConnected().then((value) async {
       await pr!.show();
       if (value) {
-        await pr!.hide();
         try {
           _relationdevices!.clear();
           _foundUsers!.clear();
@@ -1410,6 +1418,7 @@ class device_list_screen_state extends State<device_list_screen> {
               "Pole Based Device Installation Exception");*/
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callpolebasedILMDeviceListFinder(
@@ -1422,7 +1431,7 @@ class device_list_screen_state extends State<device_list_screen> {
         }
       } else {
         await pr!.hide();
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -1434,7 +1443,6 @@ class device_list_screen_state extends State<device_list_screen> {
       var gofenceValidation = false;
       await pr!.show();
       if (value) {
-        await pr!.hide();
         try {
           Device response;
           String? SelectedRegion;
@@ -1447,6 +1455,7 @@ class device_list_screen_state extends State<device_list_screen> {
               response = (await tbClient
                   .getDeviceService()
                   .getTenantDevice(deviceName)) as Device;
+              await pr!.hide();
 
               if (response.toString().isNotEmpty) {
                 prefs.setString('deviceId', response.id!.id!.toString());
@@ -1724,7 +1733,7 @@ class device_list_screen_state extends State<device_list_screen> {
         }
       } else{
         await pr!.hide();
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -1739,6 +1748,17 @@ class device_list_screen_state extends State<device_list_screen> {
   void calltoast(String polenumber) {
     Fluttertoast.showToast(
         msg: device_toast_msg + polenumber + device_toast_notfound,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,

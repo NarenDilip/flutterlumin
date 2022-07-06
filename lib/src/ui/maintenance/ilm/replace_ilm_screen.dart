@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -20,6 +21,7 @@ import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,7 +83,6 @@ class replaceilmState extends State<replaceilm> {
     newDeviceName = "";
     _openCamera(context);
     getSharedPrefs();
-
   }
 
   void setUpLogs() async {
@@ -159,7 +160,8 @@ class replaceilmState extends State<replaceilm> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -204,17 +206,22 @@ class replaceilmState extends State<replaceilm> {
                                   RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(25.0),
                               ))),
-                          onPressed: () {
+                          onPressed: () async {
                             if (imageFile != null) {
-                               pr.hide();
+                              pr.hide();
                               // late Future<Device?> entityFuture;
                               // entityFuture = ilm_main_fetchDeviceDetails(
                               //     DeviceName,
                               //     newDeviceName,
                               //     context,
                               //     imageFile);
-                              showActionAlertDialog(
-                                  context, DeviceName, newDeviceName);
+                              if (!(await Geolocator()
+                                  .isLocationServiceEnabled())) {
+                                onGpsAlert();
+                              } else {
+                                showActionAlertDialog(
+                                    context, DeviceName, newDeviceName);
+                              }
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
@@ -245,29 +252,22 @@ class replaceilmState extends State<replaceilm> {
   }
 
   void _openCamera(BuildContext context) async {
-    //try catch is done by dev & image quality also reduce
-    try{
-      final pickedFile = await ImagePicker().pickImage(
-          source: ImageSource.camera,
-          maxHeight: 480,
-          maxWidth: 640,
-          imageQuality: 15,
-          preferredCameraDevice: CameraDevice.rear);
-      setState(() {
-
-        if (pickedFile != null) {
-          imageFile = pickedFile;
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MaintenanceScreen()),
-          );
-        }
-      });
-    } catch(e){
-      callNoNetworkToast(e.toString());
-    }
-
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        maxHeight: 480,
+        maxWidth: 640,
+        imageQuality: 15,
+        preferredCameraDevice: CameraDevice.rear);
+    setState(() {
+      if (pickedFile != null) {
+        imageFile = pickedFile;
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MaintenanceScreen()),
+        );
+      }
+    });
   }
 
 //
@@ -310,7 +310,7 @@ class replaceilmState extends State<replaceilm> {
 //         }
 //       }
 //     } else {
-//       calltoast(no_network);
+//       callNoNetworkToast(no_network);
 //     }
 //   });
 // }
@@ -461,7 +461,7 @@ class replaceilmState extends State<replaceilm> {
         }
       } else {
         FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
-        calltoast(no_network);
+        callNoNetworkToast(no_network);
       }
     });
   }
@@ -507,6 +507,7 @@ class replaceilmState extends State<replaceilm> {
         _getAddress(latter, longer).then((value) {
           setState(() {
             address = value;
+            prefs.setString("location", address);
           });
         });
 
@@ -526,13 +527,13 @@ class replaceilmState extends State<replaceilm> {
             if (response != null) {
               var new_Device_Name = response.name;
 
-              // if (faultyStatus == "2") {
-              //   Map data = {'faulty': "true"};
-              //   var saveAttributes = await tbClient
-              //       .getAttributeService()
-              //       .saveDeviceAttributes(
-              //           response.id!.id!, "SERVER_SCOPE", data);
-              // }
+              /* if (faultyStatus == "2") {
+                Map data = {'faulty': "true"};
+                var saveAttributes = await tbClient
+                    .getAttributeService()
+                    .saveDeviceAttributes(
+                        response.id!.id!, "SERVER_SCOPE", data);
+              }*/
 
               List<EntityGroupInfo> entitygroups;
               entitygroups = await tbClient
@@ -688,15 +689,12 @@ class replaceilmState extends State<replaceilm> {
                                 .getEntityRelationService()
                                 .findInfoByTo(Olddevicedetails.id!);
 
-                            if(relationDetails.isNotEmpty) {
+                            if (relationDetails.isNotEmpty) {
                               var relation_response = await tbClient
                                   .getEntityRelationService()
                                   .deleteDeviceRelation(
-                                  relationDetails
-                                      .elementAt(0)
-                                      .from
-                                      .id!,
-                                  Olddevicedetails.id!.id!);
+                                      relationDetails.elementAt(0).from.id!,
+                                      Olddevicedetails.id!.id!);
                             }
 
                             olddeviceCredentials = await tbClient
@@ -755,7 +753,7 @@ class replaceilmState extends State<replaceilm> {
                                 'landmark': address,
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
-                                'createdBy':Createdby,
+                                'createdBy': Createdby,
                               };
 
                               var up_attribute = (await tbClient
@@ -784,37 +782,78 @@ class replaceilmState extends State<replaceilm> {
                                 'landmark': address,
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
-                                'createdBy':Createdby,
+                                'createdBy': Createdby,
                               };
 
-                              // DBHelper dbHelper = DBHelper();
-                              // List<Ward> warddetails = await dbHelper
-                              //     .ward_basedDetails(SelectedWard);
-                              // if (warddetails.length != "0") {
-                              //   warddetails.first.wardid;
-                              //
-                              //   Map<String, dynamic> fromId = {
-                              //     'entityType': 'ASSET',
-                              //     'id': warddetails.first.wardid
-                              //   };
-                              //
-                              //   Map<String, dynamic> toId = {
-                              //     'entityType': 'DEVICE',
-                              //     'id': Olddevicedetails.id!.id
-                              //   };
-                              //
-                              //   EntityRelation entityRelation =
-                              //       EntityRelation(
-                              //           from: EntityId.fromJson(fromId),
-                              //           to: EntityId.fromJson(toId),
-                              //           type: "Contains",
-                              //           typeGroup: RelationTypeGroup.COMMON);
-                              //
-                              //   Future<EntityRelation> entityRelations =
-                              //       tbClient
-                              //           .getEntityRelationService()
-                              //           .saveRelation(entityRelation);
-                              // }
+                              DBHelper dbHelper = DBHelper();
+                              List<Ward> warddetails = await dbHelper
+                                  .ward_basedDetails(SelectedWard);
+                              if (warddetails.length != "0") {
+                                warddetails.first.wardid;
+
+                                var oldasset;
+
+                                PageLink pageLink = new PageLink(250);
+                                pageLink.page = 0;
+                                pageLink.pageSize = 250;
+
+                                PageData<Asset> assetPagedetails = await tbClient
+                                    .getAssetService()
+                                    .getUsertypeAssets(pageLink);
+
+                                if (assetPagedetails.data.length != 0) {
+                                  for (int i = 0;
+                                  i < assetPagedetails.data.length;
+                                  i++) {
+                                    if (assetPagedetails.data
+                                        .elementAt(i)
+                                        .name
+                                        .toString() ==
+                                        SelectedWard + "-" + "ILM") {
+                                      oldasset =
+                                          assetPagedetails.data.elementAt(i).id!.id;
+                                      break;
+                                    }
+                                  }
+                                  if (oldasset == null) {
+                                    Asset newasset = Asset(
+                                        SelectedWard + "-" + "ILM", "node-cluster");
+                                    Asset savedasset = await tbClient
+                                        .getAssetService()
+                                        .saveAsset(newasset);
+                                    oldasset = savedasset.id!.id;
+                                  }
+                                } else {
+                                  Asset newasset = Asset(
+                                      SelectedWard + "-" + "ILM", "node-cluster");
+                                  Asset savedasset = await tbClient
+                                      .getAssetService()
+                                      .saveAsset(newasset);
+                                  oldasset = savedasset.id!.id;
+                                }
+
+
+                                Map<String, dynamic> fromId = {
+                                  'entityType': 'ASSET',
+                                  'id': oldasset
+                                };
+
+                                Map<String, dynamic> toId = {
+                                  'entityType': 'DEVICE',
+                                  'id': Olddevicedetails.id!.id
+                                };
+
+                                EntityRelation entityRelation = EntityRelation(
+                                    from: EntityId.fromJson(fromId),
+                                    to: EntityId.fromJson(toId),
+                                    type: "Contains",
+                                    typeGroup: RelationTypeGroup.COMMON);
+
+                                Future<EntityRelation> entityRelations =
+                                    tbClient
+                                        .getEntityRelationService()
+                                        .saveRelation(entityRelation);
+                              }
 
                               try {
                                 var up_newdevice_attribute = (await tbClient
@@ -1098,7 +1137,8 @@ class replaceilmState extends State<replaceilm> {
                     pr.hide();
                     callstoast("Unable to find device attributes");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                        builder: (BuildContext context) =>
+                            dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   FlutterLogs.logInfo(
@@ -1106,7 +1146,8 @@ class replaceilmState extends State<replaceilm> {
                   pr.hide();
                   callstoast("Unable to Find Related Devices");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                      builder: (BuildContext context) =>
+                          dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 FlutterLogs.logInfo(
@@ -1114,7 +1155,8 @@ class replaceilmState extends State<replaceilm> {
                 pr.hide();
                 callstoast("Unable to find current Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                    builder: (BuildContext context) =>
+                        dashboard_screen(selectedPage: 0)));
               }
             } else {
               FlutterLogs.logInfo(
@@ -1122,14 +1164,16 @@ class replaceilmState extends State<replaceilm> {
               pr.hide();
               callstoast("Unable to find Device Folder Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                  builder: (BuildContext context) =>
+                      dashboard_screen(selectedPage: 0)));
             }
           } else {
             FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
             pr.hide();
             callstoast("Unable to find Selected Device Details");
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                builder: (BuildContext context) =>
+                    dashboard_screen(selectedPage: 0)));
           }
           // } else {
           //   FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -1157,11 +1201,11 @@ class replaceilmState extends State<replaceilm> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                builder: (BuildContext context) =>
+                    dashboard_screen(selectedPage: 0)));
           }
         }
-      }
-      else {
+      } else {
         FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
         callNoNetworkToast(no_network);
       }
@@ -1171,15 +1215,7 @@ class replaceilmState extends State<replaceilm> {
   Future<void> callReplacementComplete(context, imageFile, DeviceName) async {
     final bytes = File(imageFile!.path).readAsBytesSync();
     String img64 = base64Encode(bytes);
-    //network check is done by dev
-    Utility.isConnected().then((value) async {
-      if(value){
-        postRequest(context, img64, DeviceName);
-      }else{
-        callNoNetworkToast(no_network);
-      }
-    });
-
+    postRequest(context, img64, DeviceName);
   }
 
   void callstoast(String polenumber) {
@@ -1223,7 +1259,8 @@ class replaceilmState extends State<replaceilm> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -1316,21 +1353,9 @@ class replaceilmState extends State<replaceilm> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
-      } else {
-        //previuslly it's empty else part is done by dev
-        pr.hide();
-        Fluttertoast.showToast(
-            msg: "Device Replacement Failed",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.white,
-            textColor: Colors.black,
-            fontSize: 16.0);
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
-      }
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
+      } else {}
       return response;
     } catch (e) {
       FlutterLogs.logInfo("devicelist_page", "device_list", "logMessage");
@@ -1345,6 +1370,24 @@ class replaceilmState extends State<replaceilm> {
           fontSize: 16.0);
       return response;
     }
+  }
+
+  void onGpsAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+              title: const Text("Location not available"),
+              content: const Text(
+                  'Please make sure you enable location and try again'),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text("Ok"),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                  },
+                )
+              ],
+            ));
   }
 
 }

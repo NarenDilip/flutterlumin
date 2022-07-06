@@ -173,7 +173,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
           }
         } else {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
           setState(() {
             visibility = false;
           });
@@ -222,7 +223,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (_start == 0) {
           timer.cancel();
           callPolygonStop();
@@ -330,7 +331,13 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SelectedZone = prefs.getString("SelectedZone").toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
-    location = prefs.getString("location").toString();
+    String val = prefs.getString("location").toString();
+    if(val != "null"){
+      location = prefs.getString("location").toString();
+    } else {
+      location = "";
+    }
+
     geoFence = prefs.getString('geoFence').toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
     prefs.setString('Maintenance', "Yes");
@@ -384,7 +391,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     DeviceName = "";
     DeviceStatus = "";
     getSharedPrefs();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       _polyGeofenceService.start();
       _polyGeofenceService
           .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
@@ -446,7 +453,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var geoFence = prefs.getString('geoFence').toString();
-        WidgetsBinding.instance?.addPostFrameCallback((_) {
+        WidgetsBinding.instance!.addPostFrameCallback((_) {
           _polyGeofenceService.start();
           _polyGeofenceService.addPolyGeofenceStatusChangeListener(
               _onPolyGeofenceStatusChanged);
@@ -489,9 +496,9 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
     }
   }
@@ -534,7 +541,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       onWillPop: () async {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
         return true;
       },
       child: Scaffold(
@@ -556,7 +564,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                     : 10.0,
                 decoration: BoxDecoration(
                     borderRadius:
-                    BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
+                        BorderRadius.circular(clickedCentreFAB ? 0.0 : 300.0),
                     color: Colors.white),
               ),
             ),
@@ -578,9 +586,9 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                         Container(
                           alignment: Alignment.center,
                           padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: Text('CCMS Maintanance',
+                          child: const Text('CCMS Maintanance',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 20.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
@@ -592,7 +600,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                           bottom: 0,
                           child: IconButton(
                             color: Colors.red,
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.logout_outlined,
                               size: 35,
                             ),
@@ -627,124 +635,124 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                   children: <Widget>[
                                     Container(
                                         child: Padding(
-                                          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                          child: Row(
-                                              mainAxisAlignment:
+                                      padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                      child: Row(
+                                          mainAxisAlignment:
                                               MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                Align(
-                                                  alignment: Alignment.center,
-                                                  child: Padding(
-                                                    padding:
+                                          children: [
+                                            Align(
+                                              alignment: Alignment.center,
+                                              child: Padding(
+                                                padding:
                                                     EdgeInsets.only(left: 5.0),
-                                                    child: Point(
-                                                      triangleHeight: 25.0,
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.of(context).push(
-                                                              MaterialPageRoute(
-                                                                  builder: (BuildContext
-                                                                  context) =>
-                                                                      ward_li_screen()));
-                                                          setState(() {});
-                                                        },
-                                                        child: Container(
-                                                          color: thbDblue,
-                                                          height: 40.0,
-                                                          child: Center(
-                                                            child: Text(
-                                                                '  $SelectedRegion  ',
-                                                                style: const TextStyle(
-                                                                    fontSize: 16.0,
-                                                                    fontFamily:
+                                                child: Point(
+                                                  triangleHeight: 25.0,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  ward_li_screen()));
+                                                      setState(() {});
+                                                    },
+                                                    child: Container(
+                                                      color: thbDblue,
+                                                      height: 40.0,
+                                                      child: Center(
+                                                        child: Text(
+                                                            '  $SelectedRegion  ',
+                                                            style: const TextStyle(
+                                                                fontSize: 16.0,
+                                                                fontFamily:
                                                                     "Montserrat",
-                                                                    fontWeight:
+                                                                fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                    color: Colors
-                                                                        .white)),
-                                                          ),
-                                                        ),
+                                                                color: Colors
+                                                                    .white)),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                                Align(
-                                                  alignment: Alignment.center,
-                                                  child: Padding(
-                                                    padding:
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: Alignment.center,
+                                              child: Padding(
+                                                padding:
                                                     EdgeInsets.only(left: 5.0),
-                                                    child: Point(
-                                                      triangleHeight: 25.0,
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.of(context).push(
-                                                              MaterialPageRoute(
-                                                                  builder: (BuildContext
-                                                                  context) =>
-                                                                      zone_li_screen()));
-                                                          setState(() {});
-                                                        },
-                                                        child: Container(
-                                                          color: thbDblue,
-                                                          height: 40.0,
-                                                          child: Center(
-                                                            child: Text(
-                                                                '  $SelectedZone  ',
-                                                                style: const TextStyle(
-                                                                    fontSize: 16.0,
-                                                                    fontFamily:
+                                                child: Point(
+                                                  triangleHeight: 25.0,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  zone_li_screen()));
+                                                      setState(() {});
+                                                    },
+                                                    child: Container(
+                                                      color: thbDblue,
+                                                      height: 40.0,
+                                                      child: Center(
+                                                        child: Text(
+                                                            '  $SelectedZone  ',
+                                                            style: const TextStyle(
+                                                                fontSize: 16.0,
+                                                                fontFamily:
                                                                     "Montserrat",
-                                                                    fontWeight:
+                                                                fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                    color: Colors
-                                                                        .white)),
-                                                          ),
-                                                        ),
+                                                                color: Colors
+                                                                    .white)),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                                Align(
-                                                  alignment: Alignment.center,
-                                                  child: Padding(
-                                                    padding:
+                                              ),
+                                            ),
+                                            Align(
+                                              alignment: Alignment.center,
+                                              child: Padding(
+                                                padding:
                                                     EdgeInsets.only(left: 5.0),
-                                                    child: Point(
-                                                      triangleHeight: 25.0,
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.of(context).push(
-                                                              MaterialPageRoute(
-                                                                  builder: (BuildContext
-                                                                  context) =>
-                                                                      ward_li_screen()));
-                                                          setState(() {});
-                                                        },
-                                                        child: Container(
-                                                          color: thbDblue,
-                                                          height: 40.0,
-                                                          child: Center(
-                                                            child: Text(
-                                                                '  $SelectedWard  ',
-                                                                style: const TextStyle(
-                                                                    fontSize: 16.0,
-                                                                    fontFamily:
+                                                child: Point(
+                                                  triangleHeight: 25.0,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  ward_li_screen()));
+                                                      setState(() {});
+                                                    },
+                                                    child: Container(
+                                                      color: thbDblue,
+                                                      height: 40.0,
+                                                      child: Center(
+                                                        child: Text(
+                                                            '  $SelectedWard  ',
+                                                            style: const TextStyle(
+                                                                fontSize: 16.0,
+                                                                fontFamily:
                                                                     "Montserrat",
-                                                                    fontWeight:
+                                                                fontWeight:
                                                                     FontWeight
                                                                         .bold,
-                                                                    color: Colors
-                                                                        .white)),
-                                                          ),
-                                                        ),
+                                                                color: Colors
+                                                                    .white)),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ]),
-                                        )),
+                                              ),
+                                            ),
+                                          ]),
+                                    )),
                                     const SizedBox(
                                       height: 15,
                                     ),
@@ -767,56 +775,71 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                               children: [
                                                 Row(
                                                   children: <Widget>[
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                          .fromLTRB(5, 0, 0, 0),
-                                                      width: width / 2,
-                                                      height: 45,
-                                                      alignment:
-                                                      Alignment.centerLeft,
-                                                      decoration: const BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  15.0))),
-                                                      child: Center(
-                                                        child: Text(
-                                                          '$DeviceName',
-                                                          style: TextStyle(
-                                                              color: Colors
-                                                                  .deepOrange,
-                                                              fontSize: 26,
-                                                              fontFamily:
-                                                              "Montserrat",
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .bold),
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .fromLTRB(
+                                                                5, 0, 0, 0),
+                                                        width: width / 2,
+                                                        height: 45,
+                                                        alignment: Alignment
+                                                            .centerLeft,
+                                                        decoration: const BoxDecoration(
+                                                            color: Colors.white,
+                                                            borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        15.0))),
+                                                        child: Center(
+                                                          child: Text(
+                                                            '$DeviceName',
+                                                            style: const TextStyle(
+                                                                color: Colors
+                                                                    .deepOrange,
+                                                                fontSize: 26,
+                                                                fontFamily:
+                                                                    "Montserrat",
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
                                                         ),
                                                       ),
                                                     ), //Container
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       width: 15,
                                                     ), //SizedBox
-                                                    Container(
-                                                        width: width / 2.05,
-                                                        height: 25,
-                                                        child: Text(
-                                                          "$location",
-                                                          style: const TextStyle(
-                                                              fontSize: 18,
-                                                              fontFamily:
-                                                              "Montserrat",
-                                                              color:
-                                                              Colors.white,
-                                                              fontWeight:
-                                                              FontWeight
-                                                                  .bold),
-                                                        ) //BoxDecoration
+                                                    Expanded(
+                                                      flex: 1,
+                                                      child: Container(
+                                                          width: width / 2.05,
+                                                          height: 25,
+                                                          child: Flexible(
+                                                            fit: FlexFit.loose,
+                                                            child: Text(
+                                                              "$location",
+                                                              softWrap: false,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .fade,
+                                                              style: const TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontFamily:
+                                                                      "Montserrat",
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            ),
+                                                          ) //BoxDecoration
+                                                          ),
                                                     ) //Container
                                                   ], //<Widget>[]
                                                   mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                      MainAxisAlignment.center,
                                                 ),
                                                 const SizedBox(
                                                   height: 20,
@@ -829,16 +852,16 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                     Container(
                                                         width: width / 3,
                                                         height: 25,
-                                                        child: Text(
+                                                        child: const Text(
                                                           "Last Comm @ ",
-                                                          style: const TextStyle(
+                                                          style: TextStyle(
                                                               fontSize: 16,
                                                               color:
-                                                              Colors.white,
+                                                                  Colors.white,
                                                               fontFamily:
-                                                              "Montserrat"),
+                                                                  "Montserrat"),
                                                         )), //Container
-                                                    SizedBox(
+                                                    const SizedBox(
                                                       width: 5,
                                                     ), //SizedBox
                                                     Container(
@@ -849,17 +872,17 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                           style: const TextStyle(
                                                               fontSize: 18,
                                                               color:
-                                                              Colors.white,
+                                                                  Colors.white,
                                                               fontFamily:
-                                                              "Montserrat",
+                                                                  "Montserrat",
                                                               fontWeight:
-                                                              FontWeight
-                                                                  .bold),
+                                                                  FontWeight
+                                                                      .bold),
                                                         ) //BoxDecoration
-                                                    ) //Container
+                                                        ) //Container
                                                   ], //<Widget>[]
                                                   mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                                      MainAxisAlignment.center,
                                                 ),
                                                 const SizedBox(
                                                   height: 20,
@@ -875,7 +898,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                           ),
                                           Row(
                                             mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
+                                                MainAxisAlignment.spaceAround,
                                             children: [
                                               const Expanded(
                                                   flex: 2,
@@ -890,11 +913,11 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                         height: 90,
                                                         decoration: const BoxDecoration(
                                                             color:
-                                                            Colors.orange,
+                                                                Colors.orange,
                                                             borderRadius:
-                                                            BorderRadius.all(
-                                                                Radius.circular(
-                                                                    50.0))),
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        50.0))),
                                                         child: const Center(
                                                           child: Text(
                                                               'GET LIVE',
@@ -903,7 +926,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                                   color: Colors
                                                                       .white,
                                                                   fontFamily:
-                                                                  "Montserrat")),
+                                                                      "Montserrat")),
                                                         ),
                                                       ),
                                                       onTap: () {
@@ -916,14 +939,14 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                           } else {
                                                             Fluttertoast.showToast(
                                                                 msg:
-                                                                app_dev_offline_mode,
+                                                                    app_dev_offline_mode,
                                                                 toastLength: Toast
                                                                     .LENGTH_SHORT,
                                                                 gravity:
-                                                                ToastGravity
-                                                                    .BOTTOM,
+                                                                    ToastGravity
+                                                                        .BOTTOM,
                                                                 timeInSecForIosWeb:
-                                                                1);
+                                                                    1);
                                                           }
                                                         } else {
                                                           _show(context, true);
@@ -936,7 +959,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                           ),
                                           Row(
                                             mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
+                                                MainAxisAlignment.spaceAround,
                                             children: [
                                               Expanded(
                                                   flex: 2,
@@ -945,11 +968,11 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                       height: 90,
                                                       decoration: const BoxDecoration(
                                                           color:
-                                                          Colors.lightBlue,
+                                                              Colors.lightBlue,
                                                           borderRadius:
-                                                          BorderRadius.all(
-                                                              Radius.circular(
-                                                                  50.0))),
+                                                              BorderRadius.all(
+                                                                  Radius.circular(
+                                                                      50.0))),
                                                       child: const Center(
                                                         child: Text('MCB TRIP',
                                                             style: TextStyle(
@@ -957,7 +980,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                                 color: Colors
                                                                     .white,
                                                                 fontFamily:
-                                                                "Montserrat")),
+                                                                    "Montserrat")),
                                                       ),
                                                     ),
                                                     onTap: () {
@@ -968,14 +991,14 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                         } else {
                                                           Fluttertoast.showToast(
                                                               msg:
-                                                              app_dev_offline_mode,
+                                                                  app_dev_offline_mode,
                                                               toastLength: Toast
                                                                   .LENGTH_SHORT,
                                                               gravity:
-                                                              ToastGravity
-                                                                  .BOTTOM,
+                                                                  ToastGravity
+                                                                      .BOTTOM,
                                                               timeInSecForIosWeb:
-                                                              1);
+                                                                  1);
                                                         }
                                                       } else {
                                                         _show(context, true);
@@ -1004,8 +1027,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                 ),
                                                 Row(
                                                   mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceAround,
+                                                      MainAxisAlignment
+                                                          .spaceAround,
                                                   children: [
                                                     Expanded(
                                                         flex: 2,
@@ -1019,23 +1042,28 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                                     .deepOrange,
                                                                 borderRadius: BorderRadius
                                                                     .all(Radius
-                                                                    .circular(
-                                                                    50.0))),
+                                                                        .circular(
+                                                                            50.0))),
                                                             child: const Text(
                                                                 'REMOVE',
                                                                 style: TextStyle(
                                                                     fontSize:
-                                                                    18,
+                                                                        18,
                                                                     color: Colors
                                                                         .white,
                                                                     fontFamily:
-                                                                    "Montserrat")),
+                                                                        "Montserrat")),
                                                           ),
-                                                          onTap: () {
+                                                          onTap: () async {
                                                             if (visibility ==
                                                                 true) {
-                                                              removeCCMS(
-                                                                  context);
+                                                              if (!(await Geolocator()
+                                                                  .isLocationServiceEnabled())) {
+                                                                onGpsAlert();
+                                                              } else {
+                                                                removeCCMS(
+                                                                    context);
+                                                              }
                                                             } else {
                                                               _show(context,
                                                                   true);
@@ -1050,37 +1078,40 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                         child: InkWell(
                                                             child: Container(
                                                               alignment:
-                                                              Alignment
-                                                                  .center,
+                                                                  Alignment
+                                                                      .center,
                                                               height: 90,
                                                               decoration: const BoxDecoration(
                                                                   color: Colors
                                                                       .green,
                                                                   borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(
-                                                                          50.0))),
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              50.0))),
                                                               child: const Text(
                                                                   'REPLACE',
                                                                   textAlign:
-                                                                  TextAlign
-                                                                      .center,
+                                                                      TextAlign
+                                                                          .center,
                                                                   style: TextStyle(
                                                                       fontSize:
-                                                                      18,
+                                                                          18,
                                                                       color: Colors
                                                                           .white,
                                                                       fontFamily:
-                                                                      "Montserrat")),
+                                                                          "Montserrat")),
                                                             ),
-                                                            onTap: () {
-                                                              if (visibility ==
-                                                                  true) {
-                                                                replaceCCMS(
-                                                                    context);
+                                                            onTap: () async {
+                                                              if (visibility == true) {
+                                                                if (!(await Geolocator()
+                                                                    .isLocationServiceEnabled())) {
+                                                                  onGpsAlert();
+                                                                } else {
+                                                                  replaceCCMS(
+                                                                      context);
+                                                                }
                                                               } else {
-                                                                _show(context,
-                                                                    true);
+                                                                _show(context,true);
                                                               }
                                                             })),
                                                   ],
@@ -1114,8 +1145,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             child: AlertDialog(
               elevation: 10,
               title: const Text(app_dev_loc_alert),
-              content: const Text(
-                  app_dev_range_alert),
+              content: const Text(app_dev_range_alert),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -1126,6 +1156,24 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             ),
           );
         });
+  }
+
+  void onGpsAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+              title: const Text("Location not available"),
+              content: const Text(
+                  'Please make sure you enable location and try again'),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text("Ok"),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                  },
+                )
+              ],
+            ));
   }
 }
 
@@ -1156,7 +1204,8 @@ Future<void> callONRPCCall(context) async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
 
-        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+        var tbClient =
+            ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
         final jsonData = {
@@ -1200,7 +1249,7 @@ Future<void> callONRPCCall(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      noInternetToast(no_network);
     }
   });
 }
@@ -1231,7 +1280,8 @@ Future<void> callOFFRPCCall(context) async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
 
-        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+        var tbClient =
+            ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         final jsonData = {
           "method": "ctrl",
@@ -1273,7 +1323,7 @@ Future<void> callOFFRPCCall(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      noInternetToast(no_network);
     }
   });
 }
@@ -1303,7 +1353,8 @@ Future<void> callMCBTrip(context) async {
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
-        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+        var tbClient =
+            ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         final jsonData;
 
@@ -1323,8 +1374,7 @@ Future<void> callMCBTrip(context) async {
 
         var responsee = await tbClient
             .getDeviceService()
-            .handleOneWayDeviceRPCRequest(
-            DeviceIdDetails.toString(), jsonDatat)
+            .handleOneWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonDatat)
             .timeout(const Duration(minutes: 5));
 
         pr.hide();
@@ -1343,7 +1393,7 @@ Future<void> callMCBTrip(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      noInternetToast(no_network);
     }
   });
 }
@@ -1373,7 +1423,8 @@ Future<void> getLiveRPCCall(context) async {
       try {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var DeviceIdDetails = prefs.getString('DeviceDetails').toString();
-        var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+        var tbClient =
+            ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         final jsonData;
 
@@ -1387,7 +1438,6 @@ Future<void> getLiveRPCCall(context) async {
             .handleOneWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
         pr.hide();
-
       } catch (e) {
         /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
             "Device Connectivity Issue Exception");*/
@@ -1403,13 +1453,12 @@ Future<void> getLiveRPCCall(context) async {
         }
       }
     } else {
-      calltoast(no_network);
+      noInternetToast(no_network);
     }
   });
 }
 
 Future<void> replaceCCMS(context) async {
-
   Utility.isConnected().then((value) async {
     if (value) {
       late ProgressDialog pr;
@@ -1438,7 +1487,7 @@ Future<void> replaceCCMS(context) async {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (BuildContext context) => QRScreen()),
-              (route) => true).then((value) async {
+          (route) => true).then((value) async {
         if (value != null) {
           if (OlddeviceName.toString() != value.toString()) {
             SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -1461,10 +1510,11 @@ Future<void> replaceCCMS(context) async {
         }
       });
     } else {
-      calltoast(no_network);
+      noInternetToast(no_network);
     }
   });
 }
+
 Future<void> removeCCMS(context) async {
   Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (BuildContext context) => replacementccms()));
@@ -1505,7 +1555,6 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
             fontFamily: "Montserrat",
             fontWeight: FontWeight.bold,
             color: thbDblue)),
-
     content: RichText(
       text: new TextSpan(
         text: app_dial_replace,
@@ -1546,7 +1595,6 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
         ],
       ),
     ),
-
     actions: [
       cancelButton,
       continueButton,
@@ -1565,6 +1613,17 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 void calltoast(String polenumber) {
   Fluttertoast.showToast(
       msg: device_toast_msg + polenumber + device_toast_notfound,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.white,
+      textColor: Colors.black,
+      fontSize: 16.0);
+}
+
+void noInternetToast(String msg){
+  Fluttertoast.showToast(
+      msg: msg,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
@@ -1593,7 +1652,8 @@ Future<ThingsboardError> toThingsboardError(error, context,
     var status = loginThingsboard.callThingsboardLogin(context);
     if (status == true) {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+          builder: (BuildContext context) =>
+              dashboard_screen(selectedPage: 0)));
     }
   } else {
     if (error is DioError) {
@@ -1712,7 +1772,7 @@ Future<void> callLogoutoption(BuildContext context) async {
               dbhelper.ward_delete(SelectedRegion);
 
               SharedPreferences preferences =
-              await SharedPreferences.getInstance();
+                  await SharedPreferences.getInstance();
               await preferences.clear();
               SystemChannels.platform.invokeMethod('SystemNavigator.pop');
 
@@ -1727,4 +1787,5 @@ Future<void> callLogoutoption(BuildContext context) async {
       ],
     ),
   );
+
 }

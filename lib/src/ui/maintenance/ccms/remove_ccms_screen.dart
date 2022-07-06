@@ -387,7 +387,7 @@ class replacementccmsState extends State<replacementccms> {
                       /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove", "Device Not Found Exception");*/
                       pr.hide();
                       calltoast(
-                          app_dev_nfound_one + DeviceName + app_dev_nfound_two);
+                          device_toast_msg + DeviceName + app_dev_nfound_two);
 
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (BuildContext context) =>
@@ -463,8 +463,21 @@ class replacementccmsState extends State<replacementccms> {
                 builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           }
         }
+      }else {
+        noInternetToast(no_network);
       }
     });
+  }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
   }
 
   void calltoast(String polenumber) {

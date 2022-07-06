@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -16,6 +17,7 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -164,7 +166,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
           }
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
         }
       }
     } else {
@@ -303,7 +306,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     _openCamera(context);
     setUpLogs();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       _polyGeofenceService.start();
       _polyGeofenceService
           .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
@@ -349,6 +352,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
     // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
 
+    // Logs Exported Callback
     // Logs Exported Callback
     FlutterLogs.channel.setMethodCallHandler((call) async {
       if (call.method == 'logsExported') {
@@ -413,7 +417,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         onWillPop: () async {
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -438,14 +443,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               color: Colors.grey[800],
                             )),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Visibility(
                       visible: visibility,
                       child: Container(
                           width: double.infinity,
                           child: TextButton(
-                              child: Text(app_com_install,
-                                  style: const TextStyle(
+                              child: const Text(app_com_install,
+                                  style: TextStyle(
                                       fontSize: 18.0,
                                       fontFamily: "Montserrat",
                                       fontWeight: FontWeight.bold,
@@ -463,19 +468,24 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                   ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
-                                Utility.isConnected().then((value) {
+                                Utility.isConnected().then((value) async {
                                   if (value) {
                                     if (imageFile != null) {
-                                      pr.show();
                                       // _listenLocation();
-                                      if (geoFence == true) {
-                                        CallGeoFenceListener(context);
+                                      if (!(await Geolocator().isLocationServiceEnabled())) {
+                                        pr.hide();
+                                        onGpsAlert();
                                       } else {
-                                        callReplacementComplete(
-                                            context,
-                                            imageFile,
-                                            DeviceName,
-                                            SelectedWard);
+                                        pr.show();
+                                        if (geoFence == true) {
+                                          CallGeoFenceListener(context);
+                                        } else {
+                                          callReplacementComplete(
+                                              context,
+                                              imageFile,
+                                              DeviceName,
+                                              SelectedWard);
+                                        }
                                       }
                                     } else {
                                       pr.hide();
@@ -521,28 +531,20 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       } else {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
+          MaterialPageRoute(
+              builder: (context) => dashboard_screen(selectedPage: 0)),
         );
       }
     });
   }
 
-  Future<String> _getAddress(double? lat, double? lang) async {
-    if (lat == null || lang == null) return "";
-    final coordinates = new Coordinates(lat, lang);
-    List<Address> addresss = (await Geocoder.local
-        .findAddressesFromCoordinates(coordinates)) as List<Address>;
-    setState(() {
-      address = addresss.elementAt(1).addressLine.toString();
-    });
-    return "${addresss.elementAt(1).addressLine}";
-  }
+
 
   Future<void> CallGeoFenceListener(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var geoFence = prefs.getString('geoFence').toString();
     if (geoFence == "true") {
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
         _polyGeofenceService.start();
         _polyGeofenceService
             .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
@@ -583,15 +585,18 @@ class ccmscaminstallState extends State<ccmscaminstall> {
 
     var status = await Permission.location.status;
     if (status.isGranted) {
-      //newlly added by dev for landmark purpose
+      //newly added by dev for landmark purpose
       var latter = double.parse(Lattitude);
       var longer = double.parse(Longitude);
 
       _getAddress(latter, longer).then((value) {
         setState(() {
           address = value;
+          prefs.setString("location", address);
         });
       });
+
+
 
       Utility.isConnected().then((value) async {
         if (value) {
@@ -725,8 +730,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               'accuracy': accuracy.toString(),
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
-                              'boardNumber':DeviceName,
-                              'createdBy':Createdby,
+                              'boardNumber': DeviceName,
+                              'createdBy': Createdby,
                             };
 
                             var saveAttributes = await tbClient
@@ -919,7 +924,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                         textColor: Colors.black,
                         fontSize: 16.0);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                        builder: (BuildContext context) =>
+                            dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   // Navigator.pop(context);
@@ -941,7 +947,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                 pr.hide();
                 calltoast(deviceName);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                    builder: (BuildContext context) =>
+                        dashboard_screen(selectedPage: 0)));
               }
             } else {
               // Navigator.pop(context);
@@ -967,14 +974,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
             if (message == session_expired) {
               var status = loginThingsboard.callThingsboardLogin(context);
               if (status == true) {
-                callReplacementComplete(
-                    context, imageFile, DeviceName, SelectedWard);
+                callReplacementComplete(context, imageFile, DeviceName, SelectedWard);
               }
             } else {
               calltoast(deviceName);
               // Navigator.pop(context);
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                  builder: (BuildContext context) =>
+                      dashboard_screen(selectedPage: 0)));
             }
           }
         }
@@ -1075,6 +1082,17 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         fontSize: 16.0);
   }
 
+  Future<String> _getAddress(double? lat, double? lang) async {
+    if (lat == null || lang == null) return "";
+    final coordinates = new Coordinates(lat, lang);
+    List<Address> addresss = (await Geocoder.local
+        .findAddressesFromCoordinates(coordinates)) as List<Address>;
+    setState(() {
+      address = addresss.elementAt(1).addressLine.toString();
+    });
+    return "${addresss.elementAt(1).addressLine}";
+  }
+
   Future<http.Response> postRequest(context, imageFile, DeviceName) async {
     var response;
     try {
@@ -1091,7 +1109,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       if (response.statusCode.toString() == "200") {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
         showMyDialog(context);
       } else {}
       return response;
@@ -1120,7 +1139,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -1185,5 +1205,23 @@ class ccmscaminstallState extends State<ccmscaminstall> {
         StackTrace.current;
 
     return tbError;
+  }
+
+  void onGpsAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+              title: const Text("Location not available"),
+              content: const Text(
+                  'Please make sure you enable location and try again'),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text("Ok"),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                  },
+                )
+              ],
+            ));
   }
 }

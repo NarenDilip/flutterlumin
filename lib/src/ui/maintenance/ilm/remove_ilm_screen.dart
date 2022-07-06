@@ -469,7 +469,7 @@ class replacementilmState extends State<replacementilm> {
           }
         }
       }else {
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -477,6 +477,16 @@ class replacementilmState extends State<replacementilm> {
   void calltoast(String polenumber) {
     Fluttertoast.showToast(
         msg: device_toast_msg + polenumber + device_toast_notfound,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,

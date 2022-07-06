@@ -198,7 +198,7 @@ class _CCMSToggleButtonnState extends State<CCMSToggleButtonn> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         var geoFence = prefs.getString('geoFence').toString();
         if (geoFence == "true") {
-          WidgetsBinding.instance?.addPostFrameCallback((_) {
+          WidgetsBinding.instance!.addPostFrameCallback((_) {
             _polyGeofenceService.start();
             _polyGeofenceService.addPolyGeofenceStatusChangeListener(
                 _onPolyGeofenceStatusChanged);

@@ -164,27 +164,27 @@ class _LocationWidgetState extends State<LocationWidget> {
         _locationSubscription = null;
       });
     }).listen((LocationData currentLocation) {
-      if(mounted){
         setState(() {
           _error = null;
           _location = currentLocation;
           _getAddress(_location!.latitude, _location!.longitude).then((value) {
-            address = value;
-            if (_latt!.length <= 5) {
-              _latt!.add(_location!.latitude!);
-              lattitude = _location!.latitude!;
-              longitude = _location!.longitude!;
-              accuracy = _location!.accuracy!;
-              // addresss = addresss;
-            } else {
-              _locationSubscription?.cancel();
-              accuvalue = accuracy.toString().split(".");
-              addvalue = value.toString().split(",");
-              distance();
-            }
+            setState(() {
+              address = value;
+              if (_latt!.length <= 5) {
+                _latt!.add(_location!.latitude!);
+                lattitude = _location!.latitude!;
+                longitude = _location!.longitude!;
+                accuracy = _location!.accuracy!;
+                // addresss = addresss;
+              } else {
+                _locationSubscription?.cancel();
+                accuvalue = accuracy.toString().split(".");
+                addvalue = value.toString().split(",");
+                distance();
+              }
+            });
           });
         });
-      }
     });
   }
 
@@ -237,6 +237,7 @@ class _LocationWidgetState extends State<LocationWidget> {
           valueColor: AlwaysStoppedAnimation<Color>(thbDblue),
           strokeWidth: 3.0),
     );
+   // callNetworkToast(_markers.length.toString());
 
     var circleMarkers;
     if (_location != null)
@@ -1685,7 +1686,8 @@ class _LocationWidgetState extends State<LocationWidget> {
                             }
                           }
                         }
-                      } else {
+                      }
+                      else {
                         Device relatedDevice = await tbClient
                                 .getDeviceService()
                                 .getDevice(
@@ -1789,6 +1791,8 @@ class _LocationWidgetState extends State<LocationWidget> {
                   }
                 }
                 // pr.hide();
+              } else {
+                _markers.length = 0;
               }
               // pr.hide();
             // } else {
@@ -1874,7 +1878,20 @@ class _LocationWidgetState extends State<LocationWidget> {
           }
         }
       }
+      else {
+        callNetworkToast(no_network);
+      }
     });
+  }
+  void callNetworkToast(String msg) {
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
   }
 }
 

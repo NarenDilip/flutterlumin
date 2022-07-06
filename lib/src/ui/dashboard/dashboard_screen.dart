@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
-import 'package:fl_location/fl_location.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -23,11 +23,13 @@ import 'package:flutterlumin/src/ui/maintenance/ilm/ilm_maintenance_screen.dart'
 import 'package:flutterlumin/src/ui/qr_scanner/qr_scanner.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fl_location/fl_location.dart';
 
 import '../installation/ccms/ccms_install_cam_screen.dart';
 import '../installation/gateway/gateway_install_cam_screen.dart';
@@ -72,6 +74,7 @@ class dashboard_screenState extends State<dashboard_screen> {
   bool iscamerapermission = false;
   bool islocationpermission = false;
 
+
   @override
   // TODO: implement context
   BuildContext get context => super.context;
@@ -82,6 +85,7 @@ class dashboard_screenState extends State<dashboard_screen> {
     // setUpLogs();
     _initPackageInfo();
     _enforcedVersion();
+    _checkGps();
   }
 
   Future<void> launchAppStore() async {
@@ -315,7 +319,7 @@ class dashboard_screenState extends State<dashboard_screen> {
           //specify the location of the FAB
           floatingActionButton: FloatingActionButton(
             backgroundColor: _foreground,
-            onPressed: () {
+            onPressed: () async {
               requestCameraPermission();
               // var currentFocus = FocusScope.of(context);
               // if (!currentFocus.hasPrimaryFocus) {
@@ -331,7 +335,26 @@ class dashboard_screenState extends State<dashboard_screen> {
                 //     textColor: Colors.black,
                 //     fontSize: 16.0);
               } else {
-                deviceFetcher(context);
+                if(!(await Geolocator().isLocationServiceEnabled())){
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) => CupertinoAlertDialog(
+                        title:  const Text("Location not available"),
+                        content: const Text('Please make sure you enable location and try again'),
+                        actions: <Widget>[
+                          CupertinoDialogAction(
+                            child: const Text("Ok"),
+                            onPressed: (){
+                              Navigator.of(context, rootNavigator: true).pop();
+                            },
+                          )
+                        ],
+                      )
+                  );
+                } else {
+                  deviceFetcher(context);
+                }
+
               }
             },
             tooltip: app_scan_qr,
@@ -389,6 +412,7 @@ class dashboard_screenState extends State<dashboard_screen> {
               ),
             ],
             onTap: (index) async {
+              _checkGps();
               if (await _checkLocationPermission()){
                 setState(() {
                   widget.selectedPage = index;
@@ -881,4 +905,25 @@ class dashboard_screenState extends State<dashboard_screen> {
 
     return tbError;
   }
+
+  void _checkGps() async {
+    if (!(await Geolocator().isLocationServiceEnabled())) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) => CupertinoAlertDialog(
+            title:  const Text("Location not available"),
+            content: const Text('Please make sure you enable location and try again'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text("Ok"),
+                onPressed: (){
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+              )
+            ],
+          )
+      );
+    }
+  }
+
 }
