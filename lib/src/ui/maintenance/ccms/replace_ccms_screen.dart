@@ -599,17 +599,6 @@ class replaceccmsState extends State<replaceccms> {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
 
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if (relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                        relationDetails.elementAt(0).from.id!,
-                                        Olddevicedetails.id!.id!);
-                              }
 
                               olddeviceCredentials = await tbClient
                                       .getDeviceService()
@@ -620,19 +609,6 @@ class replaceccmsState extends State<replaceccms> {
                               if (olddeviceCredentials != null) {
                                 var oldQRID = olddeviceCredentials.credentialsId
                                     .toString();
-                                //ending
-
-                                /*  var relationDetails = await tbClient
-                                    .getEntityRelationService()
-                                    .findInfoByTo(Olddevicedetails.id!);
-
-                                if (relationDetails.isNotEmpty) {
-                                  var relation_response = await tbClient
-                                      .getEntityRelationService()
-                                      .deleteDeviceRelation(
-                                      relationDetails.elementAt(0).from.id!,
-                                      Olddevicedetails.id!.id!);
-                                }*/
 
                                 olddeviceCredentials.credentialsId =
                                     oldQRID + "L";
@@ -666,7 +642,8 @@ class replaceccmsState extends State<replaceccms> {
                                   'landmark': address,
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
-                                  'createdBy': Createdby,
+                                  'InstallBy': Createdby,
+                                  'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                                 };
 
                                 DBHelper dbHelper = DBHelper();
@@ -725,7 +702,8 @@ class replaceccmsState extends State<replaceccms> {
                                   'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
-                                  'createdBy': Createdby,
+                                  'InstallBy': Createdby,
+                                  'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                                 };
 
                                 try {
@@ -794,12 +772,6 @@ class replaceccmsState extends State<replaceccms> {
                                 .getDeviceService()
                                 .saveDevice(response);
 
-                            var relation_response = await tbClient
-                                .getEntityRelationService()
-                                .deleteDeviceRelation(
-                                    relationDetails.elementAt(0).from.id!,
-                                    response.id!.id!);
-
                             // Old Device Updations
 
                             Device Olddevicedetails = null as Device;
@@ -810,18 +782,6 @@ class replaceccmsState extends State<replaceccms> {
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
-
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if (relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                        relationDetails.elementAt(0).from.id!,
-                                        Olddevicedetails.id!.id!);
-                              }
 
                               olddeviceCredentials = await tbClient
                                       .getDeviceService()
@@ -850,21 +810,6 @@ class replaceccmsState extends State<replaceccms> {
                                     .getDeviceService()
                                     .saveDeviceCredentials(
                                         olddeviceCredentials);
-
-                                /*  var relationDetails = await tbClient
-                                    .getEntityRelationService()
-                                    .findInfoByTo(Olddevicedetails.id!);
-
-                                if(relationDetails.isNotEmpty) {
-                                  var relation_response = await tbClient
-                                      .getEntityRelationService()
-                                      .deleteDeviceRelation(
-                                      relationDetails
-                                          .elementAt(0)
-                                          .from
-                                          .id!,
-                                      Olddevicedetails.id!.id!);
-                                }*/
 
                                 response.name = Old_Device_Name;
                                 response.label = Old_Device_label;

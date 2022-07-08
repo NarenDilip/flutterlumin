@@ -753,7 +753,8 @@ class replaceilmState extends State<replaceilm> {
                                 'landmark': address,
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
-                                'createdBy': Createdby,
+                                'InstallBy': Createdby,
+                                'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                               };
 
                               var up_attribute = (await tbClient
@@ -782,7 +783,8 @@ class replaceilmState extends State<replaceilm> {
                                 'landmark': address,
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
-                                'createdBy': Createdby,
+                                'InstallBy': Createdby,
+                                'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                               };
 
                               DBHelper dbHelper = DBHelper();
@@ -791,6 +793,7 @@ class replaceilmState extends State<replaceilm> {
                               if (warddetails.length != "0") {
                                 warddetails.first.wardid;
 
+                                //newly added for suffix "ILM"
                                 var oldasset;
 
                                 PageLink pageLink = new PageLink(250);
@@ -959,8 +962,8 @@ class replaceilmState extends State<replaceilm> {
                               var relation_response = await tbClient
                                   .getEntityRelationService()
                                   .deleteDeviceRelation(
-                                      relationDetails.elementAt(0).from.id!,
-                                      response.id!.id!);
+                                  relationDetails.elementAt(0).from.id!,
+                                  response.id!.id!);
                             }
 
                             olddeviceCredentials = await tbClient

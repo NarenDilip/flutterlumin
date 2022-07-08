@@ -731,7 +731,8 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
                               'boardNumber': DeviceName,
-                              'createdBy': Createdby,
+                              'InstallBy': Createdby,
+                              'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                             };
 
                             var saveAttributes = await tbClient

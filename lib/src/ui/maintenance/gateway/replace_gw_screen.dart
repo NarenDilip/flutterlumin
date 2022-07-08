@@ -495,6 +495,7 @@ class replacegwState extends State<replacegw> {
         String Longitude = prefs.getString("deviceLongitude").toString();
         String SelectedZone = prefs.getString('SelectedZone').toString();
         var versionCompatability = false;
+
         //newly added by dev
         String Createdby = prefs.getString("username").toString();
 
@@ -512,8 +513,7 @@ class replacegwState extends State<replacegw> {
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient =
-              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           response = (await tbClient
@@ -530,7 +530,7 @@ class replacegwState extends State<replacegw> {
                 var saveAttributes = await tbClient
                     .getAttributeService()
                     .saveDeviceAttributes(
-                        response.id!.id!, "SERVER_SCOPE", data);
+                    response.id!.id!, "SERVER_SCOPE", data);
               }
 
               List<EntityGroupInfo> entitygroups;
@@ -540,10 +540,8 @@ class replacegwState extends State<replacegw> {
 
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
-                  if (entitygroups.elementAt(i).name ==
-                      FlavorConfig.instance.variables["GWserviceFolderName"]) {
-                    DevicemoveFolderName =
-                        entitygroups.elementAt(i).id!.id!.toString();
+                  if (entitygroups.elementAt(i).name == FlavorConfig.instance.variables["GWserviceFolderName"]) {
+                    DevicemoveFolderName = entitygroups.elementAt(i).id!.id!.toString();
                   }
                 }
 
@@ -578,13 +576,13 @@ class replacegwState extends State<replacegw> {
                     List<BaseAttributeKvEntry> responser;
 
                     responser = (await tbClient
-                            .getAttributeService()
-                            .getAttributeKvEntries(response.id!, myList))
-                        as List<BaseAttributeKvEntry>;
+                        .getAttributeService()
+                        .getAttributeKvEntries(response.id!, myList))
+                    as List<BaseAttributeKvEntry>;
 
                     if (responser != null) {
                       SharedPreferences prefs =
-                          await SharedPreferences.getInstance();
+                      await SharedPreferences.getInstance();
                       prefs.setString('deviceStatus',
                           responser.first.kv.getValue().toString());
                       // prefs.setString('deviceWatts',
@@ -643,14 +641,14 @@ class replacegwState extends State<replacegw> {
                       if (versionCompatability == true) {
                         if (relationDetails.length.toString() == "0") {
                           newdeviceCredentials = await tbClient
-                                  .getDeviceService()
-                                  .getDeviceCredentialsByDeviceId(
-                                      response.id!.id.toString())
-                              as DeviceCredentials;
+                              .getDeviceService()
+                              .getDeviceCredentialsByDeviceId(
+                              response.id!.id.toString())
+                          as DeviceCredentials;
 
                           if (newdeviceCredentials != null) {
                             var newQRID =
-                                newdeviceCredentials.credentialsId.toString();
+                            newdeviceCredentials.credentialsId.toString();
 
                             newdeviceCredentials.credentialsId = newQRID + "L";
                             var credresponse = await tbClient
@@ -672,23 +670,11 @@ class replacegwState extends State<replacegw> {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
 
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if (relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                        relationDetails.elementAt(0).from.id!,
-                                        Olddevicedetails.id!.id!);
-                              }
-
                               olddeviceCredentials = await tbClient
-                                      .getDeviceService()
-                                      .getDeviceCredentialsByDeviceId(
-                                          Olddevicedetails.id!.id.toString())
-                                  as DeviceCredentials;
+                                  .getDeviceService()
+                                  .getDeviceCredentialsByDeviceId(
+                                  Olddevicedetails.id!.id.toString())
+                              as DeviceCredentials;
 
                               if (olddeviceCredentials != null) {
                                 var oldQRID = olddeviceCredentials.credentialsId
@@ -699,7 +685,7 @@ class replacegwState extends State<replacegw> {
                                 var old_cred_response = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
-                                        olddeviceCredentials);
+                                    olddeviceCredentials);
 
                                 Olddevicedetails.name = Olddevicename + "99";
                                 var old_dev_response = await tbClient
@@ -710,7 +696,7 @@ class replacegwState extends State<replacegw> {
                                 var oldcredresponse = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
-                                        olddeviceCredentials);
+                                    olddeviceCredentials);
 
                                 response.name = Old_Device_Name;
                                 response.label = Old_Device_label;
@@ -721,12 +707,12 @@ class replacegwState extends State<replacegw> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
-                                  'landmark': address,
-                                  'slatitude': Lattitude.toString(),
-                                  'slongitude': Longitude.toString(),
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
-                                  'createdBy': Createdby,
+                                  'InstallBy': Createdby,
+                                  'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                                 };
 
                                 DBHelper dbHelper = DBHelper();
@@ -746,22 +732,22 @@ class replacegwState extends State<replacegw> {
                                   };
 
                                   EntityRelation entityRelation =
-                                      EntityRelation(
-                                          from: EntityId.fromJson(fromId),
-                                          to: EntityId.fromJson(toId),
-                                          type: "Contains",
-                                          typeGroup: RelationTypeGroup.COMMON);
+                                  EntityRelation(
+                                      from: EntityId.fromJson(fromId),
+                                      to: EntityId.fromJson(toId),
+                                      type: "Contains",
+                                      typeGroup: RelationTypeGroup.COMMON);
 
                                   Future<EntityRelation> entityRelations =
-                                      tbClient
-                                          .getEntityRelationService()
-                                          .saveRelation(entityRelation);
+                                  tbClient
+                                      .getEntityRelationService()
+                                      .saveRelation(entityRelation);
                                 }
 
                                 var up_attribute = (await tbClient
                                     .getAttributeService()
                                     .saveDeviceAttributes(response.id!.id!,
-                                        "SERVER_SCOPE", old_body_req));
+                                    "SERVER_SCOPE", old_body_req));
 
                                 // New Device Updations
 
@@ -775,26 +761,26 @@ class replacegwState extends State<replacegw> {
                                 var up_credresponse = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
-                                        newdeviceCredentials);
+                                    newdeviceCredentials);
 
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
-                                  'landmark': address,
-                                  'slatitude': Lattitude.toString(),
-                                  'slongitude': Longitude.toString(),
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
-                                  'createdBy': Createdby,
+                                  'InstallBy': Createdby,
+                                  'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                                 };
 
                                 try {
                                   var up_newdevice_attribute = (await tbClient
                                       .getAttributeService()
                                       .saveDeviceAttributes(
-                                          Olddevicedetails.id!.id!,
-                                          "SERVER_SCOPE",
-                                          new_body_req));
+                                      Olddevicedetails.id!.id!,
+                                      "SERVER_SCOPE",
+                                      new_body_req));
                                 } catch (e) {}
 
                                 List<String> myList = [];
@@ -804,13 +790,13 @@ class replacegwState extends State<replacegw> {
                                   var remove_response = await tbClient
                                       .getEntityGroupService()
                                       .removeEntitiesFromEntityGroup(
-                                          DevicecurrentFolderName, myList);
+                                      DevicecurrentFolderName, myList);
                                 } catch (e) {}
                                 try {
                                   var add_response = await tbClient
                                       .getEntityGroupService()
                                       .addEntitiesToEntityGroup(
-                                          DevicemoveFolderName, myList);
+                                      DevicemoveFolderName, myList);
                                 } catch (e) {}
                                 pr.hide();
                                 callReplacementComplete(
@@ -820,29 +806,28 @@ class replacegwState extends State<replacegw> {
                               pr.hide();
                               calltoast(deviceName);
 
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen(selectedPage: 0)));
+                              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      dashboard_screen(selectedPage: 0)));
                             }
                           }
                         } else {
                           // New Device Updations
                           newdeviceCredentials = await tbClient
-                                  .getDeviceService()
-                                  .getDeviceCredentialsByDeviceId(
-                                      response.id!.id.toString())
-                              as DeviceCredentials;
+                              .getDeviceService()
+                              .getDeviceCredentialsByDeviceId(
+                              response.id!.id.toString())
+                          as DeviceCredentials;
 
                           var relation_response = await tbClient
                               .getEntityRelationService()
                               .deleteDeviceRelation(
-                                  relationDetails.elementAt(0).from.id!,
-                                  response.id!.id!);
+                              relationDetails.elementAt(0).from.id!,
+                              response.id!.id!);
 
                           if (newdeviceCredentials != null) {
                             var newQRID =
-                                newdeviceCredentials.credentialsId.toString();
+                            newdeviceCredentials.credentialsId.toString();
 
                             newdeviceCredentials.credentialsId = newQRID + "L";
                             var credresponse = await tbClient
@@ -853,12 +838,6 @@ class replacegwState extends State<replacegw> {
                             var devresponse = await tbClient
                                 .getDeviceService()
                                 .saveDevice(response);
-
-                            var relation_response = await tbClient
-                                .getEntityRelationService()
-                                .deleteDeviceRelation(
-                                    relationDetails.elementAt(0).from.id!,
-                                    response.id!.id!);
 
                             // Old Device Updations
 
@@ -871,23 +850,11 @@ class replacegwState extends State<replacegw> {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
 
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if (relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                        relationDetails.elementAt(0).from.id!,
-                                        response.id!.id!);
-                              }
-
                               olddeviceCredentials = await tbClient
-                                      .getDeviceService()
-                                      .getDeviceCredentialsByDeviceId(
-                                          Olddevicedetails.id!.id.toString())
-                                  as DeviceCredentials;
+                                  .getDeviceService()
+                                  .getDeviceCredentialsByDeviceId(
+                                  Olddevicedetails.id!.id.toString())
+                              as DeviceCredentials;
 
                               if (olddeviceCredentials != null) {
                                 var oldQRID = olddeviceCredentials.credentialsId
@@ -898,30 +865,18 @@ class replacegwState extends State<replacegw> {
                                 var old_cred_response = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
-                                        olddeviceCredentials);
+                                    olddeviceCredentials);
 
                                 Olddevicedetails.name = Olddevicename + "99";
                                 var old_dev_response = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
 
-                                var relationDetails = await tbClient
-                                    .getEntityRelationService()
-                                    .findInfoByTo(Olddevicedetails.id!);
-
-                                if (relationDetails.isNotEmpty) {
-                                  var relation_response = await tbClient
-                                      .getEntityRelationService()
-                                      .deleteDeviceRelation(
-                                          relationDetails.elementAt(0).from.id!,
-                                          Olddevicedetails.id!.id!);
-                                }
-
                                 olddeviceCredentials.credentialsId = newQRID;
                                 var oldcredresponse = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
-                                        olddeviceCredentials);
+                                    olddeviceCredentials);
 
                                 response.name = Old_Device_Name;
                                 response.label = Old_Device_label;
@@ -937,7 +892,7 @@ class replacegwState extends State<replacegw> {
                                 var up_attribute = (await tbClient
                                     .getAttributeService()
                                     .saveDeviceAttributes(response.id!.id!,
-                                        "SERVER_SCOPE", old_body_req));
+                                    "SERVER_SCOPE", old_body_req));
 
                                 // New Device Updations
 
@@ -951,7 +906,7 @@ class replacegwState extends State<replacegw> {
                                 var up_credresponse = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
-                                        newdeviceCredentials);
+                                    newdeviceCredentials);
 
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
@@ -961,9 +916,9 @@ class replacegwState extends State<replacegw> {
                                   var up_newdevice_attribute = (await tbClient
                                       .getAttributeService()
                                       .saveDeviceAttributes(
-                                          Olddevicedetails.id!.id!,
-                                          "SERVER_SCOPE",
-                                          new_body_req));
+                                      Olddevicedetails.id!.id!,
+                                      "SERVER_SCOPE",
+                                      new_body_req));
                                 } catch (e) {}
 
                                 List<String> myList = [];
@@ -973,13 +928,13 @@ class replacegwState extends State<replacegw> {
                                   var remove_response = tbClient
                                       .getEntityGroupService()
                                       .removeEntitiesFromEntityGroup(
-                                          DevicecurrentFolderName, myList);
+                                      DevicecurrentFolderName, myList);
                                 } catch (e) {}
                                 try {
                                   var add_response = tbClient
                                       .getEntityGroupService()
                                       .addEntitiesToEntityGroup(
-                                          DevicemoveFolderName, myList);
+                                      DevicemoveFolderName, myList);
                                 } catch (e) {}
 
                                 pr.hide();
@@ -991,26 +946,23 @@ class replacegwState extends State<replacegw> {
                             } else {
                               pr.hide();
                               calltoast(deviceName);
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen(selectedPage: 0)));
+                              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      dashboard_screen(selectedPage: 0)));
                             }
                           } else {
                             pr.hide();
                             callstoast("Unable to Fetch Device Credentials");
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        dashboard_screen(selectedPage: 0)));
+                            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    dashboard_screen(selectedPage: 0)));
                           }
                         }
                       } else {
                         pr.hide();
                         Fluttertoast.showToast(
-                            msg: "Device is not compatible with this Project" +
-                                SelectedRegion +
-                                "Kindly try another one.",
+                            msg:
+                            "Device is not compatible with this Project"+ SelectedRegion + "Kindly try another one.",
                             toastLength: Toast.LENGTH_SHORT,
                             gravity: ToastGravity.BOTTOM,
                             timeInSecForIosWeb: 1,
@@ -1060,7 +1012,8 @@ class replacegwState extends State<replacegw> {
           } else {
             pr.hide();
             Fluttertoast.showToast(
-                msg: " Image not captured successfully! Please try again!",
+                msg:
+                " Image not captured successfully! Please try again!",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -1269,4 +1222,5 @@ class replacegwState extends State<replacegw> {
               ],
             ));
   }
+
 }
