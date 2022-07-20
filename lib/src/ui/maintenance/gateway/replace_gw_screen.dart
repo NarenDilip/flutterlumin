@@ -176,13 +176,13 @@ class replacegwState extends State<replacegw> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -198,12 +198,12 @@ class replacegwState extends State<replacegw> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                                  MaterialStateProperty.all(Colors.green),
+                              MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                      RoundedRectangleBorder>(
+                                  RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                              ))),
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ))),
                           onPressed: () async {
                             if (imageFile != null) {
                               // pr.show();
@@ -224,7 +224,7 @@ class replacegwState extends State<replacegw> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                      "Image not captured successfully! Please try again!",
+                                  "Image not captured successfully! Please try again!",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -425,7 +425,7 @@ class replacegwState extends State<replacegw> {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient =
-              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           response = await tbClient
               .getDeviceService()
@@ -467,7 +467,7 @@ class replacegwState extends State<replacegw> {
     if (lat == null || lang == null) return "";
     final coordinates = new Coordinates(lat, lang);
     List<Address> addresss =
-        (await Geocoder.local.findAddressesFromCoordinates(coordinates));
+    (await Geocoder.local.findAddressesFromCoordinates(coordinates));
     setState(() {
       address = addresss.elementAt(1).addressLine.toString();
     });
@@ -640,6 +640,7 @@ class replacegwState extends State<replacegw> {
 
                       if (versionCompatability == true) {
                         if (relationDetails.length.toString() == "0") {
+
                           newdeviceCredentials = await tbClient
                               .getDeviceService()
                               .getDeviceCredentialsByDeviceId(
@@ -709,6 +710,7 @@ class replacegwState extends State<replacegw> {
                                   'ieeeAddress': oldQRID,
                                   'latitude': Lattitude,
                                   'longitude': Longitude,
+                                  'landmark': address,
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
                                   'InstallBy': Createdby,
@@ -726,10 +728,12 @@ class replacegwState extends State<replacegw> {
                                     'id': warddetails.first.wardid
                                   };
 
+                                  // 'id': response.id!.id perviously send wrong one
                                   Map<String, dynamic> toId = {
                                     'entityType': 'DEVICE',
-                                    'id': response.id!.id
+                                    'id': Olddevicedetails.id!.id
                                   };
+
 
                                   EntityRelation entityRelation =
                                   EntityRelation(
@@ -768,6 +772,7 @@ class replacegwState extends State<replacegw> {
                                   'ieeeAddress': newQRID,
                                   'latitude': Lattitude,
                                   'longitude': Longitude,
+                                  'landmark': address,
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
                                   'InstallBy': Createdby,
@@ -805,13 +810,14 @@ class replacegwState extends State<replacegw> {
                             } else {
                               pr.hide();
                               calltoast(deviceName);
-
                               Navigator.of(context).pushReplacement(MaterialPageRoute(
                                   builder: (BuildContext context) =>
                                       dashboard_screen(selectedPage: 0)));
                             }
                           }
-                        } else {
+                        }
+                        else {
+
                           // New Device Updations
                           newdeviceCredentials = await tbClient
                               .getDeviceService()
@@ -887,6 +893,7 @@ class replacegwState extends State<replacegw> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
+                                  'landmark': address,
                                 };
 
                                 var up_attribute = (await tbClient
@@ -911,6 +918,7 @@ class replacegwState extends State<replacegw> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
+                                  'landmark': address,
                                 };
                                 try {
                                   var up_newdevice_attribute = (await tbClient
@@ -1209,18 +1217,18 @@ class replacegwState extends State<replacegw> {
     showDialog(
         context: context,
         builder: (BuildContext context) => CupertinoAlertDialog(
-              title: const Text("Location not available"),
-              content: const Text(
-                  'Please make sure you enable location and try again'),
-              actions: <Widget>[
-                CupertinoDialogAction(
-                  child: const Text("Ok"),
-                  onPressed: () {
-                    Navigator.of(context, rootNavigator: true).pop();
-                  },
-                )
-              ],
-            ));
+          title: const Text("Location not available"),
+          content: const Text(
+              'Please make sure you enable location and try again'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Ok"),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            )
+          ],
+        ));
   }
 
 }

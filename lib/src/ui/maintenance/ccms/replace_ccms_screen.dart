@@ -656,10 +656,10 @@ class replaceccmsState extends State<replaceccms> {
                                     'entityType': 'ASSET',
                                     'id': warddetails.first.wardid
                                   };
-
+                                 // 'id': response.id!.id perviously send wrong one
                                   Map<String, dynamic> toId = {
                                     'entityType': 'DEVICE',
-                                    'id': response.id!.id
+                                    'id': Olddevicedetails.id!.id
                                   };
 
                                   EntityRelation entityRelation =
@@ -846,6 +846,7 @@ class replaceccmsState extends State<replaceccms> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
+                                  'landmark': address,
                                 };
 
                                 var up_attribute = (await tbClient
@@ -870,6 +871,7 @@ class replaceccmsState extends State<replaceccms> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
+                                  'landmark': address,
                                 };
                                 try {
                                   var up_newdevice_attribute = (await tbClient
@@ -1190,5 +1192,4 @@ class replaceccmsState extends State<replaceccms> {
             )
     );
   }
-
 }

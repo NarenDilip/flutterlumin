@@ -923,22 +923,22 @@ class replaceilmState extends State<replaceilm> {
                             response.id!.id.toString())
                         as DeviceCredentials;
 
-                         var relation_response = await tbClient
+                        /* var relation_response = await tbClient
                             .getEntityRelationService()
                             .deleteDeviceRelation(
                                 relationDetails.elementAt(0).from.id!,
-                                response.id!.id!);
+                                response.id!.id!);*/
 
                         if (newdeviceCredentials != null) {
                           var newQRID =
                           newdeviceCredentials.credentialsId.toString();
 
-                          newdeviceCredentials.credentialsId = newQRID + "L";
+                          newdeviceCredentials.credentialsId = newQRID + "N";
                           var credresponse = await tbClient
                               .getDeviceService()
                               .saveDeviceCredentials(newdeviceCredentials);
 
-                          response.name = deviceName + "99";
+                          response.name = deviceName + "97";
                           var devresponse = await tbClient
                               .getDeviceService()
                               .saveDevice(response);
@@ -959,7 +959,7 @@ class replaceilmState extends State<replaceilm> {
                           if (Olddevicedetails != null) {
                             var Old_Device_Name = Olddevicedetails.name;
 
-                            /*var relationDetails = await tbClient
+                            var relationDetails = await tbClient
                                 .getEntityRelationService()
                                 .findInfoByTo(Olddevicedetails.id!);
 
@@ -969,7 +969,7 @@ class replaceilmState extends State<replaceilm> {
                                   .deleteDeviceRelation(
                                   relationDetails.elementAt(0).from.id!,
                                   response.id!.id!);
-                            }*/
+                            }
 
                             olddeviceCredentials = await tbClient
                                 .getDeviceService()
@@ -980,12 +980,12 @@ class replaceilmState extends State<replaceilm> {
                             if (olddeviceCredentials != null) {
                               var oldQRID = olddeviceCredentials.credentialsId.toString();
 
-                              olddeviceCredentials.credentialsId = oldQRID + "L";
+                              olddeviceCredentials.credentialsId = oldQRID + "O";
                               var old_cred_response = await tbClient
                                   .getDeviceService()
                                   .saveDeviceCredentials(olddeviceCredentials);
 
-                              Olddevicedetails.name = Olddevicename + "99";
+                              Olddevicedetails.name = Olddevicename + "96";
                               var old_dev_response = await tbClient
                                   .getDeviceService()
                                   .saveDevice(Olddevicedetails);
@@ -1001,7 +1001,7 @@ class replaceilmState extends State<replaceilm> {
                                   .getDeviceService()
                                   .saveDevice(response);
 
-                           /*   List<String> myfirmList = [];
+                              List<String> myfirmList = [];
                               myfirmList.add("lattitude");
 
                               List<AttributeKvEntry> latt_faultresponser;
@@ -1026,7 +1026,7 @@ class replaceilmState extends State<replaceilm> {
                                     .getAttributeService()
                                     .saveDeviceAttributes(response.id!.id!,
                                     "SERVER_SCOPE", old_bodyW_req));
-                              }*/
+                              }
 
                               final old_body_req = {
                                 'boardNumber': Old_Device_Name,
@@ -1207,10 +1207,18 @@ class replaceilmState extends State<replaceilm> {
                   Olddevicename, deviceName, context, imageFile);
             }
           } else {
-            calltoast(deviceName);
+            /*calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) =>
-                    dashboard_screen(selectedPage: 0)));
+                    dashboard_screen(selectedPage: 0)));*/
+            Fluttertoast.showToast(
+                msg: e.toString(),
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
         }
       } else {

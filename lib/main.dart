@@ -63,4 +63,5 @@ class MyApp extends StatelessWidget {
           body: splash_screen(),
         ));
   }
+
 }

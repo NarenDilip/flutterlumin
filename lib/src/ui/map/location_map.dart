@@ -103,6 +103,14 @@ class _LocationWidgetState extends State<LocationWidget> {
     setUpLogs();
   }
 
+
+  //done by dev
+  @override
+  void dispose() {
+    _listenLocation();
+    super.dispose();
+  }
+
   void setUpLogs() async {
     await FlutterLogs.initLogs(
         logLevelsEnabled: [

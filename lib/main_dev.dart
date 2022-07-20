@@ -25,6 +25,7 @@ Future<void> main() async {
       "baseUrl": devBaseUrl,
     },
   );
+
   SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
 
   WidgetsFlutterBinding.ensureInitialized();

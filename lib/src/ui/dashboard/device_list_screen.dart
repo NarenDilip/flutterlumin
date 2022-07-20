@@ -377,7 +377,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                           child: Point(
                                             triangleHeight: 25.0,
                                             child: GestureDetector(
-                                              onTap: () {
+                                              onTap: () async{
+                                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                prefs.setInt("Selected_index",2);
                                                 Navigator.of(context).push(
                                                     MaterialPageRoute(
                                                         builder: (BuildContext

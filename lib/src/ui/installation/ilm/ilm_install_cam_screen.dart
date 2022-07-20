@@ -950,13 +950,27 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                   builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           }
+        } else {
+          pr.hide();
+          noInternetToast(no_network);
         }
       });
     } else {
       pr.hide();
-      Permission.locationAlways.request();
+      openAppSettings();
       // openAppSettings();
     }
+  }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
   }
 
   void showMyDialog(BuildContext context) {

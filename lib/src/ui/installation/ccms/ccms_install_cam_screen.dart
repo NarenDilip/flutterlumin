@@ -597,7 +597,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       });
 
 
-
       Utility.isConnected().then((value) async {
         if (value) {
           pr.show();
@@ -972,6 +971,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
             // Navigator.pop(context);
             pr.hide();
             var message = toThingsboardError(e, context);
+
             if (message == session_expired) {
               var status = loginThingsboard.callThingsboardLogin(context);
               if (status == true) {
@@ -985,22 +985,26 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       dashboard_screen(selectedPage: 0)));
             }
           }
+        } else {
+          pr.hide();
+          noInternetToast(no_network);
         }
       });
     } else {
-      Fluttertoast.showToast(
-          msg: app_loc_per,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.white,
-          textColor: Colors.black,
-          fontSize: 16.0);
-
       pr.hide();
-      Permission.locationAlways.request();
-      // openAppSettings();
+      openAppSettings();
     }
+  }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
   }
 
   void showMyDialog(BuildContext context) {
