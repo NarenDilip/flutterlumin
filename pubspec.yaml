@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   geolocator: ^5.3.1
-  location: ^4.3.0
+  location: ^4.4.0
   latlong: ^0.6.1
   flutter_map: 0.12.0
   flutter_map_marker_cluster: 0.3.5
