@@ -53,7 +53,7 @@ dependencies:
   flutter_logs: ^2.1.4
   progress_dialog: ^1.2.4
   permission_handler: ^8.1.0
-  fl_location: 1.2.1 
+  fl_location: any
   vector_math: ^2.1.0
   flutter_foreground_task: any
   poly_geofence_service: any
