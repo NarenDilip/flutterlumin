@@ -31,7 +31,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 android {
     signingConfigs {
         release {
-            storeFile file('D:/flutter/luminator/Luminator2.0.jks')
+            storeFile file('flutter/luminator/Luminator2.0.jks')
             storePassword 'Luminator2.0'
             keyAlias 'Luminator2.0'
             keyPassword 'Luminator2.0'
