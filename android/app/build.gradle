@@ -37,10 +37,10 @@ if (keystorePropertiesFile.exists()) {
 android {
     signingConfigs {
         release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword keystoreProperties['storePassword']
+            storeFile file('/home/schnell/Documents/App Dev/Schnell/flutterlumin/Luminator2.0.jks')
+            storePassword 'Luminator2.0'
+            keyAlias 'Luminator2.0'
+            keyPassword 'Luminator2.0'
         }
     }
     compileSdkVersion 31
