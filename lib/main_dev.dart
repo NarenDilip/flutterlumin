@@ -1,5 +1,6 @@
 // @dart=2.9
 
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +25,19 @@ Future<void> main() async {
       "baseUrl": devBaseUrl,
     },
   );
+
   SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
   // FirebaseCrashlytics.instance.crash();
+
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+
   runApp(MyApp());
 }
 
@@ -58,4 +66,5 @@ class MyApp extends StatelessWidget {
           body: splash_screen(),
         ));
   }
+
 }

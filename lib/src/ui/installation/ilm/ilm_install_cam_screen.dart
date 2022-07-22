@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -16,6 +17,7 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -131,12 +133,13 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
           if (accuracy <= 10) {
-            _getAddress(location!.latitude, location!.longitude).then((value) {
+            _getAddress(location.latitude, location.longitude).then((value) {
               setState(() {
                 address = value;
               });
             });
-          } else {
+          }
+          else {
             setState(() {
               visibility = false;
             });
@@ -174,7 +177,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       if (accuracy <= 10) {
         callPolygonStop();
         _timer.cancel();
-        _getAddress(location!.latitude, location!.longitude).then((value) {
+        _getAddress(location.latitude, location.longitude).then((value) {
           setState(() {
             visibility = true;
             address = value;
@@ -196,7 +199,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
 
   void startTimer() {
     const oneSec = Duration(seconds: 1);
-    pr.show();
     _timer = Timer.periodic(
       oneSec,
       (Timer timer) {
@@ -206,7 +208,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             callPolygonStop();
             setState(() {
               visibility = true;
-              pr.hide();
               viewvisibility = false;
             });
           } else {
@@ -214,7 +215,6 @@ class ilmcaminstallState extends State<ilmcaminstall> {
             callPolygonStop();
             setState(() {
               visibility = true;
-              pr.hide();
               viewvisibility = false;
             });
           }
@@ -293,7 +293,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     _openCamera(context);
     setUpLogs();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       _polyGeofenceService.start();
       _polyGeofenceService
           .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
@@ -426,14 +426,14 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               color: Colors.grey[800],
                             )),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Visibility(
                       visible: visibility,
                       child: Container(
                           width: double.infinity,
                           child: TextButton(
-                              child: Text(app_com_install,
-                                  style: const TextStyle(
+                              child: const Text(app_com_install,
+                                  style: TextStyle(
                                       fontSize: 18.0,
                                       fontFamily: "Montserrat",
                                       fontWeight: FontWeight.bold,
@@ -451,15 +451,20 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                                   ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
-                                Utility.isConnected().then((value) {
+                                Utility.isConnected().then((value) async {
                                   if (value) {
                                     if (imageFile != null) {
-                                      pr.show();
-                                      if (geoFence == false) {
-                                        callILMInstallation(context, imageFile,
-                                            DeviceName, SelectedWard);
-                                      } else {
-                                        CallGeoFenceListener(context);
+                                      if(!(await Geolocator().isLocationServiceEnabled())){
+                                        pr.hide();
+                                        onGpsAlert();
+                                      } else{
+                                        pr.show();
+                                        if (geoFence == false) {
+                                          callILMInstallation(context, imageFile,
+                                              DeviceName, SelectedWard);
+                                        } else {
+                                          CallGeoFenceListener(context);
+                                        }
                                       }
                                     } else {
                                       pr.hide();
@@ -482,39 +487,34 @@ class ilmcaminstallState extends State<ilmcaminstall> {
   }
 
   void _openCamera(BuildContext context) async {
-    try {
-      final pickedFile = await ImagePicker().pickImage(
-          source: ImageSource.camera,
-          maxHeight: 480,
-          maxWidth: 640,
-          imageQuality: 25,
-          preferredCameraDevice: CameraDevice.rear);
-      setState(() {
-        if (pickedFile != null) {
-          imageFile = pickedFile;
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
-          );
-        }
-      });
-    } catch (e) {
-      e.toString();
-    }
+    final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        maxHeight: 480,
+        maxWidth: 640,
+        imageQuality: 10,
+        preferredCameraDevice: CameraDevice.rear);
+    setState(() {
+      if (pickedFile != null) {
+        imageFile = pickedFile;
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
+        );
+      }
+    });
+
   }
 
   Future<void> CallGeoFenceListener(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var geoFence = prefs.getString('geoFence').toString();
     if (geoFence == "true") {
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
         _polyGeofenceService.start();
-        _polyGeofenceService
-            .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
+        _polyGeofenceService.addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
         _polyGeofenceService.addLocationChangeListener(_onLocationChanged);
-        _polyGeofenceService.addLocationServicesStatusChangeListener(
-            _onLocationServicesStatusChanged);
+        _polyGeofenceService.addLocationServicesStatusChangeListener(_onLocationServicesStatusChanged);
         _polyGeofenceService.addStreamErrorListener(_onError);
         _polyGeofenceService.start(_polyGeofenceList).catchError(_onError);
       });
@@ -539,6 +539,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     String deviceName = prefs.getString('deviceName').toString();
     String SelectedRegion = prefs.getString('SelectedRegion').toString();
     String SelectedZone = prefs.getString('SelectedZone').toString();
+    //newly added by dev
+    String Createdby = prefs.getString("username").toString();
     // String FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     var DevicecurrentFolderName = "";
@@ -547,6 +549,19 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     var status = await Permission.location.status;
     if (status.isGranted) {
       var versionCompatability = false;
+
+      //newlly added by dev for landmark purpose
+      var latter = double.parse(Lattitude);
+      var longer = double.parse(Longitude);
+
+
+      _getAddress(latter, longer).then((value) {
+        setState(() {
+          address = value;
+          prefs.setString("location", address);
+        });
+      });
+
 
       Utility.isConnected().then((value) async {
         if (value) {
@@ -721,6 +736,8 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
                               'boardNumber':DeviceName,
+                              'InstallBy':Createdby,
+                              'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                             };
 
                             var saveAttributes = await tbClient
@@ -898,7 +915,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                 /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
                     "ILM Device details not found Exception");*/
                 pr.hide();
-                calltoast(app_dev_nfound_one + DeviceName + app_dev_nfound_two);
+                calltoast(device_toast_msg + DeviceName + app_dev_nfound_two);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
               }
@@ -933,13 +950,27 @@ class ilmcaminstallState extends State<ilmcaminstall> {
                   builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
             }
           }
+        } else {
+          pr.hide();
+          noInternetToast(no_network);
         }
       });
     } else {
       pr.hide();
-      Permission.locationAlways.request();
+      openAppSettings();
       // openAppSettings();
     }
+  }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
   }
 
   void showMyDialog(BuildContext context) {
@@ -1165,4 +1196,23 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     _polyGeofenceService.clearAllListeners();
     _polyGeofenceService.stop();
   }
+
+  void onGpsAlert(){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title:  const Text("Location not available"),
+          content: const Text('Please make sure you enable location and try again'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Ok"),
+              onPressed: (){
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            )
+          ],
+        )
+    );
+  }
+
 }

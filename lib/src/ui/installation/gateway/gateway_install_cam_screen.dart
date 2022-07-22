@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -13,9 +15,11 @@ import 'package:flutterlumin/src/thingsboard/model/entity_group_models.dart';
 import 'package:flutterlumin/src/thingsboard/model/id/entity_group_id.dart';
 import 'package:flutterlumin/src/thingsboard/thingsboard_client_base.dart';
 import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
+import 'package:flutterlumin/src/ui/maintenance/ccms/ccms_maintenance_screen.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -130,7 +134,7 @@ class gwcaminstallState extends State<gwcaminstall> {
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
           if (accuracy <= 10) {
-            _getAddress(location!.latitude, location!.longitude).then((value) {
+            _getAddress(location.latitude, location.longitude).then((value) {
               setState(() {
                 address = value;
               });
@@ -166,14 +170,15 @@ class gwcaminstallState extends State<gwcaminstall> {
           }
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
         }
       }
     } else {
       if (accuracy <= 10) {
         _timer.cancel();
         callPolygonStop();
-        _getAddress(location!.latitude, location!.longitude).then((value) {
+        _getAddress(location.latitude, location.longitude).then((value) {
           setState(() {
             visibility = true;
             address = value;
@@ -198,7 +203,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     const oneSec = Duration(seconds: 1);
     _timer = Timer.periodic(
       oneSec,
-      (Timer timer) {
+          (Timer timer) {
         if (_start == 0) {
           if (accuracy <= 10) {
             timer.cancel();
@@ -223,46 +228,6 @@ class gwcaminstallState extends State<gwcaminstall> {
       },
     );
     Adressaccuvalue = address.toString().split(",");
-  }
-
-  void setUpLogs() async {
-    await FlutterLogs.initLogs(
-        logLevelsEnabled: [
-          LogLevel.INFO,
-          LogLevel.WARNING,
-          LogLevel.ERROR,
-          LogLevel.SEVERE
-        ],
-        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
-        directoryStructure: DirectoryStructure.FOR_DATE,
-        logTypesEnabled: [_myLogFileName],
-        logFileExtension: LogFileExtension.LOG,
-        logsWriteDirectoryName: "MyLogs",
-        logsExportDirectoryName: "MyLogs/Exported",
-        debugFileOperations: true,
-        isDebuggable: true);
-
-    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
-    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
-
-    // Logs Exported Callback
-    FlutterLogs.channel.setMethodCallHandler((call) async {
-      if (call.method == 'logsExported') {
-        setLogsStatus(
-            status: "logsExported: ${call.arguments.toString()}", append: true);
-
-        _completer.complete(call.arguments.toString());
-      } else if (call.method == 'logsPrinted') {
-        setLogsStatus(
-            status: "logsPrinted: ${call.arguments.toString()}", append: true);
-      }
-    });
-  }
-
-  void setLogsStatus({String status = '', bool append = false}) {
-    setState(() {
-      logStatus = status;
-    });
   }
 
   void callPolygonStop() {
@@ -346,7 +311,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     _openCamera(context);
     setUpLogs();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       _polyGeofenceService.start();
       _polyGeofenceService
           .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
@@ -372,6 +337,48 @@ class gwcaminstallState extends State<gwcaminstall> {
     }
   }
 
+  void setUpLogs() async {
+    await FlutterLogs.initLogs(
+        logLevelsEnabled: [
+          LogLevel.INFO,
+          LogLevel.WARNING,
+          LogLevel.ERROR,
+          LogLevel.SEVERE
+        ],
+        timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+        directoryStructure: DirectoryStructure.FOR_DATE,
+        logTypesEnabled: [_myLogFileName],
+        logFileExtension: LogFileExtension.LOG,
+        logsWriteDirectoryName: "MyLogs",
+        logsExportDirectoryName: "MyLogs/Exported",
+        debugFileOperations: true,
+        isDebuggable: true);
+
+    // [IMPORTANT] The first log line must never be called before 'FlutterLogs.initLogs'
+    // FlutterLogs.logInfo(_tag, "setUpLogs", "setUpLogs: Setting up logs..");
+
+    // Logs Exported Callback
+    FlutterLogs.channel.setMethodCallHandler((call) async {
+      if (call.method == 'logsExported') {
+        setLogsStatus(
+            status: "logsExported: ${call.arguments.toString()}", append: true);
+
+        _completer.complete(call.arguments.toString());
+      } else if (call.method == 'logsPrinted') {
+        setLogsStatus(
+            status: "logsPrinted: ${call.arguments.toString()}", append: true);
+      }
+    });
+  }
+
+  void setLogsStatus({String status = '', bool append = false}) {
+    setState(() {
+      logStatus = status;
+    });
+  }
+
+
+
   Future<void> CallCoordinates(context) async {
     _polyGeofenceList[0].polygon.clear();
     String data = await DefaultAssetBundle.of(context)
@@ -382,9 +389,9 @@ class gwcaminstallState extends State<gwcaminstall> {
     var details;
     for (int i = 0; i < coordinateCount; i++) {
       var latter =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][1];
       var rlonger =
-          jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
+      jsonResult['features'][0]['geometry']['coordinates'][0][i][0];
       // polygonad(LatLng(latter,rlonger));
       _polyGeofenceList[0].polygon.add(LatLng(latter, rlonger));
       // details[new LatLng(latter,rlonger)];
@@ -419,7 +426,8 @@ class gwcaminstallState extends State<gwcaminstall> {
         onWillPop: () async {
           callPolygonStop();
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -436,13 +444,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
-                            width: 200,
-                            height: 200,
-                            child: Icon(
-                              Icons.camera_alt,
-                              color: Colors.grey[800],
-                            )),
+                        decoration: BoxDecoration(color: Colors.white),
+                        width: 200,
+                        height: 200,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.grey[800],
+                        )),
                   ),
                   SizedBox(height: 10),
                   Visibility(
@@ -458,30 +466,36 @@ class gwcaminstallState extends State<gwcaminstall> {
                                       color: Colors.white)),
                               style: ButtonStyle(
                                   padding:
-                                      MaterialStateProperty.all<EdgeInsets>(
-                                          EdgeInsets.all(20)),
+                                  MaterialStateProperty.all<EdgeInsets>(
+                                      EdgeInsets.all(20)),
                                   backgroundColor:
-                                      MaterialStateProperty.all(Colors.green),
+                                  MaterialStateProperty.all(Colors.green),
                                   shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                       RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ))),
+                                        borderRadius: BorderRadius.circular(25.0),
+                                      ))),
                               onPressed: () {
                                 // Utility.progressDialog(context);
-                                Utility.isConnected().then((value) {
+                                Utility.isConnected().then((value) async {
                                   if (value) {
                                     if (imageFile != null) {
-                                      pr.show();
+
                                       // _listenLocation();
-                                      if (geoFence == true) {
-                                        CallGeoFenceListener(context);
+                                      if (!(await Geolocator().isLocationServiceEnabled())) {
+                                        pr.hide();
+                                        onGpsAlert();
                                       } else {
-                                        callReplacementComplete(
-                                            context,
-                                            imageFile,
-                                            DeviceName,
-                                            SelectedWard);
+                                        pr.show();
+                                        if (geoFence == true) {
+                                          CallGeoFenceListener(context);
+                                        } else {
+                                          callReplacementComplete(
+                                              context,
+                                              imageFile,
+                                              DeviceName,
+                                              SelectedWard);
+                                        }
                                       }
                                     } else {
                                       pr.hide();
@@ -519,7 +533,7 @@ class gwcaminstallState extends State<gwcaminstall> {
         source: ImageSource.camera,
         maxHeight: 480,
         maxWidth: 640,
-        imageQuality: 25,
+        imageQuality: 10,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
       if (pickedFile != null) {
@@ -527,7 +541,8 @@ class gwcaminstallState extends State<gwcaminstall> {
       } else {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => dashboard_screen(selectedPage: 0)),
+          MaterialPageRoute(
+              builder: (context) => dashboard_screen(selectedPage: 0)),
         );
       }
     });
@@ -537,7 +552,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var geoFence = prefs.getString('geoFence').toString();
     if (geoFence == "true") {
-      WidgetsBinding.instance?.addPostFrameCallback((_) {
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
         _polyGeofenceService.start();
         _polyGeofenceService
             .addPolyGeofenceStatusChangeListener(_onPolyGeofenceStatusChanged);
@@ -569,6 +584,9 @@ class gwcaminstallState extends State<gwcaminstall> {
     String SelectedZone = prefs.getString('SelectedZone').toString();
     String deviceName = prefs.getString('deviceName').toString();
     String FirmwareVersion = prefs.getString("firmwareVersion").toString();
+    //newly added by dev
+    String Createdby = prefs.getString("username").toString();
+
 
     var DevicecurrentFolderName = "";
     var DevicemoveFolderName = "";
@@ -576,13 +594,25 @@ class gwcaminstallState extends State<gwcaminstall> {
 
     var status = await Permission.location.status;
     if (status.isGranted) {
+      //newlly added by dev for landmark purpose
+      var latter = double.parse(Lattitude);
+      var longer = double.parse(Longitude);
+
+
+      _getAddress(latter, longer).then((value) {
+        setState(() {
+          address = value;
+          prefs.setString("location", address);
+        });
+      });
+
       Utility.isConnected().then((value) async {
         if (value) {
           // Utility.progressDialog(context);
           pr.show();
           try {
             var tbClient =
-                ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+            ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
             tbClient.smart_init();
 
             Device response;
@@ -595,7 +625,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                 DeviceCredentials deviceCredentials = await tbClient
                     .getDeviceService()
                     .getDeviceCredentialsByDeviceId(
-                        response.id!.id.toString()) as DeviceCredentials;
+                    response.id!.id.toString()) as DeviceCredentials;
 
                 if (deviceCredentials.credentialsId.length == 15) {
                   DBHelper dbHelper = DBHelper();
@@ -617,14 +647,14 @@ class gwcaminstallState extends State<gwcaminstall> {
                       .getAttributeKvEntries(response.id!, firmmyList))
                   as List<AttributeKvEntry>;*/
 
-                  try {
+                 /* try {
                     List<String> myfirmList = [];
                     myfirmList.add("firmware_versions");
                     List<AttributeKvEntry> faultresponser;
 
                     faultresponser = (await tbClient
                         .getAttributeService()
-                        .getFirmAttributeKvEntries(regionid, myfirmList));
+                        .getFirmAttributeKvEntries(regionid, myfirmList));*/
 
                     /* List<TsKvEntry> faultresponser;
                     faultresponser = await tbClient
@@ -647,13 +677,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                       }
                     }*/
 
-                  } catch (e) {
-                    /*FlutterLogs.logInfo(
+                  /*} catch (e) {
+                    *//*FlutterLogs.logInfo(
                         "gw_installation_page",
                         "gw_installation",
-                        "Unable to Find Firmware version of Device");*/
+                        "Unable to Find Firmware version of Device");*//*
                     var message = toThingsboardError(e, context);
-                  }
+                  }*/
 
                   /* if (responserse.length != 0) {
                     var firmwaredetails = responserse.first.getValue();
@@ -682,7 +712,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                         if (versionCompatability == true) {
                           DBHelper dbHelper = DBHelper();
                           List<Ward> warddetails =
-                              await dbHelper.ward_basedDetails(SelectedWard);
+                          await dbHelper.ward_basedDetails(SelectedWard);
                           if (warddetails.length != "0") {
                             warddetails.first.wardid;
 
@@ -712,37 +742,40 @@ class gwcaminstallState extends State<gwcaminstall> {
                               'accuracy': accuracy.toString(),
                               'zoneName': SelectedZone,
                               'wardName': SelectedWard,
-                              'boardNumber':DeviceName,
+                              'boardNumber': DeviceName,
+                              'InstallBy': Createdby,
+                              'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                             };
 
                             var saveAttributes = await tbClient
                                 .getAttributeService()
                                 .saveDeviceAttributes(
-                                    response.id!.id!, "SERVER_SCOPE", data);
+                                response.id!.id!, "SERVER_SCOPE", data);
 
                             List<EntityGroupId> currentdeviceresponse;
                             currentdeviceresponse = await tbClient
                                 .getEntityGroupService()
                                 .getEntityGroupsForFolderEntity(
-                                    response.id!.id!);
+                                response.id!.id!);
 
                             if (currentdeviceresponse != null) {
                               var firstdetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.first.id!);
+                                  currentdeviceresponse.first.id!);
 
                               if (firstdetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.first.id!;
+                                currentdeviceresponse.first.id!;
                               }
                               var seconddetails = await tbClient
                                   .getEntityGroupService()
                                   .getEntityGroup(
-                                      currentdeviceresponse.elementAt(1).id!);
+                                  currentdeviceresponse.last.id!);
+                              //currentdeviceresponse.elementAt(1).id!
                               if (seconddetails!.name.toString() != "All") {
                                 DevicecurrentFolderName =
-                                    currentdeviceresponse.last.id!;
+                                currentdeviceresponse.last.id!;
                               }
 
                               List<EntityGroupInfo> entitygroups;
@@ -787,18 +820,18 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                        DevicecurrentFolderName, myList);
+                                    DevicecurrentFolderName, myList);
 
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                        DevicemoveFolderName, myList);
+                                    DevicemoveFolderName, myList);
 
                                 // Need to add with Region Folder, Zone Folder and
                                 // Ward Folder as device verification, Need to update
 
                                 final bytes =
-                                    File(imageFile!.path).readAsBytesSync();
+                                File(imageFile!.path).readAsBytesSync();
                                 String img64 = base64Encode(bytes);
 
                                 postRequest(context, img64, DeviceName);
@@ -905,7 +938,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                         textColor: Colors.black,
                         fontSize: 16.0);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                        builder: (BuildContext context) =>
+                            dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   // Navigator.pop(context);
@@ -927,7 +961,8 @@ class gwcaminstallState extends State<gwcaminstall> {
                 pr.hide();
                 calltoast(deviceName);
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                    builder: (BuildContext context) =>
+                        dashboard_screen(selectedPage: 0)));
               }
             } else {
               // Navigator.pop(context);
@@ -948,6 +983,7 @@ class gwcaminstallState extends State<gwcaminstall> {
             // Navigator.pop(context);
             /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
                 "Gateway Device Installation Exception");*/
+            debugPrint(e.toString());
             pr.hide();
             var message = toThingsboardError(e, context);
             if (message == session_expired) {
@@ -959,18 +995,33 @@ class gwcaminstallState extends State<gwcaminstall> {
             } else {
               calltoast(deviceName);
               // Navigator.pop(context);
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+               Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      dashboard_screen(selectedPage: 0)));
             }
           }
+        } else {
+          pr.hide();
+          noInternetToast(no_network);
         }
       });
     } else {
       pr.hide();
-      Permission.locationAlways.request();
-      // openAppSettings();
+      openAppSettings();
     }
   }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+
 
   void showMyDialog(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -998,13 +1049,13 @@ class gwcaminstallState extends State<gwcaminstall> {
                       child: imageFile != null
                           ? Image.file(File(imageFile.path))
                           : Container(
-                              decoration: BoxDecoration(color: Colors.white),
-                              width: 200,
-                              height: 200,
-                              child: Icon(
-                                Icons.camera_alt,
-                                color: Colors.grey[800],
-                              )),
+                          decoration: BoxDecoration(color: Colors.white),
+                          width: 200,
+                          height: 200,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.grey[800],
+                          )),
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -1079,7 +1130,8 @@ class gwcaminstallState extends State<gwcaminstall> {
       if (response.statusCode.toString() == "200") {
         callPolygonStop();
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
         showMyDialog(context);
       } else {}
       return response;
@@ -1108,7 +1160,8 @@ class gwcaminstallState extends State<gwcaminstall> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -1174,4 +1227,24 @@ class gwcaminstallState extends State<gwcaminstall> {
 
     return tbError;
   }
+
+  void onGpsAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title: const Text("Location not available"),
+          content: const Text(
+              'Please make sure you enable location and try again'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Ok"),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            )
+          ],
+        ));
+  }
+
+
 }

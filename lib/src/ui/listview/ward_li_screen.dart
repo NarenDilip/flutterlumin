@@ -85,7 +85,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
 
   void getIndex() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    index = prefs.getInt("Selected_index")!;
+      index = prefs.getInt("Selected_index")!;
   }
 
 

@@ -361,7 +361,9 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       triangleHeight: 25.0,
                                                       edge: Edge.RIGHT,
                                                       child: GestureDetector(
-                                                        onTap: () {
+                                                        onTap: () async{
+                                                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                          prefs.setInt("Selected_index",0);
                                                           Navigator.of(context).push(
                                                               MaterialPageRoute(
                                                                   builder: (BuildContext

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_flavor/flutter_flavor.dart';
@@ -18,6 +19,7 @@ import 'package:flutterlumin/src/ui/login/loginThingsboard.dart';
 import 'package:flutterlumin/src/utils/utility.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -29,7 +31,6 @@ import '../../../localdb/model/ward_model.dart';
 import '../../dashboard/dashboard_screen.dart';
 import '../ilm/ilm_maintenance_screen.dart';
 import 'gw_maintenance_screen.dart';
-
 
 // Gw Maintenance remove device screen, it will check the selected device
 // is present in server, it will collect the details of the device, user need
@@ -157,7 +158,8 @@ class replacegwState extends State<replacegw> {
     return WillPopScope(
         onWillPop: () async {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+              builder: (BuildContext context) =>
+                  dashboard_screen(selectedPage: 0)));
           return true;
         },
         child: Scaffold(
@@ -202,7 +204,7 @@ class replacegwState extends State<replacegw> {
                                   RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25.0),
                                   ))),
-                          onPressed: () {
+                          onPressed: () async {
                             if (imageFile != null) {
                               // pr.show();
                               // late Future<Device?> entityFuture;
@@ -211,8 +213,13 @@ class replacegwState extends State<replacegw> {
                               //     newDeviceName,
                               //     context,
                               //     imageFile);
-                              showActionAlertDialog(
-                                  context, DeviceName, newDeviceName);
+                              if (!(await Geolocator()
+                                  .isLocationServiceEnabled())) {
+                                onGpsAlert();
+                              } else {
+                                showActionAlertDialog(
+                                    context, DeviceName, newDeviceName);
+                              }
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
@@ -247,16 +254,15 @@ class replacegwState extends State<replacegw> {
         source: ImageSource.camera,
         maxHeight: 480,
         maxWidth: 640,
-        imageQuality: 25,
+        imageQuality: 10,
         preferredCameraDevice: CameraDevice.rear);
     setState(() {
-      if(pickedFile != null) {
+      if (pickedFile != null) {
         imageFile = pickedFile;
-      }else{
+      } else {
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => GWMaintenanceScreen()),
+          MaterialPageRoute(builder: (context) => GWMaintenanceScreen()),
         );
       }
     });
@@ -302,7 +308,7 @@ class replacegwState extends State<replacegw> {
 //         }
 //       }
 //     } else {
-//       calltoast(no_network);
+//       noInternetToast(no_network);
 //     }
 //   });
 // }
@@ -330,8 +336,8 @@ class replacegwState extends State<replacegw> {
       onPressed: () {
         late Future<Device?> entityFuture;
         // Utility.progressDialog(context);
-        entityFuture =
-            ilm_main_fetchDeviceDetails(OldDevice, NewDevice, context,imageFile);
+        entityFuture = ilm_main_fetchDeviceDetails(
+            OldDevice, NewDevice, context, imageFile);
       },
     );
 
@@ -418,7 +424,8 @@ class replacegwState extends State<replacegw> {
         try {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
-          var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+          var tbClient =
+          ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           response = await tbClient
               .getDeviceService()
@@ -451,7 +458,7 @@ class replacegwState extends State<replacegw> {
           }
         }
       } else {
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -466,7 +473,6 @@ class replacegwState extends State<replacegw> {
     });
     return "${addresss.elementAt(1).addressLine}";
   }
-
 
   @override
   Future<Device?> ilm_main_fetchSmartDeviceDetails(
@@ -490,12 +496,16 @@ class replacegwState extends State<replacegw> {
         String SelectedZone = prefs.getString('SelectedZone').toString();
         var versionCompatability = false;
 
+        //newly added by dev
+        String Createdby = prefs.getString("username").toString();
+
         var latter = double.parse(Lattitude);
         var longer = double.parse(Longitude);
 
         _getAddress(latter, longer).then((value) {
           setState(() {
             address = value;
+            prefs.setString("location", address);
           });
         });
 
@@ -531,8 +541,7 @@ class replacegwState extends State<replacegw> {
               if (entitygroups != null) {
                 for (int i = 0; i < entitygroups.length; i++) {
                   if (entitygroups.elementAt(i).name == FlavorConfig.instance.variables["GWserviceFolderName"]) {
-                    DevicemoveFolderName =
-                        entitygroups.elementAt(i).id!.id!.toString();
+                    DevicemoveFolderName = entitygroups.elementAt(i).id!.id!.toString();
                   }
                 }
 
@@ -623,7 +632,7 @@ class replacegwState extends State<replacegw> {
                       //   if (compatable_versions
                       //       .toString()
                       //       .contains(relacefaultresponser.first.getValue())) {
-                          versionCompatability = true;
+                      versionCompatability = true;
                       //   } else {
                       //     versionCompatability = false;
                       //   }
@@ -631,6 +640,7 @@ class replacegwState extends State<replacegw> {
 
                       if (versionCompatability == true) {
                         if (relationDetails.length.toString() == "0") {
+
                           newdeviceCredentials = await tbClient
                               .getDeviceService()
                               .getDeviceCredentialsByDeviceId(
@@ -660,21 +670,6 @@ class replacegwState extends State<replacegw> {
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
-
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if(relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                    relationDetails
-                                        .elementAt(0)
-                                        .from
-                                        .id!,
-                                    Olddevicedetails.id!.id!);
-                              }
 
                               olddeviceCredentials = await tbClient
                                   .getDeviceService()
@@ -713,11 +708,13 @@ class replacegwState extends State<replacegw> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
                                   'landmark': address,
-                                  'slatitude': Lattitude.toString(),
-                                  'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
+                                  'InstallBy': Createdby,
+                                  'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                                 };
 
                                 DBHelper dbHelper = DBHelper();
@@ -731,10 +728,12 @@ class replacegwState extends State<replacegw> {
                                     'id': warddetails.first.wardid
                                   };
 
+                                  // 'id': response.id!.id perviously send wrong one
                                   Map<String, dynamic> toId = {
                                     'entityType': 'DEVICE',
-                                    'id': response.id!.id
+                                    'id': Olddevicedetails.id!.id
                                   };
+
 
                                   EntityRelation entityRelation =
                                   EntityRelation(
@@ -771,11 +770,13 @@ class replacegwState extends State<replacegw> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
+                                  'latitude': Lattitude,
+                                  'longitude': Longitude,
                                   'landmark': address,
-                                  'slatitude': Lattitude.toString(),
-                                  'slongitude': Longitude.toString(),
                                   'zoneName': SelectedZone,
                                   'wardName': SelectedWard,
+                                  'InstallBy': Createdby,
+                                  'InstalledOn':DateTime.now().millisecondsSinceEpoch,
                                 };
 
                                 try {
@@ -809,14 +810,14 @@ class replacegwState extends State<replacegw> {
                             } else {
                               pr.hide();
                               calltoast(deviceName);
-
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen(selectedPage: 0)));
+                              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      dashboard_screen(selectedPage: 0)));
                             }
                           }
-                        } else {
+                        }
+                        else {
+
                           // New Device Updations
                           newdeviceCredentials = await tbClient
                               .getDeviceService()
@@ -844,12 +845,6 @@ class replacegwState extends State<replacegw> {
                                 .getDeviceService()
                                 .saveDevice(response);
 
-                            var relation_response = await tbClient
-                                .getEntityRelationService()
-                                .deleteDeviceRelation(
-                                relationDetails.elementAt(0).from.id!,
-                                response.id!.id!);
-
                             // Old Device Updations
 
                             Device Olddevicedetails = null as Device;
@@ -860,18 +855,6 @@ class replacegwState extends State<replacegw> {
                             if (Olddevicedetails != null) {
                               var Old_Device_Name = Olddevicedetails.name;
                               var Old_Device_label = Olddevicedetails.label;
-
-                              var relationDetails = await tbClient
-                                  .getEntityRelationService()
-                                  .findInfoByTo(Olddevicedetails.id!);
-
-                              if (relationDetails.isNotEmpty) {
-                                var relation_response = await tbClient
-                                    .getEntityRelationService()
-                                    .deleteDeviceRelation(
-                                    relationDetails.elementAt(0).from.id!,
-                                    response.id!.id!);
-                              }
 
                               olddeviceCredentials = await tbClient
                                   .getDeviceService()
@@ -895,18 +878,6 @@ class replacegwState extends State<replacegw> {
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
 
-                                var relationDetails = await tbClient
-                                    .getEntityRelationService()
-                                    .findInfoByTo(Olddevicedetails.id!);
-
-                                if (relationDetails.isNotEmpty) {
-                                  var relation_response = await tbClient
-                                      .getEntityRelationService()
-                                      .deleteDeviceRelation(
-                                      relationDetails.elementAt(0).from.id!,
-                                      Olddevicedetails.id!.id!);
-                                }
-
                                 olddeviceCredentials.credentialsId = newQRID;
                                 var oldcredresponse = await tbClient
                                     .getDeviceService()
@@ -922,6 +893,7 @@ class replacegwState extends State<replacegw> {
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
                                   'ieeeAddress': oldQRID,
+                                  'landmark': address,
                                 };
 
                                 var up_attribute = (await tbClient
@@ -946,6 +918,7 @@ class replacegwState extends State<replacegw> {
                                 final new_body_req = {
                                   'boardNumber': new_Device_Name,
                                   'ieeeAddress': newQRID,
+                                  'landmark': address,
                                 };
                                 try {
                                   var up_newdevice_attribute = (await tbClient
@@ -981,18 +954,16 @@ class replacegwState extends State<replacegw> {
                             } else {
                               pr.hide();
                               calltoast(deviceName);
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          dashboard_screen(selectedPage: 0)));
+                              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      dashboard_screen(selectedPage: 0)));
                             }
                           } else {
                             pr.hide();
                             callstoast("Unable to Fetch Device Credentials");
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        dashboard_screen(selectedPage: 0)));
+                            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    dashboard_screen(selectedPage: 0)));
                           }
                         }
                       } else {
@@ -1022,25 +993,29 @@ class replacegwState extends State<replacegw> {
                     pr.hide();
                     callstoast("Unable to Find Related Devices");
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                        builder: (BuildContext context) =>
+                            dashboard_screen(selectedPage: 0)));
                   }
                 } else {
                   pr.hide();
                   callstoast("Unable to find current Device Folder Details");
                   Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                      builder: (BuildContext context) =>
+                          dashboard_screen(selectedPage: 0)));
                 }
               } else {
                 pr.hide();
                 callstoast("Unable to find Device Folder Details");
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                    builder: (BuildContext context) =>
+                        dashboard_screen(selectedPage: 0)));
               }
             } else {
               pr.hide();
               callstoast("Unable to find Selected Device Details");
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                  builder: (BuildContext context) =>
+                      dashboard_screen(selectedPage: 0)));
             }
           } else {
             pr.hide();
@@ -1068,11 +1043,12 @@ class replacegwState extends State<replacegw> {
           } else {
             calltoast(deviceName);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+                builder: (BuildContext context) =>
+                    dashboard_screen(selectedPage: 0)));
           }
         }
       } else {
-        calltoast(no_network);
+        noInternetToast(no_network);
       }
     });
   }
@@ -1104,6 +1080,16 @@ class replacegwState extends State<replacegw> {
         textColor: Colors.black,
         fontSize: 16.0);
   }
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
 
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {
@@ -1113,7 +1099,8 @@ class replacegwState extends State<replacegw> {
       var status = loginThingsboard.callThingsboardLogin(context);
       if (status == true) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
       }
     } else {
       if (error is DioError) {
@@ -1206,7 +1193,8 @@ class replacegwState extends State<replacegw> {
             fontSize: 16.0);
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
       } else {}
       return response;
     } catch (e) {
@@ -1224,4 +1212,23 @@ class replacegwState extends State<replacegw> {
       return response;
     }
   }
+
+  void onGpsAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title: const Text("Location not available"),
+          content: const Text(
+              'Please make sure you enable location and try again'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Ok"),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            )
+          ],
+        ));
+  }
+
 }

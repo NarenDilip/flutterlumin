@@ -57,7 +57,7 @@ class _QRState extends State<QRScreen> {
               child: (result != null)
                   ? Text(
                       'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
-                  : Text('Scan a code'),
+                  : const Text('Scan a code'),
             ),
           )
         ],
@@ -80,9 +80,9 @@ class _QRState extends State<QRScreen> {
           });
         });
       } else {
-        controller.stopCamera();
         calltoast(no_network);
       }
+
     });
   }
 
@@ -108,4 +108,5 @@ class _QRState extends State<QRScreen> {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Barcode>('result', result));
   }
+
 }

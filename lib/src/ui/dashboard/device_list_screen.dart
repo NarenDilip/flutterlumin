@@ -63,7 +63,7 @@ class device_list_screen_state extends State<device_list_screen> {
   bool _ccmsvisible = true;
   bool _obscureText = true;
   String searchNumber = "0";
-  late ProgressDialog pr;
+  ProgressDialog? pr;
   String Maintenance = "true";
 
   LocationData? currentLocation;
@@ -209,7 +209,7 @@ class device_list_screen_state extends State<device_list_screen> {
 
     pr = ProgressDialog(context,
         type: ProgressDialogType.Normal, isDismissible: false);
-    pr.style(
+    pr!.style(
       message: 'Please wait ..',
       borderRadius: 20.0,
       backgroundColor: Colors.lightBlueAccent,
@@ -355,7 +355,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 child: Center(
                                                   child: Text(
                                                       "  " +
-                                                          '$SelectedZone' +
+                                                          '$SelectedZone'+
                                                           "      ",
                                                       style: const TextStyle(
                                                           fontSize: 16.0,
@@ -377,7 +377,9 @@ class device_list_screen_state extends State<device_list_screen> {
                                           child: Point(
                                             triangleHeight: 25.0,
                                             child: GestureDetector(
-                                              onTap: () {
+                                              onTap: () async{
+                                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                prefs.setInt("Selected_index",2);
                                                 Navigator.of(context).push(
                                                     MaterialPageRoute(
                                                         builder: (BuildContext
@@ -825,7 +827,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                          children: [
+                                          children: const [
                                             Expanded(
                                                 child: Padding(
                                                     padding:
@@ -922,7 +924,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                          children: [
+                                          children: const [
                                             Expanded(
                                                 child: Padding(
                                                     padding:
@@ -1019,7 +1021,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                     },
                                     child: Container(
                                         child: Row(
-                                          children: [
+                                          children: const [
                                             Expanded(
                                                 child: Padding(
                                                     padding:
@@ -1082,14 +1084,14 @@ class device_list_screen_state extends State<device_list_screen> {
                               )
                                   : Container(
                                   color: Colors.white,
-                                  child: Column(children: [
+                                  child: Column(children: const [
                                     SizedBox(
                                       height: 10,
                                     ),
                                     Text(
                                       device_no_result ,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 18.0,
                                           fontFamily: "Montserrat",
                                           fontWeight: FontWeight.normal,
@@ -1160,7 +1162,7 @@ class device_list_screen_state extends State<device_list_screen> {
   //         }
   //       }
   //     } else {
-  //       calltoast(no_network);
+  //       noInternetToast(no_network);
   //     }
   //   });
   // }
@@ -1168,8 +1170,9 @@ class device_list_screen_state extends State<device_list_screen> {
   Future<void> callILMDeviceListFinder(
       String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
+      await pr!.show();
       if (value) {
-        pr.show();
+
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -1186,6 +1189,7 @@ class device_list_screen_state extends State<device_list_screen> {
           (await tbClient.getDeviceService().getTenantDevices(pageLink));
 
           if (devicelist_response != null) {
+            await pr!.hide();
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {
                 String name =
@@ -1195,22 +1199,19 @@ class device_list_screen_state extends State<device_list_screen> {
             }
 
             setState(() {
-              pr.hide();
               _foundUsers = _foundUsers;
             });
 
           } else {
-            setState(() {
-              pr.hide();
-            });
             calltoast(searchNumber);
+            await pr!.hide();
           }
         } catch (e) {
           /*FlutterLogs.logInfo(
               "devicelist_page", "device_list", "ILM Device Finder Issue");*/
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callpolebasedILMDeviceListFinder(
@@ -1218,11 +1219,13 @@ class device_list_screen_state extends State<device_list_screen> {
             }
           } else {
             calltoast(searchNumber);
+            await pr!.hide();
             // Navigator.pop(context);
           }
         }
       } else {
-        calltoast(no_network);
+        await pr!.hide();
+        noInternetToast(no_network);
       }
     });
   }
@@ -1230,8 +1233,9 @@ class device_list_screen_state extends State<device_list_screen> {
   Future<void> callCcmsDeviceListFinder(
       String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
+      await pr!.show();
       if (value) {
-        pr.show();
+
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -1258,29 +1262,29 @@ class device_list_screen_state extends State<device_list_screen> {
             }
 
             setState(() {
-              pr.hide();
               _ccmsfoundUsers = _ccmsfoundUsers;
             });
+            await pr!.hide();
           } else {
-            setState(() {
-              pr.hide();
-            });
+            await pr!.hide();
             calltoast(searchNumber);
           }
         } catch (e) {
           /*FlutterLogs.logInfo(
               "devicelist_page", "device_list", "CCMS Device Finder Issue");*/
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {}
           } else {
+            await pr!.hide();
             calltoast(searchNumber);
           }
         }
       } else {
-        calltoast(no_network);
+        await pr!.hide();
+        noInternetToast(no_network);
       }
     });
   }
@@ -1288,8 +1292,9 @@ class device_list_screen_state extends State<device_list_screen> {
   Future<void> callgwDeviceListFinder(
       String selectedNumber, BuildContext context) async {
     Utility.isConnected().then((value) async {
+      await  pr!.show();
       if (value) {
-        pr.show();
+
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
@@ -1316,33 +1321,32 @@ class device_list_screen_state extends State<device_list_screen> {
             }
 
             setState(() {
-              pr.hide();
               _gwfoundUsers = _gwfoundUsers;
             });
-
+            await pr!.hide();
           } else {
-            setState(() {
-              pr.hide();
-            });
+            await pr!.hide();
             calltoast(searchNumber);
           }
         } catch (e) {
           /*FlutterLogs.logInfo(
               "devicelist_page", "device_list", "GW Device Finder Exception");*/
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callgwDeviceListFinder(selectedNumber, context);
             }
           } else {
+            await pr!.hide();
             calltoast(searchNumber);
             // Navigator.pop(context);
           }
         }
       } else {
-        calltoast(no_network);
+        await pr!.hide();
+        noInternetToast(no_network);
       }
     });
   }
@@ -1353,8 +1357,8 @@ class device_list_screen_state extends State<device_list_screen> {
       List<String>? _foundUsers,
       BuildContext context) {
     Utility.isConnected().then((value) async {
+      await pr!.show();
       if (value) {
-        pr.show();
         try {
           _relationdevices!.clear();
           _foundUsers!.clear();
@@ -1386,51 +1390,50 @@ class device_list_screen_state extends State<device_list_screen> {
                 if (devrelationresponse != null) {
                   if (devrelationresponse.type == "lumiNode") {
                     _foundUsers!.add(devrelationresponse.name);
-                  } else {}
+                  } else {
+                    await pr!.hide();
+                  }
                 } else {
+                  await pr!.hide();
                   calltoast(polenumber);
-                  pr.hide();
                 }
               }
               setState(() {
-                pr.hide();
+                 pr!.hide();
                 _foundUsers = _foundUsers;
               });
 
             } else {
               /*FlutterLogs.logInfo("devicelist_page", "device_list",
                   "No Relation Occurs and cause Exception");*/
-              setState(() {
-                pr.hide();
-              });
+              await pr!.hide();
               calltoast(polenumber);
             }
           } else {
             /*FlutterLogs.logInfo("devicelist_page", "device_list",
                 "No Device Found for execution");*/
-            setState(() {
-              pr.hide();
-            });
+            await  pr!.hide();
             calltoast(polenumber);
           }
         } catch (e) {
           /*FlutterLogs.logInfo("devicelist_page", "device_list",
               "Pole Based Device Installation Exception");*/
-          pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
+            await pr!.hide();
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
               callpolebasedILMDeviceListFinder(
                   user.polenumber, _relationdevices, _foundUsers, context);
             }
           } else {
-            pr.hide();
+            await pr!.hide();
             calltoast(searchnumber);
           }
         }
       } else {
-        calltoast(no_network);
+        await pr!.hide();
+        noInternetToast(no_network);
       }
     });
   }
@@ -1440,9 +1443,9 @@ class device_list_screen_state extends State<device_list_screen> {
       String deviceName, BuildContext context) async {
     Utility.isConnected().then((value) async {
       var gofenceValidation = false;
+      await pr!.show();
       if (value) {
         try {
-          pr.show();
           Device response;
           String? SelectedRegion;
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
@@ -1454,6 +1457,7 @@ class device_list_screen_state extends State<device_list_screen> {
               response = (await tbClient
                   .getDeviceService()
                   .getTenantDevice(deviceName)) as Device;
+              await pr!.hide();
 
               if (response.toString().isNotEmpty) {
                 prefs.setString('deviceId', response.id!.id!.toString());
@@ -1525,7 +1529,7 @@ class device_list_screen_state extends State<device_list_screen> {
                 prefs.setString('geoFence', "false");
 
                 if (relationDetails.length.toString() == "0") {
-                  pr.hide();
+                  await pr!.hide();
                   if (response.type == ilm_deviceType) {
                     Navigator.push(
                       context,
@@ -1634,7 +1638,7 @@ class device_list_screen_state extends State<device_list_screen> {
                       var message = toThingsboardError(e, context);
                     }
 
-                    pr.hide();
+                    await pr!.hide();
                     if (response.type == ilm_deviceType) {
                       Navigator.push(
                         context,
@@ -1659,7 +1663,7 @@ class device_list_screen_state extends State<device_list_screen> {
                   } else {
                     /*FlutterLogs.logInfo("Dashboard_Page", "Dashboard",
                         "No attributes key found");*/
-                    pr.hide();
+                    await pr!.hide();
                     refreshPage(context);
                     //"" No Active attribute found
                   }
@@ -1674,7 +1678,7 @@ class device_list_screen_state extends State<device_list_screen> {
               } else {
                 /*FlutterLogs.logInfo(
                     "Dashboard_Page", "Dashboard", "No Device Details Found");*/
-                pr.hide();
+                await pr!.hide();
                 refreshPage(context);
                 //"" No Device Found
               }
@@ -1688,7 +1692,7 @@ class device_list_screen_state extends State<device_list_screen> {
                   textColor: Colors.black,
                   fontSize: 16.0);
 
-              pr.hide();
+              await pr!.hide();
               refreshPage(context);
               //"" No Device Found
             }
@@ -1702,14 +1706,14 @@ class device_list_screen_state extends State<device_list_screen> {
                 textColor: Colors.black,
                 fontSize: 16.0);
 
-            pr.hide();
+            await pr!.hide();
             refreshPage(context);
             //"" No Device Found
           }
         } catch (e) {
           /*FlutterLogs.logInfo(
               "Dashboard_Page", "Dashboard", "Device Details Fetch Exception");*/
-          pr.hide();
+          await pr!.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
@@ -1717,6 +1721,7 @@ class device_list_screen_state extends State<device_list_screen> {
               fetchGWDeviceDetails(deviceName, context);
             }
           } else {
+            await pr!.hide();
             refreshPage(context);
             Fluttertoast.showToast(
                 msg: device_toast_msg + deviceName + device_toast_notfound,
@@ -1728,6 +1733,9 @@ class device_list_screen_state extends State<device_list_screen> {
                 fontSize: 16.0);
           }
         }
+      } else{
+        await pr!.hide();
+        noInternetToast(no_network);
       }
     });
   }
@@ -1737,16 +1745,31 @@ class device_list_screen_state extends State<device_list_screen> {
         builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
   }
 
+  Widget _buildLoading() => const Center(child: CircularProgressIndicator());
+
   void calltoast(String polenumber) {
     Fluttertoast.showToast(
         msg: device_toast_msg + polenumber + device_toast_notfound,
-        toastLength: Toast.LENGTH_SHORT,
+        toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.white,
         textColor: Colors.black,
         fontSize: 16.0);
   }
+
+  void noInternetToast(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.white,
+        textColor: Colors.black,
+        fontSize: 16.0);
+  }
+
+
 
   Future<ThingsboardError> toThingsboardError(error, context,
       [StackTrace? stackTrace]) async {

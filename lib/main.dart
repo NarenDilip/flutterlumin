@@ -30,6 +30,12 @@ Future<void> main() async {
   await Firebase.initializeApp();
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
   // FirebaseCrashlytics.instance.crash();
+
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+
   runApp(MyApp());
 }
 
@@ -57,4 +63,5 @@ class MyApp extends StatelessWidget {
           body: splash_screen(),
         ));
   }
+
 }

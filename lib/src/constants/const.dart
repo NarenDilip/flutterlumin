@@ -16,12 +16,13 @@ const successGreenColor = Color(0xff16e38a);
 const btnLightGreenColor = Color(0xff35ba80);
 
 const btnLightbluColor = Color(0xff0bd9ee);
+
 const btngreytbluColor = Color(0xfff1f7f8 );
 const pistagreen = Color(0xffbef5cc);
 const pistagreY = Color(0xff8A97A2);
 const lightorange = Color(0xfff57D0ff);
 const liorange = Color(0xfff57D0ff);
-const liblue = Color(0xff65f2f9 );
+const liblue = Color(0xff65f2f9);
 const thbblue = Color(0xff00696e);
 const thbDblue = Color(0xff2F96BF);
 const darkgreen = Color(0xff146e00);
@@ -109,7 +110,6 @@ const app_loc_per ="Kindly Enable App Location Permission";
 const app_dev_img_uperror ="Device Installation Image Upload Error";
 const app_dev_inst_success = "Installed Successfully";
 const app_dev_cred_improper = "Device Credentials are improper, please check and retry";
-const app_dev_nfound_one = "Unable to find device";
 const app_dev_nfound_two = "Kindly try another device";
 const app_reg_nozones = "No Zones releated to this Region";
 const app_reg_notfound= "Unable to find Region Details";

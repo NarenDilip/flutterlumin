@@ -144,7 +144,7 @@ class map_view_screen_state extends State<map_view_screen> {
                               Column(mainAxisSize: MainAxisSize.min, children: <
                                   Widget>[
                             SizedBox(height: 5),
-                          new Wrap(
+                          Wrap(
                               spacing: 8.0, // gap between adjacent chips
                               runSpacing: 4.0, // gap between lines
                               direction: Axis.horizontal, // main axis (rows or columns)
@@ -239,7 +239,9 @@ class map_view_screen_state extends State<map_view_screen> {
                                                 triangleHeight: 25.0,
                                                 edge: Edge.RIGHT,
                                                 child: GestureDetector(
-                                                  onTap: () {
+                                                  onTap: () async{
+                                                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                    prefs.setInt("Selected_index",1);
                                                     Navigator.of(context).push(
                                                         MaterialPageRoute(
                                                             builder: (BuildContext
