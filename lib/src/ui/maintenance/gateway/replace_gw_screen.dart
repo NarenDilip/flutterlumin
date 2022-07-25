@@ -78,7 +78,7 @@ class replacegwState extends State<replacegw> {
     super.initState();
     DeviceName = "";
     newDeviceName = "";
-    _openCamera(context);
+    checkGps(context);
     getSharedPrefs();
     setUpLogs();
   }
@@ -213,13 +213,8 @@ class replacegwState extends State<replacegw> {
                               //     newDeviceName,
                               //     context,
                               //     imageFile);
-                              if (!(await Geolocator()
-                                  .isLocationServiceEnabled())) {
-                                onGpsAlert();
-                              } else {
                                 showActionAlertDialog(
                                     context, DeviceName, newDeviceName);
-                              }
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
@@ -247,6 +242,15 @@ class replacegwState extends State<replacegw> {
                   // ),
                 ]))));
     // );
+  }
+
+  void checkGps(BuildContext context) async {
+    if (!(await Geolocator().isLocationServiceEnabled())) {
+      pr.hide();
+      onGpsAlert();
+    } else {
+      _openCamera(context);
+    }
   }
 
   void _openCamera(BuildContext context) async {
@@ -1225,6 +1229,11 @@ class replacegwState extends State<replacegw> {
               child: const Text("Ok"),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => dashboard_screen(selectedPage: 0)),
+                );
               },
             )
           ],

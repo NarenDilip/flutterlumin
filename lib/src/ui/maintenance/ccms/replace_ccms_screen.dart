@@ -78,7 +78,7 @@ class replaceccmsState extends State<replaceccms> {
     super.initState();
     DeviceName = "";
     newDeviceName = "";
-    _openCamera(context);
+    checkGps(context);
     getSharedPrefs();
     setUpLogs();
   }
@@ -206,13 +206,8 @@ class replaceccmsState extends State<replaceccms> {
                               //     newDeviceName,
                               //     context,
                               //     imageFile);
-                              if (!(await Geolocator()
-                                  .isLocationServiceEnabled())) {
-                                onGpsAlert();
-                              } else {
                                 showActionAlertDialog(
                                     context, DeviceName, newDeviceName);
-                              }
                             } else {
                               pr.hide();
                               Fluttertoast.showToast(
@@ -226,6 +221,15 @@ class replaceccmsState extends State<replaceccms> {
                             }
                           })),
                 ]))));
+  }
+
+  void checkGps(BuildContext context) async {
+    if (!(await Geolocator().isLocationServiceEnabled())) {
+      pr.hide();
+      onGpsAlert();
+    } else {
+      _openCamera(context);
+    }
   }
 
   void _openCamera(BuildContext context) async {
@@ -1186,6 +1190,11 @@ class replaceccmsState extends State<replaceccms> {
                   child: const Text("Ok"),
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => dashboard_screen(selectedPage: 0)),
+                    );
                   },
                 )
               ],

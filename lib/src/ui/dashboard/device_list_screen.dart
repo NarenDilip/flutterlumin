@@ -1875,7 +1875,7 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text(app_logout_yes,
+          child: Text(app_logout_no,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
@@ -1883,7 +1883,7 @@ Future<void> callLogoutoption(BuildContext context) async {
                   color: Colors.green)),
         ),
         TextButton(
-          child: Text(app_logout_no,
+          child: Text(app_logout_yes,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",

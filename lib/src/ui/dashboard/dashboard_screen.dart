@@ -322,10 +322,12 @@ class dashboard_screenState extends State<dashboard_screen> {
             backgroundColor: _foreground,
             onPressed: () async {
               requestCameraPermission();
+              _checkLocationPermission();
               // var currentFocus = FocusScope.of(context);
               // if (!currentFocus.hasPrimaryFocus) {
               //   currentFocus.unfocus();
               // }
+              FocusScope.of(context).requestFocus(new FocusNode());
               if (iscamerapermission == false) {
                 // Fluttertoast.showToast(
                 //     msg: "Permission denied",

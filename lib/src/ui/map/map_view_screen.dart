@@ -12,6 +12,9 @@ import 'package:flutterlumin/src/ui/point/edge.dart';
 import 'package:flutterlumin/src/ui/point/point.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../localdb/db_helper.dart';
+import '../../localdb/model/region_model.dart';
+import '../splash_screen.dart';
 import 'location_map.dart';
 
 // Map view screen with implementation of Flutter map and open street maps with
@@ -354,8 +357,29 @@ class map_view_screen_state extends State<map_view_screen> {
               fontSize: 18.0,
               fontFamily: "Aqua",
             )),
-            onPressed: () {
-              SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+            onPressed: () async{
+              try {
+                DBHelper dbhelper = new DBHelper();
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+
+                var SelectedRegion = prefs.getString("SelectedRegion").toString();
+                List<Region> details = await dbhelper.region_getDetails();
+
+                for (int i = 0; i < details.length; i++) {
+                  dbhelper.delete(details.elementAt(i).id!.toInt());
+                }
+                dbhelper.zone_delete(SelectedRegion);
+                dbhelper.ward_delete(SelectedRegion);
+
+                SharedPreferences preferences =
+                    await SharedPreferences.getInstance();
+                await preferences.clear();
+
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => splash_screen()));
+              } catch (e) {
+                // FlutterLogs.logInfo("devicecount_page", "device_count", "Db Exception");
+              }
             },
           ),
         ],

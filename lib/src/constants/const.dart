@@ -33,7 +33,8 @@ const splashscreen_text = "LUMINATOR";
 const devBaseUrl = "http://iotpro.io:8077";
 
 // Production release url
-const prodBaseUrl = "https://schnelliot.in/";
+const prodBaseUrl = "http://iotpro.io:8077";
+//const prodBaseUrl = "https://schnelliot.in/";
 
 //Image uploading url for production
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";

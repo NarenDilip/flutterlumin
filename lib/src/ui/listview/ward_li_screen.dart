@@ -57,6 +57,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
   List<DeviceId>? activeDevice = [];
   List<DeviceId>? nonactiveDevices = [];
   List<DeviceId>? ncDevices = [];
+  var noncomdevice = "";
 
   List<DeviceId>? ccms_activeDevice = [];
   List<DeviceId>? ccms_nonactiveDevices = [];
@@ -326,7 +327,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                     var parttotalval =
                         activeDevice!.length + nonactiveDevices!.length;
                     var ncdevices = parttotalval - totalval;
-                    var noncomdevice = "";
+
                     if (ncdevices.toString().contains("-")) {
                       noncomdevice = ncdevices.toString().replaceAll("-", "");
                     } else {
@@ -339,7 +340,8 @@ class ward_li_screen_state extends State<ward_li_screen> {
                         'activeCount', activeDevice!.length.toString());
                     sharedPreferences.setString(
                         'nonactiveCount', nonactiveDevices!.length.toString());
-                    sharedPreferences.setString('ncCount', noncomdevice);
+
+                    sharedPreferences.setString('ncCount', ncDevices!.length.toString());
                   } else if (data_response.type == "CCMS") {
                     List<AttributeKvEntry> sresponser;
                     sresponser = await tbClient
@@ -445,14 +447,34 @@ class ward_li_screen_state extends State<ward_li_screen> {
               sharedPreferences.setString('nonactiveCount', "0");
               sharedPreferences.setString('ncCount', "0");
 
+              sharedPreferences.setString('gw_totalCount', "0");
+              sharedPreferences.setString('gw_activeCount', "0");
+              sharedPreferences.setString('gw_nonactiveCount', "0");
+              sharedPreferences.setString('gw_ncCount', "0");
+
+              sharedPreferences.setString('ccms_totalCount', "0");
+              sharedPreferences.setString('ccms_activeCount', "0");
+              sharedPreferences.setString('ccms_nonactiveCount', "0");
+              sharedPreferences.setString('ccms_ncCount', "0");
+
               pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
+              Fluttertoast.showToast(
+                  msg: "port 1",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black,
+                  fontSize: 16.0);
             }
           }
         } catch (e) {
           /*FlutterLogs.logInfo(
               "wardlist_page", "ward_list", "No Ward Details found Exception");*/
+          var sharedPreferences =
+          await SharedPreferences.getInstance() as SharedPreferences;
           pr.hide();
           var message = toThingsboardError(e, context);
           if (message == session_expired) {
@@ -461,8 +483,31 @@ class ward_li_screen_state extends State<ward_li_screen> {
               loadLocalData(context);
             }
           } else {
+            sharedPreferences.setString('totalCount', "0");
+            sharedPreferences.setString('activeCount', "0");
+            sharedPreferences.setString('nonactiveCount', "0");
+            sharedPreferences.setString('ncCount', "0");
+
+            sharedPreferences.setString('gw_totalCount', "0");
+            sharedPreferences.setString('gw_activeCount', "0");
+            sharedPreferences.setString('gw_nonactiveCount', "0");
+            sharedPreferences.setString('gw_ncCount', "0");
+
+            sharedPreferences.setString('ccms_totalCount', "0");
+            sharedPreferences.setString('ccms_activeCount', "0");
+            sharedPreferences.setString('ccms_nonactiveCount', "0");
+            sharedPreferences.setString('ccms_ncCount', "0");
+
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
+            Fluttertoast.showToast(
+                msg: "port 2",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.white,
+                textColor: Colors.black,
+                fontSize: 16.0);
           }
         }
       } else {
@@ -546,6 +591,9 @@ class ward_li_screen_state extends State<ward_li_screen> {
                                   selectedWard =
                                       _foundUsers!.elementAt(index).toString();
                                   loadLocalData(context);
+                                  debugPrint("ilm aactive :" + activeDevice!.length.toString());
+                                  debugPrint("ilm nonactive :" + nonactiveDevices!.length.toString());
+                                  debugPrint("ilm ac :" + ncDevices!.length.toString());
                                 });
                               },
                               title: Text(_foundUsers!.elementAt(index),

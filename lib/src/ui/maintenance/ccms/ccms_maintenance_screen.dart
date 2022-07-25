@@ -811,32 +811,22 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                     const SizedBox(
                                                       width: 15,
                                                     ), //SizedBox
-                                                    Expanded(
-                                                      flex: 1,
-                                                      child: Container(
-                                                          width: width / 2.05,
-                                                          height: 25,
-                                                          child: Flexible(
-                                                            fit: FlexFit.loose,
-                                                            child: Text(
-                                                              "$location",
-                                                              softWrap: false,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .fade,
-                                                              style: const TextStyle(
-                                                                  fontSize: 18,
-                                                                  fontFamily:
-                                                                      "Montserrat",
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                            ),
-                                                          ) //BoxDecoration
-                                                          ),
-                                                    ) //Container
+                                                    Container(
+                                                        width: width / 2.05,
+                                                        height: 25,
+                                                        child: Text(
+                                                            "$location",
+                                                            style: const TextStyle(
+                                                                fontSize: 18,
+                                                                fontFamily:
+                                                                "Montserrat",
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                          ), //BoxDecoration
+                                                    ),//Container
                                                   ], //<Widget>[]
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,

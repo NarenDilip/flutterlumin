@@ -115,12 +115,23 @@ class gwcaminstallState extends State<gwcaminstall> {
 
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     print('location: ${location.toJson()}');
     accuracy = location.accuracy;
     Lattitude = location.latitude.toString();
     Longitude = location.longitude.toString();
     accuvalue = accuracy.toString().split(".");
     var insideArea;
+
+    _getAddress(location.latitude, location.longitude).then((value) {
+      setState(() {
+        address = value;
+        prefs.setString("location", address);
+      });
+    });
+
+
 
     if (caclsss == 0) {
       startTimer();
@@ -308,7 +319,7 @@ class gwcaminstallState extends State<gwcaminstall> {
     DeviceName = "";
     SelectedWard = "";
     getSharedPrefs();
-    _openCamera(context);
+    checkGps(context);
     setUpLogs();
 
     WidgetsBinding.instance!.addPostFrameCallback((_) {
@@ -480,12 +491,7 @@ class gwcaminstallState extends State<gwcaminstall> {
                                 Utility.isConnected().then((value) async {
                                   if (value) {
                                     if (imageFile != null) {
-
                                       // _listenLocation();
-                                      if (!(await Geolocator().isLocationServiceEnabled())) {
-                                        pr.hide();
-                                        onGpsAlert();
-                                      } else {
                                         pr.show();
                                         if (geoFence == true) {
                                           CallGeoFenceListener(context);
@@ -496,7 +502,6 @@ class gwcaminstallState extends State<gwcaminstall> {
                                               DeviceName,
                                               SelectedWard);
                                         }
-                                      }
                                     } else {
                                       pr.hide();
                                       Fluttertoast.showToast(
@@ -526,6 +531,15 @@ class gwcaminstallState extends State<gwcaminstall> {
         backgroundColor: Colors.white,
         textColor: Colors.black,
         fontSize: 16.0);
+  }
+
+  void checkGps(BuildContext context) async {
+    if (!(await Geolocator().isLocationServiceEnabled())) {
+      pr.hide();
+      onGpsAlert();
+    } else {
+      _openCamera(context);
+    }
   }
 
   void _openCamera(BuildContext context) async {
@@ -1240,6 +1254,11 @@ class gwcaminstallState extends State<gwcaminstall> {
               child: const Text("Ok"),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => dashboard_screen(selectedPage: 0)),
+                );
               },
             )
           ],
