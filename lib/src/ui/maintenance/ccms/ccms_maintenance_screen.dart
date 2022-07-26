@@ -332,10 +332,12 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
     String val = prefs.getString("location").toString();
-    if(val != "null"){
-      location = prefs.getString("location").toString();
-    } else {
+    if(val == null){
       location = "";
+    } else if(val.isEmpty) {
+      location = "";
+    } else {
+      location = val;
     }
 
     geoFence = prefs.getString('geoFence').toString();
@@ -1509,6 +1511,8 @@ Future<void> removeCCMS(context) async {
   Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (BuildContext context) => replacementccms()));
 }
+
+
 
 showActionAlertDialog(context, OldDevice, NewDevice) {
   // set up the buttons

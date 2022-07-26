@@ -253,7 +253,7 @@ class device_count_screen_state extends State<device_count_screen> {
                           padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                           children: <Widget>[
                             SizedBox(height: 5),
-                            new Wrap(
+                             Wrap(
                                 spacing: 8.0,
                                 // gap between adjacent chips
                                 runSpacing: 4.0,
@@ -280,6 +280,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       edge: Edge.RIGHT,
                                                       child: GestureDetector(
                                                         onTap: () {
+                                                          removecount();
                                                           Navigator.of(context).push(
                                                               MaterialPageRoute(
                                                                   builder: (BuildContext
@@ -321,6 +322,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                       edge: Edge.RIGHT,
                                                       child: GestureDetector(
                                                         onTap: () {
+                                                          removecount();
                                                           Navigator.of(context).push(
                                                               MaterialPageRoute(
                                                                   builder: (BuildContext
@@ -364,6 +366,7 @@ class device_count_screen_state extends State<device_count_screen> {
                                                         onTap: () async{
                                                           SharedPreferences prefs = await SharedPreferences.getInstance();
                                                           prefs.setInt("Selected_index",0);
+                                                          removecount();
                                                           Navigator.of(context).push(
                                                               MaterialPageRoute(
                                                                   builder: (BuildContext
@@ -1123,6 +1126,25 @@ class device_count_screen_state extends State<device_count_screen> {
         ));
   }
 }
+
+ void removecount() async{
+   SharedPreferences preferences = await SharedPreferences.getInstance();
+   await preferences.remove('totalCount');
+   await preferences.remove('activeCount');
+   await preferences.remove('nonactiveCount');
+   await preferences.remove('ncCount');
+
+   await preferences.remove('ccms_totalCount');
+   await preferences.remove('ccms_activeCount');
+   await preferences.remove('ccms_nonactiveCount');
+   await preferences.remove('ccms_ncCount');
+
+   await preferences.remove('gw_totalCount');
+   await preferences.remove('gw_activeCount');
+   await preferences.remove('gw_nonactiveCount');
+   await preferences.remove('gw_ncCount');
+
+ }
 
 Future<void> callLogoutoption(BuildContext context) async {
   showDialog(

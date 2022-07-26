@@ -460,14 +460,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
               pr.hide();
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
-              Fluttertoast.showToast(
-                  msg: "port 1",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black,
-                  fontSize: 16.0);
             }
           }
         } catch (e) {
@@ -501,7 +493,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (BuildContext context) => dashboard_screen(selectedPage: index,)));
             Fluttertoast.showToast(
-                msg: "port 2",
+                msg: e.toString(),
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM,
                 timeInSecForIosWeb: 1,
@@ -591,9 +583,6 @@ class ward_li_screen_state extends State<ward_li_screen> {
                                   selectedWard =
                                       _foundUsers!.elementAt(index).toString();
                                   loadLocalData(context);
-                                  debugPrint("ilm aactive :" + activeDevice!.length.toString());
-                                  debugPrint("ilm nonactive :" + nonactiveDevices!.length.toString());
-                                  debugPrint("ilm ac :" + ncDevices!.length.toString());
                                 });
                               },
                               title: Text(_foundUsers!.elementAt(index),

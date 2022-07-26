@@ -127,11 +127,9 @@ class gwcaminstallState extends State<gwcaminstall> {
     _getAddress(location.latitude, location.longitude).then((value) {
       setState(() {
         address = value;
-        prefs.setString("location", address);
+        prefs.setString("location", address.toString());
       });
     });
-
-
 
     if (caclsss == 0) {
       startTimer();
@@ -616,7 +614,7 @@ class gwcaminstallState extends State<gwcaminstall> {
       _getAddress(latter, longer).then((value) {
         setState(() {
           address = value;
-          prefs.setString("location", address);
+          prefs.setString("location", value);
         });
       });
 
@@ -1153,6 +1151,9 @@ class gwcaminstallState extends State<gwcaminstall> {
       callPolygonStop();
       /*FlutterLogs.logInfo("gw_installation_page", "gw_installation",
           "Gateway Device Captured Image Upload Error");*/
+      await pr.hide();
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       Fluttertoast.showToast(
           msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,

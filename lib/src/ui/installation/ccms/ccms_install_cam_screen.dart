@@ -109,6 +109,10 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     _streamController.sink.add(polyGeofence);
   }
 
+
+
+
+
   // This function is to be called when the location has changed.
   Future<void> _onLocationChanged(Location location) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -123,7 +127,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     _getAddress(location.latitude, location.longitude).then((value) {
       setState(() {
         address = value;
-        prefs.setString("location", address);
+        prefs.setString("location", address.toString());
       });
     });
 
@@ -602,15 +606,23 @@ class ccmscaminstallState extends State<ccmscaminstall> {
     var status = await Permission.location.status;
     if (status.isGranted) {
       //newly added by dev for landmark purpose
-      var latter = double.parse(Lattitude);
+    /*  var latter = double.parse(Lattitude);
       var longer = double.parse(Longitude);
 
       _getAddress(latter, longer).then((value) {
         setState(() {
           address = value;
           prefs.setString("location", address);
+          Fluttertoast.showToast(
+              msg: "val 2"+address,
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.white,
+              textColor: Colors.black,
+              fontSize: 16.0);
         });
-      });
+      });*/
 
 
       Utility.isConnected().then((value) async {
@@ -739,7 +751,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                                 .saveRelation(entityRelation);
 
                             Map data = {
-                              'location': address,
+                              'location': address.toString(),
                               'slatitude': Lattitude.toString(),
                               'slongitude': Longitude.toString(),
                               'accuracy': accuracy.toString(),
@@ -1139,6 +1151,9 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       callPolygonStop();
       /* FlutterLogs.logInfo("ccms_installation_page", "ccms_installation",
           "CCMS Device Image Upload Error");*/
+      await pr.hide();
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       Fluttertoast.showToast(
           msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,

@@ -339,11 +339,14 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
     String val = prefs.getString("location").toString();
-    if(val != "null"){
-      location = prefs.getString("location").toString();
-    } else {
+    if(val == null){
       location = "";
+    } else if(val.isEmpty) {
+      location = "";
+    } else {
+      location = val;
     }
+
     geoFence = prefs.getString('geoFence').toString();
     // version = prefs.getString("version").toString();
     faultyStatus = prefs.getString("faultyStatus").toString();

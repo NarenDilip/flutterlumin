@@ -74,7 +74,6 @@ class _QRState extends State<QRScreen> {
             controller.stopCamera();
             Navigator.pop(context, scanData.code);
           }
-
           setState(() {
             result = scanData;
           });

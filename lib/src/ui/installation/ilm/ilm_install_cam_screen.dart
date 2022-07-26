@@ -125,7 +125,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     _getAddress(location.latitude, location.longitude).then((value) {
       setState(() {
         address = value;
-        prefs.setString("location", address);
+        prefs.setString("location", value);
       });
     });
 
@@ -572,7 +572,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       _getAddress(latter, longer).then((value) {
         setState(() {
           address = value;
-          prefs.setString("location", address);
+          prefs.setString("location", value);
         });
       });
 
@@ -1112,6 +1112,9 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       callPolygonStop();
       /*FlutterLogs.logInfo("ilm_installation_page", "ilm_installation",
           "Captured Image Upload Error");*/
+      await pr.hide();
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
       Fluttertoast.showToast(
           msg: app_dev_img_uperror,
           toastLength: Toast.LENGTH_SHORT,
