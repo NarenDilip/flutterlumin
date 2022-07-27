@@ -513,6 +513,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 ),
                                                 suffixIcon: GestureDetector(
                                                   onTap: () {
+                                                    _foundUsers!.clear();
                                                     if (user
                                                         .ilmnumber.isNotEmpty) {
                                                       FocusScope.of(context)
@@ -588,6 +589,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 ),
                                                 suffixIcon: GestureDetector(
                                                   onTap: () {
+                                                    _ccmsfoundUsers!.clear();
                                                     if (user
                                                         .ccmsnumber.isNotEmpty) {
                                                       FocusScope.of(context)
@@ -751,6 +753,7 @@ class device_list_screen_state extends State<device_list_screen> {
                                                 ),
                                                 suffixIcon: GestureDetector(
                                                   onTap: () {
+                                                    _gwfoundUsers!.clear();
                                                     if (user.gatewaynumber
                                                         .isNotEmpty) {
                                                       FocusScope.of(context)
@@ -1665,6 +1668,7 @@ class device_list_screen_state extends State<device_list_screen> {
                         "No attributes key found");*/
                     await pr!.hide();
                     refreshPage(context);
+                    noInternetToast("Device is not in valid status. Please try again later");
                     //"" No Active attribute found
                   }
                 }

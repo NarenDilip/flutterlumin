@@ -745,6 +745,14 @@ class dashboard_screenState extends State<dashboard_screen> {
                     //     "No attributes key found");
                     pr.hide();
                     refreshPage(context);
+                    Fluttertoast.showToast(
+                        msg: "Device is not in valid status. Please try again later",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.white,
+                        textColor: Colors.black,
+                        fontSize: 16.0);
                     //"" No Active attribute found
                   }
                 }
