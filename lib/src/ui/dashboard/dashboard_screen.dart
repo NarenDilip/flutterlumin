@@ -442,10 +442,10 @@ class dashboard_screenState extends State<dashboard_screen> {
       iscamerapermission = true;
     } else if (status == PermissionStatus.denied) {
       iscamerapermission = false;
-      await openAppSettings();
+     // _checkPermission("Camera permission not available");
     } else if (status == PermissionStatus.permanentlyDenied) {
       iscamerapermission = false;
-      await openAppSettings();
+      _checkPermission("Camera permission not available");
     }
   }
   //
@@ -457,14 +457,15 @@ class dashboard_screenState extends State<dashboard_screen> {
   //     islocationpermission = true;
   //   } else if (status == PermissionStatus.denied) {
   //     islocationpermission = false;
-  //     await openAppSettings();
+  //
   //   } else if (status == PermissionStatus.permanentlyDenied) {
   //     islocationpermission = false;
-  //     await openAppSettings();
+  //
   //   }
   // }
 
   Future<bool> _checkLocationPermission({bool? background}) async {
+
     if (!await FlLocation.isLocationServicesEnabled) {
       // Location services are disabled.
       return false;
@@ -472,14 +473,14 @@ class dashboard_screenState extends State<dashboard_screen> {
 
     var locationPermission = await FlLocation.checkLocationPermission();
     if (locationPermission == LocationPermission.deniedForever) {
-      await openAppSettings();
+      _checkPermission("Location permission not available");
       return false;
     } else if (locationPermission == LocationPermission.denied) {
       // Ask the user for location permission.
       locationPermission = await FlLocation.requestLocationPermission();
       if (locationPermission == LocationPermission.denied ||
           locationPermission == LocationPermission.deniedForever)
-        await openAppSettings();
+
       return false;
     }
 
@@ -487,7 +488,6 @@ class dashboard_screenState extends State<dashboard_screen> {
     // to collect location data in the background.
     if (background == true &&
         locationPermission == LocationPermission.whileInUse) return false;
-
     // Location services has been enabled and permission have been granted.
     return true;
   }
@@ -935,6 +935,24 @@ class dashboard_screenState extends State<dashboard_screen> {
           )
       );
     }
+  }
+
+  void _checkPermission(String permissiontype) async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title:   Text(permissiontype),
+          content: const Text('Please make sure you enable permission and try again'),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Ok"),
+              onPressed: (){
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+            )
+          ],
+        )
+    );
   }
 
 }

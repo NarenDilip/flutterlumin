@@ -1020,7 +1020,6 @@ class ccmscaminstallState extends State<ccmscaminstall> {
       });
     } else {
       pr.hide();
-      openAppSettings();
     }
   }
 

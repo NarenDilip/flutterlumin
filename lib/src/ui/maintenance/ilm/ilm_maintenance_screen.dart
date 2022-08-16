@@ -723,6 +723,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
     return WillPopScope(
       onWillPop: () async {
         callPolygonStop();
+        SharedPreferences preferences = await SharedPreferences.getInstance();
+        await preferences.remove('location');
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) =>
                 dashboard_screen(selectedPage: 0)));

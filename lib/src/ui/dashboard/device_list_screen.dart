@@ -1175,7 +1175,6 @@ class device_list_screen_state extends State<device_list_screen> {
     Utility.isConnected().then((value) async {
       await pr!.show();
       if (value) {
-
         try {
           var tbClient = ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();

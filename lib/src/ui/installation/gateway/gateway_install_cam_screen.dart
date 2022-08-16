@@ -1019,7 +1019,7 @@ class gwcaminstallState extends State<gwcaminstall> {
       });
     } else {
       pr.hide();
-      openAppSettings();
+     // openAppSettings();
     }
   }
 

@@ -30,11 +30,13 @@ const darkgreen = Color(0xff146e00);
 const splashscreen_text = "LUMINATOR";
 
 // Development release url
-const devBaseUrl = "http://iotpro.io:8077";
+//const devBaseUrl = "http://iotpro.io:8077";
+const devBaseUrl = "https://schnelliot.in/";
 
 // Production release url
-const prodBaseUrl = "http://iotpro.io:8077";
+const prodBaseUrl = "https://schnelliot.in/";
 //const prodBaseUrl = "https://schnelliot.in/";
+
 
 //Image uploading url for production
 const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
@@ -63,11 +65,11 @@ const GWserviceFolderName = "forServiceCCMS";
 
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "CCMS";
-const Gw_deviceType = "Gateway";
+const Gw_deviceType = "gateway";
 
 const session_expired = "Session expired!";
 //test
-const app_version= "Version 2.2.2";
+const app_version = "Version 2.2.2";
 
 // const smart_Username = "developer@schnellenergy.com";
 // const smart_Password = "schnell";

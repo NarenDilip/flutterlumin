@@ -74,7 +74,7 @@ class DeviceService {
   Future<PageData<Device>> getgwTenantDevices(PageLink pageLink,
       {String type = '', RequestConfig? requestConfig}) async {
     var queryParams = pageLink.toQueryParameters();
-    queryParams['type'] = "Gateway";
+    queryParams['type'] = "gateway";
     var response = await _tbClient.get<Map<String, dynamic>>(
         '/api/tenant/devices',
         queryParameters: queryParams,

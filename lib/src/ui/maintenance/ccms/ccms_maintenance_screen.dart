@@ -261,9 +261,11 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
             }
           }
         } else {
-          setState(() {
-            _start--;
-          });
+          if (mounted) {
+            setState(() {
+              _start--;
+            });
+          }
         }
       },
     );
@@ -332,12 +334,10 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
     String val = prefs.getString("location").toString();
-    if(val == null){
-      location = "";
-    } else if(val.isEmpty) {
-      location = "";
+    if(val != "null"){
+      location = prefs.getString("location").toString();
     } else {
-      location = val;
+      location = "";
     }
 
     geoFence = prefs.getString('geoFence').toString();
@@ -542,6 +542,8 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     return WillPopScope(
       onWillPop: () async {
         callPolygonStop();
+        SharedPreferences sharedPreference = await SharedPreferences.getInstance();
+        sharedPreference.remove("location");
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) =>
                 dashboard_screen(selectedPage: 0)));

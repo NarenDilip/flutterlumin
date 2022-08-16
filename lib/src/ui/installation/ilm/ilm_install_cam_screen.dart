@@ -410,6 +410,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
     return WillPopScope(
         onWillPop: () async {
           callPolygonStop();
+
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (BuildContext context) => dashboard_screen(selectedPage: 0)));
           return true;
@@ -971,8 +972,7 @@ class ilmcaminstallState extends State<ilmcaminstall> {
       });
     } else {
       pr.hide();
-      openAppSettings();
-      // openAppSettings();
+     // openAppSettings();
     }
   }
 
