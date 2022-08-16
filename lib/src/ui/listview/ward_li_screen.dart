@@ -383,7 +383,7 @@ class ward_li_screen_state extends State<ward_li_screen> {
                         ccms_nonactiveDevices!.length.toString());
                     sharedPreferences.setString(
                         'ccms_ncCount', ccms_noncomdevice);
-                  } else if (data_response.type == "gateway") {
+                  } else if (data_response.type == Gw_deviceType) {
                     List<AttributeKvEntry> kresponser;
                     kresponser = await tbClient
                         .getAttributeService()

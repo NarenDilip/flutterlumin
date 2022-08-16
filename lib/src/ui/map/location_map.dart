@@ -1641,7 +1641,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                                       _latLngListCCMS
                                           .add(LatLng(sslat, sslong));
                                     } else if (relatedDevice.type ==
-                                        "gateway") {
+                                        Gw_deviceType) {
                                       _latLngListGW.add(LatLng(sslat, sslong));
                                     }
 
@@ -1744,7 +1744,7 @@ class _LocationWidgetState extends State<LocationWidget> {
                               _latLngListILM.add(LatLng(sslat, sslong));
                             } else if (relatedDevice.type == "CCMS") {
                               _latLngListCCMS.add(LatLng(sslat, sslong));
-                            } else if (relatedDevice.type == "gateway") {
+                            } else if (relatedDevice.type == Gw_deviceType) {
                               _latLngListGW.add(LatLng(sslat, sslong));
                             }
 

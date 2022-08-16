@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../constants/const.dart';
 import '../thingsboard_client_base.dart';
 import '../http/http_utils.dart';
 import '../model/model.dart';
@@ -74,7 +75,7 @@ class DeviceService {
   Future<PageData<Device>> getgwTenantDevices(PageLink pageLink,
       {String type = '', RequestConfig? requestConfig}) async {
     var queryParams = pageLink.toQueryParameters();
-    queryParams['type'] = "gateway";
+    queryParams['type'] = Gw_deviceType;
     var response = await _tbClient.get<Map<String, dynamic>>(
         '/api/tenant/devices',
         queryParameters: queryParams,
