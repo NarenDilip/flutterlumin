@@ -57,7 +57,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
   var selectedImage = "";
   bool _isOn = true;
   DateTime? date;
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
   bool clickedCentreFAB = false;
   var LampactiveStatus;
 
@@ -89,14 +89,14 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
   var accuvalue;
   var counter = 0;
   var addvalue;
-  List<double>? _latt = [];
+  final List<double>? _latt = [];
   final _streamController = StreamController<PolyGeofence>();
 
   late ProgressDialog pr;
   var caclsss = 0;
-  var _myLogFileName = "Luminator2.0_LogFile";
+  final _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
-  static Completer _completer = new Completer<String>();
+  static final Completer _completer = Completer<String>();
 
   final _polyGeofenceService = PolyGeofenceService.instance.setup(
       interval: 5000,
@@ -149,7 +149,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
             _polyGeofenceList[0].polygon);
         if (insideArea == true) {
           if (accuracy <= 10) {
-            Geolocator geolocator = new Geolocator();
+            Geolocator geolocator = Geolocator();
             difference = (await geolocator.distanceBetween(
                 double.parse(Lattitude),
                 double.parse(Longitude),
@@ -190,7 +190,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
     } else {
       if (accuracy <= 10) {
         // _timer.cancel();
-        Geolocator geolocator = new Geolocator();
+        Geolocator geolocator = Geolocator();
         difference = (await geolocator.distanceBetween(double.parse(Lattitude),
             double.parse(Longitude), location.latitude, location.longitude));
         difference = difference;
@@ -208,7 +208,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
     if (caclsss == 20) {
       _timer.cancel();
       callPolygonStop();
-      Geolocator geolocator = new Geolocator();
+      Geolocator geolocator = Geolocator();
       var difference = await geolocator.distanceBetween(double.parse(Lattitude),
           double.parse(Longitude), location.latitude, location.longitude);
       if (difference <= 50.0) {
@@ -329,7 +329,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
     return true;
   }
 
-  Future<Null> getSharedPrefs() async {
+  Future<void> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     // Lampwatts = prefs.getString('deviceWatts').toString();
     DeviceName = prefs.getString('deviceName').toString();
@@ -370,9 +370,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
       Lattitude = Lattitude;
       Longitude = Longitude;
 
-      if (timevalue != null) {
-        date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
-      }
+      date = DateTime.fromMillisecondsSinceEpoch(int.parse(timevalue));
 
       if (SelectedRegion == "null") {
         SelectedRegion = "Region";
@@ -520,6 +518,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
     setState(() => _isOn = !_isOn);
   }
 
+  @override
   BuildContext get context => super.context;
 
   final List<Widget> _widgetOptions = <Widget>[
@@ -567,7 +566,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
             Align(
               alignment: FractionalOffset.bottomRight,
               child: AnimatedContainer(
-                duration: Duration(milliseconds: 250),
+                duration: const Duration(milliseconds: 250),
                 //if clickedCentreFAB == true, the first parameter is used. If it's false, the second.
                 height: clickedCentreFAB
                     ? MediaQuery.of(context).size.height
@@ -598,10 +597,10 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                       children: [
                         Container(
                           alignment: Alignment.center,
-                          padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: Text('GATEWAY Maintanance',
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: const Text('GATEWAY Maintenance',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 20.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
@@ -613,7 +612,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                           bottom: 0,
                           child: IconButton(
                             color: Colors.red,
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.logout_outlined,
                               size: 35,
                             ),
@@ -635,9 +634,9 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                             bottomLeft: Radius.circular(0.0),
                             bottomRight: Radius.circular(0.0))),
                     child: ListView(
-                        padding: EdgeInsets.only(left: 10, right: 10),
+                        padding: const EdgeInsets.only(left: 10, right: 10),
                         children: <Widget>[
-                          SizedBox(height: 5),
+                          const SizedBox(height: 5),
                           Wrap(
                               spacing: 8.0,
                               // gap between adjacent chips
@@ -648,7 +647,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                               children: <Widget>[
                                 Container(
                                     child: Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                                   child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceEvenly,
@@ -656,7 +655,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                         Align(
                                           alignment: Alignment.center,
                                           child: Padding(
-                                            padding: EdgeInsets.only(left: 5.0),
+                                            padding: const EdgeInsets.only(left: 5.0),
                                             child: Point(
                                               triangleHeight: 25.0,
                                               child: GestureDetector(
@@ -691,7 +690,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                         Align(
                                           alignment: Alignment.center,
                                           child: Padding(
-                                            padding: EdgeInsets.only(left: 5.0),
+                                            padding: const EdgeInsets.only(left: 5.0),
                                             child: Point(
                                               triangleHeight: 25.0,
                                               child: GestureDetector(
@@ -726,7 +725,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                         Align(
                                           alignment: Alignment.center,
                                           child: Padding(
-                                            padding: EdgeInsets.only(left: 5.0),
+                                            padding: const EdgeInsets.only(left: 5.0),
                                             child: Point(
                                               triangleHeight: 25.0,
                                               child: GestureDetector(
@@ -798,8 +797,8 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                                                   15.0))),
                                                   child: Center(
                                                     child: Text(
-                                                      '$DeviceName',
-                                                      style: TextStyle(
+                                                      DeviceName,
+                                                      style: const TextStyle(
                                                           color:
                                                               Colors.deepOrange,
                                                           fontSize: 26,
@@ -810,14 +809,14 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                                     ),
                                                   ),
                                                 ), //Container
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 15,
                                                 ), //SizedBox
-                                                Container(
+                                                SizedBox(
                                                     width: width / 2.05,
                                                     height: 25,
                                                     child: Text(
-                                                      "$location",
+                                                      location,
                                                       style: const TextStyle(
                                                           fontSize: 18,
                                                           fontFamily:
@@ -839,21 +838,21 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                             ),
                                             Row(
                                               children: <Widget>[
-                                                Container(
+                                                SizedBox(
                                                     width: width / 3,
                                                     height: 25,
-                                                    child: Text(
+                                                    child: const Text(
                                                       "Last Comm @ ",
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                           fontSize: 16,
                                                           color: Colors.white,
                                                           fontFamily:
                                                               "Montserrat"),
                                                     )), //Container
-                                                SizedBox(
+                                                const SizedBox(
                                                   width: 5,
                                                 ), //SizedBox
-                                                Container(
+                                                SizedBox(
                                                     width: width / 2.05,
                                                     height: 25,
                                                     child: Text(
@@ -912,7 +911,7 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                                 ),
                                                 onTap: () {
                                                   if (visibility == true) {
-                                                    if ('$DeviceStatus' !=
+                                                    if (DeviceStatus !=
                                                         "false") {
                                                       getLiveRPCCall(context);
                                                     } else {
@@ -955,46 +954,46 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: [
-                                                Expanded(
-                                                    flex: 2,
-                                                    child: InkWell(
-                                                      child: Container(
-                                                        alignment:
-                                                            Alignment.center,
-                                                        height: 90,
-                                                        decoration: const BoxDecoration(
-                                                            color: Colors
-                                                                .deepOrange,
-                                                            borderRadius:
-                                                                BorderRadius.all(
-                                                                    Radius.circular(
-                                                                        50.0))),
-                                                        child: const Text(
-                                                            'REMOVE',
-                                                            style: TextStyle(
-                                                                fontSize: 18,
-                                                                color: Colors
-                                                                    .white,
-                                                                fontFamily:
-                                                                    "Montserrat")),
-                                                      ),
-                                                      onTap: () async {
-                                                        if (visibility ==
-                                                            true) {
-                                                          if (!(await Geolocator()
-                                                              .isLocationServiceEnabled())) {
-                                                            onGpsAlert();
-                                                          } else {
-                                                            removeCCMS(context);
-                                                          }
-                                                        } else {
-                                                          _show(context, true);
-                                                        }
-                                                      },
-                                                    )),
-                                                const SizedBox(
-                                                  width: 15,
-                                                ),
+                                                // Expanded(
+                                                //     flex: 2,
+                                                //     child: InkWell(
+                                                //       child: Container(
+                                                //         alignment:
+                                                //             Alignment.center,
+                                                //         height: 90,
+                                                //         decoration: const BoxDecoration(
+                                                //             color: Colors
+                                                //                 .deepOrange,
+                                                //             borderRadius:
+                                                //                 BorderRadius.all(
+                                                //                     Radius.circular(
+                                                //                         50.0))),
+                                                //         child: const Text(
+                                                //             'REMOVE',
+                                                //             style: TextStyle(
+                                                //                 fontSize: 18,
+                                                //                 color: Colors
+                                                //                     .white,
+                                                //                 fontFamily:
+                                                //                     "Montserrat")),
+                                                //       ),
+                                                //       onTap: () async {
+                                                //         if (visibility ==
+                                                //             true) {
+                                                //           if (!(await Geolocator()
+                                                //               .isLocationServiceEnabled())) {
+                                                //             onGpsAlert();
+                                                //           } else {
+                                                //             removeCCMS(context);
+                                                //           }
+                                                //         } else {
+                                                //           _show(context, true);
+                                                //         }
+                                                //       },
+                                                //     )),
+                                                // const SizedBox(
+                                                //   width: 15,
+                                                // ),
                                                 Expanded(
                                                     flex: 2,
                                                     child: InkWell(
@@ -1004,13 +1003,13 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                                           height: 90,
                                                           decoration: const BoxDecoration(
                                                               color:
-                                                                  Colors.green,
+                                                                  Colors.orange,
                                                               borderRadius: BorderRadius
                                                                   .all(Radius
                                                                       .circular(
                                                                           50.0))),
                                                           child: const Text(
-                                                              'REPLACE',
+                                                              'Replace Gateway',
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,
@@ -1140,7 +1139,7 @@ Future<void> callONRPCCall(context) async {
         var response = await tbClient
             .getDeviceService()
             .handleTwoWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
-            .timeout(Duration(minutes: 2));
+            .timeout(const Duration(minutes: 2));
 
         if (response["lamp"].toString() == "1") {
           Fluttertoast.showToast(
@@ -1276,7 +1275,7 @@ Future<void> callMCBTrip(context) async {
             ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
-        final jsonData;
+        final Map<String, String> jsonData;
 
         jsonData = {"method": "clr", "params": "8"};
 
@@ -1285,7 +1284,7 @@ Future<void> callMCBTrip(context) async {
             .handleOneWayDeviceRPCRequest(DeviceIdDetails.toString(), jsonData)
             .timeout(const Duration(minutes: 5));
 
-        final jsonDatat;
+        final Map<String, Object> jsonDatat;
 
         jsonDatat = {
           "method": "set",
@@ -1352,7 +1351,7 @@ Future<void> getLiveRPCCall(context) async {
             ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
         tbClient.smart_init();
         // type: String
-        final jsonData;
+        final Map<String, Object> jsonData;
 
         jsonData = {
           "method": "get",
@@ -1434,7 +1433,7 @@ Future<void> replaceCCMS(context) async {
             pr.hide();
             // showActionAlertDialog(context,OlddeviceName,value);
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (BuildContext context) => replacegw()));
+                builder: (BuildContext context) => const replacegw()));
           } else {
             pr.hide();
             calltoast("Duplicate QR Code");
@@ -1594,7 +1593,7 @@ Future<void> removeCCMS(context) async {
   //
   // Navigator.pop(context);
   Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => replacementgw()));
+      MaterialPageRoute(builder: (BuildContext context) => const replacementgw()));
   //             } else {
   //               calltoast("Device is not Found");
   //               Navigator.pop(context);
@@ -2019,8 +2018,8 @@ Future<void> removeCCMS(context) async {
 showActionAlertDialog(context, OldDevice, NewDevice) {
   // set up the buttons
   Widget cancelButton = TextButton(
-    child: Text("Cancel",
-        style: const TextStyle(
+    child: const Text("Cancel",
+        style: TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
             fontWeight: FontWeight.bold,
@@ -2030,8 +2029,8 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
     },
   );
   Widget continueButton = TextButton(
-    child: Text("Replace",
-        style: const TextStyle(
+    child: const Text("Replace",
+        style: TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
             fontWeight: FontWeight.bold,
@@ -2045,15 +2044,15 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 
   // set up the AlertDialog
   AlertDialog alert = AlertDialog(
-    title: Text("Luminator",
-        style: const TextStyle(
+    title: const Text("Luminator",
+        style: TextStyle(
             fontSize: 25.0,
             fontFamily: "Montserrat",
             fontWeight: FontWeight.bold,
             color: thbDblue)),
 
     content: RichText(
-      text: new TextSpan(
+      text: TextSpan(
         text: 'Would you like to replace ',
         style: const TextStyle(
             fontSize: 16.0,
@@ -2061,28 +2060,28 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
             fontWeight: FontWeight.bold,
             color: liorange),
         children: <TextSpan>[
-          new TextSpan(
+          TextSpan(
               text: OldDevice,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: Colors.red)),
-          new TextSpan(
+          const TextSpan(
               text: ' With ',
               style: const TextStyle(
                   fontSize: 16.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: liorange)),
-          new TextSpan(
+          TextSpan(
               text: NewDevice,
               style: const TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: Colors.green)),
-          new TextSpan(
+          const TextSpan(
               text: ' ? ',
               style: const TextStyle(
                   fontSize: 16.0,
@@ -2137,7 +2136,7 @@ void noInternetToast(String msg){
 
 void callDashboard(context) {
   Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (BuildContext context) => replacementilm()));
+      MaterialPageRoute(builder: (BuildContext context) => const replacementilm()));
 }
 
 Future<void> callDeviceCurrentStatus(context) async {
@@ -2278,16 +2277,16 @@ Future<void> callLogoutoption(BuildContext context) async {
   final result = await showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 10),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 10),
       backgroundColor: Colors.white,
-      title: Text("Luminator",
-          style: const TextStyle(
+      title: const Text("Luminator",
+          style: TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: liorange)),
-      content: Text("Are you sure you want to Logout?",
-          style: const TextStyle(
+      content: const Text("Are you sure you want to Logout?",
+          style: TextStyle(
               fontSize: 18.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
@@ -2297,16 +2296,16 @@ Future<void> callLogoutoption(BuildContext context) async {
           onPressed: () {
             Navigator.of(ctx).pop();
           },
-          child: Text("NO",
-              style: const TextStyle(
+          child: const Text("NO",
+              style: TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
                   color: Colors.green)),
         ),
         TextButton(
-          child: Text('YES',
-              style: const TextStyle(
+          child: const Text('YES',
+              style: TextStyle(
                   fontSize: 18.0,
                   fontFamily: "Montserrat",
                   fontWeight: FontWeight.bold,
@@ -2317,7 +2316,7 @@ Future<void> callLogoutoption(BuildContext context) async {
             // dbhelper.zone_delete();
             // dbhelper.ward_delete();
 
-            DBHelper dbhelper = new DBHelper();
+            DBHelper dbhelper = DBHelper();
             SharedPreferences prefs = await SharedPreferences.getInstance();
 
             var SelectedRegion = prefs.getString("SelectedRegion").toString();

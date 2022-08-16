@@ -20,8 +20,8 @@ const btnLightbluColor = Color(0xff0bd9ee);
 const btngreytbluColor = Color(0xfff1f7f8 );
 const pistagreen = Color(0xffbef5cc);
 const pistagreY = Color(0xff8A97A2);
-const lightorange = Color(0xfff57D0ff);
-const liorange = Color(0xfff57D0ff);
+const lightorange = Color(0xfff57d0ff);
+const liorange = Color(0xfff57d0ff);
 const liblue = Color(0xff65f2f9);
 const thbblue = Color(0xff00696e);
 const thbDblue = Color(0xff2F96BF);
@@ -30,8 +30,8 @@ const darkgreen = Color(0xff146e00);
 const splashscreen_text = "LUMINATOR";
 
 // Development release url
-//const devBaseUrl = "http://iotpro.io:8077";
-const devBaseUrl = "https://schnelliot.in/";
+const devBaseUrl = "http://iotpro.io:8077";
+//const devBaseUrl = "https://schnelliot.in/";
 
 // Production release url
 const prodBaseUrl = "https://schnelliot.in/";
@@ -65,7 +65,7 @@ const GWserviceFolderName = "forServiceCCMS";
 
 const ilm_deviceType = "lumiNode";
 const ccms_deviceType = "CCMS";
-const Gw_deviceType = "gateway";
+const Gw_deviceType = "Gateway";
 
 const session_expired = "Session expired!";
 //test
