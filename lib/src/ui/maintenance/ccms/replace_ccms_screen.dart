@@ -340,6 +340,7 @@ class replaceccmsState extends State<replaceccms> {
         return alert;
       },
     );
+
   }
 
   @override
@@ -363,6 +364,9 @@ class replaceccmsState extends State<replaceccms> {
               ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
                   response.id!.id.toString(), context, imageFile);
             } else if (response.type == Gw_deviceType) {
+              //ilm_main_fetchSmartDeviceDetails method is call by dev
+              ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
+                  response.id!.id.toString(), context, imageFile);
             } else {
               pr.hide();
               calltoast(app_dev_sel_details_one +
@@ -684,6 +688,34 @@ class replaceccmsState extends State<replaceccms> {
                                     .saveDeviceAttributes(response.id!.id!,
                                         "SERVER_SCOPE", old_body_req));
 
+                                //newly added by DEV for delete attribute while replace another device
+
+                                List<String> myAttributeList = [];
+                                myAttributeList.add('boardNumber');
+                                myAttributeList.add('ieeeAddress');
+                                myAttributeList.add('latitude');
+                                myAttributeList.add('longitude');
+                                myAttributeList.add('landmark');
+                                myAttributeList.add('zoneName');
+                                myAttributeList.add('wardName');
+                                myAttributeList.add('InstallBy');
+                                myAttributeList.add('InstalledOn');
+                                myAttributeList.add('accuracy');
+                                myAttributeList.add('createdBy');
+                                myAttributeList.add('filterTest');
+                                myAttributeList.add('firmware_versions');
+                                myAttributeList.add('lampWatts');
+                                myAttributeList.add('lattitude');
+                                myAttributeList.add('lmp');
+                                myAttributeList.add('location');
+                                myAttributeList.add('slatitude');
+                                myAttributeList.add('slongitude');
+
+                                var delete_attribute = (await tbClient
+                                    .getAttributeService()
+                                    .deleteDeviceAttributes(response.id!.id!,
+                                    "SERVER_SCOPE", myAttributeList));
+
                                 // New Device Updations
 
                                 Olddevicedetails.name = new_Device_Name;
@@ -748,7 +780,8 @@ class replaceccmsState extends State<replaceccms> {
                                           dashboard_screen(selectedPage: 0)));
                             }
                           }
-                        } else {
+                        }
+                       /* else {
                           // New Device Updations
                           newdeviceCredentials = await tbClient
                                   .getDeviceService()
@@ -820,7 +853,8 @@ class replaceccmsState extends State<replaceccms> {
                                 var olddevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(response);
-                                /*  List<String> myfirmList = [];
+                                *//*
+                                List<String> myfirmList = [];
                                 myfirmList.add("lattitude");
 
                                 List<AttributeKvEntry> latt_faultresponser;
@@ -845,7 +879,7 @@ class replaceccmsState extends State<replaceccms> {
                                       .getAttributeService()
                                       .saveDeviceAttributes(response.id!.id!,
                                       "SERVER_SCOPE", old_bodyW_req));
-                                }*/
+                                }*//*
 
                                 final old_body_req = {
                                   'boardNumber': Old_Device_Name,
@@ -924,6 +958,15 @@ class replaceccmsState extends State<replaceccms> {
                                     builder: (BuildContext context) =>
                                         dashboard_screen(selectedPage: 0)));
                           }
+                        }*/
+                        //previously one relation device is replaced by another relation device but now this part is hide for new requirement
+                        //hide is done by DEV
+                        else{
+                          noInternetToast("Gateway $deviceName is found to be installed in Panel! Kindly choose a different Gateway to replace!");
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  dashboard_screen(selectedPage: 0)));
+
                         }
                       } else {
                         pr.hide();

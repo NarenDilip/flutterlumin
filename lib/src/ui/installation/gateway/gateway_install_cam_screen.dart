@@ -596,6 +596,8 @@ class gwcaminstallState extends State<gwcaminstall> {
     String SelectedZone = prefs.getString('SelectedZone').toString();
     String deviceName = prefs.getString('deviceName').toString();
     String FirmwareVersion = prefs.getString("firmwareVersion").toString();
+
+
     //newly added by dev
     String Createdby = prefs.getString("username").toString();
 

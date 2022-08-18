@@ -954,46 +954,46 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceAround,
                                               children: [
-                                                // Expanded(
-                                                //     flex: 2,
-                                                //     child: InkWell(
-                                                //       child: Container(
-                                                //         alignment:
-                                                //             Alignment.center,
-                                                //         height: 90,
-                                                //         decoration: const BoxDecoration(
-                                                //             color: Colors
-                                                //                 .deepOrange,
-                                                //             borderRadius:
-                                                //                 BorderRadius.all(
-                                                //                     Radius.circular(
-                                                //                         50.0))),
-                                                //         child: const Text(
-                                                //             'REMOVE',
-                                                //             style: TextStyle(
-                                                //                 fontSize: 18,
-                                                //                 color: Colors
-                                                //                     .white,
-                                                //                 fontFamily:
-                                                //                     "Montserrat")),
-                                                //       ),
-                                                //       onTap: () async {
-                                                //         if (visibility ==
-                                                //             true) {
-                                                //           if (!(await Geolocator()
-                                                //               .isLocationServiceEnabled())) {
-                                                //             onGpsAlert();
-                                                //           } else {
-                                                //             removeCCMS(context);
-                                                //           }
-                                                //         } else {
-                                                //           _show(context, true);
-                                                //         }
-                                                //       },
-                                                //     )),
-                                                // const SizedBox(
-                                                //   width: 15,
-                                                // ),
+                                                Expanded(
+                                                    flex: 2,
+                                                    child: InkWell(
+                                                      child: Container(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        height: 90,
+                                                        decoration: const BoxDecoration(
+                                                            color: Colors
+                                                                .deepOrange,
+                                                            borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        50.0))),
+                                                        child: const Text(
+                                                            'REMOVE',
+                                                            style: TextStyle(
+                                                                fontSize: 18,
+                                                                color: Colors
+                                                                    .white,
+                                                                fontFamily:
+                                                                    "Montserrat")),
+                                                      ),
+                                                      onTap: () async {
+                                                        if (visibility ==
+                                                            true) {
+                                                          if (!(await Geolocator()
+                                                              .isLocationServiceEnabled())) {
+                                                            onGpsAlert();
+                                                          } else {
+                                                            removeCCMS(context);
+                                                          }
+                                                        } else {
+                                                          _show(context, true);
+                                                        }
+                                                      },
+                                                    )),
+                                                const SizedBox(
+                                                  width: 15,
+                                                ),
                                                 Expanded(
                                                     flex: 2,
                                                     child: InkWell(
