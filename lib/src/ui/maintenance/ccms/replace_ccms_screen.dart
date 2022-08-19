@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -56,6 +57,7 @@ class replaceccmsState extends State<replaceccms> {
   final _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
   static final Completer _completer = Completer<String>();
+  bool is_invalid = false;
 
   Future<void> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -67,7 +69,7 @@ class replaceccmsState extends State<replaceccms> {
       DeviceName = DeviceName;
       newDeviceName = newDeviceName;
       faultyStatus = faultyStatus;
-
+      ilm_main_fetchDeviceDetails(DeviceName, newDeviceName, context, imageFile);
       if (DeviceName == null) {
         faultyStatus = "0";
       }
@@ -158,19 +160,19 @@ class replaceccmsState extends State<replaceccms> {
         },
         child: Scaffold(
             body: Container(
-                padding: const EdgeInsets.fromLTRB(15, 60, 15, 0),
+                padding: EdgeInsets.fromLTRB(15, 60, 15, 0),
                 decoration: const BoxDecoration(
                     color: thbDblue,
                     borderRadius: BorderRadius.all(Radius.circular(5.0))),
                 alignment: Alignment.center,
                 child: Column(children: [
-                  SizedBox(
+                  Container(
                     width: width / 1.25,
                     height: height / 1.25,
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: const BoxDecoration(color: Colors.white),
+                            decoration: BoxDecoration(color: Colors.white),
                             width: 200,
                             height: 200,
                             child: Icon(
@@ -178,19 +180,19 @@ class replaceccmsState extends State<replaceccms> {
                               color: Colors.grey[800],
                             )),
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
+                  SizedBox(height: 10),
+                  /*Container(
                       width: double.infinity,
                       child: TextButton(
-                          child: const Text(app_com_replace,
-                              style: TextStyle(
+                          child: Text(app_com_replace,
+                              style:  TextStyle(
                                   fontSize: 18.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white)),
                           style: ButtonStyle(
                               padding: MaterialStateProperty.all<EdgeInsets>(
-                                  const EdgeInsets.all(20)),
+                                  EdgeInsets.all(20)),
                               backgroundColor:
                                   MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
@@ -220,7 +222,7 @@ class replaceccmsState extends State<replaceccms> {
                                   textColor: Colors.black,
                                   fontSize: 16.0);
                             }
-                          })),
+                          })),*/
                 ]))));
   }
 
@@ -229,9 +231,15 @@ class replaceccmsState extends State<replaceccms> {
       pr.hide();
       onGpsAlert();
     } else {
-      _openCamera(context);
+      if(is_invalid = false){
+        _openCamera(context);
+      } else{
+
+      }
     }
   }
+
+
 
   void _openCamera(BuildContext context) async {
     final pickedFile = await ImagePicker().pickImage(
@@ -243,10 +251,12 @@ class replaceccmsState extends State<replaceccms> {
     setState(() {
       if (pickedFile != null) {
         imageFile = pickedFile;
+        showActionAlertDialog(
+            context, DeviceName, newDeviceName);
       } else {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const CCMSMaintenanceScreen()),
+          MaterialPageRoute(builder: (context) => CCMSMaintenanceScreen()),
         );
       }
     });
@@ -255,24 +265,28 @@ class replaceccmsState extends State<replaceccms> {
   showActionAlertDialog(context, OldDevice, NewDevice) {
     // set up the buttons
     Widget cancelButton = TextButton(
-      child: const Text(app_dialog_cancel,
-          style: TextStyle(
+      child: Text(app_dialog_cancel,
+          style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: Colors.red)),
       onPressed: () {
         Navigator.of(context, rootNavigator: true).pop('dialog');
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) =>
+                dashboard_screen(selectedPage: 0)));
       },
     );
     Widget continueButton = TextButton(
-      child: const Text(app_dialog_replace,
-          style: TextStyle(
+      child: Text(app_dialog_replace,
+          style: const TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
               color: Colors.green)),
       onPressed: () {
+        Navigator.of(context, rootNavigator: true).pop('dialog');
         late Future<Device?> entityFuture;
         // Utility.progressDialog(context);
         entityFuture = ilm_main_fetchDeviceDetails(
@@ -341,7 +355,6 @@ class replaceccmsState extends State<replaceccms> {
         return alert;
       },
     );
-
   }
 
   @override
@@ -361,6 +374,8 @@ class replaceccmsState extends State<replaceccms> {
               .getTenantDevice(deviceName) as Device;
           if (response.name.isNotEmpty) {
             if (response.type == ilm_deviceType) {
+              pr.hide();
+              alertMessage("No Gateway found for $deviceName! Kindly ensure you are scanning the board no of a Gateway.");
             } else if (response.type == ccms_deviceType) {
               ilm_main_fetchSmartDeviceDetails(OlddeviceName, deviceName,
                   response.id!.id.toString(), context, imageFile);
@@ -390,7 +405,14 @@ class replaceccmsState extends State<replaceccms> {
                   OlddeviceName, deviceName, context, imageFile);
             }
           } else {
-            calltoast(deviceName);
+            pr.hide();
+            is_invalid = true;
+            alertMessage("No Gateway found for $deviceName! Kindly ensure you are scanning the board no of a Gateway.");
+            //calltoast("deviceName test");
+
+           /* Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (BuildContext context) =>
+                    dashboard_screen(selectedPage: 0)));*/
           }
         }
       } else {
@@ -402,7 +424,7 @@ class replaceccmsState extends State<replaceccms> {
 
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
-    final coordinates = Coordinates(lat, lang);
+    final coordinates = new Coordinates(lat, lang);
     List<Address> addresss =
         (await Geocoder.local.findAddressesFromCoordinates(coordinates));
     setState(() {
@@ -537,7 +559,7 @@ class replaceccmsState extends State<replaceccms> {
                       DeviceCredentials? olddeviceCredentials;
 
                       DBHelper dbHelper = DBHelper();
-                      String? regionid;
+                      var regionid;
                       List<Region> regiondetails = await dbHelper
                           .region_name_regionbasedDetails(SelectedRegion);
                       if (regiondetails.length != "0") {
@@ -624,7 +646,7 @@ class replaceccmsState extends State<replaceccms> {
 
                                 olddeviceCredentials.credentialsId =
                                     oldQRID + "L";
-                                var oldCredResponse = await tbClient
+                                var old_cred_response = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
                                         olddeviceCredentials);
@@ -966,10 +988,13 @@ class replaceccmsState extends State<replaceccms> {
                         //previously one relation device is replaced by another relation device but now this part is hide for new requirement
                         //hide is done by DEV
                         else{
-                          noInternetToast("Gateway $deviceName is found to be installed in Panel $uid! Kindly choose a different Gateway to replace!");
+                          /*prefs.remove("key");*/
+                          pr.hide();
+                         /* noInternetToast("Gateway $deviceName is found to be installed in Panel $uid! Kindly choose a different Gateway to replace!");
                           Navigator.of(context).pushReplacement(MaterialPageRoute(
                               builder: (BuildContext context) =>
-                                  dashboard_screen(selectedPage: 0)));
+                                  dashboard_screen(selectedPage: 0)));*/
+                          alertMessage("Gateway $deviceName is found to be installed in Panel $uid! Kindly choose a different Gateway to replace!");
 
                         }
                       } else {
@@ -1030,7 +1055,9 @@ class replaceccmsState extends State<replaceccms> {
                       dashboard_screen(selectedPage: 0)));
             }
           } else {
-            pr.hide();
+
+            //toast is hide & open camera is done by DEV because if image is null again camera is opened
+           /* pr.hide();
             Fluttertoast.showToast(
                 msg: app_device_image_cap,
                 toastLength: Toast.LENGTH_SHORT,
@@ -1038,7 +1065,8 @@ class replaceccmsState extends State<replaceccms> {
                 timeInSecForIosWeb: 1,
                 backgroundColor: Colors.white,
                 textColor: Colors.black,
-                fontSize: 16.0);
+                fontSize: 16.0);*/
+            _openCamera(context);
           }
         } catch (e) {
           /*FlutterLogs.logInfo("CCMS_replacement_page", "CCMS_remove",
@@ -1048,8 +1076,7 @@ class replaceccmsState extends State<replaceccms> {
           if (message == session_expired) {
             var status = loginThingsboard.callThingsboardLogin(context);
             if (status == true) {
-              ilm_main_fetchDeviceDetails(
-                  Olddevicename, deviceName, context, imageFile);
+              ilm_main_fetchDeviceDetails(Olddevicename, deviceName, context, imageFile);
             }
           } else {
             calltoast(deviceName);
@@ -1196,7 +1223,7 @@ class replaceccmsState extends State<replaceccms> {
       print("${response.statusCode}");
       pr.hide();
       if (response.statusCode.toString() == "200") {
-        Fluttertoast.showToast(
+       /* Fluttertoast.showToast(
             msg: "Gateway $oldDeviceName in the CCMS $uid is replaced with Gateway $deviceName successfully!",
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
@@ -1207,7 +1234,8 @@ class replaceccmsState extends State<replaceccms> {
 
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) =>
-                dashboard_screen(selectedPage: 0)));
+                dashboard_screen(selectedPage: 0)));*/
+        alertMessage("Gateway $oldDeviceName in the CCMS $uid is replaced with Gateway $deviceName successfully!");
       } else {}
       return response;
     } catch (e) {
@@ -1249,5 +1277,38 @@ class replaceccmsState extends State<replaceccms> {
             )
     );
   }
+
+  void alertMessage(String message) async{
+    await pr.hide();
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          content: Text(message),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: const Text("Ok"),
+              onPressed: () {
+                pr.hide();
+                Navigator.of(context, rootNavigator: true).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => dashboard_screen(selectedPage: 0)),
+                );
+               /* Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                      const CCMSMaintenanceScreen()),
+                );*/
+              },
+            )
+          ],
+        )
+    );
+  }
+
+
 
 }

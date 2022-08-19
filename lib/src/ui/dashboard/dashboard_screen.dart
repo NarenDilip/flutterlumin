@@ -149,8 +149,8 @@ class dashboard_screenState extends State<dashboard_screen> {
                 child: Visibility(
                     visible: visibility,
                     child: Container(
-                      child: Text('Not Now',
-                          style: const TextStyle(
+                      child: const Text('Not Now',
+                          style: TextStyle(
                               fontSize: 18.0,
                               fontFamily: "Montserrat",
                               fontWeight: FontWeight.bold,
