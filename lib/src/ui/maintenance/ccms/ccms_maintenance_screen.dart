@@ -51,6 +51,7 @@ class CCMSMaintenanceScreen extends StatefulWidget {
 }
 
 class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
+  String uid = '';
   var selectedImage = "";
   bool _isOn = true;
   DateTime? date;
@@ -326,6 +327,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
   Future<void> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
+    uid = prefs.getString('device_label').toString();
     DeviceStatus = prefs.getString('deviceStatus').toString();
     SelectedRegion = prefs.getString("SelectedRegion").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
@@ -834,6 +836,18 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                 ),
                                                 const SizedBox(
                                                   height: 20,
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.only(left:16.0),
+                                                  child: Align(alignment: Alignment.centerLeft, child: Text("uid : $uid", style: const TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontFamily:
+                                                                  "Montserrat",
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontWeight:
+                                                                  FontWeight
+                                                                      .bold,)),),
                                                 ),
                                                 const SizedBox(
                                                   height: 20,

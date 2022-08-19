@@ -771,7 +771,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
                         Container(
                           alignment: Alignment.center,
                           padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: Text('ILM Maintanance',
+                          child: Text('ILM Maintenance',
                               textAlign: TextAlign.center,
                               style: const TextStyle(
                                   fontSize: 20.0,

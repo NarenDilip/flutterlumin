@@ -49,6 +49,7 @@ class device_list_screen extends StatefulWidget {
 }
 
 class device_list_screen_state extends State<device_list_screen> {
+  String uid = '';
   List<String>? _foundUsers = [];
   List<String>? _gwfoundUsers = [];
   List<String>? _ccmsfoundUsers = [];
@@ -1253,7 +1254,10 @@ class device_list_screen_state extends State<device_list_screen> {
           devicelist_response = (await tbClient
               .getDeviceService()
               .getccmsTenantDevices(pageLink));
-
+              SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+          // uid = prefs.setString('device_label', devicelist_response.data[0].label!);
+         uid =  prefs.setString('device_label',devicelist_response.data[0].label!).toString();
           if (devicelist_response != null) {
             if (devicelist_response.totalElements != 0) {
               for (int i = 0; i < devicelist_response.data.length; i++) {

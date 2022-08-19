@@ -46,17 +46,18 @@ class replaceccms extends StatefulWidget {
 }
 
 class replaceccmsState extends State<replaceccms> {
+  var uid;
   String DeviceName = "0";
   String newDeviceName = "0";
   var imageFile;
   String faultyStatus = "0";
   late ProgressDialog pr;
   String address = "";
-  var _myLogFileName = "Luminator2.0_LogFile";
+  final _myLogFileName = "Luminator2.0_LogFile";
   var logStatus = '';
-  static Completer _completer = new Completer<String>();
+  static final Completer _completer = Completer<String>();
 
-  Future<Null> getSharedPrefs() async {
+  Future<void> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
     newDeviceName = prefs.getString('newDevicename').toString();
@@ -157,19 +158,19 @@ class replaceccmsState extends State<replaceccms> {
         },
         child: Scaffold(
             body: Container(
-                padding: EdgeInsets.fromLTRB(15, 60, 15, 0),
+                padding: const EdgeInsets.fromLTRB(15, 60, 15, 0),
                 decoration: const BoxDecoration(
                     color: thbDblue,
                     borderRadius: BorderRadius.all(Radius.circular(5.0))),
                 alignment: Alignment.center,
                 child: Column(children: [
-                  Container(
+                  SizedBox(
                     width: width / 1.25,
                     height: height / 1.25,
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                            decoration: BoxDecoration(color: Colors.white),
+                            decoration: const BoxDecoration(color: Colors.white),
                             width: 200,
                             height: 200,
                             child: Icon(
@@ -177,19 +178,19 @@ class replaceccmsState extends State<replaceccms> {
                               color: Colors.grey[800],
                             )),
                   ),
-                  SizedBox(height: 10),
-                  Container(
+                  const SizedBox(height: 10),
+                  SizedBox(
                       width: double.infinity,
                       child: TextButton(
-                          child: Text(app_com_replace,
-                              style: const TextStyle(
+                          child: const Text(app_com_replace,
+                              style: TextStyle(
                                   fontSize: 18.0,
                                   fontFamily: "Montserrat",
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white)),
                           style: ButtonStyle(
                               padding: MaterialStateProperty.all<EdgeInsets>(
-                                  EdgeInsets.all(20)),
+                                  const EdgeInsets.all(20)),
                               backgroundColor:
                                   MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
@@ -245,7 +246,7 @@ class replaceccmsState extends State<replaceccms> {
       } else {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CCMSMaintenanceScreen()),
+          MaterialPageRoute(builder: (context) => const CCMSMaintenanceScreen()),
         );
       }
     });
@@ -254,8 +255,8 @@ class replaceccmsState extends State<replaceccms> {
   showActionAlertDialog(context, OldDevice, NewDevice) {
     // set up the buttons
     Widget cancelButton = TextButton(
-      child: Text(app_dialog_cancel,
-          style: const TextStyle(
+      child: const Text(app_dialog_cancel,
+          style: TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
@@ -265,8 +266,8 @@ class replaceccmsState extends State<replaceccms> {
       },
     );
     Widget continueButton = TextButton(
-      child: Text(app_dialog_replace,
-          style: const TextStyle(
+      child: const Text(app_dialog_replace,
+          style: TextStyle(
               fontSize: 25.0,
               fontFamily: "Montserrat",
               fontWeight: FontWeight.bold,
@@ -396,17 +397,18 @@ class replaceccmsState extends State<replaceccms> {
         noInternetToast(no_network);
       }
     });
+    return null;
   }
 
   Future<String> _getAddress(double? lat, double? lang) async {
     if (lat == null || lang == null) return "";
-    final coordinates = new Coordinates(lat, lang);
+    final coordinates = Coordinates(lat, lang);
     List<Address> addresss =
         (await Geocoder.local.findAddressesFromCoordinates(coordinates));
     setState(() {
       address = addresss.elementAt(1).addressLine.toString();
     });
-    return "${addresss.elementAt(1).addressLine}";
+    return addresss.elementAt(1).addressLine;
   }
 
   @override
@@ -457,8 +459,9 @@ class replaceccmsState extends State<replaceccms> {
 
           if (imageFile != null) {
             if (response != null) {
-              var new_Device_Name = response.name;
-              var new_Device_label = response.label;
+              var newDeviceName = response.name;
+              var newDeviceLabel = response.label;
+              uid = response.label;
 
               if (faultyStatus == "2") {
                 Map data = {'faulty': "true"};
@@ -528,12 +531,13 @@ class replaceccmsState extends State<replaceccms> {
 
                       prefs.setString('deviceId', deviceid);
                       prefs.setString('deviceName', deviceName);
+                      prefs.setString('device_label', response.label!);
 
                       DeviceCredentials? newdeviceCredentials;
                       DeviceCredentials? olddeviceCredentials;
 
                       DBHelper dbHelper = DBHelper();
-                      var regionid;
+                      String? regionid;
                       List<Region> regiondetails = await dbHelper
                           .region_name_regionbasedDetails(SelectedRegion);
                       if (regiondetails.length != "0") {
@@ -604,8 +608,8 @@ class replaceccmsState extends State<replaceccms> {
                                 .getTenantDevice(Olddevicename) as Device;
 
                             if (Olddevicedetails != null) {
-                              var Old_Device_Name = Olddevicedetails.name;
-                              var Old_Device_label = Olddevicedetails.label;
+                              var OldDeviceName = Olddevicedetails.name;
+                              var OldDeviceLabel = Olddevicedetails.label;
 
 
                               olddeviceCredentials = await tbClient
@@ -620,13 +624,13 @@ class replaceccmsState extends State<replaceccms> {
 
                                 olddeviceCredentials.credentialsId =
                                     oldQRID + "L";
-                                var old_cred_response = await tbClient
+                                var oldCredResponse = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
                                         olddeviceCredentials);
 
                                 Olddevicedetails.name = Olddevicename + "99";
-                                var old_dev_response = await tbClient
+                                var oldDevResponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
 
@@ -636,14 +640,14 @@ class replaceccmsState extends State<replaceccms> {
                                     .saveDeviceCredentials(
                                         olddeviceCredentials);
 
-                                response.name = Old_Device_Name;
-                                response.label = Old_Device_label;
+                                response.name = OldDeviceName;
+                                response.label = OldDeviceLabel;
                                 var olddevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(response);
 
-                                final old_body_req = {
-                                  'boardNumber': Old_Device_Name,
+                                final oldBodyReq = {
+                                  'boardNumber': OldDeviceName,
                                   'ieeeAddress': oldQRID,
                                   'slatitude': Lattitude.toString(),
                                   'slongitude': Longitude.toString(),
@@ -683,10 +687,10 @@ class replaceccmsState extends State<replaceccms> {
                                           .saveRelation(entityRelation);
                                 }
 
-                                var up_attribute = (await tbClient
+                                var upAttribute = (await tbClient
                                     .getAttributeService()
                                     .saveDeviceAttributes(response.id!.id!,
-                                        "SERVER_SCOPE", old_body_req));
+                                        "SERVER_SCOPE", oldBodyReq));
 
                                 //newly added by DEV for delete attribute while replace another device
 
@@ -711,27 +715,27 @@ class replaceccmsState extends State<replaceccms> {
                                 myAttributeList.add('slatitude');
                                 myAttributeList.add('slongitude');
 
-                                var delete_attribute = (await tbClient
+                                var deleteAttribute = (await tbClient
                                     .getAttributeService()
                                     .deleteDeviceAttributes(response.id!.id!,
                                     "SERVER_SCOPE", myAttributeList));
 
                                 // New Device Updations
 
-                                Olddevicedetails.name = new_Device_Name;
-                                Olddevicedetails.label = new_Device_label;
-                                var up_devresponse = await tbClient
+                                Olddevicedetails.name = newDeviceName;
+                                Olddevicedetails.label = newDeviceLabel;
+                                var upDevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
 
                                 newdeviceCredentials.credentialsId = oldQRID;
-                                var up_credresponse = await tbClient
+                                var upCredresponse = await tbClient
                                     .getDeviceService()
                                     .saveDeviceCredentials(
                                         newdeviceCredentials);
 
-                                final new_body_req = {
-                                  'boardNumber': new_Device_Name,
+                                final newBodyReq = {
+                                  'boardNumber': newDeviceName,
                                   'ieeeAddress': newQRID,
                                   'landmark': address,
                                   'slatitude': Lattitude.toString(),
@@ -743,32 +747,32 @@ class replaceccmsState extends State<replaceccms> {
                                 };
 
                                 try {
-                                  var up_newdevice_attribute = (await tbClient
+                                  var upNewdeviceAttribute = (await tbClient
                                       .getAttributeService()
                                       .saveDeviceAttributes(
                                           Olddevicedetails.id!.id!,
                                           "SERVER_SCOPE",
-                                          new_body_req));
+                                          newBodyReq));
                                 } catch (e) {}
 
                                 List<String> myList = [];
                                 myList.add(response.id!.id!);
 
                                 try {
-                                  var remove_response = await tbClient
+                                  var removeResponse = await tbClient
                                       .getEntityGroupService()
                                       .removeEntitiesFromEntityGroup(
                                           DevicecurrentFolderName, myList);
                                 } catch (e) {}
                                 try {
-                                  var add_response = await tbClient
+                                  var addResponse = await tbClient
                                       .getEntityGroupService()
                                       .addEntitiesToEntityGroup(
                                           DevicemoveFolderName, myList);
                                 } catch (e) {}
                                 pr.hide();
                                 callReplacementComplete(
-                                    context, imageFile, deviceName);
+                                    context, imageFile, deviceName,OldDeviceName);
                               }
                             } else {
                               pr.hide();
@@ -962,7 +966,7 @@ class replaceccmsState extends State<replaceccms> {
                         //previously one relation device is replaced by another relation device but now this part is hide for new requirement
                         //hide is done by DEV
                         else{
-                          noInternetToast("Gateway $deviceName is found to be installed in Panel! Kindly choose a different Gateway to replace!");
+                          noInternetToast("Gateway $deviceName is found to be installed in Panel $uid! Kindly choose a different Gateway to replace!");
                           Navigator.of(context).pushReplacement(MaterialPageRoute(
                               builder: (BuildContext context) =>
                                   dashboard_screen(selectedPage: 0)));
@@ -1058,12 +1062,13 @@ class replaceccmsState extends State<replaceccms> {
         noInternetToast(no_network);
       }
     });
+    return null;
   }
 
-  Future<void> callReplacementComplete(context, imageFile, DeviceName) async {
+  Future<void> callReplacementComplete(context, imageFile, DeviceName, String oldDeviceName) async {
     final bytes = File(imageFile!.path).readAsBytesSync();
     String img64 = base64Encode(bytes);
-    postRequest(context, img64, DeviceName);
+    postRequest(context, img64, DeviceName,oldDeviceName);
   }
 
   Future<ThingsboardError> toThingsboardError(error, context,
@@ -1175,14 +1180,14 @@ class replaceccmsState extends State<replaceccms> {
         fontSize: 16.0);
   }
 
-  Future<http.Response> postRequest(context, imageFile, DeviceName) async {
+  Future<http.Response> postRequest(context, imageFile, deviceName, String oldDeviceName) async {
     var response;
     try {
       pr.show();
       Uri myUri = Uri.parse(localAPICall);
       // Uri myUri = Uri.parse(serverUrl);
 
-      Map data = {'img': imageFile, 'name': DeviceName};
+      Map data = {'img': imageFile, 'name': deviceName};
       //encode Map to JSON
       var body = json.encode(data);
 
@@ -1192,7 +1197,7 @@ class replaceccmsState extends State<replaceccms> {
       pr.hide();
       if (response.statusCode.toString() == "200") {
         Fluttertoast.showToast(
-            msg: app_dev_repl_comp,
+            msg: "Gateway $oldDeviceName in the CCMS $uid is replaced with Gateway $deviceName successfully!",
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
             timeInSecForIosWeb: 1,

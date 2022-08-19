@@ -48,6 +48,7 @@ class ccmscaminstall extends StatefulWidget {
 }
 
 class ccmscaminstallState extends State<ccmscaminstall> {
+  String uid = '';
   String DeviceName = "0";
   var imageFile;
   var accuvalue;
@@ -296,12 +297,14 @@ class ccmscaminstallState extends State<ccmscaminstall> {
   Future<Null> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
+    uid = prefs.getString('device_label').toString();
     SelectedWard = prefs.getString("SelectedWard").toString();
     SelectedZone = prefs.getString("SelectedZone").toString();
     geoFence = prefs.getString('geoFence').toString();
     FirmwareVersion = prefs.getString("firmwareVersion").toString();
 
     setState(() {
+      uid = uid;
       DeviceName = DeviceName;
       SelectedWard = SelectedWard;
       SelectedZone = SelectedZone;
@@ -1046,6 +1049,15 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                   child: Column(children: [
                     Text(
                       "CCMS " + ' $DeviceName ',
+                      style: const TextStyle(
+                          fontSize: 20.0,
+                          fontFamily: "Montserrat",
+                          fontWeight: FontWeight.bold,
+                          color: thbDblue),
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "UID " + ' $uid ',
                       style: const TextStyle(
                           fontSize: 20.0,
                           fontFamily: "Montserrat",
