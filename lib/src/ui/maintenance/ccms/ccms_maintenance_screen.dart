@@ -839,7 +839,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                 ),
                                                 Padding(
                                                   padding: const EdgeInsets.only(left:16.0),
-                                                  child: Align(alignment: Alignment.centerLeft, child: Text("uid : $uid", style: const TextStyle(
+                                                  child: Align(alignment: Alignment.centerLeft, child: Text("UID : ${uid==''?'-':uid}", style: const TextStyle(
                                                                   fontSize: 18,
                                                                   fontFamily:
                                                                   "Montserrat",

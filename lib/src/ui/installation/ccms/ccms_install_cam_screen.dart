@@ -1057,7 +1057,7 @@ class ccmscaminstallState extends State<ccmscaminstall> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "UID " + ' $uid ',
+                      'UID : ${uid==null?"-":uid} ',
                       style: const TextStyle(
                           fontSize: 20.0,
                           fontFamily: "Montserrat",

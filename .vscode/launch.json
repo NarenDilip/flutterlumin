@@ -9,7 +9,7 @@
             "request": "launch",
             "type": "dart",
             "args": [
-                "--flavor", "dev", "-t", "lib/main.dart" 
+                "--flavor", "prod", "-t", "lib/main.dart" 
             ]
         },
         {
