@@ -1003,13 +1003,13 @@ class _GWMaintenanceScreenState extends State<GWMaintenanceScreen> {
                                                           height: 90,
                                                           decoration: const BoxDecoration(
                                                               color:
-                                                                  Colors.orange,
+                                                                  Colors.green,
                                                               borderRadius: BorderRadius
                                                                   .all(Radius
                                                                       .circular(
                                                                           50.0))),
                                                           child: const Text(
-                                                              'Replace Gateway',
+                                                              'REPLACE',
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,

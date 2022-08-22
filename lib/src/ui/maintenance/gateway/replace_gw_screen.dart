@@ -729,13 +729,12 @@ class replacegwState extends State<replacegw> {
 
                                   Map<String, dynamic> fromId = {
                                     'entityType': 'ASSET',
-                                    'id': warddetails.first.wardid
+                                    'id':response.id!.id
                                   };
 
-                                  // 'id': response.id!.id perviously send wrong one
                                   Map<String, dynamic> toId = {
                                     'entityType': 'DEVICE',
-                                    'id': Olddevicedetails.id!.id
+                                    'id': warddetails.first.wardid    //Olddevicedetails.id!.id
                                   };
 
 

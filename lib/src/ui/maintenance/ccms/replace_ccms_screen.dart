@@ -634,6 +634,7 @@ class replaceccmsState extends State<replaceccms> {
                               var OldDeviceLabel = Olddevicedetails.label;
 
 
+
                               olddeviceCredentials = await tbClient
                                       .getDeviceService()
                                       .getDeviceCredentialsByDeviceId(
@@ -688,12 +689,12 @@ class replaceccmsState extends State<replaceccms> {
 
                                   Map<String, dynamic> fromId = {
                                     'entityType': 'ASSET',
-                                    'id': warddetails.first.wardid
+                                    'id': response.id!.id
                                   };
-                                 // 'id': response.id!.id perviously send wrong one
+
                                   Map<String, dynamic> toId = {
                                     'entityType': 'DEVICE',
-                                    'id': Olddevicedetails.id!.id
+                                    'id': warddetails.first.wardid   // 'id': Olddevicedetails.id!.id
                                   };
 
                                   EntityRelation entityRelation =
@@ -707,6 +708,7 @@ class replaceccmsState extends State<replaceccms> {
                                       tbClient
                                           .getEntityRelationService()
                                           .saveRelation(entityRelation);
+
                                 }
 
                                 var upAttribute = (await tbClient
@@ -995,7 +997,6 @@ class replaceccmsState extends State<replaceccms> {
                               builder: (BuildContext context) =>
                                   dashboard_screen(selectedPage: 0)));*/
                           alertMessage("Gateway $deviceName is found to be installed in Panel $uid! Kindly choose a different Gateway to replace!");
-
                         }
                       } else {
                         pr.hide();
