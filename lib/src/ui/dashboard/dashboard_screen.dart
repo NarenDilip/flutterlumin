@@ -549,8 +549,11 @@ class dashboard_screenState extends State<dashboard_screen> {
                   .getTenantDevice(deviceName)) as Device;
 
               if (response.toString().isNotEmpty) {
+                prefs.setString('device_label', response.label!.toString());
                 prefs.setString('deviceId', response.id!.id!.toString());
                 prefs.setString('DeviceDetails', response.id!.id!.toString());
+
+                
 
                 /*try {
                   List<TsKvEntry> faultresponser;
@@ -721,12 +724,14 @@ class dashboard_screenState extends State<dashboard_screen> {
 
                     pr.hide();
                     if (response.type == ilm_deviceType) {
+                     
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const MaintenanceScreen()),
                       );
                     } else if (response.type == ccms_deviceType) {
+                       //print('timest test: ${response.toString()}');
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -824,6 +829,7 @@ class dashboard_screenState extends State<dashboard_screen> {
       }
     });
   }
+
 
   void hideKeyboard(BuildContext context) {
     FocusScopeNode currentFocus = FocusScope.of(context);

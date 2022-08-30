@@ -134,6 +134,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('deviceLatitude', location.latitude.toString());
     prefs.setString('deviceLongitude', location.longitude.toString());
+    //prefs.setString('device_label', response.label!);
 
     if (caclsss == 0) {
       startTimer();
@@ -323,7 +324,6 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     }
     return true;
   }
-
   Future<void> getSharedPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DeviceName = prefs.getString('deviceName').toString();
@@ -334,11 +334,14 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
     SelectedWard = prefs.getString("SelectedWard").toString();
     timevalue = prefs.getString("devicetimeStamp").toString();
     String val = prefs.getString("location").toString();
+
+//getLocation(res)
     if(val != "null"){
       location = prefs.getString("location").toString();
     } else {
       location = "";
     }
+    //print('object: $val, $location}');
 
     geoFence = prefs.getString('geoFence').toString();
     faultyStatus = prefs.getString("faultyStatus").toString();
@@ -355,6 +358,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
       SelectedWard = SelectedWard;
       timevalue = timevalue;
       location = location;
+      uid = uid;
       // version = version;
       faultyStatus = faultyStatus;
       Lattitude = Lattitude;
@@ -801,7 +805,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                             style: const TextStyle(
                                                                 color: Colors
                                                                     .deepOrange,
-                                                                fontSize: 26,
+                                                                fontSize: 24,
                                                                 fontFamily:
                                                                     "Montserrat",
                                                                 fontWeight:
@@ -816,11 +820,11 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                     ), //SizedBox
                                                     SizedBox(
                                                         width: width / 2.05,
-                                                        height: 25,
+                                                        height: 60,
                                                         child: Text(
-                                                            location,
+                                                            location.toString(),
                                                             style: const TextStyle(
-                                                                fontSize: 18,
+                                                                fontSize: 14,
                                                                 fontFamily:
                                                                 "Montserrat",
                                                                 color: Colors
@@ -840,7 +844,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                 Padding(
                                                   padding: const EdgeInsets.only(left:16.0),
                                                   child: Align(alignment: Alignment.centerLeft, child: Text("UID : ${uid==''?'-':uid}", style: const TextStyle(
-                                                                  fontSize: 18,
+                                                                  fontSize: 14,
                                                                   fontFamily:
                                                                   "Montserrat",
                                                                   color: Colors
@@ -875,7 +879,7 @@ class _CCMSMaintenanceScreenState extends State<CCMSMaintenanceScreen> {
                                                         child: Text(
                                                           "$date",
                                                           style: const TextStyle(
-                                                              fontSize: 18,
+                                                              fontSize: 14,
                                                               color:
                                                                   Colors.white,
                                                               fontFamily:
@@ -1488,6 +1492,7 @@ Future<void> replaceCCMS(context) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String OlddeviceID = prefs.getString('deviceId').toString();
       String OlddeviceName = prefs.getString('deviceName').toString();
+      String getUid = prefs.getString('device_label').toString();
 
       Navigator.pushAndRemoveUntil(
           context,
@@ -1505,7 +1510,22 @@ Future<void> replaceCCMS(context) async {
             /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
                 "Duplicate QR Found for Execution");*/
             pr.hide();
-            calltoast(app_qr_duplicate);
+            showDialog(
+          context: context,
+          builder: (BuildContext context) => CupertinoAlertDialog(
+            content:   Text("Gateway $value is found to be installed in Panel $getUid! Kindly choose a different Gateway to replace!"),
+            //content: const Text('Please make sure you enable location and try again'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text("Ok"),
+                onPressed: (){
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+              )
+            ],
+          )
+      );
+            //calltoast("Gateway $value is found to be installed in Panel $getUid! Kindly choose a different Gateway to replace!");
           }
         } else {
           /*FlutterLogs.logInfo("ccms_maintenance_page", "ccms_maintenance",
@@ -1620,6 +1640,7 @@ showActionAlertDialog(context, OldDevice, NewDevice) {
 void calltoast(String polenumber) {
   Fluttertoast.showToast(
       msg: device_toast_msg + polenumber + device_toast_notfound,
+      //msg: polenumber,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,

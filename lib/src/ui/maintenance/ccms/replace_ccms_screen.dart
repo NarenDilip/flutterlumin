@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:ffi';
 import 'dart:io';
 
@@ -553,7 +554,7 @@ class replaceccmsState extends State<replaceccms> {
 
                       prefs.setString('deviceId', deviceid);
                       prefs.setString('deviceName', deviceName);
-                      prefs.setString('device_label', response.label!);
+                      //prefs.setString('device_label', response.label!);
 
                       DeviceCredentials? newdeviceCredentials;
                       DeviceCredentials? olddeviceCredentials;
@@ -664,7 +665,9 @@ class replaceccmsState extends State<replaceccms> {
                                         olddeviceCredentials);
 
                                 response.name = OldDeviceName;
-                                response.label = OldDeviceLabel;
+                                response.label = newDeviceLabel;
+                                //log(response.label.toString());
+                                //response.label = "00000";
                                 var olddevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(response);
@@ -747,7 +750,7 @@ class replaceccmsState extends State<replaceccms> {
                                 // New Device Updations
 
                                 Olddevicedetails.name = newDeviceName;
-                                Olddevicedetails.label = newDeviceLabel;
+                                Olddevicedetails.label = OldDeviceLabel;
                                 var upDevresponse = await tbClient
                                     .getDeviceService()
                                     .saveDevice(Olddevicedetails);
@@ -1224,6 +1227,8 @@ class replaceccmsState extends State<replaceccms> {
       print("${response.statusCode}");
       pr.hide();
       if (response.statusCode.toString() == "200") {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        var oldlabel = prefs.getString('device_label').toString();
        /* Fluttertoast.showToast(
             msg: "Gateway $oldDeviceName in the CCMS $uid is replaced with Gateway $deviceName successfully!",
             toastLength: Toast.LENGTH_SHORT,
@@ -1236,7 +1241,7 @@ class replaceccmsState extends State<replaceccms> {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext context) =>
                 dashboard_screen(selectedPage: 0)));*/
-        alertMessage("Gateway $oldDeviceName in the CCMS $uid is replaced with Gateway $deviceName successfully!");
+        alertMessage("Gateway $oldDeviceName in the CCMS $oldlabel is replaced with Gateway $deviceName successfully!");
       } else {}
       return response;
     } catch (e) {
