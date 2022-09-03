@@ -18,7 +18,7 @@ if (flutterVersionCode == null) {
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '2.2.3'
+    flutterVersionName = '2.2.4'
 }
 
 apply plugin: 'com.android.application'
@@ -56,7 +56,7 @@ android {
         applicationId "com.schnell.flutterlumin"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 25
+        versionCode 26
         versionName flutterVersionName
     }
 

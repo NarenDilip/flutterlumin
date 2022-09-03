@@ -365,6 +365,13 @@ class replacementilmState extends State<replacementilm> {
                           relationDetails.elementAt(0).from.id!,
                           response.id!.id!);
 
+                          //deleteAttribute Added by Veeramanikandan 1st SEP 2022
+
+                    var deleteAttribute = (await tbClient
+                                    .getAttributeService()
+                                    .deleteDeviceAttributes(response.id!.id!,
+                                    "SERVER_SCOPE", ['commissioned']));
+
                       // DevicecurrentFolderName =
                       //     currentdeviceresponse.last.id.toString();
 

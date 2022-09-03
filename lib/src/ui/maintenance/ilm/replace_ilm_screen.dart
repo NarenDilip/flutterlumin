@@ -565,6 +565,12 @@ class replaceilmState extends State<replaceilm> {
                     .getEntityGroupService()
                     .getEntityGroupsForFolderEntity(response.id!.id!);
 
+                //deleteAttribute added by veeramanikandan 1st SEP 2022
+                var deleteAttribute = (await tbClient
+                                    .getAttributeService()
+                                    .deleteDeviceAttributes(response.id!.id!,
+                                    "SERVER_SCOPE", ['commissioned']));
+
                 if (currentdeviceresponse != null) {
                   var firstdetails = await tbClient
                       .getEntityGroupService()
@@ -701,6 +707,13 @@ class replaceilmState extends State<replaceilm> {
                                 .getEntityRelationService()
                                 .findInfoByTo(Olddevicedetails.id!);
 
+                                 //Newly added by Veeramanikandan on 1st SEP 2022
+
+                                var deleteAttribute = (await tbClient
+                                    .getAttributeService()
+                                    .deleteDeviceAttributes(Olddevicedetails.id!.id!,
+                                    "SERVER_SCOPE", ['commissioned']));
+
                             if (relationDetails.isNotEmpty) {
                               var relation_response = await tbClient
                                   .getEntityRelationService()
@@ -786,7 +799,7 @@ class replaceilmState extends State<replaceilm> {
                               var up_credresponse = await tbClient
                                   .getDeviceService()
                                   .saveDeviceCredentials(newdeviceCredentials);
-
+                                
                               final new_body_req = {
                                 'boardNumber': new_Device_Name,
                                 'ieeeAddress': newQRID,
