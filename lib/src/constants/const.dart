@@ -47,7 +47,7 @@ const localAPICall = "http://seepl18.net.in:9091/iot/upload/img/";
 const no_network = "Please check your Mobile Internet Connectivity";
 const user_email = "User Email";
 const user_password = "Password";
-const validate_email = "Please enter the validate email";
+const validate_email = "Please enter the valid email";
 const sign_in = "Login";
 const qr_text = "SCAN QR CODE";
 
@@ -123,8 +123,8 @@ const app_no_regions = "Region details is not accessed for you, please contact y
 const app_usr_invalid_cred = "Invalid credentials, Please try again.";
 const app_log_email = "Log-In with User email and Password";
 const app_no_email = "Please enter the email";
-const app_validate_email = "Please enter the validate email";
-const app_validate_pass = "Please enter the password";
+const app_validate_email = "Please enter the valid email";
+const app_validate_pass = "Please enter the valid password";
 
 const app_dev_offline_mode = "Device in Offline Mode";
 const app_dev_loc_alert = 'Luminator Location Alert';

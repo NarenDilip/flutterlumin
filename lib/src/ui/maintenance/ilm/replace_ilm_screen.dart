@@ -677,18 +677,6 @@ class replaceilmState extends State<replaceilm> {
                           var credresponse = await tbClient
                               .getDeviceService()
                               .saveDeviceCredentials(newdeviceCredentials);
-
-                          // LocalNetData localNetData = new LocalNetData(
-                          //     newdeviceCredentials.createdTime,
-                          //     deviceName,
-                          //     "",
-                          //     "",
-                          //     deviceName + "99",
-                          //     newdeviceCredentials.credentialsId + "L",
-                          //     "",
-                          //     "credentialsUpdation");
-                          // dbHelper.localnetwork_add(localNetData);
-
                           response.name = deviceName + "99";
                           var devresponse = await tbClient
                               .getDeviceService()
@@ -714,13 +702,24 @@ class replaceilmState extends State<replaceilm> {
                                     .deleteDeviceAttributes(Olddevicedetails.id!.id!,
                                     "SERVER_SCOPE", ['commissioned']));
 
+                            // Added by Veeramanikandan. R on SEP 5th 2022 (705 - 722)
                             if (relationDetails.isNotEmpty) {
+                              int i = relationDetails.indexWhere((item) => item.from.entityType.name=='ASSET' && item.to.entityType.name=='DEVICE'); 
                               var relation_response = await tbClient
                                   .getEntityRelationService()
                                   .deleteDeviceRelation(
-                                  relationDetails.elementAt(0).from.id!,
+                                  relationDetails.elementAt(i).from.id!,
                                   Olddevicedetails.id!.id!);
                             }
+
+                            if (relationDetails.length>1) {
+                                int index = relationDetails.indexWhere((item) => item.from.entityType.name=='DEVICE' && item.to.entityType.name=='DEVICE');
+                                  var delete_devicetype_response = await tbClient
+                                  .getEntityRelationService()
+                                  .deleteDevicetypeRelation(
+                                  relationDetails.elementAt(index).from.id!,
+                                  relationDetails.elementAt(index).to.id!);
+                            } 
 
                             olddeviceCredentials = await tbClient
                                 .getDeviceService()
@@ -742,23 +741,6 @@ class replaceilmState extends State<replaceilm> {
                               var old_dev_response = await tbClient
                                   .getDeviceService()
                                   .saveDevice(Olddevicedetails);
-
-                              // LocalNetData localNetData = dbHelper
-                              //         .get_namebased_LocalNetData(deviceName)
-                              //     as LocalNetData;
-                              //
-                              // LocalNetData localNetDatas = new LocalNetData(
-                              //     olddeviceCredentials.createdTime,
-                              //     deviceName,
-                              //     Olddevicename + "99",
-                              //     olddeviceCredentials.credentialsId,
-                              //     localNetData.smartname,
-                              //     localNetData.smartcred,
-                              //     "credentialsUpdation",
-                              //     localNetData.smartstatus);
-                              //
-                              // dbHelper.localnetwork_add(localNetDatas);
-
                               olddeviceCredentials.credentialsId = newQRID;
                               var oldcredresponse = await tbClient
                                   .getDeviceService()
@@ -766,6 +748,7 @@ class replaceilmState extends State<replaceilm> {
 
                               response.name = Old_Device_Name;
                               response.label = Old_Device_Name;
+                              //update old ILM artibutes from new ILM atributes
                               var olddevresponse = await tbClient
                                   .getDeviceService()
                                   .saveDevice(response);

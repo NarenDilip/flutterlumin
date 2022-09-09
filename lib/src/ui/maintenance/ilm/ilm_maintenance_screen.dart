@@ -993,22 +993,22 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
                                                     SizedBox(
                                                       width: 15,
                                                     ), //SizedBox
-                                                    Container(
+                                                    SizedBox(
                                                         width: width / 2.05,
-                                                        height: 25,
+                                                        height: 60,
                                                         child: Text(
-                                                          "$location",
-                                                          style: const TextStyle(
-                                                              fontSize: 18,
-                                                              fontFamily:
-                                                                  "Montserrat",
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ) //BoxDecoration
-                                                        ) //Container
+                                                            location.toString(),
+                                                            style: const TextStyle(
+                                                                fontSize: 12.5,
+                                                                fontFamily:
+                                                                "Montserrat",
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                          ), //BoxDecoration
+                                                    ), //Container
                                                   ], //<Widget>[]
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
@@ -1073,13 +1073,13 @@ class _MaintenanceScreenState extends State<MaintenanceScreen>
                                                     SizedBox(
                                                       width: 5,
                                                     ), //SizedBox
-                                                    Container(
+                                                    SizedBox(
                                                         width: width / 2.05,
                                                         height: 25,
                                                         child: Text(
                                                           "$date",
                                                           style: const TextStyle(
-                                                              fontSize: 18,
+                                                              fontSize: 14,
                                                               color:
                                                                   Colors.white,
                                                               fontFamily:

@@ -358,14 +358,23 @@ class replacementilmState extends State<replacementilm> {
                         DevicecurrentFolderName =
                         currentdeviceresponse.last.id!;
                       }
-
+                    // Added by Veeramanikandan. R on SEP 5th 2022 (362 - 375)
+                    int j = relationDetails.indexWhere((item) => item.from.entityType.name=='DEVICE' && item.to.entityType.name=='DEVICE');
+                    if(j>=0){
+                      var delete_devicetype_response = await tbClient
+                          .getEntityRelationService()
+                          .deleteDevicetypeRelation(
+                          relationDetails.elementAt(j).from.id!,
+                          response.id!.id!);}
+                      
+                      int i = relationDetails.indexWhere((item) => item.from.entityType.name=='ASSET' && item.to.entityType.name=='DEVICE'); 
                       var relation_response = await tbClient
                           .getEntityRelationService()
                           .deleteDeviceRelation(
-                          relationDetails.elementAt(0).from.id!,
+                          relationDetails.elementAt(i).from.id!,
                           response.id!.id!);
 
-                          //deleteAttribute Added by Veeramanikandan 1st SEP 2022
+                    //deleteAttribute Added by Veeramanikandan R 1st SEP 2022 (378 - 383)
 
                     var deleteAttribute = (await tbClient
                                     .getAttributeService()

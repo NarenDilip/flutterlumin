@@ -50,6 +50,22 @@ class EntityRelationService {
         options: defaultHttpOptionsFromConfig(requestConfig));
   }
 
+    //Delete relation if entity type == Device --> added by Veeramanikandan.R on 5th SEP 2022 (54 -66)
+    Future<void> deleteDevicetypeRelation(String fromId, String toId, 
+      {RequestConfig? requestConfig}) async {
+    await _tbClient.delete('/api/relation',
+        queryParameters: {
+          'fromId': fromId,
+          'fromType': "DEVICE",
+          'relationType': "Contains",
+          'relationTypeGroup': "Contains",
+          'toId': toId,
+          'toType': "DEVICE"
+        },
+        options: defaultHttpOptionsFromConfig(requestConfig));
+  }
+
+
   Future<void> deleteRelations(EntityId entityId,
       {RequestConfig? requestConfig}) async {
     await _tbClient.delete('/api/relations',
