@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -180,13 +178,13 @@ class replaceilmState extends State<replaceilm> {
                     child: imageFile != null
                         ? Image.file(File(imageFile.path))
                         : Container(
-                        decoration: BoxDecoration(color: Colors.white),
-                        width: 200,
-                        height: 200,
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.grey[800],
-                        )),
+                            decoration: BoxDecoration(color: Colors.white),
+                            width: 200,
+                            height: 200,
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: Colors.grey[800],
+                            )),
                   ),
                   SizedBox(height: 10),
                   Container(
@@ -202,12 +200,12 @@ class replaceilmState extends State<replaceilm> {
                               padding: MaterialStateProperty.all<EdgeInsets>(
                                   EdgeInsets.all(20)),
                               backgroundColor:
-                              MaterialStateProperty.all(Colors.green),
+                                  MaterialStateProperty.all(Colors.green),
                               shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
+                                      RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ))),
+                                borderRadius: BorderRadius.circular(25.0),
+                              ))),
                           onPressed: () async {
                             if (imageFile != null) {
                               pr.hide();
@@ -228,7 +226,7 @@ class replaceilmState extends State<replaceilm> {
                               pr.hide();
                               Fluttertoast.showToast(
                                   msg:
-                                  "Image not captured successfully! Please try again",
+                                      "Image not captured successfully! Please try again",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.BOTTOM,
                                   timeInSecForIosWeb: 1,
@@ -434,7 +432,7 @@ class replaceilmState extends State<replaceilm> {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient =
-          ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
           response = await tbClient
               .getDeviceService()
@@ -481,7 +479,7 @@ class replaceilmState extends State<replaceilm> {
     if (lat == null || lang == null) return "";
     final coordinates = new Coordinates(lat, lang);
     List<Address> addresss =
-    (await Geocoder.local.findAddressesFromCoordinates(coordinates));
+        (await Geocoder.local.findAddressesFromCoordinates(coordinates));
     setState(() {
       address = addresss.elementAt(1).addressLine.toString();
     });
@@ -527,7 +525,7 @@ class replaceilmState extends State<replaceilm> {
           Device response;
           Future<List<EntityGroupInfo>> deviceResponse;
           var tbClient =
-          ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
+              ThingsboardClient(FlavorConfig.instance.variables["baseUrl"]);
           tbClient.smart_init();
 
           response = (await tbClient
@@ -567,9 +565,9 @@ class replaceilmState extends State<replaceilm> {
 
                 //deleteAttribute added by veeramanikandan 1st SEP 2022
                 var deleteAttribute = (await tbClient
-                                    .getAttributeService()
-                                    .deleteDeviceAttributes(response.id!.id!,
-                                    "SERVER_SCOPE", ['commissioned']));
+                    .getAttributeService()
+                    .deleteDeviceAttributes(
+                        response.id!.id!, "SERVER_SCOPE", ['commissioned']));
 
                 if (currentdeviceresponse != null) {
                   var firstdetails = await tbClient
@@ -662,16 +660,15 @@ class replaceilmState extends State<replaceilm> {
                     if (versionCompatability == true) {
                       DBHelper dbHelper = new DBHelper();
                       if (relationDetails.length.toString() == "0") {
-
                         newdeviceCredentials = await tbClient
-                            .getDeviceService()
-                            .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString())
-                        as DeviceCredentials;
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                    response.id!.id.toString())
+                            as DeviceCredentials;
 
                         if (newdeviceCredentials != null) {
                           var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
+                              newdeviceCredentials.credentialsId.toString();
 
                           newdeviceCredentials.credentialsId = newQRID + "L";
                           var credresponse = await tbClient
@@ -695,41 +692,47 @@ class replaceilmState extends State<replaceilm> {
                                 .getEntityRelationService()
                                 .findInfoByTo(Olddevicedetails.id!);
 
-                                 //Newly added by Veeramanikandan on 1st SEP 2022
+                            //Newly added by Veeramanikandan on 1st SEP 2022
 
-                                var deleteAttribute = (await tbClient
-                                    .getAttributeService()
-                                    .deleteDeviceAttributes(Olddevicedetails.id!.id!,
-                                    "SERVER_SCOPE", ['commissioned']));
+                            var deleteAttribute = (await tbClient
+                                .getAttributeService()
+                                .deleteDeviceAttributes(
+                                    Olddevicedetails.id!.id!,
+                                    "SERVER_SCOPE",
+                                    ['commissioned']));
 
                             // Added by Veeramanikandan. R on SEP 5th 2022 (705 - 722)
                             if (relationDetails.isNotEmpty) {
-                              int i = relationDetails.indexWhere((item) => item.from.entityType.name=='ASSET' && item.to.entityType.name=='DEVICE'); 
+                              int i = relationDetails.indexWhere((item) =>
+                                  item.from.entityType.name == 'ASSET' &&
+                                  item.to.entityType.name == 'DEVICE');
                               var relation_response = await tbClient
                                   .getEntityRelationService()
                                   .deleteDeviceRelation(
-                                  relationDetails.elementAt(i).from.id!,
-                                  Olddevicedetails.id!.id!);
+                                      relationDetails.elementAt(i).from.id!,
+                                      Olddevicedetails.id!.id!);
                             }
 
-                            if (relationDetails.length>1) {
-                                int index = relationDetails.indexWhere((item) => item.from.entityType.name=='DEVICE' && item.to.entityType.name=='DEVICE');
-                                  var delete_devicetype_response = await tbClient
+                            if (relationDetails.length > 1) {
+                              int index = relationDetails.indexWhere((item) =>
+                                  item.from.entityType.name == 'DEVICE' &&
+                                  item.to.entityType.name == 'DEVICE');
+                              var delete_devicetype_response = await tbClient
                                   .getEntityRelationService()
                                   .deleteDevicetypeRelation(
-                                  relationDetails.elementAt(index).from.id!,
-                                  relationDetails.elementAt(index).to.id!);
-                            } 
+                                      relationDetails.elementAt(index).from.id!,
+                                      relationDetails.elementAt(index).to.id!);
+                            }
 
                             olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
+                                    .getDeviceService()
+                                    .getDeviceCredentialsByDeviceId(
+                                        Olddevicedetails.id!.id.toString())
+                                as DeviceCredentials;
 
                             if (olddeviceCredentials != null) {
                               var oldQRID =
-                              olddeviceCredentials.credentialsId.toString();
+                                  olddeviceCredentials.credentialsId.toString();
 
                               olddeviceCredentials.credentialsId =
                                   oldQRID + "M";
@@ -762,13 +765,14 @@ class replaceilmState extends State<replaceilm> {
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
                                 'InstallBy': Createdby,
-                                'InstalledOn':DateTime.now().millisecondsSinceEpoch,
+                                'InstalledOn':
+                                    DateTime.now().millisecondsSinceEpoch,
                               };
 
                               var up_attribute = (await tbClient
                                   .getAttributeService()
                                   .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
+                                      "SERVER_SCOPE", old_body_req));
 
                               // New Device Updations
 
@@ -782,7 +786,7 @@ class replaceilmState extends State<replaceilm> {
                               var up_credresponse = await tbClient
                                   .getDeviceService()
                                   .saveDeviceCredentials(newdeviceCredentials);
-                                
+
                               final new_body_req = {
                                 'boardNumber': new_Device_Name,
                                 'ieeeAddress': newQRID,
@@ -792,7 +796,8 @@ class replaceilmState extends State<replaceilm> {
                                 'zoneName': SelectedZone,
                                 'wardName': SelectedWard,
                                 'InstallBy': Createdby,
-                                'InstalledOn':DateTime.now().millisecondsSinceEpoch,
+                                'InstalledOn':
+                                    DateTime.now().millisecondsSinceEpoch,
                               };
 
                               DBHelper dbHelper = DBHelper();
@@ -808,27 +813,31 @@ class replaceilmState extends State<replaceilm> {
                                 pageLink.page = 0;
                                 pageLink.pageSize = 250;
 
-                                PageData<Asset> assetPagedetails = await tbClient
-                                    .getAssetService()
-                                    .getUsertypeAssets(pageLink);
+                                PageData<Asset> assetPagedetails =
+                                    await tbClient
+                                        .getAssetService()
+                                        .getUsertypeAssets(pageLink);
 
                                 if (assetPagedetails.data.length != 0) {
                                   for (int i = 0;
-                                  i < assetPagedetails.data.length;
-                                  i++) {
+                                      i < assetPagedetails.data.length;
+                                      i++) {
                                     if (assetPagedetails.data
-                                        .elementAt(i)
-                                        .name
-                                        .toString() ==
+                                            .elementAt(i)
+                                            .name
+                                            .toString() ==
                                         SelectedWard + "-" + "ILM") {
-                                      oldasset =
-                                          assetPagedetails.data.elementAt(i).id!.id;
+                                      oldasset = assetPagedetails.data
+                                          .elementAt(i)
+                                          .id!
+                                          .id;
                                       break;
                                     }
                                   }
                                   if (oldasset == null) {
                                     Asset newasset = Asset(
-                                        SelectedWard + "-" + "ILM", "node-cluster");
+                                        SelectedWard + "-" + "ILM",
+                                        "node-cluster");
                                     Asset savedasset = await tbClient
                                         .getAssetService()
                                         .saveAsset(newasset);
@@ -836,13 +845,13 @@ class replaceilmState extends State<replaceilm> {
                                   }
                                 } else {
                                   Asset newasset = Asset(
-                                      SelectedWard + "-" + "ILM", "node-cluster");
+                                      SelectedWard + "-" + "ILM",
+                                      "node-cluster");
                                   Asset savedasset = await tbClient
                                       .getAssetService()
                                       .saveAsset(newasset);
                                   oldasset = savedasset.id!.id;
                                 }
-
 
                                 Map<String, dynamic> fromId = {
                                   'entityType': 'ASSET',
@@ -861,18 +870,18 @@ class replaceilmState extends State<replaceilm> {
                                     typeGroup: RelationTypeGroup.COMMON);
 
                                 Future<EntityRelation> entityRelations =
-                                tbClient
-                                    .getEntityRelationService()
-                                    .saveRelation(entityRelation);
+                                    tbClient
+                                        .getEntityRelationService()
+                                        .saveRelation(entityRelation);
                               }
 
                               try {
                                 var up_newdevice_attribute = (await tbClient
                                     .getAttributeService()
                                     .saveDeviceAttributes(
-                                    Olddevicedetails.id!.id!,
-                                    "SERVER_SCOPE",
-                                    new_body_req));
+                                        Olddevicedetails.id!.id!,
+                                        "SERVER_SCOPE",
+                                        new_body_req));
                               } catch (e) {
                                 FlutterLogs.logInfo("devicelist_page",
                                     "device_list", "logMessage");
@@ -885,7 +894,7 @@ class replaceilmState extends State<replaceilm> {
                                 var remove_response = await tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                    DevicecurrentFolderName, myList);
+                                        DevicecurrentFolderName, myList);
                               } catch (e) {
                                 FlutterLogs.logInfo("devicelist_page",
                                     "device_list", "logMessage");
@@ -894,7 +903,7 @@ class replaceilmState extends State<replaceilm> {
                                 var add_response = await tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                    DevicemoveFolderName, myList);
+                                        DevicemoveFolderName, myList);
                               } catch (e) {
                                 FlutterLogs.logInfo("devicelist_page",
                                     "device_list", "logMessage");
@@ -918,17 +927,16 @@ class replaceilmState extends State<replaceilm> {
                                         dashboard_screen(selectedPage: 0)));
                           }
                         }
-                      }
-                      else {
+                      } else {
                         // New Device Updations
 
                         newdeviceCredentials = await tbClient
-                            .getDeviceService()
-                            .getDeviceCredentialsByDeviceId(
-                            response.id!.id.toString())
-                        as DeviceCredentials;
+                                .getDeviceService()
+                                .getDeviceCredentialsByDeviceId(
+                                    response.id!.id.toString())
+                            as DeviceCredentials;
 
-                         var relation_response = await tbClient
+                        var relation_response = await tbClient
                             .getEntityRelationService()
                             .deleteDeviceRelation(
                                 relationDetails.elementAt(0).from.id!,
@@ -936,7 +944,7 @@ class replaceilmState extends State<replaceilm> {
 
                         if (newdeviceCredentials != null) {
                           var newQRID =
-                          newdeviceCredentials.credentialsId.toString();
+                              newdeviceCredentials.credentialsId.toString();
 
                           newdeviceCredentials.credentialsId = newQRID + "L";
                           var credresponse = await tbClient
@@ -977,15 +985,17 @@ class replaceilmState extends State<replaceilm> {
                             }*/
 
                             olddeviceCredentials = await tbClient
-                                .getDeviceService()
-                                .getDeviceCredentialsByDeviceId(
-                                Olddevicedetails.id!.id.toString())
-                            as DeviceCredentials;
+                                    .getDeviceService()
+                                    .getDeviceCredentialsByDeviceId(
+                                        Olddevicedetails.id!.id.toString())
+                                as DeviceCredentials;
 
                             if (olddeviceCredentials != null) {
-                              var oldQRID = olddeviceCredentials.credentialsId.toString();
+                              var oldQRID =
+                                  olddeviceCredentials.credentialsId.toString();
 
-                              olddeviceCredentials.credentialsId = oldQRID + "L";
+                              olddeviceCredentials.credentialsId =
+                                  oldQRID + "L";
                               var old_cred_response = await tbClient
                                   .getDeviceService()
                                   .saveDeviceCredentials(olddeviceCredentials);
@@ -1006,7 +1016,7 @@ class replaceilmState extends State<replaceilm> {
                                   .getDeviceService()
                                   .saveDevice(response);
 
-                           /*   List<String> myfirmList = [];
+                              /*   List<String> myfirmList = [];
                               myfirmList.add("lattitude");
 
                               List<AttributeKvEntry> latt_faultresponser;
@@ -1042,7 +1052,7 @@ class replaceilmState extends State<replaceilm> {
                               var up_attribute = (await tbClient
                                   .getAttributeService()
                                   .saveDeviceAttributes(response.id!.id!,
-                                  "SERVER_SCOPE", old_body_req));
+                                      "SERVER_SCOPE", old_body_req));
 
                               // New Device Updations
 
@@ -1066,9 +1076,9 @@ class replaceilmState extends State<replaceilm> {
                                 var up_newdevice_attribute = (await tbClient
                                     .getAttributeService()
                                     .saveDeviceAttributes(
-                                    Olddevicedetails.id!.id!,
-                                    "SERVER_SCOPE",
-                                    new_body_req));
+                                        Olddevicedetails.id!.id!,
+                                        "SERVER_SCOPE",
+                                        new_body_req));
                               } catch (e) {
                                 FlutterLogs.logInfo("devicelist_page",
                                     "device_list", "logMessage");
@@ -1081,7 +1091,7 @@ class replaceilmState extends State<replaceilm> {
                                 var remove_response = tbClient
                                     .getEntityGroupService()
                                     .removeEntitiesFromEntityGroup(
-                                    DevicecurrentFolderName, myList);
+                                        DevicecurrentFolderName, myList);
                               } catch (e) {
                                 FlutterLogs.logInfo("devicelist_page",
                                     "device_list", "logMessage");
@@ -1091,7 +1101,7 @@ class replaceilmState extends State<replaceilm> {
                                 var add_response = tbClient
                                     .getEntityGroupService()
                                     .addEntitiesToEntityGroup(
-                                    DevicemoveFolderName, myList);
+                                        DevicemoveFolderName, myList);
                               } catch (e) {
                                 FlutterLogs.logInfo("devicelist_page",
                                     "device_list", "logMessage");
@@ -1389,23 +1399,23 @@ class replaceilmState extends State<replaceilm> {
     showDialog(
         context: context,
         builder: (BuildContext context) => CupertinoAlertDialog(
-          title: const Text("Location not available"),
-          content: const Text(
-              'Please make sure you enable location and try again'),
-          actions: <Widget>[
-            CupertinoDialogAction(
-              child: const Text("Ok"),
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => dashboard_screen(selectedPage: 0)),
-                );
-              },
-            )
-          ],
-        ));
+              title: const Text("Location not available"),
+              content: const Text(
+                  'Please make sure you enable location and try again'),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  child: const Text("Ok"),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              dashboard_screen(selectedPage: 0)),
+                    );
+                  },
+                )
+              ],
+            ));
   }
-
 }
